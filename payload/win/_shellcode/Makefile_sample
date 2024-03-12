@@ -1,0 +1,36 @@
+CCX64 = x86_64-w64-mingw32-g++
+CCX86 = i686-w64-mingw32-g++
+
+MACROS = -DLISTENER_HOST=\"$(LISTENER_HOST)\" -DLISTENER_PORT=$(LISTENER_PORT) -DLISTENER_PATH=\"$(LISTENER_PATH)\"
+
+CFLAGS = -mconsole
+CFLAGS += -Os -s -ffunction-sections -fdata-sections -fno-exceptions -fmerge-all-constants
+CFLAGS += -static-libstdc++ -static-libgcc
+CFLAGS += -Wl,-s
+
+OUT = -o $(OUTFILE)
+
+INCLUDE = -I/usr/share/mingw-w64/include/
+
+SRC = src/main.cpp
+
+x64:
+	@ mkdir -p tmp
+	@ python3 scripts/convert.py calc.exe
+	@ nasm -f win64 -o tmp/tmp.o asm/x64/main.asm
+	# @ ld -m elf_x86_64 -o tmp/tmp tmp/tmp.o
+	# @ echo "Shellcode:"
+	# @ objdump -M intel -d tmp/tmp | grep '[0-9a-f]:' | grep -v 'file' | cut -f2 -d: | cut -f1-6 -d' ' | tr -s ' ' | tr '\t' ' ' | sed 's/ $//g' | sed 's/ /\\x/g' | paste -d '' -s | sed 's/^/"/' | sed 's/$/"/g'
+	@ $(CCX64) $(MACROS) $(CFLAGS) $(OUT) $(INCLUDE) $(SRC) tmp/tmp.o -masm=intel
+
+x86:
+	@ mkdir -p tmp
+	@ python3 scripts/convert.py calc.exe
+	@ nasm -f win32 -o tmp/tmp.o asm/x86/main.asm
+	# @ ld -m elf_i386 -o tmp/tmp tmp/tmp.o
+	# @ echo "Shellcode:"
+	# @ objdump -M intel -d tmp/tmp | grep '[0-9a-f]:' | grep -v 'file' | cut -f2 -d: | cut -f1-6 -d' ' | tr -s ' ' | tr '\t' ' ' | sed 's/ $//g' | sed 's/ /\\x/g' | paste -d '' -s | sed 's/^/"/' | sed 's/$/"/g'
+	@ $(CCX86) $(MACROS) $(CFLAGS) $(OUT) $(INCLUDE) $(SRC) tmp/tmp.o -masm=intel
+
+clean:
+	@ rm -rf ./tmp

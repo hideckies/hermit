@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+option go_package = "github.com/hideckies/hermit/pkg/protobuf/rpcpb";
+option java_multiple_files = true;
+option java_package = "org.hdks.hermit.protobuf.rpcpb";
+option java_outer_classname = "RPCProto";
+
+package rpcpb;
+
+import "commonpb/common.proto"; // Specify the relative path from `pkg/protobuf`
+
+service HermitRPC {
+
+  // GENERAL
+  rpc SayHello (commonpb.Empty) returns (commonpb.Message) {}
+  rpc GetVersion (commonpb.Empty) returns (commonpb.Message) {}
+
+  // OPERATOR
+  rpc OperatorRegister (Operator) returns (commonpb.Message) {}
+  rpc OperatorDeleteByUuid (commonpb.Uuid) returns (commonpb.Message) {}
+  rpc OperatorGetById (commonpb.Id) returns (Operator) {}
+  rpc OperatorGetAll (commonpb.Empty) returns (stream Operator) {}
+
+  // LISTENER
+  rpc ListenerStart (Listener) returns (commonpb.Message) {}
+  rpc ListenerStartById (commonpb.Id) returns (commonpb.Message) {}
+  rpc ListenerStopById (commonpb.Id) returns (commonpb.Message) {}
+  rpc ListenerDeleteById (commonpb.Id) returns (commonpb.Message) {}
+  rpc ListenerGetById (commonpb.Id) returns (Listener) {}
+  rpc ListenerGetAll (commonpb.Empty) returns (stream Listener) {}
+
+  // PAYLOAD
+  rpc PayloadImplantGenerate (PayloadImplant) returns (commonpb.Binary) {}
+  rpc PayloadStagerGenerate (PayloadStager) returns (commonpb.Binary) {}
+  rpc PayloadShellcodeGenerate (PayloadShellcode) returns (commonpb.Binary) {}
+
+  // AGENT
+  rpc AgentGetById (commonpb.Id) returns (Agent) {}
+  rpc AgentGetAll (commonpb.Empty) returns (stream Agent) {}
+  rpc AgentTaskList (commonpb.Empty) returns (commonpb.Message) {}
+
+  // TASK
+  rpc TaskSet (commonpb.Message) returns (commonpb.Message) {}
+  rpc TaskClean (commonpb.Empty) returns (commonpb.Message) {}
+  rpc TaskList (commonpb.Empty) returns (commonpb.Message) {}
+
+  // LOOT
+  rpc LootGetAll (commonpb.Empty) returns (commonpb.Message) {}
+  rpc LootClean (commonpb.Empty) returns (commonpb.Message) {}
+}
+
+message Operator {
+  int64 id = 1;
+  string uuid = 2;
+  string name = 3;
+}
+
+message Listener {
+  int64 id = 1;
+  string uuid = 2;
+  string name = 3;
+  string protocol = 4;
+  string host = 5;
+  int32 port = 6;
+  string domains = 7;
+  bool active = 8;
+}
+
+message PayloadImplant {
+  int64 id = 1;
+  string uuid = 2;
+  string name = 3;
+  string os = 4;
+  string arch = 5;
+  string format = 6;
+  string lprotocol = 7;
+  string lhost = 8;
+  int32 lport = 9;
+  string type = 10;
+  int64 sleep = 11;
+  int64 jitter = 12;
+  int64 killDate = 13;
+}
+
+message PayloadStager {
+  int64 id = 1;
+  string uuid = 2;
+  string name = 3;
+  string os = 4;
+  string arch = 5;
+  string format = 6;
+  string lprotocol = 7;
+  string lhost = 8;
+  int32 lport = 9;
+  string type = 10;
+  string technique = 11;
+  string process = 12;
+}
+
+message PayloadShellcode {
+  int64 id = 1;
+  string uuid = 2;
+  string name = 3;
+  string os = 4;
+  string arch = 5;
+  string format = 6;
+  string lprotocol = 7;
+  string lhost = 8;
+  int32 lport = 9;
+  string type = 10;
+  string typeArgs = 11;
+}
+
+message Agent {
+  int64 id = 1;
+  string uuid = 2;
+  string name = 3;
+  string ip = 4;
+  string os = 5;
+  string arch = 6;
+  string hostname = 7;
+  string listenerName = 8;
+  int64 sleep = 9;
+  int64 jitter = 10;
+  int64 killDate = 11;
+}

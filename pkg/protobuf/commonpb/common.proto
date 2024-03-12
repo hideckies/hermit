@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "github.com/hideckies/hermit/pkg/protobuf/commonpb";
+option java_multiple_files = true;
+option java_package = "org.hdks.hermit.protobuf.commonpb";
+option java_outer_classname = "CommonProto";
+
+package commonpb;
+
+message Empty {}
+
+message Message {
+    string text = 1;
+}
+
+message Binary {
+    bytes data = 1;
+}
+
+message Id {
+    int64 value = 1;
+}
+
+message Uuid {
+    string value = 1;
+}

