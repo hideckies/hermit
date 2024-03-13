@@ -24,7 +24,7 @@ log_error() {
 }
 
 is_linux() {
-    if [ $(uname) == "Linux" ]; then
+    if [[ $(uname) == "Linux" ]]; then
         return 0
     else
         return 1
@@ -61,28 +61,28 @@ get_linux_ditro() {
 install_pkg_with_apk() {
     log_success
     sudo apk -y update
-    if [ $target == "server" ]; then
+    if [[ $target == "server" ]]; then
         sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler openssl
-    elif [ $target == "client" ]; then
+    elif [[ $target == "client" ]]; then
         sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler
     fi
 }
 
 install_pkg_with_apt() {
     sudo apt -y update
-    if [ $target = "server" ]; then
+    if [[ $target == "server" ]]; then
         sudo apt -y install git build-essential cmake nasm g++-mingw-w64 protobuf-compiler openssl
-    elif [ $target == "client" ]; then
+    elif [[ $target == "client" ]]; then
         sudo apt -y install git build-essential cmake nasm g++-mingw-w64 protobuf-compiler
     fi
 }
 
 install_pkg_with_dnf() {
     sudo dnf -y check-update
-    if [ $target == "server" ]; then
+    if [[ $target == "server" ]]; then
         sudo dnf -y groupinstall "Development Tools" "Development Libraries"
         sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler openssl
-    elif [ $target == "client" ]; then
+    elif [[ $target == "client" ]]; then
         sudo dnf -y groupinstall "Development Tools" "Development Libraries"
         sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler
     fi
@@ -91,17 +91,20 @@ install_pkg_with_dnf() {
 install_pkg() {
     log "Installing packages..."
 
-    if [[ "$1" == "Alpine Linux" ]]; then
+    if [[ $distro == "Alpine Linux" ]]; then
         if ! install_pkg_with_apk; then
             return 1
         fi
         return 0
-    elif [[ "$1" == "CentOS" ]] || [[ "$1" == "Fedora" ]]; then
+    elif [[ $distro == "CentOS" ]] || [[ $distro == "Fedora" ]]; then
         if ! install_pkg_with_dnf; then
             return 1
         fi
         return 0
-    elif [[ "$1" == "Debian" ]] || [[ "$1" == "Ubuntu" ]]; then
+    elif [[ $distro == "Debian" ]] ||
+        [[ $distro == "Ubuntu" ]] ||
+        [[ $distro == "Kali"* ]] ||
+        [[ $distro == "Parrot Security" ]]; then
         if ! install_pkg_with_apt; then
             return 1
         fi
@@ -134,7 +137,7 @@ golang_exists() {
 install_c2_server() {
     log "Install dependencies for the C2 server."
 
-    if ! install_pkg $distro; then
+    if ! install_pkg; then
         log_error "Installing packages failed."
         exit 1
     fi
@@ -153,7 +156,7 @@ install_c2_server() {
 install_c2_client() {
     log "Install dependencies for the C2 client."
 
-    if ! install_pkg $distro; then
+    if ! install_pkg; then
         log_error "Installing packages failed."
         exit 1
     fi
@@ -171,14 +174,14 @@ if ! is_linux; then
 fi
 
 get_linux_ditro
-if [ $distro == "Unknown" ]; then
+if [[ $distro == "Unknown" ]]; then
     exit 1
 fi
 log "Linux Distribution: $distro"
 
-if [ $target == "server" ]; then
+if [[ $target == "server" ]]; then
     install_c2_server
-elif [ $target == "client" ]; then
+elif [[ $target == "client" ]]; then
     install_c2_client
 else
     log_error "Invalid target."
