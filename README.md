@@ -38,7 +38,7 @@ It's assumed that you operate both the C2 server and C2 client on **Linux**.
 First, clone the repository and get into the project directory.
 
 ```sh
-git clone github.com/hideckies/hermit.git
+git clone https://github.com/hideckies/hermit.git
 cd hermit
 ```
 
