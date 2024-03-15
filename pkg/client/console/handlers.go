@@ -11,6 +11,7 @@ import (
 	"github.com/hideckies/hermit/pkg/client/rpc"
 	"github.com/hideckies/hermit/pkg/client/state"
 	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdin"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/common/wizard"
@@ -235,7 +236,7 @@ func HandlePayloadGen(
 		spin.Stop()
 
 		// Save the executable
-		appDir, err := meta.GetAppDir()
+		appDir, err := metafs.GetAppDir()
 		if err != nil {
 			return err
 		}
@@ -268,7 +269,7 @@ func HandlePayloadGen(
 		spin.Stop()
 
 		// Save the executable
-		appDir, err := meta.GetAppDir()
+		appDir, err := metafs.GetAppDir()
 		if err != nil {
 			return err
 		}
@@ -301,7 +302,7 @@ func HandlePayloadGen(
 		spin.Stop()
 
 		// Save the shellcode
-		appDir, err := meta.GetAppDir()
+		appDir, err := metafs.GetAppDir()
 		if err != nil {
 			return err
 		}
@@ -478,7 +479,7 @@ func HandleAmLoot(c rpcpb.HermitRPCClient, ctx context.Context) error {
 		return err
 	}
 
-	stdout.LogSuccess("")
+	stdout.LogSuccess("\n")
 	fmt.Println(allLoot)
 	return nil
 }

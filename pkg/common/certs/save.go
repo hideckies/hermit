@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 )
 
 func GetCertificatePath(
@@ -16,7 +16,7 @@ func GetCertificatePath(
 	var certPath string
 	var keyPath string
 
-	certsDir, err := meta.GetCertsDir(listenerName)
+	certsDir, err := metafs.GetCertsDir(listenerName)
 	if err != nil {
 		return "", "", err
 	}

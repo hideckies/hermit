@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 )
 
 type Database struct {
@@ -16,7 +16,7 @@ type Database struct {
 func NewDatabase() (*Database, error) {
 	database := Database{}
 
-	dbPath, err := meta.GetDBPath()
+	dbPath, err := metafs.GetDBPath()
 	if err != nil {
 		return nil, err
 	}

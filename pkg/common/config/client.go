@@ -8,7 +8,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/google/uuid"
-	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/common/utils"
 )
@@ -54,7 +54,7 @@ func NewClientConfig(
 }
 
 func (c *ClientConfig) WriteJson() error {
-	configsDir, err := meta.GetConfigsDir(false)
+	configsDir, err := metafs.GetConfigsDir(false)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/protobuf/commonpb"
 	"github.com/hideckies/hermit/pkg/protobuf/rpcpb"
 	"github.com/hideckies/hermit/pkg/server/handler"
@@ -166,7 +167,7 @@ func (s *HermitRPCServer) ListenerDeleteById(
 	}
 
 	// Delete folder
-	listenerDir, err := meta.GetListenerDir(lis.Name, false)
+	listenerDir, err := metafs.GetListenerDir(lis.Name, false)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +370,7 @@ func (s *HermitRPCServer) TaskCleanByAgentName(
 	ctx context.Context,
 	_task *rpcpb.Task,
 ) (*commonpb.Message, error) {
-	err := meta.DeleteAllTasks(_task.GetAgentName(), false)
+	err := metafs.DeleteAllAgentTasks(_task.GetAgentName(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +381,7 @@ func (s *HermitRPCServer) TaskListByAgentName(
 	ctx context.Context,
 	_task *rpcpb.Task,
 ) (*commonpb.Message, error) {
-	tasks, err := meta.ReadTasks(_task.GetAgentName(), false)
+	tasks, err := metafs.ReadAgentTasks(_task.GetAgentName(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +407,7 @@ func (s *HermitRPCServer) LootClean(
 	ctx context.Context,
 	empty *commonpb.Empty,
 ) (*commonpb.Message, error) {
-	err := meta.DeleteAllTaskResults(s.serverState.AgentMode.Name, false)
+	err := metafs.DeleteAllAgentLoot(s.serverState.AgentMode.Name, false)
 	if err != nil {
 		return nil, err
 	}

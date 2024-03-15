@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/utils"
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/state"
@@ -93,7 +94,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 	}
 
 	// Get output path
-	payloadsDir, err := meta.GetPayloadsDir(lis.Name, false)
+	payloadsDir, err := metafs.GetListenerPayloadsDir(lis.Name, false)
 	if err != nil {
 		return nil, "", err
 	}

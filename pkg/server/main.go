@@ -12,6 +12,7 @@ import (
 	"github.com/hideckies/hermit/pkg/common/certs"
 	"github.com/hideckies/hermit/pkg/common/config"
 	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/server/console"
 	"github.com/hideckies/hermit/pkg/server/db"
@@ -33,7 +34,7 @@ func run(configPath string) error {
 	stdout.PrintBanner()
 
 	// Set a log file
-	logFile, err := meta.OpenLogFile(false)
+	logFile, err := metafs.OpenLogFile(false)
 	if err != nil {
 		return err
 	}
@@ -116,7 +117,7 @@ var cli struct {
 }
 
 func main() {
-	if err := meta.MakeAppDirs(false); err != nil {
+	if err := metafs.MakeAppDirs(false); err != nil {
 		stdout.LogFailed(fmt.Sprint(err))
 		os.Exit(1)
 	}

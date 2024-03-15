@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/hideckies/hermit/pkg/common/certs"
-	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/service"
 	"github.com/hideckies/hermit/pkg/server/state"
@@ -13,7 +13,7 @@ import (
 
 func ListenerStart(lis *listener.Listener, serverState *state.ServerState) error {
 	// Make a directory for the listener.
-	err := meta.MakeListenerDir(lis.Name, false)
+	err := metafs.MakeListenerChildDirs(lis.Name, false)
 	if err != nil {
 		return err
 	}

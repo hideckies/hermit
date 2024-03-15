@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 )
 
@@ -17,7 +17,7 @@ const (
 func getConfigJson(configPath string, configType string, isClient bool) (*os.File, error) {
 	if configPath == "" {
 		// Read from the default config path if the 'config' option is not set.
-		configsDir, err := meta.GetConfigsDir(isClient)
+		configsDir, err := metafs.GetConfigsDir(isClient)
 		if err != nil {
 			return nil, err
 		}

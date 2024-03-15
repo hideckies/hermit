@@ -8,6 +8,7 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdin"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/common/wizard"
@@ -158,7 +159,7 @@ func HandleListenerDeleteById(line string, argStartIdx int, serverState *state.S
 	}
 
 	// Delete folder
-	listenerDir, err := meta.GetListenerDir(lis.Name, false)
+	listenerDir, err := metafs.GetListenerDir(lis.Name, false)
 	if err != nil {
 		return err
 	}
@@ -198,7 +199,7 @@ func HandleListenerPayloadsById(line string, argStartIdx int, serverState *state
 	}
 
 	// List payloads on the listener
-	payloads, err := meta.GetPayloadPaths(lis.Name, false, true)
+	payloads, err := metafs.GetListenerPayloadPaths(lis.Name, false, true)
 	if err != nil {
 		return err
 	}
@@ -222,7 +223,7 @@ func HandleListenerPayloadsById(line string, argStartIdx int, serverState *state
 		return err
 	}
 	if isDelete {
-		payloadsDir, err := meta.GetPayloadsDir(lis.Name, false)
+		payloadsDir, err := metafs.GetListenerPayloadsDir(lis.Name, false)
 		if err != nil {
 			return err
 		}
@@ -376,7 +377,7 @@ func HandleAgentDeleteById(line string, argStartIdx int, serverState *state.Serv
 	}
 
 	// Delete the related folder
-	lootAgentDir, err := meta.GetLootAgentDir(ag.Name, false)
+	lootAgentDir, err := metafs.GetAgentLootDir(ag.Name, false)
 	if err != nil {
 		return err
 	}
@@ -451,7 +452,7 @@ func HandleAmTaskClean(serverState *state.ServerState) error {
 		return fmt.Errorf("canceled")
 	}
 
-	err = meta.DeleteAllTasks(serverState.AgentMode.Name, false)
+	err = metafs.DeleteAllAgentTasks(serverState.AgentMode.Name, false)
 	if err != nil {
 		return err
 	}
@@ -461,7 +462,7 @@ func HandleAmTaskClean(serverState *state.ServerState) error {
 }
 
 func HandleAmTaskList(serverState *state.ServerState) error {
-	tasks, err := meta.ReadTasks(serverState.AgentMode.Name, false)
+	tasks, err := metafs.ReadAgentTasks(serverState.AgentMode.Name, false)
 	if err != nil {
 		return err
 	}
@@ -482,7 +483,7 @@ func HandleAmLoot(serverState *state.ServerState) error {
 	if err != nil {
 		return err
 	}
-	stdout.LogSuccess("")
+	stdout.LogSuccess("\n")
 	fmt.Println(allLoot)
 	return nil
 }
@@ -497,7 +498,7 @@ func HandleAmLootClean(serverState *state.ServerState) error {
 	}
 
 	// Delete all task results files
-	err = meta.DeleteAllTaskResults(serverState.AgentMode.Name, false)
+	err = metafs.DeleteAllAgentLoot(serverState.AgentMode.Name, false)
 	if err != nil {
 		return err
 	}

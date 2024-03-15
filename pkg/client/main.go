@@ -14,6 +14,7 @@ import (
 	"github.com/hideckies/hermit/pkg/client/state"
 	"github.com/hideckies/hermit/pkg/common/config"
 	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/protobuf/rpcpb"
 )
@@ -30,7 +31,7 @@ func run(configPath string) error {
 	stdout.PrintBannerClient()
 
 	// Set a log file
-	logFile, err := meta.OpenLogFile(true)
+	logFile, err := metafs.OpenLogFile(true)
 	if err != nil {
 		return err
 	}
@@ -51,7 +52,7 @@ func run(configPath string) error {
 	var opts []grpc.DialOption
 
 	// Temporarily create a ca cert file.
-	tmpDir, err := meta.GetTempDir(true)
+	tmpDir, err := metafs.GetTempDir(true)
 	if err != nil {
 		return err
 	}
@@ -125,7 +126,7 @@ var cli struct {
 }
 
 func main() {
-	if err := meta.MakeAppDirs(true); err != nil {
+	if err := metafs.MakeAppDirs(true); err != nil {
 		stdout.LogFailed(fmt.Sprintf("failed to create app directories: %v", err))
 		os.Exit(1)
 	}

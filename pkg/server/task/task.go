@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 )
 
 func SetTask(task string, agentName string) error {
@@ -35,7 +35,7 @@ func SetTask(task string, agentName string) error {
 		task = "ls ."
 	}
 
-	err := meta.WriteTask(agentName, task, false)
+	err := metafs.WriteAgentTask(agentName, task, false)
 	if err != nil {
 		return err
 	}

@@ -3,22 +3,21 @@ package loot
 import (
 	"fmt"
 
-	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 )
 
 func GetAllLoot(agentName string) (string, error) {
-	taskResults, err := meta.ReadAllTaskResults(agentName, false)
+	allLoot, err := metafs.ReadAllAgentLoot(agentName, false)
 	if err != nil {
 		return "", err
 	}
-	if len(taskResults) == 0 {
+	if len(allLoot) == 0 {
 		return "", fmt.Errorf("loot not found")
 	}
 
-	allLoot := ""
-	for _, taskResult := range taskResults {
-		allLoot += taskResult
-		allLoot += "\n\n-----------------------------------------\n\n"
+	contents := ""
+	for _, _loot := range allLoot {
+		contents += _loot + "\n"
 	}
-	return allLoot, nil
+	return contents, nil
 }

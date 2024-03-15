@@ -65,10 +65,9 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("cp"),
 	readline.PcItem("download"),
 	// readline.PcItem("dll"), DLL spawn and inject modules
-	// readline.PcItem("goodbye"),  Stop the implant and delete itself.
 	// readline.PcItem("inline-exec"),
 	readline.PcItem("keylog"),
-	// readline.PcItem("kill"), Kill a process
+	// readline.PcItem("kill"), Stop the implant and delete itself.
 	readline.PcItem("ls"),
 	// readline.PcItem("migrate"), Get into another process
 	readline.PcItem("mkdir"),
@@ -102,7 +101,7 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("loot clean"),
 )
 
-func ConsoleUsage(w io.Writer, isClient bool, isAgent bool) {
+func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 	io.WriteString(w, "\n")
 
 	io.WriteString(w, "COMMON\n")
@@ -112,35 +111,34 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgent bool) {
 	io.WriteString(w, "  exit, quit             : Exit the console and stop the program\n")
 	io.WriteString(w, "\n")
 
-	if !isAgent {
-
-		if !isClient {
-			io.WriteString(w, "CONFIG\n")
-			io.WriteString(w, "======\n\n")
-			io.WriteString(w, "  client-config gen      :  Generate a config file for the C2 client\n")
-			io.WriteString(w, "\n")
-		}
-
-		io.WriteString(w, "OPERATOR\n")
-		io.WriteString(w, "========\n\n")
-		io.WriteString(w, "  operator whoami        : Print the current operator name\n")
-		io.WriteString(w, "  operator info <ID>     : Print a operator info with a specific ID\n")
-		io.WriteString(w, "  operator list          : List operators\n")
-		io.WriteString(w, "  operators              : Alias for 'operator list'\n")
+	if !isClient {
+		io.WriteString(w, "CONFIG\n")
+		io.WriteString(w, "======\n\n")
+		io.WriteString(w, "  client-config gen      :  Generate a config file for the C2 client\n")
 		io.WriteString(w, "\n")
+	}
 
-		io.WriteString(w, "LISTENER\n")
-		io.WriteString(w, "========\n\n")
-		io.WriteString(w, "  listener start         : Start a listener\n")
-		io.WriteString(w, "  listener start    <ID> : Start a listener with a specific ID\n")
-		io.WriteString(w, "  listener stop     <ID> : Stop a listener with a specific ID\n")
-		io.WriteString(w, "  listener delete   <ID> : Delete a listener with a specific ID\n")
-		io.WriteString(w, "  listener info     <ID> : Print a listener info with a specific ID\n")
-		io.WriteString(w, "  listener payloads <ID> : List/Delete payloads hosted on the listener\n")
-		io.WriteString(w, "  listener list          : List running listeners\n")
-		io.WriteString(w, "  listeners              : Alias for 'listener list'\n")
-		io.WriteString(w, "\n")
+	io.WriteString(w, "OPERATOR\n")
+	io.WriteString(w, "========\n\n")
+	io.WriteString(w, "  operator whoami        : Print the current operator name\n")
+	io.WriteString(w, "  operator info <ID>     : Print a operator info with a specific ID\n")
+	io.WriteString(w, "  operator list          : List operators\n")
+	io.WriteString(w, "  operators              : Alias for 'operator list'\n")
+	io.WriteString(w, "\n")
 
+	io.WriteString(w, "LISTENER\n")
+	io.WriteString(w, "========\n\n")
+	io.WriteString(w, "  listener start         : Start a listener\n")
+	io.WriteString(w, "  listener start    <ID> : Start a listener with a specific ID\n")
+	io.WriteString(w, "  listener stop     <ID> : Stop a listener with a specific ID\n")
+	io.WriteString(w, "  listener delete   <ID> : Delete a listener with a specific ID\n")
+	io.WriteString(w, "  listener info     <ID> : Print a listener info with a specific ID\n")
+	io.WriteString(w, "  listener payloads <ID> : List/Delete payloads hosted on the listener\n")
+	io.WriteString(w, "  listener list          : List running listeners\n")
+	io.WriteString(w, "  listeners              : Alias for 'listener list'\n")
+	io.WriteString(w, "\n")
+
+	if !isAgentMode {
 		io.WriteString(w, "PAYLOAD\n")
 		io.WriteString(w, "=======\n\n")
 		io.WriteString(w, "  payload gen            : Generate a payload\n")
@@ -157,7 +155,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgent bool) {
 	} else {
 		io.WriteString(w, "AGENT\n")
 		io.WriteString(w, "=====\n\n")
-		io.WriteString(w, " agent info             : Print the agent information\n")
+		io.WriteString(w, "  agent info             : Print the agent information\n")
 		io.WriteString(w, "\n")
 
 		io.WriteString(w, "TASK\n")
@@ -174,7 +172,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgent bool) {
 		io.WriteString(w, "  rmdir  <DIR>           : Remove a directory\n")
 		io.WriteString(w, "  screenshot             : Take a screenshot on target computer\n")
 		io.WriteString(w, "  shell  <CMD>           : Execute a shell command on target computer\n")
-		io.WriteString(w, "  sleep  <NUM>           : Set sleep time between requests from beacon\n")
+		io.WriteString(w, "  sleep  <NUM>           : Set sleep time (seconds) between requests from beacon\n")
 		io.WriteString(w, "  upload <SRC> <DEST>    : Upload a file to the target computer\n")
 		io.WriteString(w, "  whoami                 : Print the current username\n")
 		io.WriteString(w, "\n")
