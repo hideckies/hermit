@@ -23,11 +23,8 @@ struct MyFileData {
   DWORD dwDataSize;
 };
 
-std::string MyReadFileA(const std::string& sFile);
-std::wstring MyReadFileW(const std::wstring& wFile);
-std::vector<BYTE> MyReadFileToByteArray(const std::string& sFilePath);
-MyFileData MyReadFileExW(const std::wstring& wFile);
-BOOL MyWriteFileW(const std::wstring& wFile, LPCVOID lpData, DWORD dwDataSize);
-std::wstring MyDeleteFileW(const std::wstring& wFile);
+std::vector<char> ReadBytesFromFile(const std::wstring& wFilePath);
+BOOL MyWriteFile(const std::wstring& wFile, LPCVOID lpData, DWORD dwDataSize);
+std::wstring MyDeleteFile(const std::wstring& wFile);
 
 #endif // HERMIT_FS_HPP

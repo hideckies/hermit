@@ -211,6 +211,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
 				return
 			}
+			content = "The sleep time has been changed."
 		case strings.HasPrefix(task, "upload "):
 			uploadPath := string(data)
 			content = fmt.Sprintf("Uploaded at %s", uploadPath)
@@ -483,6 +484,9 @@ func httpsRoutes(
 	}
 	for _, r := range fakeRoutes["/upload"] {
 		router.POST(r, handleUpload(serverState.DB))
+	}
+	for _, r := range fakeRoutes["/stager/download"] {
+		router.POST(r, handleStagerDownload(lis))
 	}
 }
 

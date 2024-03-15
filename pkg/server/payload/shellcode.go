@@ -154,9 +154,9 @@ func (s *Shellcode) Generate(serverState *state.ServerState) (data []byte, outFi
 
 		// If msfvenom, ignore the command output.
 		_, err = meta.ExecCommand("msfvenom", msfArgs...)
-		if err != nil {
-			return nil, "", fmt.Errorf("ShellcodeGenerationError: %s", err)
-		}
+		// if err != nil {
+		// 	return nil, "", fmt.Errorf("ShellcodeGenerationError: %s", err)
+		// }
 	}
 
 	data, err = os.ReadFile(outFile)

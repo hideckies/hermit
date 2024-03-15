@@ -40,9 +40,9 @@ service HermitRPC {
   rpc AgentTaskList (commonpb.Empty) returns (commonpb.Message) {}
 
   // TASK
-  rpc TaskSet (commonpb.Message) returns (commonpb.Message) {}
-  rpc TaskClean (commonpb.Empty) returns (commonpb.Message) {}
-  rpc TaskList (commonpb.Empty) returns (commonpb.Message) {}
+  rpc TaskSetByAgentName (Task) returns (commonpb.Message) {}
+  rpc TaskCleanByAgentName (Task) returns (commonpb.Message) {}
+  rpc TaskListByAgentName (Task) returns (commonpb.Message) {}
 
   // LOOT
   rpc LootGetAll (commonpb.Empty) returns (commonpb.Message) {}
@@ -123,4 +123,9 @@ message Agent {
   int64 sleep = 9;
   int64 jitter = 10;
   int64 killDate = 11;
+}
+
+message Task {
+  string task = 1;
+  string agentName = 2;
 }

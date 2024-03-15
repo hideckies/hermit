@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <winhttp.h>
+#include "common.hpp"
 #include "inject.hpp"
 #include "winhttp.hpp"
 #include "winsystem.hpp"

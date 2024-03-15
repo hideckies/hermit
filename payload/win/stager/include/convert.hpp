@@ -3,14 +3,16 @@
 
 #include <windows.h>
 #include <string>
+#include <vector>
+
+// vector<char> -> string
+std::string VecCharToString(std::vector<char> chars);
+// wstring -> string (UTF8)
+std::string UTF8Encode(const std::wstring& wstr);
+// string (UTF8) -> wstring
+std::wstring UTF8Decode(const std::string& str);
 
 // LPCWSTR -> string
 std::string ConvertLPCWSTRToString(LPCWSTR lpcwStr);
-
-// string -> wstring
-std::wstring ConvertStringToWstring(const std::string& text);
-
-// wstring -> string
-std::string ConvertWstringToString(const std::wstring& wText);
 
 #endif // HERMIT_CONVERT_HPP

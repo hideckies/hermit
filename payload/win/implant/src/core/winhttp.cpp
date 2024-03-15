@@ -277,7 +277,7 @@ BOOL CheckIn(
 	LPCWSTR lpPath,
 	const std::wstring& wInfoJson
 ) {
-	std::string sInfoJson = ConvertWstringToString(wInfoJson.c_str());
+	std::string sInfoJson = UTF8Encode(wInfoJson);
 
 	WinHttpResponse resp = SendRequest(
 		hConnect,
@@ -304,8 +304,8 @@ BOOL DownloadFile(
 	const std::wstring& wSrc,
 	const std::wstring& wDest
 ) {
-	std::string sSrc = ConvertWstringToString(wSrc);
-	std::string sDest = ConvertWstringToString(wDest);
+	std::string sSrc = UTF8Encode(wSrc);
+	std::string sDest = UTF8Encode(wDest);
 
 	WinHttpResponse resp = SendRequest(
 		hConnect,

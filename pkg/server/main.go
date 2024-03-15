@@ -15,8 +15,8 @@ import (
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/server/console"
 	"github.com/hideckies/hermit/pkg/server/db"
+	"github.com/hideckies/hermit/pkg/server/handler"
 	"github.com/hideckies/hermit/pkg/server/job"
-	"github.com/hideckies/hermit/pkg/server/operator"
 	"github.com/hideckies/hermit/pkg/server/rpc"
 	"github.com/hideckies/hermit/pkg/server/state"
 )
@@ -67,8 +67,7 @@ func run(configPath string) error {
 	}
 
 	// Register admin to database
-	ope := operator.NewOperator(0, uuid.NewString(), "admin")
-	err = database.OperatorAdd(ope)
+	ope, err := handler.OperatorRegister(uuid.NewString(), "admin", database)
 	if err != nil {
 		return err
 	}

@@ -1,5 +1,74 @@
 #include "convert.hpp"
 
+std::string VecCharToString(std::vector<char> chars)
+{
+    std::string s(chars.begin(), chars.end());
+    return s;
+}
+
+std::string UTF8Encode(const std::wstring& wstr)
+{
+    if( wstr.empty() ) {
+        return std::string();
+    }
+
+    int size_needed = WideCharToMultiByte(
+        CP_UTF8,
+        0,
+        &wstr[0],
+        (int)wstr.size(),
+        NULL,
+        0,
+        NULL,
+        NULL
+    );
+
+    std::string strTo( size_needed, 0 );
+
+    WideCharToMultiByte(
+        CP_UTF8,
+        0,
+        &wstr[0],
+        (int)wstr.size(),
+        &strTo[0],
+        size_needed,
+        NULL,
+        NULL
+    );
+
+    return strTo;
+}
+
+std::wstring UTF8Decode(const std::string& str)
+{
+    if( str.empty() ) 
+    {
+        return std::wstring();
+    }
+
+    int size_needed = MultiByteToWideChar(
+        CP_UTF8,
+        0,
+        &str[0],
+        (int)str.size(),
+        NULL,
+        0
+    );
+
+    std::wstring wstrTo(size_needed, 0);
+
+    MultiByteToWideChar(
+        CP_UTF8,
+        0,
+        &str[0],
+        (int)str.size(),
+        &wstrTo[0],
+        size_needed
+    );
+
+    return wstrTo;
+}
+
 // LPCWSTR (UTF-16) -> string (UTF-8)
 std::string ConvertLPCWSTRToString(LPCWSTR lpcwStr)
 {
@@ -8,32 +77,3 @@ std::string ConvertLPCWSTRToString(LPCWSTR lpcwStr)
     WideCharToMultiByte(CP_UTF8, 0, lpcwStr, -1, &strData[0], strLength, NULL, NULL);
     return strData;
 }
-
-// string -> wstring
-std::wstring ConvertStringToWstring(const std::string& text)
-{
-    std::wstring wText;
-    
-    wchar_t* wcs = new wchar_t[text.length() + 1];
-    mbstowcs(wcs, text.c_str(), text.length() + 1);
-
-    wText = wcs;
-
-    delete [] wcs;
-
-    return wText;
-}
-
-// wstring -> string
-std::string ConvertWstringToString(const std::wstring& wText)
-{
-    std::string text;
-
-    char* mbs = new char[wText.length() * MB_CUR_MAX + 1];
-    wcstombs(mbs, wText.c_str(), wText.length() * MB_CUR_MAX + 1);
-    text = mbs;
-    delete [] mbs;
-
-    return text;
-}
-

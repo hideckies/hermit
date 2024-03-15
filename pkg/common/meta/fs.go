@@ -49,6 +49,10 @@ func MakeAppDirs(isClient bool) error {
 		if err := os.MkdirAll(clientLootDir, perm); err != nil {
 			return err
 		}
+		clientPayloadsDir := fmt.Sprintf("%s/client/payloads", appDir)
+		if err := os.MkdirAll(clientPayloadsDir, perm); err != nil {
+			return err
+		}
 		clientTmpDir := fmt.Sprintf("%s/client/tmp", appDir)
 		if err := os.MkdirAll(clientTmpDir, perm); err != nil {
 			return err

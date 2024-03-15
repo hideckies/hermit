@@ -214,15 +214,16 @@ func RequestPayloadImplantGenerate(
 	imp *payload.Implant,
 ) ([]byte, error) {
 	r, err := c.PayloadImplantGenerate(ctx, &rpcpb.PayloadImplant{
-		Os:       imp.Os,
-		Arch:     imp.Arch,
-		Format:   imp.Format,
-		Lhost:    imp.Lhost,
-		Lport:    int32(imp.Lport),
-		Type:     imp.Type,
-		Sleep:    int64(imp.Sleep),
-		Jitter:   int64(imp.Jitter),
-		KillDate: int64(imp.KillDate),
+		Os:        imp.Os,
+		Arch:      imp.Arch,
+		Format:    imp.Format,
+		Lprotocol: imp.Lprotocol,
+		Lhost:     imp.Lhost,
+		Lport:     int32(imp.Lport),
+		Type:      imp.Type,
+		Sleep:     int64(imp.Sleep),
+		Jitter:    int64(imp.Jitter),
+		KillDate:  int64(imp.KillDate),
 	})
 	if err != nil {
 		return []byte{}, err
@@ -334,34 +335,37 @@ func RequestAgentGetAll(
 	return agents, nil
 }
 
-func RequestTaskSet(
+func RequestTaskSetByAgentName(
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
 	task string,
+	agentName string,
 ) error {
-	_, err := c.TaskSet(ctx, &commonpb.Message{Text: task})
+	_, err := c.TaskSetByAgentName(ctx, &rpcpb.Task{Task: task, AgentName: agentName})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func RequestTaskClean(
+func RequestTaskCleanByAgentName(
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
+	agentName string,
 ) error {
-	_, err := c.TaskClean(ctx, &commonpb.Empty{})
+	_, err := c.TaskCleanByAgentName(ctx, &rpcpb.Task{AgentName: agentName})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func RequestTaskList(
+func RequestTaskListByAgentName(
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
+	agentName string,
 ) (string, error) {
-	r, err := c.TaskList(ctx, &commonpb.Empty{})
+	r, err := c.TaskListByAgentName(ctx, &rpcpb.Task{AgentName: agentName})
 	if err != nil {
 		return "", err
 	}

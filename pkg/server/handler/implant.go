@@ -1,6 +1,5 @@
 package handler
 
-func HandleImplantGenerate() error {
-
+func ImplantGenerate() error {
 	return nil
 }

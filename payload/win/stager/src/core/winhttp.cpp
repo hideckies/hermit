@@ -232,8 +232,7 @@ BOOL DownloadFile(
 	const std::wstring& wSrc,
 	const std::wstring& wDest
 ) {
-	std::string sSrc = ConvertWstringToString(wSrc);
-	// std::string sDest = ConvertWstringToString(wDest);
+	std::string sSrc = UTF8Encode(wSrc);
 
 	WinHttpResponse resp = SendRequest(
 		hConnect,

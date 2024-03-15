@@ -3,10 +3,12 @@ package stdin
 import (
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/hideckies/hermit/pkg/common/stdout"
 )
 
 var completer = readline.NewPrefixCompleter(
@@ -68,6 +70,7 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("keylog"),
 	// readline.PcItem("kill"), Kill a process
 	readline.PcItem("ls"),
+	// readline.PcItem("migrate"), Get into another process
 	readline.PcItem("mkdir"),
 	// readline.PcItem("mv"),
 	// readline.PcItem("net"),
@@ -76,6 +79,7 @@ var completer = readline.NewPrefixCompleter(
 	// readline.PcItem("powershell"),
 	// readline.PcItem("ps"),
 	readline.PcItem("pwd"),
+	// readline.PcItem("reg"), Registry key
 	readline.PcItem("rm"),
 	readline.PcItem("rmdir"),
 	readline.PcItem("screenshot"),
@@ -101,81 +105,88 @@ var completer = readline.NewPrefixCompleter(
 func ConsoleUsage(w io.Writer, isClient bool, isAgent bool) {
 	io.WriteString(w, "\n")
 
-	io.WriteString(w, "USAGE\n\n")
-
-	io.WriteString(w, "  COMMON\n")
-	io.WriteString(w, "    help, ?                : Print the usage\n")
-	io.WriteString(w, "    version                : Print the version of Hermit\n")
-	io.WriteString(w, "    exit, quit             : Exit the console and stop the program\n")
+	io.WriteString(w, "COMMON\n")
+	io.WriteString(w, "======\n\n")
+	io.WriteString(w, "  help, ?                : Print the usage\n")
+	io.WriteString(w, "  version                : Print the version of Hermit\n")
+	io.WriteString(w, "  exit, quit             : Exit the console and stop the program\n")
 	io.WriteString(w, "\n")
 
 	if !isAgent {
 
 		if !isClient {
-			io.WriteString(w, "  CONFIG\n")
-			io.WriteString(w, "    client-config gen      :  Generate a config file for the C2 client\n")
+			io.WriteString(w, "CONFIG\n")
+			io.WriteString(w, "======\n\n")
+			io.WriteString(w, "  client-config gen      :  Generate a config file for the C2 client\n")
 			io.WriteString(w, "\n")
 		}
 
-		io.WriteString(w, "  OPERATOR\n")
-		io.WriteString(w, "    operator whoami        : Print the current operator name\n")
-		io.WriteString(w, "    operator info <ID>     : Print a operator info with a specific ID\n")
-		io.WriteString(w, "    operator list          : List operators\n")
-		io.WriteString(w, "    operators              : Alias for 'operator list'\n")
+		io.WriteString(w, "OPERATOR\n")
+		io.WriteString(w, "========\n\n")
+		io.WriteString(w, "  operator whoami        : Print the current operator name\n")
+		io.WriteString(w, "  operator info <ID>     : Print a operator info with a specific ID\n")
+		io.WriteString(w, "  operator list          : List operators\n")
+		io.WriteString(w, "  operators              : Alias for 'operator list'\n")
 		io.WriteString(w, "\n")
 
-		io.WriteString(w, "  LISTENER\n")
-		io.WriteString(w, "    listener start         : Start a listener\n")
-		io.WriteString(w, "    listener start    <ID> : Start a listener with a specific ID\n")
-		io.WriteString(w, "    listener stop     <ID> : Stop a listener with a specific ID\n")
-		io.WriteString(w, "    listener delete   <ID> : Delete a listener with a specific ID\n")
-		io.WriteString(w, "    listener info     <ID> : Print a listener info with a specific ID\n")
-		io.WriteString(w, "    listener payloads <ID> : List/Delete payloads hosted on the listener\n")
-		io.WriteString(w, "    listener list          : List running listeners\n")
-		io.WriteString(w, "    listeners              : Alias for 'listener list'\n")
+		io.WriteString(w, "LISTENER\n")
+		io.WriteString(w, "========\n\n")
+		io.WriteString(w, "  listener start         : Start a listener\n")
+		io.WriteString(w, "  listener start    <ID> : Start a listener with a specific ID\n")
+		io.WriteString(w, "  listener stop     <ID> : Stop a listener with a specific ID\n")
+		io.WriteString(w, "  listener delete   <ID> : Delete a listener with a specific ID\n")
+		io.WriteString(w, "  listener info     <ID> : Print a listener info with a specific ID\n")
+		io.WriteString(w, "  listener payloads <ID> : List/Delete payloads hosted on the listener\n")
+		io.WriteString(w, "  listener list          : List running listeners\n")
+		io.WriteString(w, "  listeners              : Alias for 'listener list'\n")
 		io.WriteString(w, "\n")
 
-		io.WriteString(w, "  PAYLOAD\n")
-		io.WriteString(w, "    payload gen            : Generate a payload\n")
+		io.WriteString(w, "PAYLOAD\n")
+		io.WriteString(w, "=======\n\n")
+		io.WriteString(w, "  payload gen            : Generate a payload\n")
 		io.WriteString(w, "\n")
 
-		io.WriteString(w, "  AGENT\n")
-		io.WriteString(w, "    agent use    <ID>      : Switch to agent mode with a specific ID\n")
-		io.WriteString(w, "    agent delete <ID>      : Delete an agent with a specific ID\n")
-		io.WriteString(w, "    agent info   <ID>      : Print an agent info with a specific ID\n")
-		io.WriteString(w, "    agent list             : List agents\n")
-		io.WriteString(w, "    agents                 : List agents. Alias for 'agent list'\n")
+		io.WriteString(w, "AGENT\n")
+		io.WriteString(w, "=====\n\n")
+		io.WriteString(w, "  agent use    <ID>      : Switch to agent mode with a specific ID\n")
+		io.WriteString(w, "  agent delete <ID>      : Delete an agent with a specific ID\n")
+		io.WriteString(w, "  agent info   <ID>      : Print an agent info with a specific ID\n")
+		io.WriteString(w, "  agent list             : List agents\n")
+		io.WriteString(w, "  agents                 : List agents. Alias for 'agent list'\n")
 		io.WriteString(w, "\n")
 	} else {
-		io.WriteString(w, "  AGENT\n")
-		io.WriteString(w, "    agent info             : Print the agent information\n")
+		io.WriteString(w, "AGENT\n")
+		io.WriteString(w, "=====\n\n")
+		io.WriteString(w, " agent info             : Print the agent information\n")
 		io.WriteString(w, "\n")
 
-		io.WriteString(w, "  TASK\n")
-		io.WriteString(w, "    cat <FILE>             : Print the contents of a file\n")
-		io.WriteString(w, "    cd  <DIR>              : Change the working directory\n")
-		io.WriteString(w, "    cp  <SRC> <DEST>       : Copy a file\n")
-		io.WriteString(w, "    download <SRC> <DEST>  : Download a file from the target computer\n")
-		io.WriteString(w, "    keylog <NUM>           : Keylogging for N seconds\n")
-		io.WriteString(w, "    ls     <DIR>           : List files in a directory\n")
-		io.WriteString(w, "    mkdir  <DIR>           : Create a new directory\n")
-		io.WriteString(w, "    pwd                    : Print the current working directory\n")
-		io.WriteString(w, "    rm     <FILE>          : Remove a file\n")
-		io.WriteString(w, "    rmdir  <DIR>           : Remove a directory\n")
-		io.WriteString(w, "    screenshot             : Take a screenshot on target computer\n")
-		io.WriteString(w, "    shell  <CMD>           : Execute a shell command on target computer\n")
-		io.WriteString(w, "    sleep  <NUM>           : Set sleep time between requests from beacon\n")
-		io.WriteString(w, "    upload <SRC> <DEST>    : Upload a file to the target computer\n")
-		io.WriteString(w, "    whoami                 : Print the current username\n")
+		io.WriteString(w, "TASK\n")
+		io.WriteString(w, "====\n\n")
+		io.WriteString(w, "  cat <FILE>             : Print the contents of a file\n")
+		io.WriteString(w, "  cd  <DIR>              : Change the working directory\n")
+		io.WriteString(w, "  cp  <SRC> <DEST>       : Copy a file\n")
+		io.WriteString(w, "  download <SRC> <DEST>  : Download a file from the target computer\n")
+		io.WriteString(w, "  keylog <NUM>           : Keylogging for N seconds\n")
+		io.WriteString(w, "  ls     <DIR>           : List files in a directory\n")
+		io.WriteString(w, "  mkdir  <DIR>           : Create a new directory\n")
+		io.WriteString(w, "  pwd                    : Print the current working directory\n")
+		io.WriteString(w, "  rm     <FILE>          : Remove a file\n")
+		io.WriteString(w, "  rmdir  <DIR>           : Remove a directory\n")
+		io.WriteString(w, "  screenshot             : Take a screenshot on target computer\n")
+		io.WriteString(w, "  shell  <CMD>           : Execute a shell command on target computer\n")
+		io.WriteString(w, "  sleep  <NUM>           : Set sleep time between requests from beacon\n")
+		io.WriteString(w, "  upload <SRC> <DEST>    : Upload a file to the target computer\n")
+		io.WriteString(w, "  whoami                 : Print the current username\n")
 		io.WriteString(w, "\n")
-		io.WriteString(w, "    task clean             : Remove all tasks from waitlist\n")
-		io.WriteString(w, "    task list              : List tasks waiting for the results\n")
-		io.WriteString(w, "    tasks                  : Alias for 'task list'\n")
+		io.WriteString(w, "  task clean             : Remove all tasks from waitlist\n")
+		io.WriteString(w, "  task list              : List tasks waiting for the results\n")
+		io.WriteString(w, "  tasks                  : Alias for 'task list'\n")
 		io.WriteString(w, "\n")
 
-		io.WriteString(w, "  LOOT\n")
-		io.WriteString(w, "    loot                   : List all loot gained from target computer\n")
-		io.WriteString(w, "    loot clean             : Remove all loot\n")
+		io.WriteString(w, "LOOT\n")
+		io.WriteString(w, "====\n\n")
+		io.WriteString(w, "  loot                   : List all loot gained from target computer\n")
+		io.WriteString(w, "  loot clean             : Remove all loot\n")
 		io.WriteString(w, "\n")
 	}
 }
@@ -189,7 +200,7 @@ func filterInput(r rune) (rune, bool) {
 	return r, true
 }
 
-func NewReadlineInstance(prompt string, historyFile string) (*readline.Instance, error) {
+func newReadlineInstance(prompt string, historyFile string) (*readline.Instance, error) {
 	return readline.NewEx(&readline.Config{
 		Prompt:          prompt,
 		HistoryFile:     historyFile,
@@ -200,6 +211,24 @@ func NewReadlineInstance(prompt string, historyFile string) (*readline.Instance,
 		HistorySearchFold:   true,
 		FuncFilterInputRune: filterInput,
 	})
+}
+
+func InitReadline(isClient bool, historyFile string) (*readline.Instance, error) {
+	defaultPrompt := MakePrompt("", "")
+	if isClient {
+		defaultPrompt = MakePrompt("client", "")
+	}
+
+	ri, err := newReadlineInstance(defaultPrompt, historyFile)
+	if err != nil {
+		stdout.LogFailed(fmt.Sprint(err))
+		os.Exit(1)
+	}
+
+	stdout.LogInfo("The console starts.")
+	stdout.LogInfo("Run `help` or `?` for the usage.\n\n")
+
+	return ri, nil
 }
 
 func ParseArgUint(command string, argStartIndex int) (uint, error) {

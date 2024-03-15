@@ -79,7 +79,7 @@ VOID SaveKey(DWORD dwKey)
         char cKey2 = char(cKey);
 
         std::string sKey{cKey2};
-        result += ConvertStringToWstring(sKey);
+        result += UTF8Decode(sKey);
     }
 }
 

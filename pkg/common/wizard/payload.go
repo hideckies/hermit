@@ -56,7 +56,7 @@ func wizardPayloadBase(
 			// "linux/x64/bin",
 			// "linux/x86/bin",
 			"windows/x64/bin",
-			"windows/x86/bin",
+			// "windows/x86/bin",
 		}
 	} else {
 		items = []string{

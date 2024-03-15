@@ -99,7 +99,7 @@ BOOL BmpToPng()
 
 BOOL DeleteBmp()
 {
-    MyDeleteFileW(wFilenameBmp);
+    MyDeleteFile(wFilenameBmp);
     return TRUE;
 }
 

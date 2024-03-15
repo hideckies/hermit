@@ -11,7 +11,7 @@ func MakePrompt(prefix string, suffix string) string {
 		prefix = "[" + color.HiCyanString(prefix) + "] "
 	}
 	if suffix != "" {
-		suffix = " [" + color.HiRedString(suffix) + "]"
+		suffix = " [" + color.HiCyanString(suffix) + "]"
 	}
 	return fmt.Sprintf("%s > ", fmt.Sprintf(
 		"%s%s%s",

@@ -66,8 +66,8 @@ std::wstring GetInitialInfo()
 	{
 		char szHostname[256] = "";
 		gethostname(szHostname, 256);
-		std::string sHostname = std::string(szHostname, 256);
-		wHostname = ConvertStringToWstring(sHostname);
+		std::string sHostname(szHostname);
+		wHostname = UTF8Decode(sHostname);
 	}
 
 	std::wstring wJson = L"{";

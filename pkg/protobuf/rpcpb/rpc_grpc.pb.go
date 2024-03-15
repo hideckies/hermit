@@ -47,9 +47,9 @@ type HermitRPCClient interface {
 	AgentGetAll(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (HermitRPC_AgentGetAllClient, error)
 	AgentTaskList(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
 	// TASK
-	TaskSet(ctx context.Context, in *commonpb.Message, opts ...grpc.CallOption) (*commonpb.Message, error)
-	TaskClean(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
-	TaskList(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
+	TaskSetByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error)
+	TaskCleanByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error)
+	TaskListByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error)
 	// LOOT
 	LootGetAll(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
 	LootClean(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
@@ -294,27 +294,27 @@ func (c *hermitRPCClient) AgentTaskList(ctx context.Context, in *commonpb.Empty,
 	return out, nil
 }
 
-func (c *hermitRPCClient) TaskSet(ctx context.Context, in *commonpb.Message, opts ...grpc.CallOption) (*commonpb.Message, error) {
+func (c *hermitRPCClient) TaskSetByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error) {
 	out := new(commonpb.Message)
-	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/TaskSet", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/TaskSetByAgentName", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hermitRPCClient) TaskClean(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error) {
+func (c *hermitRPCClient) TaskCleanByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error) {
 	out := new(commonpb.Message)
-	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/TaskClean", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/TaskCleanByAgentName", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hermitRPCClient) TaskList(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error) {
+func (c *hermitRPCClient) TaskListByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error) {
 	out := new(commonpb.Message)
-	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/TaskList", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/TaskListByAgentName", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -367,9 +367,9 @@ type HermitRPCServer interface {
 	AgentGetAll(*commonpb.Empty, HermitRPC_AgentGetAllServer) error
 	AgentTaskList(context.Context, *commonpb.Empty) (*commonpb.Message, error)
 	// TASK
-	TaskSet(context.Context, *commonpb.Message) (*commonpb.Message, error)
-	TaskClean(context.Context, *commonpb.Empty) (*commonpb.Message, error)
-	TaskList(context.Context, *commonpb.Empty) (*commonpb.Message, error)
+	TaskSetByAgentName(context.Context, *Task) (*commonpb.Message, error)
+	TaskCleanByAgentName(context.Context, *Task) (*commonpb.Message, error)
+	TaskListByAgentName(context.Context, *Task) (*commonpb.Message, error)
 	// LOOT
 	LootGetAll(context.Context, *commonpb.Empty) (*commonpb.Message, error)
 	LootClean(context.Context, *commonpb.Empty) (*commonpb.Message, error)
@@ -434,14 +434,14 @@ func (UnimplementedHermitRPCServer) AgentGetAll(*commonpb.Empty, HermitRPC_Agent
 func (UnimplementedHermitRPCServer) AgentTaskList(context.Context, *commonpb.Empty) (*commonpb.Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AgentTaskList not implemented")
 }
-func (UnimplementedHermitRPCServer) TaskSet(context.Context, *commonpb.Message) (*commonpb.Message, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TaskSet not implemented")
+func (UnimplementedHermitRPCServer) TaskSetByAgentName(context.Context, *Task) (*commonpb.Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TaskSetByAgentName not implemented")
 }
-func (UnimplementedHermitRPCServer) TaskClean(context.Context, *commonpb.Empty) (*commonpb.Message, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TaskClean not implemented")
+func (UnimplementedHermitRPCServer) TaskCleanByAgentName(context.Context, *Task) (*commonpb.Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TaskCleanByAgentName not implemented")
 }
-func (UnimplementedHermitRPCServer) TaskList(context.Context, *commonpb.Empty) (*commonpb.Message, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TaskList not implemented")
+func (UnimplementedHermitRPCServer) TaskListByAgentName(context.Context, *Task) (*commonpb.Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TaskListByAgentName not implemented")
 }
 func (UnimplementedHermitRPCServer) LootGetAll(context.Context, *commonpb.Empty) (*commonpb.Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LootGetAll not implemented")
@@ -795,56 +795,56 @@ func _HermitRPC_AgentTaskList_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HermitRPC_TaskSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(commonpb.Message)
+func _HermitRPC_TaskSetByAgentName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Task)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HermitRPCServer).TaskSet(ctx, in)
+		return srv.(HermitRPCServer).TaskSetByAgentName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rpcpb.HermitRPC/TaskSet",
+		FullMethod: "/rpcpb.HermitRPC/TaskSetByAgentName",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermitRPCServer).TaskSet(ctx, req.(*commonpb.Message))
+		return srv.(HermitRPCServer).TaskSetByAgentName(ctx, req.(*Task))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HermitRPC_TaskClean_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(commonpb.Empty)
+func _HermitRPC_TaskCleanByAgentName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Task)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HermitRPCServer).TaskClean(ctx, in)
+		return srv.(HermitRPCServer).TaskCleanByAgentName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rpcpb.HermitRPC/TaskClean",
+		FullMethod: "/rpcpb.HermitRPC/TaskCleanByAgentName",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermitRPCServer).TaskClean(ctx, req.(*commonpb.Empty))
+		return srv.(HermitRPCServer).TaskCleanByAgentName(ctx, req.(*Task))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HermitRPC_TaskList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(commonpb.Empty)
+func _HermitRPC_TaskListByAgentName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Task)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HermitRPCServer).TaskList(ctx, in)
+		return srv.(HermitRPCServer).TaskListByAgentName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rpcpb.HermitRPC/TaskList",
+		FullMethod: "/rpcpb.HermitRPC/TaskListByAgentName",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermitRPCServer).TaskList(ctx, req.(*commonpb.Empty))
+		return srv.(HermitRPCServer).TaskListByAgentName(ctx, req.(*Task))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -953,16 +953,16 @@ var HermitRPC_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HermitRPC_AgentTaskList_Handler,
 		},
 		{
-			MethodName: "TaskSet",
-			Handler:    _HermitRPC_TaskSet_Handler,
+			MethodName: "TaskSetByAgentName",
+			Handler:    _HermitRPC_TaskSetByAgentName_Handler,
 		},
 		{
-			MethodName: "TaskClean",
-			Handler:    _HermitRPC_TaskClean_Handler,
+			MethodName: "TaskCleanByAgentName",
+			Handler:    _HermitRPC_TaskCleanByAgentName_Handler,
 		},
 		{
-			MethodName: "TaskList",
-			Handler:    _HermitRPC_TaskList_Handler,
+			MethodName: "TaskListByAgentName",
+			Handler:    _HermitRPC_TaskListByAgentName_Handler,
 		},
 		{
 			MethodName: "LootGetAll",

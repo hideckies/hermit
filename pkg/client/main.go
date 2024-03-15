@@ -80,6 +80,7 @@ func run(configPath string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Add the operator to the database.
 	res, err := rpc.RequestOperatorRegister(c, ctx, *clientConfig)
 	if err != nil {
 		return err

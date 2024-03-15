@@ -7,13 +7,11 @@ import (
 	"strings"
 
 	"github.com/hideckies/hermit/pkg/common/meta"
-	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/protobuf/commonpb"
 	"github.com/hideckies/hermit/pkg/protobuf/rpcpb"
 	"github.com/hideckies/hermit/pkg/server/handler"
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/loot"
-	"github.com/hideckies/hermit/pkg/server/operator"
 	"github.com/hideckies/hermit/pkg/server/payload"
 	"github.com/hideckies/hermit/pkg/server/state"
 	"github.com/hideckies/hermit/pkg/server/task"
@@ -36,8 +34,7 @@ func (s *HermitRPCServer) OperatorRegister(
 	ctx context.Context,
 	ope *rpcpb.Operator,
 ) (*commonpb.Message, error) {
-	newOpe := operator.NewOperator(0, ope.Uuid, ope.Name)
-	err := s.serverState.DB.OperatorAdd(newOpe)
+	_, err := handler.OperatorRegister(ope.Uuid, ope.Name, s.serverState.DB)
 	if err != nil {
 		return nil, err
 	}
@@ -357,40 +354,38 @@ func (s *HermitRPCServer) AgentGetAll(
 	return nil
 }
 
-func (s *HermitRPCServer) TaskSet(
+func (s *HermitRPCServer) TaskSetByAgentName(
 	ctx context.Context,
-	msg *commonpb.Message,
+	_task *rpcpb.Task,
 ) (*commonpb.Message, error) {
-	t := msg.GetText()
-	err := task.SetTask(t, s.serverState.AgentMode.Name)
+	err := task.SetTask(_task.GetTask(), _task.GetAgentName())
 	if err != nil {
 		return nil, err
 	}
 	return &commonpb.Message{Text: "Task set successfully."}, nil
 }
 
-func (s *HermitRPCServer) TaskClean(
+func (s *HermitRPCServer) TaskCleanByAgentName(
 	ctx context.Context,
-	msg *commonpb.Empty,
+	_task *rpcpb.Task,
 ) (*commonpb.Message, error) {
-	err := meta.DeleteAllTasks(s.serverState.AgentMode.Name, false)
+	err := meta.DeleteAllTasks(_task.GetAgentName(), false)
 	if err != nil {
 		return nil, err
 	}
 	return &commonpb.Message{Text: "All tasks deleted successfully."}, nil
 }
 
-func (s *HermitRPCServer) TaskList(
+func (s *HermitRPCServer) TaskListByAgentName(
 	ctx context.Context,
-	empty *commonpb.Empty,
+	_task *rpcpb.Task,
 ) (*commonpb.Message, error) {
-	tasks, err := meta.ReadTasks(s.serverState.AgentMode.Name, false)
+	tasks, err := meta.ReadTasks(_task.GetAgentName(), false)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(tasks) == 0 {
-		stdout.LogWarn("Tasks not set.")
 		return nil, fmt.Errorf("task not set")
 	}
 	return &commonpb.Message{Text: strings.Join(tasks, "\n")}, nil
@@ -402,7 +397,6 @@ func (s *HermitRPCServer) LootGetAll(
 ) (*commonpb.Message, error) {
 	allLoot, err := loot.GetAllLoot(s.serverState.AgentMode.Name)
 	if err != nil {
-		stdout.LogFailed(fmt.Sprint(err))
 		return nil, err
 	}
 	return &commonpb.Message{Text: allLoot}, nil
