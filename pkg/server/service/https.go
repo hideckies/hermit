@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/hideckies/hermit/pkg/common/certs"
+	"github.com/hideckies/hermit/pkg/common/meta"
 	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/common/utils"
@@ -26,12 +27,14 @@ import (
 var upgrader = websocket.Upgrader{}
 
 type CheckInData struct {
-	OS       string `json:"os"`
-	Arch     string `json:"arch"`
-	Hostname string `json:"hostname"`
-	Sleep    uint   `json:"sleep"`
-	Jitter   uint   `json:"jitter"`
-	KillDate uint   `json:"killDate"`
+	OS          string `json:"os"`
+	Arch        string `json:"arch"`
+	Hostname    string `json:"hostname"`
+	ListenerURL string `json:"listenerURL"`
+	ImplantType string `json:"implantType"`
+	Sleep       uint   `json:"sleep"`
+	Jitter      uint   `json:"jitter"`
+	KillDate    uint   `json:"killDate"`
 }
 
 type StagerData struct {
@@ -56,6 +59,9 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
 			return
 		}
+
+		// Get check-in date
+		checkInDate := meta.GetCurrentDateTime()
 
 		// Check if the agent already exists on the database.
 		ags, err := database.AgentGetAll()
@@ -82,7 +88,9 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 				checkInData.OS,
 				checkInData.Arch,
 				checkInData.Hostname,
-				lis.Name,
+				checkInData.ListenerURL,
+				checkInData.ImplantType,
+				checkInDate,
 				checkInData.Sleep,
 				checkInData.Jitter,
 				checkInData.KillDate,
@@ -92,8 +100,9 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 				return
 			}
 		} else {
-			// Update some items of the agent on the database
+			// Update the agent info
 			targetAgent.Hostname = checkInData.Hostname
+			targetAgent.CheckInDate = checkInDate
 			if err := database.AgentUpdate(targetAgent); err != nil {
 				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
 				return

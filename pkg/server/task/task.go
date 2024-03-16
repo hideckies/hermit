@@ -8,9 +8,10 @@ import (
 )
 
 func SetTask(task string, agentName string) error {
-	// Adjust task arguments
+	// Adjust arguments
 	if strings.HasPrefix(task, "cp ") ||
 		strings.HasPrefix(task, "download ") ||
+		strings.HasPrefix(task, "mv ") ||
 		strings.HasPrefix(task, "upload ") {
 
 		taskSplit := strings.Split(task, " ")

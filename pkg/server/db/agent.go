@@ -22,9 +22,9 @@ func (d *Database) AgentAdd(ag *agent.Agent) error {
 
 	stmt, err := tx.Prepare(`
 	INSERT INTO agent (
-		uuid, name, ip, os, arch, hostname, listener, sleep, jitter, killdate
+		uuid, name, ip, os, arch, hostname, listenerURL, implantType, checkin, sleep, jitter, killdate
 	) VALUES (
-		?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 	)
 	`)
 	if err != nil {
@@ -39,7 +39,9 @@ func (d *Database) AgentAdd(ag *agent.Agent) error {
 		ag.OS,
 		ag.Arch,
 		ag.Hostname,
-		ag.ListenerName,
+		ag.ListenerURL,
+		ag.ImplantType,
+		ag.CheckInDate,
 		int(ag.Sleep),
 		int(ag.Jitter),
 		int(ag.KillDate),
@@ -90,7 +92,7 @@ func (d *Database) AgentUpdate(ag *agent.Agent) error {
 
 	stmt, err := d.DB.Prepare(`
 	UPDATE agent
-	SET name = ?, ip = ?, os = ?, arch = ?, hostname = ?, listener = ?, sleep = ?, jitter = ?, killdate = ?
+	SET name = ?, ip = ?, os = ?, arch = ?, hostname = ?, listenerURL = ?, implantType = ?, checkin = ?, sleep = ?, jitter = ?, killdate = ?
 	WHERE uuid = ?
 	`)
 	if err != nil {
@@ -104,7 +106,9 @@ func (d *Database) AgentUpdate(ag *agent.Agent) error {
 		ag.OS,
 		ag.Arch,
 		ag.Hostname,
-		ag.ListenerName,
+		ag.ListenerURL,
+		ag.ImplantType,
+		ag.CheckInDate,
 		int(ag.Sleep),
 		int(ag.Jitter),
 		int(ag.KillDate),
@@ -179,7 +183,7 @@ func (d *Database) AgentDeleteAll() error {
 
 func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 	stmt, err := d.DB.Prepare(`
-	SELECT id, uuid, name, ip, os, arch, hostname, listener, sleep, jitter, killdate
+	SELECT id, uuid, name, ip, os, arch, hostname, listenerURL, implantType, checkin, sleep, jitter, killdate
 	FROM agent WHERE id = ?
 	`)
 	if err != nil {
@@ -188,17 +192,19 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 	defer stmt.Close()
 
 	var (
-		id           int
-		uuid         string
-		name         string
-		ip           string
-		os           string
-		arch         string
-		hostname     string
-		listenerName string
-		sleep        int
-		jitter       int
-		killDate     int
+		id          int
+		uuid        string
+		name        string
+		ip          string
+		os          string
+		arch        string
+		hostname    string
+		listenerURL string
+		implantType string
+		checkIn     string
+		sleep       int
+		jitter      int
+		killDate    int
 	)
 	err = stmt.QueryRow(agentId).Scan(
 		&id,
@@ -208,7 +214,9 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		&os,
 		&arch,
 		&hostname,
-		&listenerName,
+		&listenerURL,
+		&implantType,
+		&checkIn,
 		&sleep,
 		&jitter,
 		&killDate,
@@ -224,7 +232,9 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		os,
 		arch,
 		hostname,
-		listenerName,
+		listenerURL,
+		implantType,
+		checkIn,
 		uint(sleep),
 		uint(jitter),
 		uint(killDate),
@@ -233,7 +243,7 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 
 func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 	stmt, err := d.DB.Prepare(`
-	SELECT id, uuid, name, ip, os, arch, hostname, listener, sleep, jitter, killdate
+	SELECT id, uuid, name, ip, os, arch, hostname, listenerURL, implantType, checkin, sleep, jitter, killdate
 	FROM agent WHERE uuid = ?
 	`)
 	if err != nil {
@@ -242,17 +252,19 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 	defer stmt.Close()
 
 	var (
-		id           int
-		uuid         string
-		name         string
-		ip           string
-		os           string
-		arch         string
-		hostname     string
-		listenerName string
-		sleep        int
-		jitter       int
-		killDate     int
+		id          int
+		uuid        string
+		name        string
+		ip          string
+		os          string
+		arch        string
+		hostname    string
+		listenerURL string
+		implantType string
+		checkIn     string
+		sleep       int
+		jitter      int
+		killDate    int
 	)
 	err = stmt.QueryRow(agentUuid).Scan(
 		&id,
@@ -262,7 +274,9 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		&os,
 		&arch,
 		&hostname,
-		&listenerName,
+		&listenerURL,
+		&implantType,
+		&checkIn,
 		&sleep,
 		&jitter,
 		&killDate,
@@ -278,7 +292,9 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		os,
 		arch,
 		hostname,
-		listenerName,
+		listenerURL,
+		implantType,
+		checkIn,
 		uint(sleep),
 		uint(jitter),
 		uint(killDate),
@@ -287,7 +303,7 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 
 func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 	rows, err := d.DB.Query(`
-	SELECT id, uuid, name, ip, os, arch, hostname, listener, sleep, jitter, killdate
+	SELECT id, uuid, name, ip, os, arch, hostname, listenerURL, implantType, checkin, sleep, jitter, killdate
 	FROM agent
 	`)
 	if err != nil {
@@ -299,17 +315,19 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 
 	for rows.Next() {
 		var (
-			id           int
-			uuid         string
-			name         string
-			ip           string
-			os           string
-			arch         string
-			hostname     string
-			listenerName string
-			sleep        int
-			jitter       int
-			killDate     int
+			id          int
+			uuid        string
+			name        string
+			ip          string
+			os          string
+			arch        string
+			hostname    string
+			listenerURL string
+			implantType string
+			checkIn     string
+			sleep       int
+			jitter      int
+			killDate    int
 		)
 		err = rows.Scan(
 			&id,
@@ -319,7 +337,9 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 			&os,
 			&arch,
 			&hostname,
-			&listenerName,
+			&listenerURL,
+			&implantType,
+			&checkIn,
 			&sleep,
 			&jitter,
 			&killDate,
@@ -336,7 +356,9 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 			os,
 			arch,
 			hostname,
-			listenerName,
+			listenerURL,
+			implantType,
+			checkIn,
 			uint(sleep),
 			uint(jitter),
 			uint(killDate),

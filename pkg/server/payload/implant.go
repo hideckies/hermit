@@ -130,6 +130,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			fmt.Sprintf("-DPAYLOAD_SLEEP=%s", fmt.Sprint(i.Sleep)),
 			fmt.Sprintf("-DPAYLOAD_JITTER=%s", fmt.Sprint(i.Jitter)),
 			fmt.Sprintf("-DPAYLOAD_KILLDATE=%s", fmt.Sprint(i.KillDate)),
+			fmt.Sprintf("-DLISTENER_PROTOCOL=\"%s\"", i.Lprotocol),
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", i.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(i.Lport)),
 			fmt.Sprintf("-DREQUEST_PATH_CHECKIN=\"%s\"", requestPathCheckIn),

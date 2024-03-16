@@ -60,7 +60,7 @@ func HandleOperatorInfoById(line string, argStartIdx int, serverState *state.Ser
 		return fmt.Errorf("operator not found: %v", err)
 	}
 
-	operator.PrintOperators([]*operator.Operator{op}, currentUuid)
+	operator.PrintOperatorDetails(op)
 	return nil
 }
 
@@ -183,7 +183,7 @@ func HandleListenerInfoById(line string, argStartIdx int, serverState *state.Ser
 		return fmt.Errorf("listener not found: %v", err)
 	}
 
-	listener.PrintListeners([]*listener.Listener{lis})
+	listener.PrintListenerDetails(lis)
 	return nil
 }
 
@@ -204,7 +204,7 @@ func HandleListenerPayloadsById(line string, argStartIdx int, serverState *state
 		return err
 	}
 	if len(payloads) == 0 {
-		return fmt.Errorf("payloads not found")
+		return fmt.Errorf("payloads not found on the listener")
 	}
 
 	// As needed, delete a specific payload.
@@ -401,7 +401,7 @@ func HandleAgentInfoById(line string, argStartIdx int, serverState *state.Server
 		return fmt.Errorf("agent not found: %v", err)
 	}
 
-	agent.PrintAgents([]*agent.Agent{ag})
+	agent.PrintAgentDetails(ag)
 	return nil
 }
 
@@ -428,7 +428,7 @@ func HandleAmAgentInfo(serverState *state.ServerState) error {
 		return fmt.Errorf("agent not found: %v", err)
 	}
 
-	agent.PrintAgents([]*agent.Agent{ag})
+	agent.PrintAgentDetails(ag)
 	return nil
 }
 

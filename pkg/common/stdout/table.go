@@ -3,6 +3,7 @@ package stdout
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/fatih/color"
@@ -23,19 +24,19 @@ func NewSingleTableItem(key string, value string) SingleTableItem {
 }
 
 func PrintSingleTable(title string, table []SingleTableItem) {
-	fmt.Printf("\n%s:\n\n", title)
+	fmt.Printf("\n%s\n%s\n", title, strings.Repeat("=", len(title)))
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 	for _, item := range table {
 		fmt.Fprintf(
 			writer,
-			"%s %s\t: %s\n",
-			color.HiGreenString("*"),
-			color.HiGreenString(item.Key),
-			color.HiCyanString(item.Value),
+			"%s\t: %s\n",
+			item.Key,
+			item.Value,
 		)
 	}
 	fmt.Fprintln(writer)
+
 	writer.Flush()
 }
 

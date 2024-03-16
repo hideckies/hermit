@@ -60,7 +60,7 @@ func HandleOperatorInfoById(
 		return fmt.Errorf("operator not found: %v", err)
 	}
 
-	operator.PrintOperators([]*operator.Operator{op}, clientState.Conf.Uuid)
+	operator.PrintOperatorDetails(op)
 	return nil
 }
 
@@ -174,7 +174,7 @@ func HandleListenerInfoById(
 		return fmt.Errorf("listener not found: %v", err)
 	}
 
-	listener.PrintListeners([]*listener.Listener{lis})
+	listener.PrintListenerDetails(lis)
 	return nil
 }
 
@@ -373,7 +373,7 @@ func HandleAgentInfoById(
 		return fmt.Errorf("agent not found: %v", err)
 	}
 
-	agent.PrintAgents([]*agent.Agent{ag})
+	agent.PrintAgentDetails(ag)
 	return nil
 }
 
@@ -416,7 +416,7 @@ func HandleAmAgentInfo(
 	}
 
 	stdout.LogSuccess("")
-	agent.PrintAgents([]*agent.Agent{targetAgent})
+	agent.PrintAgentDetails(targetAgent)
 	return nil
 }
 

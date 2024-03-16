@@ -3,17 +3,19 @@ package agent
 import "github.com/hideckies/hermit/pkg/common/utils"
 
 type Agent struct {
-	Id           uint
-	Uuid         string
-	Name         string
-	Ip           string
-	OS           string
-	Arch         string
-	Hostname     string
-	ListenerName string
-	Sleep        uint
-	Jitter       uint
-	KillDate     uint
+	Id          uint
+	Uuid        string
+	Name        string
+	Ip          string
+	OS          string
+	Arch        string
+	Hostname    string
+	ListenerURL string
+	ImplantType string
+	CheckInDate string
+	Sleep       uint
+	Jitter      uint
+	KillDate    uint
 }
 
 func NewAgent(
@@ -24,7 +26,9 @@ func NewAgent(
 	os string,
 	arch string,
 	hostname string,
-	listenerName string,
+	listenerURL string,
+	implantType string,
+	checkInDate string,
 	sleep uint,
 	jitter uint,
 	killDate uint,
@@ -33,16 +37,18 @@ func NewAgent(
 		name = utils.GenerateRandomHumanName(false, "agent")
 	}
 	return &Agent{
-		Id:           id,
-		Uuid:         uuid,
-		Name:         name,
-		Ip:           ip,
-		OS:           os,
-		Arch:         arch,
-		Hostname:     hostname,
-		ListenerName: listenerName,
-		Sleep:        sleep,
-		Jitter:       jitter,
-		KillDate:     killDate,
+		Id:          id,
+		Uuid:        uuid,
+		Name:        name,
+		Ip:          ip,
+		OS:          os,
+		Arch:        arch,
+		Hostname:    hostname,
+		ListenerURL: listenerURL,
+		ImplantType: implantType,
+		CheckInDate: checkInDate,
+		Sleep:       sleep,
+		Jitter:      jitter,
+		KillDate:    killDate,
 	}
 }

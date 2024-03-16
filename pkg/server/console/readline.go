@@ -118,14 +118,18 @@ func handleCommand(
 			strings.HasPrefix(line, "cd ") ||
 			strings.HasPrefix(line, "cp ") ||
 			strings.HasPrefix(line, "download ") ||
+			strings.HasPrefix(line, "execute ") ||
 			strings.HasPrefix(line, "keylog ") ||
+			line == "kill" ||
 			line == "ls" || strings.HasPrefix(line, "ls ") ||
+			strings.HasPrefix(line, "migrate ") ||
 			strings.HasPrefix(line, "mkdir") ||
+			strings.HasPrefix(line, "mv") ||
+			line == "ps" || strings.HasPrefix(line, "ps kill ") ||
 			line == "pwd" ||
 			strings.HasPrefix(line, "rm ") ||
 			strings.HasPrefix(line, "rmdir ") ||
 			line == "screenshot" ||
-			strings.HasPrefix(line, "shell ") ||
 			strings.HasPrefix(line, "sleep ") ||
 			strings.HasPrefix(line, "upload ") ||
 			line == "whoami"):

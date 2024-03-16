@@ -64,8 +64,8 @@ func wizardPayloadBase(
 			// "linux/i686/elf",
 			"windows/amd64/dll",
 			"windows/amd64/exe",
-			"windows/i686/dll",
-			"windows/i686/exe",
+			// "windows/i686/dll",
+			// "windows/i686/exe",
 		}
 	}
 	for {
@@ -89,20 +89,21 @@ func wizardPayloadBase(
 		for {
 			items := []string{}
 			for _, lis := range listeners {
-				// lisUrl := fmt.Sprintf("%s://%s:%d", strings.ToLower(lis.Protocol), lis.Addr, lis.Port)
-				item := fmt.Sprintf(
-					"%s | %s://%s:%d | %s",
-					lis.Name,
-					lis.Protocol,
-					lis.Addr,
-					lis.Port,
-					strings.Join(lis.Domains, ","),
-				)
-				items = append(items, item)
+				// item := fmt.Sprintf(
+				// 	"%s | %s | %s",
+				// 	lis.Name,
+				// 	lis.GetURL(),
+				// 	strings.Join(lis.Domains, ","),
+				// )
+				allURLs := lis.GetAllURLs()
+				for _, u := range allURLs {
+					item := fmt.Sprintf("%s\t: %s", lis.Name, u)
+					items = append(items, item)
+				}
 			}
 			items = append(items, "Custom URL")
 
-			res, err := stdin.Select("Listener", items)
+			res, err := stdin.Select("Listener URL to Connect", items)
 			if err != nil {
 				stdout.LogFailed(fmt.Sprint(err))
 				continue
@@ -112,11 +113,11 @@ func wizardPayloadBase(
 				customUrl = true
 			} else {
 				customUrl = false
-				lisSplit := strings.Split(res, " | ")
-				// lisName := lisSplit[0]
-				lisUrl := lisSplit[1]
-				// lisDomains := lisSplit[2]
-				parsedUrl, err := url.ParseRequestURI(lisUrl)
+
+				// Parse listener URL
+				lisSplit := strings.Split(res, " ")
+				lisURL := lisSplit[len(lisSplit)-1]
+				parsedUrl, err := url.ParseRequestURI(lisURL)
 				if err != nil {
 					stdout.LogFailed(fmt.Sprint(err))
 					continue

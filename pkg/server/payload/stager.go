@@ -113,6 +113,7 @@ func (s *Stager) Generate(serverState *state.ServerState) (data []byte, outFile 
 			fmt.Sprintf("-DPAYLOAD_TYPE=\"%s\"", s.Type),
 			fmt.Sprintf("-DPAYLOAD_TECHNIQUE=\"%s\"", s.Technique),
 			fmt.Sprintf("-DPAYLOAD_PROCESS=\"%s\"", s.Process),
+			fmt.Sprintf("-DLISTENER_PROTOCOL=\"%s\"", s.Lprotocol),
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", s.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(s.Lport)),
 			fmt.Sprintf("-DREQUEST_PATH_DOWNLOAD=\"%s\"", requestPathDownload),

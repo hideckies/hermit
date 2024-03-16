@@ -76,7 +76,9 @@ func (d *Database) init() error {
 		os TEXT,
 		arch TEXT,
 		hostname TEXT,
-		listener TEXT,
+		listenerURL TEXT,
+		implantType TEXT,
+		checkin TEXT,
 		sleep INTEGER,
 		jitter INTEGER,
 		killdate INTEGER

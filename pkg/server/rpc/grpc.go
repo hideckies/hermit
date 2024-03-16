@@ -311,17 +311,19 @@ func (s *HermitRPCServer) AgentGetById(
 		return nil, err
 	}
 	return &rpcpb.Agent{
-		Id:           int64(ag.Id),
-		Uuid:         ag.Uuid,
-		Name:         ag.Name,
-		Ip:           ag.Ip,
-		Os:           ag.OS,
-		Arch:         ag.Arch,
-		Hostname:     ag.Hostname,
-		ListenerName: ag.ListenerName,
-		Sleep:        int64(ag.Sleep),
-		Jitter:       int64(ag.Jitter),
-		KillDate:     int64(ag.KillDate),
+		Id:          int64(ag.Id),
+		Uuid:        ag.Uuid,
+		Name:        ag.Name,
+		Ip:          ag.Ip,
+		Os:          ag.OS,
+		Arch:        ag.Arch,
+		Hostname:    ag.Hostname,
+		ListenerURL: ag.ListenerURL,
+		ImplantType: ag.ImplantType,
+		CheckInDate: ag.CheckInDate,
+		Sleep:       int64(ag.Sleep),
+		Jitter:      int64(ag.Jitter),
+		KillDate:    int64(ag.KillDate),
 	}, nil
 }
 
@@ -336,17 +338,19 @@ func (s *HermitRPCServer) AgentGetAll(
 
 	for _, ag := range ags {
 		a := &rpcpb.Agent{
-			Id:           int64(ag.Id),
-			Uuid:         ag.Uuid,
-			Name:         ag.Name,
-			Ip:           ag.Ip,
-			Os:           ag.OS,
-			Arch:         ag.Arch,
-			Hostname:     ag.Hostname,
-			ListenerName: ag.ListenerName,
-			Sleep:        int64(ag.Sleep),
-			Jitter:       int64(ag.Jitter),
-			KillDate:     int64(ag.KillDate),
+			Id:          int64(ag.Id),
+			Uuid:        ag.Uuid,
+			Name:        ag.Name,
+			Ip:          ag.Ip,
+			Os:          ag.OS,
+			Arch:        ag.Arch,
+			Hostname:    ag.Hostname,
+			ListenerURL: ag.ListenerURL,
+			ImplantType: ag.ImplantType,
+			CheckInDate: ag.CheckInDate,
+			Sleep:       int64(ag.Sleep),
+			Jitter:      int64(ag.Jitter),
+			KillDate:    int64(ag.KillDate),
 		}
 		if err := stream.Send(a); err != nil {
 			return err

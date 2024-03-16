@@ -11,8 +11,9 @@ I'm developing this for my learning purpose.
 
 - The C2 server and C2 client.
 - gRPC server/client for operations.
-- TLS for secure communication between the C2 server, C2 client, and agents.
+- TLS for secure communication between the C2 server, client and agents.
 - HTTPS listener.
+- Multi staged payloads.
 - SQLite for the data persistence.
 
 <br />

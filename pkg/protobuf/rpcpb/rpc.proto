@@ -119,10 +119,12 @@ message Agent {
   string os = 5;
   string arch = 6;
   string hostname = 7;
-  string listenerName = 8;
-  int64 sleep = 9;
-  int64 jitter = 10;
-  int64 killDate = 11;
+  string listenerURL = 8;
+  string implantType = 9;
+  string checkInDate = 10;
+  int64 sleep = 11;
+  int64 jitter = 12;
+  int64 killDate = 13;
 }
 
 message Task {

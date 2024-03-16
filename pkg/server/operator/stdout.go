@@ -12,7 +12,7 @@ func PrintOperators(ops []*Operator, currentUuid string) {
 		return
 	}
 
-	tHead := []string{"ID", "NAME"}
+	tHead := []string{"ID", "Name"}
 	tRows := [][]string{}
 	for _, op := range ops {
 		id := fmt.Sprint(op.Id)
@@ -25,4 +25,15 @@ func PrintOperators(ops []*Operator, currentUuid string) {
 	stdout.LogSuccess("")
 	stdout.PrintTable(tHead, tRows)
 	fmt.Println()
+}
+
+func PrintOperatorDetails(op *Operator) {
+	items := []stdout.SingleTableItem{
+		stdout.NewSingleTableItem("ID", fmt.Sprint(op.Id)),
+		stdout.NewSingleTableItem("Name", op.Name),
+		stdout.NewSingleTableItem("UUID", op.Uuid),
+	}
+
+	stdout.LogSuccess("")
+	stdout.PrintSingleTable("OPERATOR", items)
 }

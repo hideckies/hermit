@@ -28,6 +28,8 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
     add_compile_definitions(PAYLOAD_JITTER=${PAYLOAD_JITTER})
     add_compile_definitions(PAYLOAD_KILLDATE=${PAYLOAD_KILLDATE})
 endif()
+add_compile_definitions(PAYLOAD_TYPE=${PAYLOAD_TYPE})
+add_compile_definitions(LISTENER_PROTOCOL=${LISTENER_PROTOCOL})
 add_compile_definitions(LISTENER_HOST=${LISTENER_HOST})
 add_compile_definitions(LISTENER_PORT=${LISTENER_PORT})
 add_compile_definitions(REQUEST_PATH_DOWNLOAD=${REQUEST_PATH_DOWNLOAD})
@@ -57,7 +59,7 @@ endif()
 
 # LINK LIBRATILIES
 # link_libraries(netapi32 ws2_32 wsock32 wtsapi32 iphlpapi mscoree mscorlib)
-link_libraries(gdi32 gdiplus shlwapi winhttp wsock32)
+link_libraries(gdi32 gdiplus psapi shlwapi winhttp wsock32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

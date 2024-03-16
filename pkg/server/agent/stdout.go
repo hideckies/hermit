@@ -13,25 +13,42 @@ func PrintAgents(ags []*Agent) {
 		return
 	}
 
-	tHead := []string{"ID", "NAME", "IP", "OS/ARCH", "HOSTNAME", "LISTENER", "SLEEP", "JITTER", "KILLDATE"}
+	tHead := []string{"ID", "Name", "IP", "OS/Arch", "Hostname", "Listener URL", "Implant Type", "Check In"}
 	tRows := [][]string{}
 	for _, ag := range ags {
-		killDate := meta.GetDateTimeFromTimestamp(int(ag.KillDate))
-
 		tRows = append(tRows, []string{
 			fmt.Sprint(ag.Id),
 			ag.Name,
 			ag.Ip,
 			fmt.Sprintf("%s/%s", ag.OS, ag.Arch),
 			ag.Hostname,
-			ag.ListenerName,
-			fmt.Sprint(ag.Sleep),
-			fmt.Sprint(ag.Jitter),
-			killDate,
+			ag.ListenerURL,
+			ag.ImplantType,
+			ag.CheckInDate,
 		})
 	}
 
 	stdout.LogSuccess("")
 	stdout.PrintTable(tHead, tRows)
 	fmt.Println()
+}
+
+func PrintAgentDetails(ag *Agent) {
+	items := []stdout.SingleTableItem{
+		stdout.NewSingleTableItem("ID", fmt.Sprint(ag.Id)),
+		stdout.NewSingleTableItem("Name", ag.Name),
+		stdout.NewSingleTableItem("UUID", ag.Uuid),
+		stdout.NewSingleTableItem("IP", ag.Ip),
+		stdout.NewSingleTableItem("OS/Arch", fmt.Sprintf("%s/%s", ag.OS, ag.Arch)),
+		stdout.NewSingleTableItem("Hostname", ag.Hostname),
+		stdout.NewSingleTableItem("Listener URL", ag.ListenerURL),
+		stdout.NewSingleTableItem("Implant Type", ag.ImplantType),
+		stdout.NewSingleTableItem("Check In", ag.CheckInDate),
+		stdout.NewSingleTableItem("Sleep", fmt.Sprint(ag.Sleep)),
+		stdout.NewSingleTableItem("Jitter", fmt.Sprint(ag.Jitter)),
+		stdout.NewSingleTableItem("KillDate", meta.GetDateTimeFromTimestamp(int(ag.KillDate))),
+	}
+
+	stdout.LogSuccess("")
+	stdout.PrintSingleTable("AGENT", items)
 }

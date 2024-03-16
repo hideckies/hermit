@@ -1,6 +1,7 @@
 package listener
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
@@ -45,5 +46,32 @@ func NewListener(
 		Port:     port,
 		Domains:  domains,
 		Active:   active,
+	}
+}
+
+func (lis *Listener) GetURL() string {
+	return fmt.Sprintf(fmt.Sprintf("%s://%s:%d", strings.ToLower(lis.Protocol), lis.Addr, lis.Port))
+}
+
+// This includes domain associated URLs such as "https://evil.com:12345"
+func (lis *Listener) GetAllURLs() []string {
+	urls := []string{}
+	urls = append(urls, lis.GetURL())
+
+	if len(lis.Domains) > 0 {
+		for _, domain := range lis.Domains {
+			domainURL := fmt.Sprintf("%s://%s:%d", strings.ToLower(lis.Protocol), domain, lis.Port)
+			urls = append(urls, domainURL)
+		}
+	}
+
+	return urls
+}
+
+func (lis *Listener) GetActiveString() string {
+	if lis.Active {
+		return "active"
+	} else {
+		return "inactive"
 	}
 }

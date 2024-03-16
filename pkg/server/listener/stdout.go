@@ -13,7 +13,7 @@ func PrintListeners(liss []*Listener) {
 		return
 	}
 
-	tHead := []string{"ID", "NAME", "URL", "DOMAINS", "ACTIVE"}
+	tHead := []string{"ID", "Name", "URL", "Domains", "Active"}
 	tRows := [][]string{}
 	for _, lis := range liss {
 		active := "active"
@@ -24,7 +24,7 @@ func PrintListeners(liss []*Listener) {
 		tRows = append(tRows, []string{
 			fmt.Sprint(lis.Id),
 			lis.Name,
-			fmt.Sprintf("%s://%s:%d", strings.ToLower(lis.Protocol), lis.Addr, lis.Port),
+			lis.GetURL(),
 			strings.Join(lis.Domains, ","),
 			active,
 		})
@@ -33,4 +33,18 @@ func PrintListeners(liss []*Listener) {
 	stdout.LogSuccess("")
 	stdout.PrintTable(tHead, tRows)
 	fmt.Println()
+}
+
+func PrintListenerDetails(lis *Listener) {
+	items := []stdout.SingleTableItem{
+		stdout.NewSingleTableItem("ID", fmt.Sprint(lis.Id)),
+		stdout.NewSingleTableItem("Name", lis.Name),
+		stdout.NewSingleTableItem("UUID", lis.Uuid),
+		stdout.NewSingleTableItem("URL", lis.GetURL()),
+		stdout.NewSingleTableItem("Domains", strings.Join(lis.Domains, ",")),
+		stdout.NewSingleTableItem("Active", lis.GetActiveString()),
+	}
+
+	stdout.LogSuccess("")
+	stdout.PrintSingleTable("LISTENER", items)
 }

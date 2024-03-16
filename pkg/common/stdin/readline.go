@@ -64,25 +64,31 @@ var completer = readline.NewPrefixCompleter(
 	// readline.PcItem("checkin"),
 	readline.PcItem("cp"),
 	readline.PcItem("download"),
+	readline.PcItem("execute"),
 	// readline.PcItem("dll"), DLL spawn and inject modules
+	// readline.PcItem("find"),
+	// readline.PcItem("history"), Retrieve history data of each application
 	// readline.PcItem("inline-exec"),
+	// readline.PcItem("ipconfig"),
 	readline.PcItem("keylog"),
-	// readline.PcItem("kill"), Stop the implant and delete itself.
+	readline.PcItem("kill"),
 	readline.PcItem("ls"),
-	// readline.PcItem("migrate"), Get into another process
+	readline.PcItem("migrate"),
 	readline.PcItem("mkdir"),
-	// readline.PcItem("mv"),
+	readline.PcItem("mv"),
 	// readline.PcItem("net"),
 	// readline.PcItem("pivot"),
 	// readline.PcItem("portfwd"),
 	// readline.PcItem("powershell"),
-	// readline.PcItem("ps"),
+	// readline.PcItem("procdump"), Dump process memory with MiniDumpWriteDump function
+	readline.PcItem("ps"),
+	// readline.PcItem("psexec"),
 	readline.PcItem("pwd"),
 	// readline.PcItem("reg"), Registry key
 	readline.PcItem("rm"),
 	readline.PcItem("rmdir"),
+	// readline.PcItem("runas"), Start the process as a specified user.
 	readline.PcItem("screenshot"),
-	readline.PcItem("shell"),
 	// readline.PcItem("shellcode"),
 	readline.PcItem("sleep"),
 	// readline.PcItem("socks"), SOCKS proxy
@@ -90,6 +96,7 @@ var completer = readline.NewPrefixCompleter(
 	// readline.PcItem("task"),
 	// readline.PcItem("token"), Token manipulation
 	readline.PcItem("upload"),
+	// readline.PcItem("webcam"),
 	readline.PcItem("whoami"),
 
 	readline.PcItem("task clean"),
@@ -146,7 +153,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 
 		io.WriteString(w, "AGENT\n")
 		io.WriteString(w, "=====\n\n")
-		io.WriteString(w, "  agent use    <ID>      : Switch to agent mode with a specific ID\n")
+		io.WriteString(w, "  agent use    <ID>      : Switch to the agent mode with a specific ID\n")
 		io.WriteString(w, "  agent delete <ID>      : Delete an agent with a specific ID\n")
 		io.WriteString(w, "  agent info   <ID>      : Print an agent info with a specific ID\n")
 		io.WriteString(w, "  agent list             : List agents\n")
@@ -160,20 +167,25 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 
 		io.WriteString(w, "TASK\n")
 		io.WriteString(w, "====\n\n")
-		io.WriteString(w, "  cat <FILE>             : Print the contents of a file\n")
-		io.WriteString(w, "  cd  <DIR>              : Change the working directory\n")
-		io.WriteString(w, "  cp  <SRC> <DEST>       : Copy a file\n")
+		io.WriteString(w, "  cat      <FILE>        : Print the contents of a file\n")
+		io.WriteString(w, "  cd       <DIR>         : Change the working directory\n")
+		io.WriteString(w, "  cp       <SRC> <DEST>  : Copy a file\n")
 		io.WriteString(w, "  download <SRC> <DEST>  : Download a file from the target computer\n")
-		io.WriteString(w, "  keylog <NUM>           : Keylogging for N seconds\n")
-		io.WriteString(w, "  ls     <DIR>           : List files in a directory\n")
-		io.WriteString(w, "  mkdir  <DIR>           : Create a new directory\n")
+		io.WriteString(w, "  execute  <CMD>         : Execute a system command on target computer\n")
+		io.WriteString(w, "  keylog   <NUM>         : Keylogging for N seconds\n")
+		io.WriteString(w, "  kill                   : Stop the implant process\n")
+		io.WriteString(w, "  ls       <DIR>         : List files in a directory\n")
+		io.WriteString(w, "  migrate  <PID>         : Get into another process\n")
+		io.WriteString(w, "  mkdir    <DIR>         : Create a new directory\n")
+		io.WriteString(w, "  mv       <SRC> <DEST>  : Move a file to a destination location\n")
+		io.WriteString(w, "  ps                     : List processes that are running\n")
+		io.WriteString(w, "  ps kill  <PID>         : Kill a specified process\n")
 		io.WriteString(w, "  pwd                    : Print the current working directory\n")
-		io.WriteString(w, "  rm     <FILE>          : Remove a file\n")
-		io.WriteString(w, "  rmdir  <DIR>           : Remove a directory\n")
+		io.WriteString(w, "  rm       <FILE>        : Remove a file\n")
+		io.WriteString(w, "  rmdir    <DIR>         : Remove a directory\n")
 		io.WriteString(w, "  screenshot             : Take a screenshot on target computer\n")
-		io.WriteString(w, "  shell  <CMD>           : Execute a shell command on target computer\n")
-		io.WriteString(w, "  sleep  <NUM>           : Set sleep time (seconds) between requests from beacon\n")
-		io.WriteString(w, "  upload <SRC> <DEST>    : Upload a file to the target computer\n")
+		io.WriteString(w, "  sleep    <NUM>         : Set sleep time (seconds) between requests from beacon\n")
+		io.WriteString(w, "  upload   <SRC> <DEST>  : Upload a file to the target computer\n")
 		io.WriteString(w, "  whoami                 : Print the current username\n")
 		io.WriteString(w, "\n")
 		io.WriteString(w, "  task clean             : Remove all tasks from waitlist\n")
