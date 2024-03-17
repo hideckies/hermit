@@ -31,8 +31,7 @@ func SetTask(task string, agentName string) error {
 			dest = fmt.Sprintf("%s%s", dest, src)
 		}
 		task = cmd + " " + src + " " + dest
-	}
-	if task == "ls" {
+	} else if task == "ls" {
 		task = "ls ."
 	}
 

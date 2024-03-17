@@ -7,6 +7,7 @@
 #include "convert.hpp"
 #include "types.hpp"
 
+std::wstring GetEnvStrings(const std::wstring& envVar);
 std::wstring GetArch(WORD wProcessorArchitecture);
 std::wstring GetInitialInfo();
 

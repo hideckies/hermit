@@ -29,6 +29,9 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("operator list"),
 	readline.PcItem("operators"),
 
+	// COMMUNICATION
+	// readline.PcItem("broadcast"), Broadcast a message to other operators
+
 	// ATTACK FLOW
 	// readline.PcItem("attackflow gen"),
 	// readline.PcItem("attackflow info"),
@@ -80,7 +83,7 @@ var completer = readline.NewPrefixCompleter(
 	// readline.PcItem("pivot"),
 	// readline.PcItem("portfwd"),
 	// readline.PcItem("powershell"),
-	// readline.PcItem("procdump"), Dump process memory with MiniDumpWriteDump function
+	readline.PcItem("procdump"),
 	readline.PcItem("ps"),
 	// readline.PcItem("psexec"),
 	readline.PcItem("pwd"),
@@ -92,9 +95,10 @@ var completer = readline.NewPrefixCompleter(
 	// readline.PcItem("shellcode"),
 	readline.PcItem("sleep"),
 	// readline.PcItem("socks"), SOCKS proxy
+	// readline.PcItem("steal creds"), Steal credentials from browsers (Brave, Chrome, Chromium, Edge ,FireFox)
 	// readline.PcItem("sysinfo"),
 	// readline.PcItem("task"),
-	// readline.PcItem("token"), Token manipulation
+	// readline.PcItem("token"), Token manipulation and impersonation
 	readline.PcItem("upload"),
 	// readline.PcItem("webcam"),
 	readline.PcItem("whoami"),
@@ -178,6 +182,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  migrate  <PID>         : Get into another process\n")
 		io.WriteString(w, "  mkdir    <DIR>         : Create a new directory\n")
 		io.WriteString(w, "  mv       <SRC> <DEST>  : Move a file to a destination location\n")
+		io.WriteString(w, "  procdump <PID>         : Dump process memory to a specified output file\n")
 		io.WriteString(w, "  ps                     : List processes that are running\n")
 		io.WriteString(w, "  ps kill  <PID>         : Kill a specified process\n")
 		io.WriteString(w, "  pwd                    : Print the current working directory\n")

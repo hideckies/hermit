@@ -1,0 +1,41 @@
+site_name: Hermit C2
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: yellow
+    accent: lime
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  features:
+    - content.code.copy
+    - toc.follow
+# repo_url: https://github.com/hideckies/hermit
+extra:
+  # consent:
+  #   title: Cookie consent
+  #   description: >-
+  #     We use cookies to recognize your repeated visits and preferences, as well
+  #     as to measure the effectiveness of our documentation and whether users
+  #     find what they're searching for. With your consent, you're helping us to
+  #     make our documentation better.
+  # analytics:
+  #   provider: google
+  #   property: G-XXXXXXXXXX
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/hideckies/hermit
+    - icon: fontawesome/brands/x-twitter
+      link: https://twitter.com/hideckies
+  # generator: false
+copyright: Copyright &copy; 2024 - hdks
+# plugins:
+#   - blog
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

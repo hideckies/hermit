@@ -55,6 +55,10 @@ func MakeAgentChildDirs(agentName string, isClient bool) error {
 		return err
 	}
 
+	err = os.MkdirAll(agentDir+"/loot/procdumps", PERM)
+	if err != nil {
+		return err
+	}
 	err = os.MkdirAll(agentDir+"/loot/screenshots", PERM)
 	if err != nil {
 		return err
@@ -213,18 +217,30 @@ func WriteAgentLoot(
 	return taskFile, nil
 }
 
-func WriteAgentScreenshot(
+func WriteAgentLootFile(
 	agentName string,
 	data []byte,
 	isClient bool,
+	fileType string,
 ) (filename string, err error) {
 	lootDir, err := GetAgentLootDir(agentName, isClient)
 	if err != nil {
 		return "", err
 	}
 
-	screenshotsDir := lootDir + "/screenshots"
-	filename = fmt.Sprintf("%s/screenshot_%s.png", screenshotsDir, meta.GetCurrentDateTimeNumbersOnly())
+	if strings.HasPrefix(fileType, "procdump ") {
+		targetDir := lootDir + "/procdumps"
+		pid := strings.Split(fileType, " ")[1]
+		filename = fmt.Sprintf("%s/procdump_%s_%s.dmp", targetDir, pid, meta.GetCurrentDateTimeNumbersOnly())
+	} else if fileType == "screenshot" {
+		targetDir := lootDir + "/screenshots"
+		filename = fmt.Sprintf("%s/screenshot_%s.png", targetDir, meta.GetCurrentDateTimeNumbersOnly())
+	}
+
+	if filename == "" {
+		return "", fmt.Errorf("filename is not specifed")
+	}
+
 	err = os.WriteFile(filename, data, 0644)
 	if err != nil {
 		return "", err

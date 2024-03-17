@@ -201,6 +201,14 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 		case strings.HasPrefix(task, "download "):
 			downloadPath := string(data)
 			content = fmt.Sprintf("Downloaded at %s", downloadPath)
+		case strings.HasPrefix(task, "procdump "), task == "screenshot":
+			// Write a dump file.
+			outFile, err := metafs.WriteAgentLootFile(targetAgent.Name, data, false, task)
+			if err != nil {
+				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+				return
+			}
+			content = fmt.Sprintf("Saved at %s", outFile)
 		case strings.HasPrefix(task, "sleep "):
 			sleepTimeStr := strings.Split(task, " ")[1]
 			sleepTime, err := strconv.ParseUint(sleepTimeStr, 10, 64)
@@ -219,14 +227,6 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 		case strings.HasPrefix(task, "upload "):
 			uploadPath := string(data)
 			content = fmt.Sprintf("Uploaded at %s", uploadPath)
-		case task == "screenshot":
-			// Write an image file for the screenshot.
-			imageFile, err := metafs.WriteAgentScreenshot(targetAgent.Name, data, false)
-			if err != nil {
-				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
-				return
-			}
-			content = fmt.Sprintf("Saved at %s", imageFile)
 		default:
 			content = string(data)
 		}

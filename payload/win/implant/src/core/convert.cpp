@@ -69,6 +69,23 @@ std::wstring UTF8Decode(const std::string& str)
     return wstrTo;
 }
 
+// wstring -> DWORD (unsigned long)
+DWORD ConvertWstringToDWORD(const std::wstring& wStr, int base)
+{
+    std::string sStr = UTF8Encode(wStr);
+    char* pEnds;
+    DWORD dwStr = (DWORD)strtoul(sStr.c_str(), &pEnds, base);
+    return dwStr;
+}
+
+// DWORD (unsigned long) -> wstring
+std::wstring ConvertDWORDToWstring(DWORD dwSrc)
+{
+    std::string sSrc = std::to_string(dwSrc);
+    std::wstring wDest = UTF8Decode(sSrc);
+    return wDest;
+}
+
 // LPSTR (UTF-8) -> wchar_t* (UTF-16)
 wchar_t* ConvertLPSTRToWCHAR_T(LPSTR lpStr)
 {
@@ -76,21 +93,5 @@ wchar_t* ConvertLPSTRToWCHAR_T(LPSTR lpStr)
     wchar_t* wstr = new wchar_t[wchars_num];
     MultiByteToWideChar(CP_UTF8, 0, lpStr, -1, wstr, wchars_num);
     return wstr;
-}
-
-// LPCWSTR (UTF-16) -> string (UTF-8)
-std::string ConvertLPCWSTRToString(LPCWSTR lpcwStr)
-{
-    INT strLength = WideCharToMultiByte(CP_UTF8, 0, lpcwStr, -1, NULL, 0, NULL, NULL);
-    std::string strData(strLength, 0);
-    WideCharToMultiByte(CP_UTF8, 0, lpcwStr, -1, &strData[0], strLength, NULL, NULL);
-    return strData;
-}
-
-// string -> LPCWSTR
-LPCWSTR ConvertStringToLPCWSTR(const std::string& text)
-{
-    std::wstring wText = std::wstring(text.begin(), text.end());
-    return wText.c_str();
 }
 

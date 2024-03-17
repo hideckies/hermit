@@ -125,6 +125,7 @@ func handleCommand(
 			strings.HasPrefix(line, "migrate ") ||
 			strings.HasPrefix(line, "mkdir") ||
 			strings.HasPrefix(line, "mv") ||
+			strings.HasPrefix(line, "procdump ") ||
 			line == "ps" || strings.HasPrefix(line, "ps kill ") ||
 			line == "pwd" ||
 			strings.HasPrefix(line, "rm ") ||

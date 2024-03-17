@@ -6,6 +6,7 @@
 #include <string>
 #include "common.hpp"
 #include "fs.hpp"
+#include "winsystem.hpp"
 
 #ifndef IDS_APP_TITLE
 #define IDS_APP_TITLE 1

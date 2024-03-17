@@ -25,6 +25,5 @@ struct MyFileData {
 
 std::vector<char> ReadBytesFromFile(const std::wstring& wFilePath);
 BOOL MyWriteFile(const std::wstring& wFile, LPCVOID lpData, DWORD dwDataSize);
-std::wstring MyDeleteFile(const std::wstring& wFile);
 
 #endif // HERMIT_FS_HPP

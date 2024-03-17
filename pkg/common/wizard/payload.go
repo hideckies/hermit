@@ -89,12 +89,6 @@ func wizardPayloadBase(
 		for {
 			items := []string{}
 			for _, lis := range listeners {
-				// item := fmt.Sprintf(
-				// 	"%s | %s | %s",
-				// 	lis.Name,
-				// 	lis.GetURL(),
-				// 	strings.Join(lis.Domains, ","),
-				// )
 				allURLs := lis.GetAllURLs()
 				for _, u := range allURLs {
 					item := fmt.Sprintf("%s\t: %s", lis.Name, u)

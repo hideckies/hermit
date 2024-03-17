@@ -77,15 +77,3 @@ BOOL MyWriteFile(const std::wstring& wFile, LPCVOID lpData, DWORD dwDataSize)
 
     return TRUE;
 }
-
-std::wstring MyDeleteFile(const std::wstring& wFile)
-{
-    if (DeleteFileW(wFile.c_str()))
-    {
-        return L"A file deleted.";
-    } 
-    else
-    {
-        return L"Could not delete a file.";
-    }
-}

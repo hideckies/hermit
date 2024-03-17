@@ -3,10 +3,12 @@
 
 #include <windows.h>
 #include <winhttp.h>
+#include <dbghelp.h>
 #include <psapi.h>
 #include <shlwapi.h>
 #include <strsafe.h>
 #include <string>
+#include <tlhelp32.h>
 #include <vector>
 #include "common.hpp"
 #include "constants.hpp"
@@ -44,6 +46,7 @@ std::wstring ExecuteTaskMv(
 	const std::wstring& wSrc,
 	const std::wstring& wDest
 );
+std::wstring ExecuteTaskProcdump(const std::wstring& wPid);
 std::wstring ExecuteTaskPs();
 std::wstring ExecuteTaskPsKill(const std::wstring& wPid);
 std::wstring ExecuteTaskPwd();

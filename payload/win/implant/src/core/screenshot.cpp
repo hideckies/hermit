@@ -2,8 +2,10 @@
 
 HINSTANCE hInst;
 std::wstring wWindowClassName = L"MainWindowClass";
-std::wstring wFilenameBmp = L"tmp.bmp";
-std::wstring wFilenamePng = L"tmp.png";
+// std::wstring wFilenameBmp = L"tmp.bmp";
+std::wstring wFilenameBmp = GetEnvStrings(L"%TEMP%") + L"\\tmp.bmp";
+// std::wstring wFilenamePng = L"tmp.png";
+std::wstring wFilenamePng = GetEnvStrings(L"%TEMP%") + L"\\tmp.png";
 
 BOOL InitInstance(HINSTANCE hInstance, INT nCmdShow)
 {
@@ -99,7 +101,7 @@ BOOL BmpToPng()
 
 BOOL DeleteBmp()
 {
-    MyDeleteFile(wFilenameBmp);
+    DeleteFile(wFilenameBmp.c_str());
     return TRUE;
 }
 

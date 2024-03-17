@@ -60,6 +60,9 @@ func (lis *Listener) GetAllURLs() []string {
 
 	if len(lis.Domains) > 0 {
 		for _, domain := range lis.Domains {
+			if domain == "" {
+				continue
+			}
 			domainURL := fmt.Sprintf("%s://%s:%d", strings.ToLower(lis.Protocol), domain, lis.Port)
 			urls = append(urls, domainURL)
 		}

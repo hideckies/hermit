@@ -59,7 +59,7 @@ endif()
 
 # LINK LIBRATILIES
 # link_libraries(netapi32 ws2_32 wsock32 wtsapi32 iphlpapi mscoree mscorlib)
-link_libraries(gdi32 gdiplus psapi shlwapi winhttp wsock32)
+link_libraries(dbghelp gdi32 gdiplus psapi shlwapi winhttp wsock32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")
