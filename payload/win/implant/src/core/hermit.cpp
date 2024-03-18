@@ -40,7 +40,7 @@ BOOL Run(
     // Check in
     do
     {
-        sleep(nSleep);
+        SLEEP(nSleep);
 
         bCheckIn = CheckIn(
 			hConnect,
@@ -54,7 +54,7 @@ BOOL Run(
 	// Get and execute tasks
 	do
 	{
-		sleep(nSleep);
+		SLEEP(nSleep);
 
 		std::wstring task = GetTask(
 			hConnect,

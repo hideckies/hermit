@@ -1,7 +1,5 @@
 #include "winsystem.hpp"
 
-#define INFO_BUFFER_SIZE 32767
-
 std::wstring GetEnvStrings(const std::wstring& envVar)
 {
 	wchar_t envStrings[INFO_BUFFER_SIZE];

@@ -1,13 +1,14 @@
 #ifndef HERMIT_HERMIT_HPP
 #define HERMIT_HERMIT_HPP
 
+#include <winsock2.h>
 #include <windows.h>
 #include <winhttp.h>
 #include <string>
 #include <wchar.h>
-#include "types.hpp"
 #include "common.hpp"
 #include "convert.hpp"
+#include "macros.hpp"
 
 #ifndef IS_DLL
 #include "screenshot.hpp"

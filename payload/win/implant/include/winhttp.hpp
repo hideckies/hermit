@@ -11,7 +11,7 @@
 #include "common.hpp"
 #include "convert.hpp"
 #include "fs.hpp"
-#include "types.hpp"
+#include "macros.hpp"
 
 VOID WinHttpCloseHandles(
 	HINTERNET hSession,

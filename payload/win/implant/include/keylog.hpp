@@ -8,10 +8,7 @@
 #include <chrono>
 #include "common.hpp"
 #include "convert.hpp"
-
-#ifndef NUMHOOKS
-#define NUMHOOKS 7
-#endif
+#include "macros.hpp"
 
 typedef struct _MYHOOKDATA
 {

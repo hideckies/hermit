@@ -9,8 +9,8 @@
 #include <iterator>
 #include <vector>
 #include "common.hpp"
-#include "constants.hpp"
 #include "convert.hpp"
+#include "macros.hpp"
 
 VOID CALLBACK FileIOCompletionRoutine(
   DWORD dwErrorCode,

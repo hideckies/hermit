@@ -2,7 +2,7 @@
 
 ## 1. Install Hermit
 
-Please see [the installation page](/installation).
+Please see [the installation page](installation.md).
 
 ## 2. Start C2 Server
 
@@ -59,3 +59,6 @@ Simply run the following command with specifying the `client-config-<operator>.j
 ./hermit-client -c /path/to/client-config-<operator>.json
 ```
 
+## 4. More Deeper...
+
+Please see [the Tutorial: Simple Implant Beacon](tutorials/simple-implant-beacon.md).

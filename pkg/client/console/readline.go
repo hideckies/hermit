@@ -119,12 +119,14 @@ func handleCommand(
 			strings.HasPrefix(line, "cp ") ||
 			strings.HasPrefix(line, "download ") ||
 			strings.HasPrefix(line, "execute ") ||
+			line == "ip" ||
 			strings.HasPrefix(line, "keylog ") ||
 			line == "kill" ||
 			line == "ls" || strings.HasPrefix(line, "ls ") ||
 			strings.HasPrefix(line, "migrate ") ||
 			strings.HasPrefix(line, "mkdir") ||
 			strings.HasPrefix(line, "mv") ||
+			line == "net" ||
 			strings.HasPrefix(line, "procdump ") ||
 			line == "ps" || strings.HasPrefix(line, "ps kill ") ||
 			line == "pwd" ||

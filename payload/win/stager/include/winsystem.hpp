@@ -6,7 +6,7 @@
 #include <tlhelp32.h>
 #include "common.hpp"
 #include "convert.hpp"
-#include "types.hpp"
+#include "macros.hpp"
 
 std::wstring GetEnvStrings(const std::wstring& envVar);
 std::wstring GetArch(WORD wProcessorArchitecture);

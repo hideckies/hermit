@@ -6,23 +6,8 @@
 #include <string>
 #include "common.hpp"
 #include "fs.hpp"
+#include "macros.hpp"
 #include "winsystem.hpp"
-
-#ifndef IDS_APP_TITLE
-#define IDS_APP_TITLE 1
-#endif
-
-#ifndef IDC_GDICAPTURINGANIMAGE
-#define IDC_GDICAPTURINGANIMAGE 1
-#endif
-
-#ifndef IDI_GDICAPTURINGANIMAGE
-#define IDI_GDICAPTURINGANIMAGE 2
-#endif
-
-#ifndef IDI_SMALL
-#define IDI_SMALL 3
-#endif
 
 BOOL InitInstance(HINSTANCE hInstance, INT nCmdShow);
 // INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);

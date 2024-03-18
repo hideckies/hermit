@@ -1,6 +1,10 @@
 # Home
 
+## Hermit C2
+
 Hermit is a command and control framework written in Go.
+
+![demo](assets/demo/hermit_demo.gif)
 
 ## Features
 

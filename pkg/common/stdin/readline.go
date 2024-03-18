@@ -71,15 +71,15 @@ var completer = readline.NewPrefixCompleter(
 	// readline.PcItem("dll"), DLL spawn and inject modules
 	// readline.PcItem("find"),
 	// readline.PcItem("history"), Retrieve history data of each application
-	// readline.PcItem("inline-exec"),
-	// readline.PcItem("ipconfig"),
+	// readline.PcItem("inline-execute"), Execute an object file
+	readline.PcItem("ip"),
 	readline.PcItem("keylog"),
 	readline.PcItem("kill"),
 	readline.PcItem("ls"),
 	readline.PcItem("migrate"),
 	readline.PcItem("mkdir"),
 	readline.PcItem("mv"),
-	// readline.PcItem("net"),
+	readline.PcItem("net"),
 	// readline.PcItem("pivot"),
 	// readline.PcItem("portfwd"),
 	// readline.PcItem("powershell"),
@@ -176,12 +176,14 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  cp       <SRC> <DEST>  : Copy a file\n")
 		io.WriteString(w, "  download <SRC> <DEST>  : Download a file from the target computer\n")
 		io.WriteString(w, "  execute  <CMD>         : Execute a system command on target computer\n")
+		io.WriteString(w, "  ip                     : Get IP addresses for target computer\n")
 		io.WriteString(w, "  keylog   <NUM>         : Keylogging for N seconds\n")
 		io.WriteString(w, "  kill                   : Stop the implant process\n")
 		io.WriteString(w, "  ls       <DIR>         : List files in a directory\n")
 		io.WriteString(w, "  migrate  <PID>         : Get into another process\n")
 		io.WriteString(w, "  mkdir    <DIR>         : Create a new directory\n")
 		io.WriteString(w, "  mv       <SRC> <DEST>  : Move a file to a destination location\n")
+		io.WriteString(w, "  net                    : Get TCP connections\n")
 		io.WriteString(w, "  procdump <PID>         : Dump process memory to a specified output file\n")
 		io.WriteString(w, "  ps                     : List processes that are running\n")
 		io.WriteString(w, "  ps kill  <PID>         : Kill a specified process\n")

