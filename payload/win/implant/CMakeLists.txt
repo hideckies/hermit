@@ -50,8 +50,10 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/core/ip.cpp
             src/core/keylog.cpp
             src/core/net.cpp
+            src/core/registry.cpp
             src/core/screenshot.cpp
             src/core/task.cpp
+            src/core/token.cpp
             src/core/utils.cpp
             src/core/winhttp.cpp
             src/core/winsystem.cpp
@@ -61,7 +63,7 @@ endif()
 
 # LINK LIBRATILIES
 # link_libraries(netapi32 wtsapi32 mscoree mscorlib)
-link_libraries(dbghelp gdi32 gdiplus iphlpapi psapi shlwapi winhttp wsock32 ws2_32)
+link_libraries(dbghelp gdi32 gdiplus iphlpapi ntdll psapi shlwapi winhttp wsock32 ws2_32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

@@ -87,7 +87,7 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("ps"),
 	// readline.PcItem("psexec"),
 	readline.PcItem("pwd"),
-	// readline.PcItem("reg"), Registry key
+	readline.PcItem("reg"),
 	readline.PcItem("rm"),
 	readline.PcItem("rmdir"),
 	// readline.PcItem("runas"), Start the process as a specified user.
@@ -98,7 +98,7 @@ var completer = readline.NewPrefixCompleter(
 	// readline.PcItem("steal creds"), Steal credentials from browsers (Brave, Chrome, Chromium, Edge ,FireFox)
 	// readline.PcItem("sysinfo"),
 	// readline.PcItem("task"),
-	// readline.PcItem("token"), Token manipulation and impersonation
+	readline.PcItem("token"),
 	readline.PcItem("upload"),
 	// readline.PcItem("webcam"),
 	readline.PcItem("whoami"),
@@ -188,10 +188,17 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  ps                     : List processes that are running\n")
 		io.WriteString(w, "  ps kill  <PID>         : Kill a specified process\n")
 		io.WriteString(w, "  pwd                    : Print the current working directory\n")
+		// io.WriteString(w, "  reg add                : Create a new registry key\n")
+		// io.WriteString(w, "  reg delete             : Delete the specified registry key\n")
+		// io.WriteString(w, "  reg hives              : Dump registry hives\n")
+		io.WriteString(w, "  reg subkeys            : Enumerate subkeys for the specified open registry key\n")
+		io.WriteString(w, "  reg values             : Enumerate the specified registry values.\n")
+		// io.WriteString(w, "  reg write              : Write values to the specified registry\n")
 		io.WriteString(w, "  rm       <FILE>        : Remove a file\n")
 		io.WriteString(w, "  rmdir    <DIR>         : Remove a directory\n")
 		io.WriteString(w, "  screenshot             : Take a screenshot on target computer\n")
 		io.WriteString(w, "  sleep    <NUM>         : Set sleep time (seconds) between requests from beacon\n")
+		io.WriteString(w, "  token list             : Enumerate token information\n")
 		io.WriteString(w, "  upload   <SRC> <DEST>  : Upload a file to the target computer\n")
 		io.WriteString(w, "  whoami                 : Print the current username\n")
 		io.WriteString(w, "\n")

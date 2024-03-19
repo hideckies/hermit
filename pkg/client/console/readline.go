@@ -130,10 +130,12 @@ func handleCommand(
 			strings.HasPrefix(line, "procdump ") ||
 			line == "ps" || strings.HasPrefix(line, "ps kill ") ||
 			line == "pwd" ||
+			line == "reg subkeys" || line == "reg values" ||
 			strings.HasPrefix(line, "rm ") ||
 			strings.HasPrefix(line, "rmdir ") ||
 			line == "screenshot" ||
 			strings.HasPrefix(line, "sleep ") ||
+			strings.HasPrefix(line, "token list") ||
 			strings.HasPrefix(line, "upload ") ||
 			line == "whoami"):
 		if err := HandleAmTaskSetByAgentName(line, clientState, c, ctx); err != nil {

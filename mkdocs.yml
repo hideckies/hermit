@@ -12,6 +12,9 @@ theme:
     - toc.follow
 # repo_url: https://github.com/hideckies/hermit
 extra:
+  analytics:
+    provider: google
+    property: G-BDWV7L58CP
   # consent:
   #   title: Cookie consent
   #   description: >-
@@ -19,9 +22,6 @@ extra:
   #     as to measure the effectiveness of our documentation and whether users
   #     find what they're searching for. With your consent, you're helping us to
   #     make our documentation better.
-  # analytics:
-  #   provider: google
-  #   property: G-XXXXXXXXXX
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/hideckies/hermit

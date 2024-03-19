@@ -32,7 +32,8 @@ For example, rename it with "chrome.exe", "svchost.exe", etc.
 On the victim machine, execute the implant as below:  
 
 ```ps title="Windows Victim Machine"
-.\implant
+# Replace the filename with your own.
+.\implant.exe
 ```
 
 ## 5. Switch to Agent Mode
@@ -91,10 +92,10 @@ This task retrieves the username on the victim machine.
 ![task send](../assets/images/terminal/task_send.png)
 
 To see the tasks waiting for results, run the `tasks` command.  
-*However the Implant beacon sleep time is 3 seconds by default, so you need to run thie `task` command immediately after executing the `whoami` command.
+*However the Implant beacon sleep time is 3 seconds by default, so you need to run thie `tasks` command immediately after executing the `whoami` command.
 
 
-After a few seconds, you can get the task result with the `loot` command:
+After a few seconds, if the task is successful, you can see the task results with the `loot` command:
 
 ![loot](../assets/images/terminal/loot.png)
 
