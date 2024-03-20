@@ -2,6 +2,6 @@
 
 INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, INT nCmdShow)
 {    
-    LoadExecutable();
+    Hermit::LoadExecutable();
     return EXIT_SUCCESS;
 }

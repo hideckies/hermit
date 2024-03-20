@@ -21,10 +21,9 @@ func WizardPayloadType() string {
 		"stager/exec-loader",
 		"stager/shellcode-loader",
 		"shellcode/cmd",
-		// "shellcode/implant/beacon",
-		// "shellcode/stager/dll-loader",
-		// "shellcode/stager/exec-loader",
-		// "shellcode/stager/shellcode-loader",
+		// "shellcode/dll-loader",
+		// "shellcode/exec-loader",
+		// "shellcode/shellcode-loader",
 	}
 	for {
 		res, err := stdin.Select("What to generate?", items)

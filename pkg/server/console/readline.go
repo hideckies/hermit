@@ -130,14 +130,16 @@ func handleCommand(
 			strings.HasPrefix(line, "procdump ") ||
 			line == "ps" || strings.HasPrefix(line, "ps kill ") ||
 			line == "pwd" ||
+			line == "reg add" || line == "reg delete" ||
 			line == "reg subkeys" || line == "reg values" ||
+			line == "reg write" ||
 			strings.HasPrefix(line, "rm ") ||
 			strings.HasPrefix(line, "rmdir ") ||
 			line == "screenshot" ||
 			strings.HasPrefix(line, "sleep ") ||
-			strings.HasPrefix(line, "token list") ||
+			line == "token revert" || strings.HasPrefix(line, "token steal ") ||
 			strings.HasPrefix(line, "upload ") ||
-			line == "whoami"):
+			line == "whoami" || line == "whoami priv"):
 		if err := HandleAmTaskSet(line, serverState); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}

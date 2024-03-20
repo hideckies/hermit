@@ -70,16 +70,19 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("execute"),
 	// readline.PcItem("dll"), DLL spawn and inject modules
 	// readline.PcItem("find"),
+	// readline.PcItem("groups"), Enumerate local groups
 	// readline.PcItem("history"), Retrieve history data of each application
 	// readline.PcItem("inline-execute"), Execute an object file
 	readline.PcItem("ip"),
 	readline.PcItem("keylog"),
 	readline.PcItem("kill"),
+	// readline.PcItem("logon"), Logon as another user by specyfing username and password
 	readline.PcItem("ls"),
 	readline.PcItem("migrate"),
 	readline.PcItem("mkdir"),
 	readline.PcItem("mv"),
 	readline.PcItem("net"),
+	// readline.PcItem("persist"), Make the implant persistence.
 	// readline.PcItem("pivot"),
 	// readline.PcItem("portfwd"),
 	// readline.PcItem("powershell"),
@@ -90,16 +93,15 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("reg"),
 	readline.PcItem("rm"),
 	readline.PcItem("rmdir"),
-	// readline.PcItem("runas"), Start the process as a specified user.
 	readline.PcItem("screenshot"),
 	// readline.PcItem("shellcode"),
 	readline.PcItem("sleep"),
 	// readline.PcItem("socks"), SOCKS proxy
 	// readline.PcItem("steal creds"), Steal credentials from browsers (Brave, Chrome, Chromium, Edge ,FireFox)
 	// readline.PcItem("sysinfo"),
-	// readline.PcItem("task"),
 	readline.PcItem("token"),
 	readline.PcItem("upload"),
+	// readline.PcItem("users"), Enumerate local users
 	// readline.PcItem("webcam"),
 	readline.PcItem("whoami"),
 
@@ -152,65 +154,67 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 	if !isAgentMode {
 		io.WriteString(w, "PAYLOAD\n")
 		io.WriteString(w, "=======\n\n")
-		io.WriteString(w, "  payload gen            : Generate a payload\n")
+		io.WriteString(w, "  payload gen              : Generate a payload\n")
 		io.WriteString(w, "\n")
 
 		io.WriteString(w, "AGENT\n")
 		io.WriteString(w, "=====\n\n")
-		io.WriteString(w, "  agent use    <ID>      : Switch to the agent mode with a specific ID\n")
-		io.WriteString(w, "  agent delete <ID>      : Delete an agent with a specific ID\n")
-		io.WriteString(w, "  agent info   <ID>      : Print an agent info with a specific ID\n")
-		io.WriteString(w, "  agent list             : List agents\n")
-		io.WriteString(w, "  agents                 : List agents. Alias for 'agent list'\n")
+		io.WriteString(w, "  agent use    <ID>        : Switch to the agent mode with a specific ID\n")
+		io.WriteString(w, "  agent delete <ID>        : Delete an agent with a specific ID\n")
+		io.WriteString(w, "  agent info   <ID>        : Print an agent info with a specific ID\n")
+		io.WriteString(w, "  agent list               : List agents\n")
+		io.WriteString(w, "  agents                   : List agents. Alias for 'agent list'\n")
 		io.WriteString(w, "\n")
 	} else {
 		io.WriteString(w, "AGENT\n")
 		io.WriteString(w, "=====\n\n")
-		io.WriteString(w, "  agent info             : Print the agent information\n")
+		io.WriteString(w, "  agent info               : Print the agent information\n")
 		io.WriteString(w, "\n")
 
 		io.WriteString(w, "TASK\n")
 		io.WriteString(w, "====\n\n")
-		io.WriteString(w, "  cat      <FILE>        : Print the contents of a file\n")
-		io.WriteString(w, "  cd       <DIR>         : Change the working directory\n")
-		io.WriteString(w, "  cp       <SRC> <DEST>  : Copy a file\n")
-		io.WriteString(w, "  download <SRC> <DEST>  : Download a file from the target computer\n")
-		io.WriteString(w, "  execute  <CMD>         : Execute a system command on target computer\n")
-		io.WriteString(w, "  ip                     : Get IP addresses for target computer\n")
-		io.WriteString(w, "  keylog   <NUM>         : Keylogging for N seconds\n")
-		io.WriteString(w, "  kill                   : Stop the implant process\n")
-		io.WriteString(w, "  ls       <DIR>         : List files in a directory\n")
-		io.WriteString(w, "  migrate  <PID>         : Get into another process\n")
-		io.WriteString(w, "  mkdir    <DIR>         : Create a new directory\n")
-		io.WriteString(w, "  mv       <SRC> <DEST>  : Move a file to a destination location\n")
-		io.WriteString(w, "  net                    : Get TCP connections\n")
-		io.WriteString(w, "  procdump <PID>         : Dump process memory to a specified output file\n")
-		io.WriteString(w, "  ps                     : List processes that are running\n")
-		io.WriteString(w, "  ps kill  <PID>         : Kill a specified process\n")
-		io.WriteString(w, "  pwd                    : Print the current working directory\n")
+		io.WriteString(w, "  cat         <FILE>       : Print the contents of a file\n")
+		io.WriteString(w, "  cd          <DIR>        : Change the working directory\n")
+		io.WriteString(w, "  cp          <SRC> <DEST> : Copy a file\n")
+		io.WriteString(w, "  download    <SRC> <DEST> : Download a file from the target computer\n")
+		io.WriteString(w, "  execute     <CMD>        : Execute a system command on target computer\n")
+		io.WriteString(w, "  ip                       : Get IP addresses for target computer\n")
+		io.WriteString(w, "  keylog      <NUM>        : Keylogging for N seconds\n")
+		io.WriteString(w, "  kill                     : Stop the implant process\n")
+		io.WriteString(w, "  ls          <DIR>        : List files in a directory\n")
+		io.WriteString(w, "  migrate     <PID>        : Get into another process\n")
+		io.WriteString(w, "  mkdir       <DIR>        : Create a new directory\n")
+		io.WriteString(w, "  mv          <SRC> <DEST> : Move a file to a destination location\n")
+		io.WriteString(w, "  net                      : Get TCP connections\n")
+		io.WriteString(w, "  procdump    <PID>        : Dump process memory to a specified output file\n")
+		io.WriteString(w, "  ps                       : List processes that are running\n")
+		io.WriteString(w, "  ps kill     <PID>        : Kill a specified process\n")
+		io.WriteString(w, "  pwd                      : Print the current working directory\n")
 		// io.WriteString(w, "  reg add                : Create a new registry key\n")
 		// io.WriteString(w, "  reg delete             : Delete the specified registry key\n")
 		// io.WriteString(w, "  reg hives              : Dump registry hives\n")
-		io.WriteString(w, "  reg subkeys            : Enumerate subkeys for the specified open registry key\n")
-		io.WriteString(w, "  reg values             : Enumerate the specified registry values.\n")
-		// io.WriteString(w, "  reg write              : Write values to the specified registry\n")
-		io.WriteString(w, "  rm       <FILE>        : Remove a file\n")
-		io.WriteString(w, "  rmdir    <DIR>         : Remove a directory\n")
-		io.WriteString(w, "  screenshot             : Take a screenshot on target computer\n")
-		io.WriteString(w, "  sleep    <NUM>         : Set sleep time (seconds) between requests from beacon\n")
-		io.WriteString(w, "  token list             : Enumerate token information\n")
-		io.WriteString(w, "  upload   <SRC> <DEST>  : Upload a file to the target computer\n")
-		io.WriteString(w, "  whoami                 : Print the current username\n")
+		io.WriteString(w, "  reg subkeys              : Enumerate subkeys for the specified open registry key\n")
+		io.WriteString(w, "  reg values               : Enumerate the specified registry values.\n")
+		// io.WriteString(w, "  reg write              : Write values to the specified registry key\n")
+		io.WriteString(w, "  rm          <FILE>       : Remove a file\n")
+		io.WriteString(w, "  rmdir       <DIR>        : Remove a directory\n")
+		io.WriteString(w, "  screenshot               : Take a screenshot on target computer\n")
+		io.WriteString(w, "  sleep       <NUM>        : Set sleep time (seconds) between requests from beacon\n")
+		io.WriteString(w, "  token revert             : Revert back to the original process token\n")
+		io.WriteString(w, "  token steal <PID>        : Steal token from the specified process and impersonate process\n")
+		io.WriteString(w, "  upload      <SRC> <DEST> : Upload a file to the target computer\n")
+		io.WriteString(w, "  whoami                   : Print the current user name\n")
+		io.WriteString(w, "  whoami priv              : Print the current user privileges\n")
 		io.WriteString(w, "\n")
-		io.WriteString(w, "  task clean             : Remove all tasks from waitlist\n")
-		io.WriteString(w, "  task list              : List tasks waiting for the results\n")
-		io.WriteString(w, "  tasks                  : Alias for 'task list'\n")
+		io.WriteString(w, "  task clean               : Remove all tasks from waitlist\n")
+		io.WriteString(w, "  task list                : List tasks waiting for the results\n")
+		io.WriteString(w, "  tasks                    : Alias for 'task list'\n")
 		io.WriteString(w, "\n")
 
 		io.WriteString(w, "LOOT\n")
 		io.WriteString(w, "====\n\n")
-		io.WriteString(w, "  loot                   : List all loot gained from target computer\n")
-		io.WriteString(w, "  loot clean             : Remove all loot\n")
+		io.WriteString(w, "  loot                     : List all loot gained from target computer\n")
+		io.WriteString(w, "  loot clean               : Remove all loot\n")
 		io.WriteString(w, "\n")
 	}
 }

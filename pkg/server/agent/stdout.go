@@ -13,7 +13,7 @@ func PrintAgents(ags []*Agent) {
 		return
 	}
 
-	tHead := []string{"ID", "Name", "IP", "OS/Arch", "Hostname", "Listener URL", "Implant Type", "Check In"}
+	tHead := []string{"ID", "Name", "IP", "OS/Arch", "Hostname", "ListenerURL", "ImplantType", "CheckIn"}
 	tRows := [][]string{}
 	for _, ag := range ags {
 		tRows = append(tRows, []string{

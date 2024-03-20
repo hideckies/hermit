@@ -135,9 +135,9 @@ func handleCommand(
 			strings.HasPrefix(line, "rmdir ") ||
 			line == "screenshot" ||
 			strings.HasPrefix(line, "sleep ") ||
-			strings.HasPrefix(line, "token list") ||
+			line == "token revert" || strings.HasPrefix(line, "token steal ") ||
 			strings.HasPrefix(line, "upload ") ||
-			line == "whoami"):
+			line == "whoami" || line == "whoami priv"):
 		if err := HandleAmTaskSetByAgentName(line, clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}

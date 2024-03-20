@@ -1,8 +1,8 @@
 #include "hermit.hpp"
 
 INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, INT nCmdShow)
-{
-	Run(
+{	
+	Hermit::Run(
 		hInstance,
 		nCmdShow,
 		LISTENER_HOST_W,

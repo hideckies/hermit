@@ -58,7 +58,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 {
     DisplayMessageBoxA("Start", "ThreadProc");
     
-    LoadShellcode();
+    Hermit::LoadShellcode();
 
     g_runFinished = TRUE;
 
