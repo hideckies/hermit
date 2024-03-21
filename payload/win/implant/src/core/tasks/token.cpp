@@ -83,7 +83,6 @@ namespace Task
     // https://cocomelonc.github.io/tutorial/2022/09/25/token-theft-1.html
     std::wstring TokenSteal(const std::wstring& wPid, const std::wstring& wProcName)
     {
-        HANDLE hProcess = NULL;
         HANDLE hToken = NULL;
 
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);

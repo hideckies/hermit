@@ -48,11 +48,11 @@ type HermitRPCClient interface {
 	AgentTaskList(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
 	// TASK
 	TaskSetByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error)
-	TaskCleanByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error)
+	TaskClearByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error)
 	TaskListByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error)
 	// LOOT
-	LootGetAll(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
-	LootClean(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
+	LootGetAll(ctx context.Context, in *Loot, opts ...grpc.CallOption) (*commonpb.Message, error)
+	LootClearByAgentName(ctx context.Context, in *Loot, opts ...grpc.CallOption) (*commonpb.Message, error)
 }
 
 type hermitRPCClient struct {
@@ -303,9 +303,9 @@ func (c *hermitRPCClient) TaskSetByAgentName(ctx context.Context, in *Task, opts
 	return out, nil
 }
 
-func (c *hermitRPCClient) TaskCleanByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error) {
+func (c *hermitRPCClient) TaskClearByAgentName(ctx context.Context, in *Task, opts ...grpc.CallOption) (*commonpb.Message, error) {
 	out := new(commonpb.Message)
-	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/TaskCleanByAgentName", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/TaskClearByAgentName", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +321,7 @@ func (c *hermitRPCClient) TaskListByAgentName(ctx context.Context, in *Task, opt
 	return out, nil
 }
 
-func (c *hermitRPCClient) LootGetAll(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error) {
+func (c *hermitRPCClient) LootGetAll(ctx context.Context, in *Loot, opts ...grpc.CallOption) (*commonpb.Message, error) {
 	out := new(commonpb.Message)
 	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/LootGetAll", in, out, opts...)
 	if err != nil {
@@ -330,9 +330,9 @@ func (c *hermitRPCClient) LootGetAll(ctx context.Context, in *commonpb.Empty, op
 	return out, nil
 }
 
-func (c *hermitRPCClient) LootClean(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error) {
+func (c *hermitRPCClient) LootClearByAgentName(ctx context.Context, in *Loot, opts ...grpc.CallOption) (*commonpb.Message, error) {
 	out := new(commonpb.Message)
-	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/LootClean", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/LootClearByAgentName", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -368,11 +368,11 @@ type HermitRPCServer interface {
 	AgentTaskList(context.Context, *commonpb.Empty) (*commonpb.Message, error)
 	// TASK
 	TaskSetByAgentName(context.Context, *Task) (*commonpb.Message, error)
-	TaskCleanByAgentName(context.Context, *Task) (*commonpb.Message, error)
+	TaskClearByAgentName(context.Context, *Task) (*commonpb.Message, error)
 	TaskListByAgentName(context.Context, *Task) (*commonpb.Message, error)
 	// LOOT
-	LootGetAll(context.Context, *commonpb.Empty) (*commonpb.Message, error)
-	LootClean(context.Context, *commonpb.Empty) (*commonpb.Message, error)
+	LootGetAll(context.Context, *Loot) (*commonpb.Message, error)
+	LootClearByAgentName(context.Context, *Loot) (*commonpb.Message, error)
 	mustEmbedUnimplementedHermitRPCServer()
 }
 
@@ -437,17 +437,17 @@ func (UnimplementedHermitRPCServer) AgentTaskList(context.Context, *commonpb.Emp
 func (UnimplementedHermitRPCServer) TaskSetByAgentName(context.Context, *Task) (*commonpb.Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TaskSetByAgentName not implemented")
 }
-func (UnimplementedHermitRPCServer) TaskCleanByAgentName(context.Context, *Task) (*commonpb.Message, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TaskCleanByAgentName not implemented")
+func (UnimplementedHermitRPCServer) TaskClearByAgentName(context.Context, *Task) (*commonpb.Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TaskClearByAgentName not implemented")
 }
 func (UnimplementedHermitRPCServer) TaskListByAgentName(context.Context, *Task) (*commonpb.Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TaskListByAgentName not implemented")
 }
-func (UnimplementedHermitRPCServer) LootGetAll(context.Context, *commonpb.Empty) (*commonpb.Message, error) {
+func (UnimplementedHermitRPCServer) LootGetAll(context.Context, *Loot) (*commonpb.Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LootGetAll not implemented")
 }
-func (UnimplementedHermitRPCServer) LootClean(context.Context, *commonpb.Empty) (*commonpb.Message, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LootClean not implemented")
+func (UnimplementedHermitRPCServer) LootClearByAgentName(context.Context, *Loot) (*commonpb.Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LootClearByAgentName not implemented")
 }
 func (UnimplementedHermitRPCServer) mustEmbedUnimplementedHermitRPCServer() {}
 
@@ -813,20 +813,20 @@ func _HermitRPC_TaskSetByAgentName_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HermitRPC_TaskCleanByAgentName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _HermitRPC_TaskClearByAgentName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Task)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HermitRPCServer).TaskCleanByAgentName(ctx, in)
+		return srv.(HermitRPCServer).TaskClearByAgentName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rpcpb.HermitRPC/TaskCleanByAgentName",
+		FullMethod: "/rpcpb.HermitRPC/TaskClearByAgentName",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermitRPCServer).TaskCleanByAgentName(ctx, req.(*Task))
+		return srv.(HermitRPCServer).TaskClearByAgentName(ctx, req.(*Task))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -850,7 +850,7 @@ func _HermitRPC_TaskListByAgentName_Handler(srv interface{}, ctx context.Context
 }
 
 func _HermitRPC_LootGetAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(commonpb.Empty)
+	in := new(Loot)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -862,25 +862,25 @@ func _HermitRPC_LootGetAll_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/rpcpb.HermitRPC/LootGetAll",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermitRPCServer).LootGetAll(ctx, req.(*commonpb.Empty))
+		return srv.(HermitRPCServer).LootGetAll(ctx, req.(*Loot))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HermitRPC_LootClean_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(commonpb.Empty)
+func _HermitRPC_LootClearByAgentName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Loot)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HermitRPCServer).LootClean(ctx, in)
+		return srv.(HermitRPCServer).LootClearByAgentName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rpcpb.HermitRPC/LootClean",
+		FullMethod: "/rpcpb.HermitRPC/LootClearByAgentName",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermitRPCServer).LootClean(ctx, req.(*commonpb.Empty))
+		return srv.(HermitRPCServer).LootClearByAgentName(ctx, req.(*Loot))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -957,8 +957,8 @@ var HermitRPC_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HermitRPC_TaskSetByAgentName_Handler,
 		},
 		{
-			MethodName: "TaskCleanByAgentName",
-			Handler:    _HermitRPC_TaskCleanByAgentName_Handler,
+			MethodName: "TaskClearByAgentName",
+			Handler:    _HermitRPC_TaskClearByAgentName_Handler,
 		},
 		{
 			MethodName: "TaskListByAgentName",
@@ -969,8 +969,8 @@ var HermitRPC_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HermitRPC_LootGetAll_Handler,
 		},
 		{
-			MethodName: "LootClean",
-			Handler:    _HermitRPC_LootClean_Handler,
+			MethodName: "LootClearByAgentName",
+			Handler:    _HermitRPC_LootClearByAgentName_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

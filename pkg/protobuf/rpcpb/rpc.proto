@@ -41,18 +41,19 @@ service HermitRPC {
 
   // TASK
   rpc TaskSetByAgentName (Task) returns (commonpb.Message) {}
-  rpc TaskCleanByAgentName (Task) returns (commonpb.Message) {}
+  rpc TaskClearByAgentName (Task) returns (commonpb.Message) {}
   rpc TaskListByAgentName (Task) returns (commonpb.Message) {}
 
   // LOOT
-  rpc LootGetAll (commonpb.Empty) returns (commonpb.Message) {}
-  rpc LootClean (commonpb.Empty) returns (commonpb.Message) {}
+  rpc LootGetAll (Loot) returns (commonpb.Message) {}
+  rpc LootClearByAgentName (Loot) returns (commonpb.Message) {}
 }
 
 message Operator {
   int64 id = 1;
   string uuid = 2;
   string name = 3;
+  string login = 4;
 }
 
 message Listener {
@@ -130,4 +131,8 @@ message Agent {
 message Task {
   string task = 1;
   string agentName = 2;
+}
+
+message Loot {
+  string agentName = 1;
 }

@@ -1,4 +1,3 @@
-#ifndef IS_DLL
 #include "core/task.hpp"
 
 HINSTANCE hInst;
@@ -359,4 +358,3 @@ namespace Task
         return wFilenamePng;
     }
 }
-#endif

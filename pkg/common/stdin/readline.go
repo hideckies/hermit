@@ -76,7 +76,6 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("ip"),
 	readline.PcItem("keylog"),
 	readline.PcItem("kill"),
-	// readline.PcItem("logon"), Logon as another user by specyfing username and password
 	readline.PcItem("ls"),
 	readline.PcItem("migrate"),
 	readline.PcItem("mkdir"),
@@ -105,13 +104,13 @@ var completer = readline.NewPrefixCompleter(
 	// readline.PcItem("webcam"),
 	readline.PcItem("whoami"),
 
-	readline.PcItem("task clean"),
+	readline.PcItem("task clear"),
 	readline.PcItem("task list"),
 	readline.PcItem("tasks"),
 
 	// LOOT
 	readline.PcItem("loot"),
-	readline.PcItem("loot clean"),
+	readline.PcItem("loot clear"),
 )
 
 func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
@@ -182,7 +181,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  keylog      <NUM>        : Keylogging for N seconds\n")
 		io.WriteString(w, "  kill                     : Stop the implant process\n")
 		io.WriteString(w, "  ls          <DIR>        : List files in a directory\n")
-		io.WriteString(w, "  migrate     <PID>        : Get into another process\n")
+		io.WriteString(w, "  migrate     <PID>        : Migrate the implant into another process\n")
 		io.WriteString(w, "  mkdir       <DIR>        : Create a new directory\n")
 		io.WriteString(w, "  mv          <SRC> <DEST> : Move a file to a destination location\n")
 		io.WriteString(w, "  net                      : Get TCP connections\n")
@@ -206,7 +205,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  whoami                   : Print the current user name\n")
 		io.WriteString(w, "  whoami priv              : Print the current user privileges\n")
 		io.WriteString(w, "\n")
-		io.WriteString(w, "  task clean               : Remove all tasks from waitlist\n")
+		io.WriteString(w, "  task clear               : Remove all tasks from waitlist\n")
 		io.WriteString(w, "  task list                : List tasks waiting for the results\n")
 		io.WriteString(w, "  tasks                    : Alias for 'task list'\n")
 		io.WriteString(w, "\n")
@@ -214,7 +213,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "LOOT\n")
 		io.WriteString(w, "====\n\n")
 		io.WriteString(w, "  loot                     : List all loot gained from target computer\n")
-		io.WriteString(w, "  loot clean               : Remove all loot\n")
+		io.WriteString(w, "  loot clear               : Remove all loot\n")
 		io.WriteString(w, "\n")
 	}
 }

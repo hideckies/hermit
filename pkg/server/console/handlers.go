@@ -434,7 +434,13 @@ func HandleAmAgentInfo(serverState *state.ServerState) error {
 
 func HandleAmTaskSet(line string, serverState *state.ServerState) error {
 	// Set a task into the task list file
-	err := task.SetTask(line, serverState.AgentMode.Name)
+	task, err := task.AdjustTask(line)
+	if err != nil {
+		return err
+	}
+
+	// Add the task to the '.tasks' file
+	err = metafs.WriteAgentTask(serverState.AgentMode.Name, task, false)
 	if err != nil {
 		return err
 	}
@@ -443,7 +449,7 @@ func HandleAmTaskSet(line string, serverState *state.ServerState) error {
 	return nil
 }
 
-func HandleAmTaskClean(serverState *state.ServerState) error {
+func HandleAmTaskClear(serverState *state.ServerState) error {
 	res, err := stdin.Confirm("Are you sure you want to delete all tasks?")
 	if err != nil {
 		return err
@@ -488,7 +494,7 @@ func HandleAmLoot(serverState *state.ServerState) error {
 	return nil
 }
 
-func HandleAmLootClean(serverState *state.ServerState) error {
+func HandleAmLootClear(serverState *state.ServerState) error {
 	res, err := stdin.Confirm("Are you sure you want to delete all task results?")
 	if err != nil {
 		return err

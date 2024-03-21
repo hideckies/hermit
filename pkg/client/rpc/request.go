@@ -12,6 +12,7 @@ import (
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/operator"
 	"github.com/hideckies/hermit/pkg/server/payload"
+	"github.com/hideckies/hermit/pkg/server/task"
 )
 
 func RequestSayHello(c rpcpb.HermitRPCClient, ctx context.Context) (string, error) {
@@ -36,9 +37,10 @@ func RequestOperatorRegister(
 	conf config.ClientConfig,
 ) (string, error) {
 	r, err := c.OperatorRegister(ctx, &rpcpb.Operator{
-		Id:   -1, // this value is not used
-		Uuid: conf.Uuid,
-		Name: conf.Operator,
+		Id:    -1, // this value is not used
+		Uuid:  conf.Uuid,
+		Name:  conf.Operator,
+		Login: "",
 	})
 	if err != nil {
 		return "", err
@@ -68,7 +70,7 @@ func RequestOperatorGetById(
 		return nil, err
 	}
 
-	return operator.NewOperator(uint(r.GetId()), r.GetUuid(), r.GetName()), nil
+	return operator.NewOperator(uint(r.GetId()), r.GetUuid(), r.GetName(), r.GetLogin()), nil
 }
 
 func RequestOperatorGetAll(
@@ -91,7 +93,7 @@ func RequestOperatorGetAll(
 			return nil, err
 		}
 
-		newOp := operator.NewOperator(uint(data.GetId()), data.GetUuid(), data.GetName())
+		newOp := operator.NewOperator(uint(data.GetId()), data.GetUuid(), data.GetName(), data.GetLogin())
 		ops = append(ops, newOp)
 	}
 
@@ -342,22 +344,27 @@ func RequestAgentGetAll(
 func RequestTaskSetByAgentName(
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
-	task string,
+	_task string,
 	agentName string,
 ) error {
-	_, err := c.TaskSetByAgentName(ctx, &rpcpb.Task{Task: task, AgentName: agentName})
+	task, err := task.AdjustTask(_task)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.TaskSetByAgentName(ctx, &rpcpb.Task{Task: task, AgentName: agentName})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func RequestTaskCleanByAgentName(
+func RequestTaskClearByAgentName(
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
 	agentName string,
 ) error {
-	_, err := c.TaskCleanByAgentName(ctx, &rpcpb.Task{AgentName: agentName})
+	_, err := c.TaskClearByAgentName(ctx, &rpcpb.Task{AgentName: agentName})
 	if err != nil {
 		return err
 	}
@@ -379,8 +386,21 @@ func RequestTaskListByAgentName(
 func RequestLootGetAll(
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
+	agentName string,
 ) (string, error) {
-	r, err := c.LootGetAll(ctx, &commonpb.Empty{})
+	r, err := c.LootGetAll(ctx, &rpcpb.Loot{AgentName: agentName})
+	if err != nil {
+		return "", err
+	}
+	return r.GetText(), nil
+}
+
+func RequestLootClearByAgentName(
+	c rpcpb.HermitRPCClient,
+	ctx context.Context,
+	agentName string,
+) (string, error) {
+	r, err := c.LootClearByAgentName(ctx, &rpcpb.Loot{AgentName: agentName})
 	if err != nil {
 		return "", err
 	}

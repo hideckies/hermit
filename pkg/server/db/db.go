@@ -46,7 +46,8 @@ func (d *Database) init() error {
 	CREATE TABLE operator (
 		id INTEGER NOT NULL PRIMARY KEY,
 		uuid TEXT,
-		name TEXT
+		name TEXT,
+		login TEXT
 	)`)
 	if err != nil {
 		return err

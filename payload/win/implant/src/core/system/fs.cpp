@@ -12,6 +12,7 @@ namespace System::Fs
         // std::string sNumberOfBytesTransferred = std::to_string(dwNumberOfBytesTransfered);
         g_dwBytesTransferred = dwNumberOfBytesTransfered;
     }
+    
     std::vector<char> ReadBytesFromFile(const std::wstring& wFilePath)
     {
         std::string sFilePath = Utils::Convert::UTF8Encode(wFilePath);

@@ -12,14 +12,14 @@ func PrintOperators(ops []*Operator, currentUuid string) {
 		return
 	}
 
-	tHead := []string{"ID", "Name"}
+	tHead := []string{"ID", "Name", "Login"}
 	tRows := [][]string{}
 	for _, op := range ops {
 		id := fmt.Sprint(op.Id)
 		if op.Uuid == currentUuid {
 			id = fmt.Sprintf("*%d", op.Id)
 		}
-		tRows = append(tRows, []string{id, op.Name})
+		tRows = append(tRows, []string{id, op.Name, op.Login})
 	}
 
 	stdout.LogSuccess("")
@@ -32,6 +32,7 @@ func PrintOperatorDetails(op *Operator) {
 		stdout.NewSingleTableItem("ID", fmt.Sprint(op.Id)),
 		stdout.NewSingleTableItem("Name", op.Name),
 		stdout.NewSingleTableItem("UUID", op.Uuid),
+		stdout.NewSingleTableItem("Login", op.Login),
 	}
 
 	stdout.LogSuccess("")

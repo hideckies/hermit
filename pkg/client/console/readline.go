@@ -122,6 +122,7 @@ func handleCommand(
 			line == "ip" ||
 			strings.HasPrefix(line, "keylog ") ||
 			line == "kill" ||
+			strings.HasPrefix(line, "logon ") ||
 			line == "ls" || strings.HasPrefix(line, "ls ") ||
 			strings.HasPrefix(line, "migrate ") ||
 			strings.HasPrefix(line, "mkdir") ||
@@ -141,8 +142,8 @@ func handleCommand(
 		if err := HandleAmTaskSetByAgentName(line, clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
-	case isAgentMode && line == "task clean":
-		if err := HandleAmTaskCleanByAgentName(clientState, c, ctx); err != nil {
+	case isAgentMode && line == "task clear":
+		if err := HandleAmTaskClearByAgentName(clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
 	case isAgentMode && (line == "task list" || line == "tasks"):
@@ -152,11 +153,11 @@ func handleCommand(
 
 	// LOOT
 	case isAgentMode && line == "loot":
-		if err := HandleAmLoot(c, ctx); err != nil {
+		if err := HandleAmLoot(clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
-	case isAgentMode && line == "loot clean":
-		if err := HandleAmLootClean(); err != nil {
+	case isAgentMode && line == "loot clear":
+		if err := HandleAmLootClear(); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
 

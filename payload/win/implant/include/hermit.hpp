@@ -1,10 +1,6 @@
 #ifndef HERMIT_HPP
 #define HERMIT_HPP
 
-// #ifndef IS_DLL
-// #include "tasks/screenshot.hpp"
-// #endif
-
 #include "core/handler.hpp"
 #include "core/system.hpp"
 

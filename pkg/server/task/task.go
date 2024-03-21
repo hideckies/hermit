@@ -1,12 +1,13 @@
 package task
 
 import (
+	"fmt"
 	"strings"
 
-	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
+	"github.com/hideckies/hermit/pkg/common/stdin"
 )
 
-func SetTask(task string, agentName string) error {
+func AdjustTask(task string) (string, error) {
 	// Adjust arguments
 	var err error
 
@@ -16,27 +17,30 @@ func SetTask(task string, agentName string) error {
 
 		task, err = SetTaskWithSrcDest(task)
 		if err != nil {
-			return err
+			return "", err
+		}
+	case task == "kill":
+		yes, err := stdin.Confirm("Do you want to terminate the implant?")
+		if err != nil {
+			return "", err
+		}
+		if !yes {
+			return "", fmt.Errorf("canceld")
 		}
 	case task == "ls":
 		task = "ls ."
 	case strings.HasPrefix(task, "reg "):
 		task, err = SetTaskReg(task)
 		if err != nil {
-			return err
+			return "", err
 		}
 	case strings.HasPrefix(task, "token "):
 		task, err = SetTaskToken(task)
 		if err != nil {
-			return err
+			return "", err
 		}
 	default:
 	}
 
-	// Add the task to the '.tasks' file
-	err = metafs.WriteAgentTask(agentName, task, false)
-	if err != nil {
-		return err
-	}
-	return nil
+	return task, nil
 }

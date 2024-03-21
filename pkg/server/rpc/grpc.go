@@ -15,7 +15,6 @@ import (
 	"github.com/hideckies/hermit/pkg/server/loot"
 	"github.com/hideckies/hermit/pkg/server/payload"
 	"github.com/hideckies/hermit/pkg/server/state"
-	"github.com/hideckies/hermit/pkg/server/task"
 )
 
 type HermitRPCServer struct {
@@ -75,9 +74,10 @@ func (s *HermitRPCServer) OperatorGetAll(
 
 	for _, op := range ops {
 		o := &rpcpb.Operator{
-			Id:   int64(op.Id),
-			Uuid: op.Uuid,
-			Name: op.Name,
+			Id:    int64(op.Id),
+			Uuid:  op.Uuid,
+			Name:  op.Name,
+			Login: op.Login,
 		}
 		if err := stream.Send(o); err != nil {
 			return err
@@ -363,14 +363,15 @@ func (s *HermitRPCServer) TaskSetByAgentName(
 	ctx context.Context,
 	_task *rpcpb.Task,
 ) (*commonpb.Message, error) {
-	err := task.SetTask(_task.GetTask(), _task.GetAgentName())
+	// Add the task to the '.tasks' file
+	err := metafs.WriteAgentTask(_task.GetAgentName(), _task.GetTask(), false)
 	if err != nil {
 		return nil, err
 	}
 	return &commonpb.Message{Text: "Task set successfully."}, nil
 }
 
-func (s *HermitRPCServer) TaskCleanByAgentName(
+func (s *HermitRPCServer) TaskClearByAgentName(
 	ctx context.Context,
 	_task *rpcpb.Task,
 ) (*commonpb.Message, error) {
@@ -398,20 +399,20 @@ func (s *HermitRPCServer) TaskListByAgentName(
 
 func (s *HermitRPCServer) LootGetAll(
 	ctx context.Context,
-	empty *commonpb.Empty,
+	_loot *rpcpb.Loot,
 ) (*commonpb.Message, error) {
-	allLoot, err := loot.GetAllLoot(s.serverState.AgentMode.Name)
+	allLoot, err := loot.GetAllLoot(_loot.GetAgentName())
 	if err != nil {
 		return nil, err
 	}
 	return &commonpb.Message{Text: allLoot}, nil
 }
 
-func (s *HermitRPCServer) LootClean(
+func (s *HermitRPCServer) LootClearByAgentName(
 	ctx context.Context,
-	empty *commonpb.Empty,
+	_loot *rpcpb.Loot,
 ) (*commonpb.Message, error) {
-	err := metafs.DeleteAllAgentLoot(s.serverState.AgentMode.Name, false)
+	err := metafs.DeleteAllAgentLoot(_loot.GetAgentName(), false)
 	if err != nil {
 		return nil, err
 	}

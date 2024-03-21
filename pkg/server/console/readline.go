@@ -122,6 +122,7 @@ func handleCommand(
 			line == "ip" ||
 			strings.HasPrefix(line, "keylog ") ||
 			line == "kill" ||
+			strings.HasPrefix(line, "logon ") ||
 			line == "ls" || strings.HasPrefix(line, "ls ") ||
 			strings.HasPrefix(line, "migrate ") ||
 			strings.HasPrefix(line, "mkdir") ||
@@ -143,8 +144,8 @@ func handleCommand(
 		if err := HandleAmTaskSet(line, serverState); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
-	case isAgentMode && line == "task clean":
-		if err := HandleAmTaskClean(serverState); err != nil {
+	case isAgentMode && line == "task clear":
+		if err := HandleAmTaskClear(serverState); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
 	case isAgentMode && (line == "task list" || line == "tasks"):
@@ -157,8 +158,8 @@ func handleCommand(
 		if err := HandleAmLoot(serverState); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
-	case isAgentMode && line == "loot clean":
-		if err := HandleAmLootClean(serverState); err != nil {
+	case isAgentMode && line == "loot clear":
+		if err := HandleAmLootClear(serverState); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
 

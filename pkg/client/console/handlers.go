@@ -248,7 +248,7 @@ func HandlePayloadGen(
 			return err
 		}
 
-		stdout.LogSuccess(fmt.Sprintf("Stager saved at %s", color.HiGreenString(outFile)))
+		stdout.LogSuccess(fmt.Sprintf("Implant saved at %s", color.HiGreenString(outFile)))
 	} else if strings.HasPrefix(payloadType, "stager") {
 		stg, err := wizard.WizardPayloadStagerGenerate(
 			meta.GetSpecificHost(clientState.Conf.Server.Host),
@@ -436,7 +436,7 @@ func HandleAmTaskSetByAgentName(
 	return nil
 }
 
-func HandleAmTaskCleanByAgentName(
+func HandleAmTaskClearByAgentName(
 	clientState *state.ClientState,
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
@@ -449,7 +449,7 @@ func HandleAmTaskCleanByAgentName(
 		return fmt.Errorf("canceled")
 	}
 
-	err = rpc.RequestTaskCleanByAgentName(c, ctx, clientState.AgentMode.Name)
+	err = rpc.RequestTaskClearByAgentName(c, ctx, clientState.AgentMode.Name)
 	if err != nil {
 		return err
 	}
@@ -473,8 +473,12 @@ func HandleAmTaskListByAgentName(
 	return nil
 }
 
-func HandleAmLoot(c rpcpb.HermitRPCClient, ctx context.Context) error {
-	allLoot, err := rpc.RequestLootGetAll(c, ctx)
+func HandleAmLoot(
+	clientState *state.ClientState,
+	c rpcpb.HermitRPCClient,
+	ctx context.Context,
+) error {
+	allLoot, err := rpc.RequestLootGetAll(c, ctx, clientState.AgentMode.Name)
 	if err != nil {
 		return err
 	}
@@ -484,8 +488,8 @@ func HandleAmLoot(c rpcpb.HermitRPCClient, ctx context.Context) error {
 	return nil
 }
 
-func HandleAmLootClean() error {
-	_, err := stdin.Confirm("Are you sure you want to clean all loot gained?")
+func HandleAmLootClear() error {
+	_, err := stdin.Confirm("Are you sure you want to delete all loot gained?")
 	if err != nil {
 		return err
 	}
