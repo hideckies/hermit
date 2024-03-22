@@ -12,6 +12,84 @@ namespace System::Fs
         // std::string sNumberOfBytesTransferred = std::to_string(dwNumberOfBytesTransfered);
         g_dwBytesTransferred = dwNumberOfBytesTransfered;
     }
+
+    std::wstring GetAbsolutePath(const std::wstring& wPath)
+    {
+        DWORD dwRet = 0;
+        BOOL success;
+        WCHAR wBuffer[MAX_PATH] = TEXT("");
+        WCHAR wBuf[MAX_PATH] = TEXT("");
+        WCHAR** lppPart = {NULL};
+
+        dwRet = GetFullPathName(
+            wPath.c_str(),
+            MAX_PATH,
+            wBuffer,
+            lppPart
+        );
+        if (dwRet == 0)
+        {
+            return L"";
+        }
+
+        return std::wstring(wBuffer);
+    }
+
+    std::vector<std::wstring> GetFilesInDirectory(const std::wstring& wDirPath, BOOL bRecurse)
+    {
+        std::vector<std::wstring> files = {};
+
+        WIN32_FIND_DATA ffd;
+        LARGE_INTEGER fileSize;
+        WCHAR wTargetDir[MAX_PATH];
+        HANDLE hFind = INVALID_HANDLE_VALUE;
+        DWORD dwError = 0;
+
+        StringCchCopyW(wTargetDir, MAX_PATH, wDirPath.c_str());
+        StringCchCatW(wTargetDir, MAX_PATH, TEXT("\\*"));
+
+        hFind = FindFirstFile(wTargetDir, &ffd);
+        if (hFind == INVALID_HANDLE_VALUE)
+        {
+            return files;
+        }
+
+        do
+        {
+            std::wstring wPathName = std::wstring(ffd.cFileName);
+            if (wPathName == L"." || wPathName == L"..")
+            {
+                continue;
+            }
+
+            std::wstring wFullPathName = wDirPath + L"\\" + wPathName;
+            if (wFullPathName == L"")
+            {
+                continue;
+            }
+
+            if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            {
+                // std::wstring wFullDirName = GetAbsolutePath(wPathName);
+
+                if (bRecurse && wFullPathName != wDirPath)
+                {
+                    std::vector<std::wstring> childFiles = GetFilesInDirectory(wFullPathName, bRecurse);
+                    files.insert(files.end(), childFiles.begin(), childFiles.end());
+                }
+                else
+                {
+                    files.push_back(wFullPathName);
+                }
+            }
+            else
+            {
+                files.push_back(wFullPathName);
+            }
+        } while (FindNextFile(hFind, &ffd) != 0);
+
+        return files;
+    }
     
     std::vector<char> ReadBytesFromFile(const std::wstring& wFilePath)
     {
@@ -37,7 +115,7 @@ namespace System::Fs
         return buffer;
     }
 
-    BOOL MyWriteFile(const std::wstring& wFile, LPCVOID lpData, DWORD dwDataSize)
+    BOOL MyWriteFile(const std::wstring& wFilePath, LPCVOID lpData, DWORD dwDataSize)
     {
         HANDLE hFile;
         DWORD dwDataWritten = 0;
@@ -46,7 +124,7 @@ namespace System::Fs
         // DisplayMessageBoxA((LPCSTR)lpData, "MyWriteFileW");
 
         hFile = CreateFileW(
-            wFile.c_str(),
+            wFilePath.c_str(),
             GENERIC_WRITE,
             0,
             NULL,
@@ -80,6 +158,3 @@ namespace System::Fs
         return TRUE;
     }
 }
-
-
-

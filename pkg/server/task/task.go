@@ -19,6 +19,11 @@ func AdjustTask(task string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+	case strings.HasPrefix(task, "dll ") || strings.HasPrefix(task, "shellcode "):
+		task, err = SetTaskPidSrc(task)
+		if err != nil {
+			return "", err
+		}
 	case task == "kill":
 		yes, err := stdin.Confirm("Do you want to terminate the implant?")
 		if err != nil {

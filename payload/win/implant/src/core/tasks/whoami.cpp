@@ -4,28 +4,13 @@ namespace Task
 {
     std::wstring Whoami()
     {
-        std::wstring result;
-
-        WCHAR wInfoBuf[INFO_BUFFER_SIZE] = {'\0'};
-        DWORD dwBufCharCount = INFO_BUFFER_SIZE;
-
-        if (!GetComputerNameW(wInfoBuf, &dwBufCharCount))
+        std::wstring wAccountName = System::User::GetAccountName();
+        if (wAccountName == L"")
         {
-            return L"Error: Could not get the computer name.";
+            return L"Error: Failed to get the account name.";
         }
-
-        result += std::wstring(wInfoBuf);
-        dwBufCharCount = INFO_BUFFER_SIZE;
         
-        if (!GetUserNameW(wInfoBuf, &dwBufCharCount))
-        {
-            return L"Error: Could not get the username.";
-        }
-
-        result += std::wstring(L"\\");
-        result += std::wstring(wInfoBuf);
-
-        return result;
+        return wAccountName;
     }
 
     std::wstring WhoamiPriv()

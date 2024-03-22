@@ -66,12 +66,14 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("cd"),
 	// readline.PcItem("checkin"),
 	readline.PcItem("cp"),
+	readline.PcItem("creds"),
 	readline.PcItem("download"),
 	readline.PcItem("execute"),
-	// readline.PcItem("dll"), DLL spawn and inject modules
+	readline.PcItem("dll"),
 	// readline.PcItem("find"),
-	// readline.PcItem("groups"), Enumerate local groups
-	// readline.PcItem("history"), Retrieve history data of each application
+	// readline.PcItem("group"), Manage a group
+	readline.PcItem("groups"),
+	readline.PcItem("history"),
 	// readline.PcItem("inline-execute"), Execute an object file
 	readline.PcItem("ip"),
 	readline.PcItem("keylog"),
@@ -92,15 +94,16 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("reg"),
 	readline.PcItem("rm"),
 	readline.PcItem("rmdir"),
+	// readline.PcItem("runas"),
 	readline.PcItem("screenshot"),
-	// readline.PcItem("shellcode"),
+	readline.PcItem("shellcode"),
 	readline.PcItem("sleep"),
 	// readline.PcItem("socks"), SOCKS proxy
-	// readline.PcItem("steal creds"), Steal credentials from browsers (Brave, Chrome, Chromium, Edge ,FireFox)
 	// readline.PcItem("sysinfo"),
 	readline.PcItem("token"),
 	readline.PcItem("upload"),
-	// readline.PcItem("users"), Enumerate local users
+	// readline.PcItem("user"), Manage an user
+	readline.PcItem("users"),
 	// readline.PcItem("webcam"),
 	readline.PcItem("whoami"),
 
@@ -175,11 +178,15 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  cat         <FILE>       : Print the contents of a file\n")
 		io.WriteString(w, "  cd          <DIR>        : Change the working directory\n")
 		io.WriteString(w, "  cp          <SRC> <DEST> : Copy a file\n")
+		io.WriteString(w, "  creds steal              : Steal credentials from various resources on the target computer\n")
+		io.WriteString(w, "  dll         <PID> <FILE> : Load DLL and inject modules into the specified process\n")
 		io.WriteString(w, "  download    <SRC> <DEST> : Download a file from the target computer\n")
 		io.WriteString(w, "  execute     <CMD>        : Execute a system command on target computer\n")
+		io.WriteString(w, "  groups                   : Print all local groups\n")
+		io.WriteString(w, "  history                  : Retrieve information from history files of applications\n")
 		io.WriteString(w, "  ip                       : Get IP addresses for target computer\n")
 		io.WriteString(w, "  keylog      <NUM>        : Keylogging for N seconds\n")
-		io.WriteString(w, "  kill                     : Stop the implant process\n")
+		io.WriteString(w, "  kill                     : Terminate the implant process\n")
 		io.WriteString(w, "  ls          <DIR>        : List files in a directory\n")
 		io.WriteString(w, "  migrate     <PID>        : Migrate the implant into another process\n")
 		io.WriteString(w, "  mkdir       <DIR>        : Create a new directory\n")
@@ -191,17 +198,19 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  pwd                      : Print the current working directory\n")
 		// io.WriteString(w, "  reg add                : Create a new registry key\n")
 		// io.WriteString(w, "  reg delete             : Delete the specified registry key\n")
-		// io.WriteString(w, "  reg hives              : Dump registry hives\n")
+		// io.WriteString(w, "  reg save              : Save and download registry hives such as HKLM\SAM, HKLM\SECURITY, HKLM\SYSTEM\n")
 		io.WriteString(w, "  reg subkeys              : Enumerate subkeys for the specified open registry key\n")
 		io.WriteString(w, "  reg values               : Enumerate the specified registry values.\n")
 		// io.WriteString(w, "  reg write              : Write values to the specified registry key\n")
 		io.WriteString(w, "  rm          <FILE>       : Remove a file\n")
 		io.WriteString(w, "  rmdir       <DIR>        : Remove a directory\n")
 		io.WriteString(w, "  screenshot               : Take a screenshot on target computer\n")
+		io.WriteString(w, "  shellcode   <PID> <FILE> : Inject shellcode into the specified process\n")
 		io.WriteString(w, "  sleep       <NUM>        : Set sleep time (seconds) between requests from beacon\n")
 		io.WriteString(w, "  token revert             : Revert back to the original process token\n")
 		io.WriteString(w, "  token steal <PID>        : Steal token from the specified process and impersonate process\n")
 		io.WriteString(w, "  upload      <SRC> <DEST> : Upload a file to the target computer\n")
+		io.WriteString(w, "  users                    : Print all local users\n")
 		io.WriteString(w, "  whoami                   : Print the current user name\n")
 		io.WriteString(w, "  whoami priv              : Print the current user privileges\n")
 		io.WriteString(w, "\n")

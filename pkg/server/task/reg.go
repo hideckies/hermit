@@ -113,6 +113,7 @@ func SetTaskReg(task string) (string, error) {
 		label = "Specify keyname to read value"
 		items = []string{
 			"HKCU\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\Transcription",
+			"HKLM\\Security\\Policy\\Secrets",
 			"HKLM\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\Transcription",
 			"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
 			"HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon",

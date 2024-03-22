@@ -6,14 +6,11 @@ namespace Task
     {
         std::wstring result;
 
-        DWORD dwRet;
         WIN32_FIND_DATAW ffd;
         LARGE_INTEGER filesize;
         std::wstring wFilesize;
         WCHAR wTargetDir[MAX_PATH];
         size_t dirLength;
-        WCHAR wBuffer[MAX_PATH];
-        WCHAR** lppPart = {NULL};
         HANDLE hFind = INVALID_HANDLE_VALUE;
 
         StringCchLengthW(wDir.c_str(), MAX_PATH, &dirLength);
@@ -32,18 +29,11 @@ namespace Task
             return L"Error: Could not find the first file in the directory.";
         }
 
-        // Get the directory (absolute) path
-        dwRet = GetFullPathNameW(
-            wTargetDir,
-            MAX_PATH,
-            wBuffer,
-            lppPart
-        );
-        if (dwRet == 0)
+        std::wstring wDirPath = System::Fs::GetAbsolutePath(wTargetDir);
+        if (wDirPath == L"")
         {
-            return L"Error: Could not get current directory.";
+            return L"Error: Failed to get the absolute path for the directory.";
         }
-        std::wstring wDirPath = std::wstring(wBuffer);
         result += std::wstring(L"Directory: ");
         result += std::wstring(wDirPath);
         result += std::wstring(L"\n\n");

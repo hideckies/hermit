@@ -32,45 +32,24 @@ add_compile_definitions(LISTENER_PORT=${LISTENER_PORT})
 add_compile_definitions(REQUEST_PATH_DOWNLOAD=${REQUEST_PATH_DOWNLOAD})
 
 # SOURCE
+set(COMMON_SOURCES
+        src/hermit.cpp
+        src/core/technique/injection/dll_injection.cpp
+        src/core/technique/injection/shellcode_injection.cpp
+        src/core/handler.cpp
+        src/core/stdout.cpp
+        src/core/system/arch.cpp
+        src/core/system/env.cpp
+        src/core/system/http.cpp
+        src/core/system/process.cpp
+        src/core/utils/convert.cpp
+)
 if(${PAYLOAD_TYPE} STREQUAL \"dll-loader\")
-    set(SOURCE
-            src/main/dll_loader_${PAYLOAD_FORMAT}.cpp
-            src/hermit.cpp
-            src/core/evasion/injection.cpp
-            src/core/handler.cpp
-            src/core/stdout.cpp
-            src/core/system/arch.cpp
-            src/core/system/env.cpp
-            src/core/system/http.cpp
-            src/core/system/process.cpp
-            src/core/utils/convert.cpp
-        )
+    set(SOURCE src/main/dll_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
 elseif(${PAYLOAD_TYPE} STREQUAL \"exec-loader\")
-    set(SOURCE
-        src/main/exec_loader_${PAYLOAD_FORMAT}.cpp
-        src/hermit.cpp
-        src/core/evasion/injection.cpp
-        src/core/handler.cpp
-        src/core/stdout.cpp
-        src/core/system/arch.cpp
-        src/core/system/env.cpp
-        src/core/system/http.cpp
-        src/core/system/process.cpp
-        src/core/utils/convert.cpp
-    )
+    set(SOURCE src/main/exec_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
 elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode-loader\")
-    set(SOURCE
-        src/main/shellcode_loader_${PAYLOAD_FORMAT}.cpp
-        src/hermit.cpp
-        src/core/evasion/injection.cpp
-        src/core/handler.cpp
-        src/core/stdout.cpp
-        src/core/system/arch.cpp
-        src/core/system/env.cpp
-        src/core/system/http.cpp
-        src/core/system/process.cpp
-        src/core/utils/convert.cpp
-    )
+    set(SOURCE src/main/shellcode_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
 endif()
 
 # LINK LIBRATILIES

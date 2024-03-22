@@ -117,8 +117,12 @@ func handleCommand(
 		isAgentMode && (strings.HasPrefix(line, "cat ") ||
 			strings.HasPrefix(line, "cd ") ||
 			strings.HasPrefix(line, "cp ") ||
+			line == "creds steal" ||
+			strings.HasPrefix(line, "dll ") ||
 			strings.HasPrefix(line, "download ") ||
 			strings.HasPrefix(line, "execute ") ||
+			line == "groups" ||
+			line == "history" ||
 			line == "ip" ||
 			strings.HasPrefix(line, "keylog ") ||
 			line == "kill" ||
@@ -135,9 +139,11 @@ func handleCommand(
 			strings.HasPrefix(line, "rm ") ||
 			strings.HasPrefix(line, "rmdir ") ||
 			line == "screenshot" ||
+			strings.HasPrefix(line, "shellcode ") ||
 			strings.HasPrefix(line, "sleep ") ||
 			line == "token revert" || strings.HasPrefix(line, "token steal ") ||
 			strings.HasPrefix(line, "upload ") ||
+			line == "users" ||
 			line == "whoami" || line == "whoami priv"):
 		if err := HandleAmTaskSetByAgentName(line, clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))

@@ -3,9 +3,9 @@
 
 #include <windows.h>
 #include <winhttp.h>
-#include "core/evasion.hpp"
 #include "core/handler.hpp"
 #include "core/system.hpp"
+#include "core/technique.hpp"
 #include "core/utils.hpp"
 
 namespace Hermit
