@@ -19,7 +19,6 @@
 #define IDI_SMALL 3
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
 #define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
-#define SLEEP(n) Sleep(n * 1000)
 #define WIDEN(x) WIDEN2(x)
 #define WIDEN2(x) L##x
 

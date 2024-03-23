@@ -289,6 +289,7 @@ namespace System::Http
 		LPCWSTR lpHost,
 		INTERNET_PORT nPort,
 		LPCWSTR lpPath,
+		LPCWSTR lpHeaders,
 		const std::wstring& wSrc,
 		const std::wstring& wDest
 	) {
@@ -301,7 +302,7 @@ namespace System::Http
 			nPort,
 			lpPath,
 			L"POST",
-			L"",
+			lpHeaders,
 			(LPVOID)sSrc.c_str(),
 			(DWORD)strlen(sSrc.c_str())
 		);

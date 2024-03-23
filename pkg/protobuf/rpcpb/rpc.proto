@@ -26,6 +26,8 @@ service HermitRPC {
   rpc ListenerStartById (commonpb.Id) returns (commonpb.Message) {}
   rpc ListenerStopById (commonpb.Id) returns (commonpb.Message) {}
   rpc ListenerDeleteById (commonpb.Id) returns (commonpb.Message) {}
+  rpc ListenerPayloadsById (commonpb.Id) returns (commonpb.Message) {}
+  rpc ListenerPayloadsDeleteById (ListenerPayload) returns (commonpb.Message) {}
   rpc ListenerGetById (commonpb.Id) returns (Listener) {}
   rpc ListenerGetAll (commonpb.Empty) returns (stream Listener) {}
 
@@ -35,6 +37,7 @@ service HermitRPC {
   rpc PayloadShellcodeGenerate (PayloadShellcode) returns (commonpb.Binary) {}
 
   // AGENT
+  rpc AgentDeleteById (commonpb.Id) returns (commonpb.Message) {}
   rpc AgentGetById (commonpb.Id) returns (Agent) {}
   rpc AgentGetAll (commonpb.Empty) returns (stream Agent) {}
   rpc AgentTaskList (commonpb.Empty) returns (commonpb.Message) {}
@@ -65,6 +68,11 @@ message Listener {
   int32 port = 6;
   string domains = 7;
   bool active = 8;
+}
+
+message ListenerPayload {
+  int64 id = 1;
+  string payloadName = 2;
 }
 
 message PayloadImplant {

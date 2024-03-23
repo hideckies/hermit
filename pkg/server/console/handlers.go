@@ -3,6 +3,7 @@ package console
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -405,6 +406,33 @@ func HandleAgentInfoById(line string, argStartIdx int, serverState *state.Server
 	return nil
 }
 
+func HandleAgentNoteById(line string, argStartIdx int, serverState *state.ServerState) error {
+	agentId, err := stdin.ParseArgUint(line, argStartIdx)
+	if err != nil {
+		return err
+	}
+
+	ag, err := serverState.DB.AgentGetById(agentId)
+	if err != nil {
+		return fmt.Errorf("agent not found: %v", err)
+	}
+
+	agNoteFile, err := metafs.GetAgentNoteFile(ag.Name, false)
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("nano", agNoteFile)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func HandleAgentList(serverState *state.ServerState) error {
 	ags, err := serverState.DB.AgentGetAll()
 	if err != nil {
@@ -429,6 +457,28 @@ func HandleAmAgentInfo(serverState *state.ServerState) error {
 	}
 
 	agent.PrintAgentDetails(ag)
+	return nil
+}
+
+func HandleAmAgentNote(serverState *state.ServerState) error {
+	ag, err := serverState.DB.AgentGetByUuid(serverState.AgentMode.Uuid)
+	if err != nil {
+		return fmt.Errorf("agent not found: %v", err)
+	}
+
+	agMemoFile, err := metafs.GetAgentNoteFile(ag.Name, false)
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("nano", agMemoFile)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

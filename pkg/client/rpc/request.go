@@ -174,6 +174,34 @@ func RequestListenerGetById(
 	), nil
 }
 
+func RequestListenerPayloadsById(
+	c rpcpb.HermitRPCClient,
+	ctx context.Context,
+	listenerId uint,
+) (string, error) {
+	r, err := c.ListenerPayloadsById(ctx, &commonpb.Id{Value: int64(listenerId)})
+	if err != nil {
+		return "", err
+	}
+	return r.GetText(), nil
+}
+
+func RequestListenerPayloadsDeleteById(
+	c rpcpb.HermitRPCClient,
+	ctx context.Context,
+	listenerId uint,
+	payloadName string,
+) (string, error) {
+	r, err := c.ListenerPayloadsDeleteById(ctx, &rpcpb.ListenerPayload{
+		Id:          int64(listenerId),
+		PayloadName: payloadName,
+	})
+	if err != nil {
+		return "", err
+	}
+	return r.GetText(), nil
+}
+
 func RequestListenerGetAll(
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
@@ -272,6 +300,19 @@ func RequestPayloadShellcodeGenerate(
 		return []byte{}, err
 	}
 	return r.GetData(), nil
+}
+
+func RequestAgentDeleteById(
+	c rpcpb.HermitRPCClient,
+	ctx context.Context,
+	agentId uint,
+) error {
+	_, err := c.AgentDeleteById(ctx, &commonpb.Id{Value: int64(agentId)})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func RequestAgentGetById(

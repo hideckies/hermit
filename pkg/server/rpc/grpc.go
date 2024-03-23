@@ -179,6 +179,51 @@ func (s *HermitRPCServer) ListenerDeleteById(
 	return &commonpb.Message{Text: "Listener deleted."}, nil
 }
 
+func (s *HermitRPCServer) ListenerPayloadsById(
+	ctx context.Context,
+	listenerId *commonpb.Id,
+) (*commonpb.Message, error) {
+	lis, err := s.serverState.DB.ListenerGetById(uint(listenerId.Value))
+	if err != nil {
+		return nil, err
+	}
+
+	// List payloads on the listener
+	payloads, err := metafs.GetListenerPayloadPaths(lis.Name, false, true)
+	if err != nil {
+		return nil, err
+	}
+	if len(payloads) == 0 {
+		return nil, fmt.Errorf("payloads not found on the listener")
+	}
+
+	return &commonpb.Message{Text: strings.Join(payloads, "\n")}, nil
+}
+
+func (s *HermitRPCServer) ListenerPayloadsDeleteById(
+	ctx context.Context,
+	listenerPayload *rpcpb.ListenerPayload,
+) (*commonpb.Message, error) {
+	listenerId := listenerPayload.Id
+	payloadName := listenerPayload.PayloadName
+
+	lis, err := s.serverState.DB.ListenerGetById(uint(listenerId))
+	if err != nil {
+		return nil, err
+	}
+
+	payloadsDir, err := metafs.GetListenerPayloadsDir(lis.Name, false)
+	if err != nil {
+		return nil, err
+	}
+	err = os.RemoveAll(fmt.Sprintf("%s/%s", payloadsDir, payloadName))
+	if err != nil {
+		return nil, err
+	}
+
+	return &commonpb.Message{Text: "Payload deleted."}, nil
+}
+
 func (s *HermitRPCServer) ListenerGetById(
 	ctx context.Context,
 	listenerId *commonpb.Id,
@@ -300,6 +345,34 @@ func (s *HermitRPCServer) PayloadShellcodeGenerate(
 		return nil, err
 	}
 	return &commonpb.Binary{Data: data}, nil
+}
+
+func (s *HermitRPCServer) AgentDeleteById(
+	ctx context.Context,
+	agentId *commonpb.Id,
+) (*commonpb.Message, error) {
+	ag, err := s.serverState.DB.AgentGetById(uint(agentId.Value))
+	if err != nil {
+		return nil, err
+	}
+
+	// Delete the agent from database
+	err = s.serverState.DB.AgentDeleteById(uint(agentId.Value))
+	if err != nil {
+		return nil, err
+	}
+
+	// Delete the related folder
+	lootAgentDir, err := metafs.GetAgentLootDir(ag.Name, false)
+	if err != nil {
+		return nil, err
+	}
+	err = os.RemoveAll(lootAgentDir)
+	if err != nil {
+		return nil, err
+	}
+
+	return &commonpb.Message{Text: "Agent deleted."}, nil
 }
 
 func (s *HermitRPCServer) AgentGetById(

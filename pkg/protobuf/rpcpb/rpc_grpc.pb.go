@@ -36,6 +36,8 @@ type HermitRPCClient interface {
 	ListenerStartById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*commonpb.Message, error)
 	ListenerStopById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*commonpb.Message, error)
 	ListenerDeleteById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*commonpb.Message, error)
+	ListenerPayloadsById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*commonpb.Message, error)
+	ListenerPayloadsDeleteById(ctx context.Context, in *ListenerPayload, opts ...grpc.CallOption) (*commonpb.Message, error)
 	ListenerGetById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*Listener, error)
 	ListenerGetAll(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (HermitRPC_ListenerGetAllClient, error)
 	// PAYLOAD
@@ -43,6 +45,7 @@ type HermitRPCClient interface {
 	PayloadStagerGenerate(ctx context.Context, in *PayloadStager, opts ...grpc.CallOption) (*commonpb.Binary, error)
 	PayloadShellcodeGenerate(ctx context.Context, in *PayloadShellcode, opts ...grpc.CallOption) (*commonpb.Binary, error)
 	// AGENT
+	AgentDeleteById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*commonpb.Message, error)
 	AgentGetById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*Agent, error)
 	AgentGetAll(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (HermitRPC_AgentGetAllClient, error)
 	AgentTaskList(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Message, error)
@@ -176,6 +179,24 @@ func (c *hermitRPCClient) ListenerDeleteById(ctx context.Context, in *commonpb.I
 	return out, nil
 }
 
+func (c *hermitRPCClient) ListenerPayloadsById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*commonpb.Message, error) {
+	out := new(commonpb.Message)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/ListenerPayloadsById", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hermitRPCClient) ListenerPayloadsDeleteById(ctx context.Context, in *ListenerPayload, opts ...grpc.CallOption) (*commonpb.Message, error) {
+	out := new(commonpb.Message)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/ListenerPayloadsDeleteById", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hermitRPCClient) ListenerGetById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*Listener, error) {
 	out := new(Listener)
 	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/ListenerGetById", in, out, opts...)
@@ -238,6 +259,15 @@ func (c *hermitRPCClient) PayloadStagerGenerate(ctx context.Context, in *Payload
 func (c *hermitRPCClient) PayloadShellcodeGenerate(ctx context.Context, in *PayloadShellcode, opts ...grpc.CallOption) (*commonpb.Binary, error) {
 	out := new(commonpb.Binary)
 	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/PayloadShellcodeGenerate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hermitRPCClient) AgentDeleteById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*commonpb.Message, error) {
+	out := new(commonpb.Message)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/AgentDeleteById", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -356,6 +386,8 @@ type HermitRPCServer interface {
 	ListenerStartById(context.Context, *commonpb.Id) (*commonpb.Message, error)
 	ListenerStopById(context.Context, *commonpb.Id) (*commonpb.Message, error)
 	ListenerDeleteById(context.Context, *commonpb.Id) (*commonpb.Message, error)
+	ListenerPayloadsById(context.Context, *commonpb.Id) (*commonpb.Message, error)
+	ListenerPayloadsDeleteById(context.Context, *ListenerPayload) (*commonpb.Message, error)
 	ListenerGetById(context.Context, *commonpb.Id) (*Listener, error)
 	ListenerGetAll(*commonpb.Empty, HermitRPC_ListenerGetAllServer) error
 	// PAYLOAD
@@ -363,6 +395,7 @@ type HermitRPCServer interface {
 	PayloadStagerGenerate(context.Context, *PayloadStager) (*commonpb.Binary, error)
 	PayloadShellcodeGenerate(context.Context, *PayloadShellcode) (*commonpb.Binary, error)
 	// AGENT
+	AgentDeleteById(context.Context, *commonpb.Id) (*commonpb.Message, error)
 	AgentGetById(context.Context, *commonpb.Id) (*Agent, error)
 	AgentGetAll(*commonpb.Empty, HermitRPC_AgentGetAllServer) error
 	AgentTaskList(context.Context, *commonpb.Empty) (*commonpb.Message, error)
@@ -410,6 +443,12 @@ func (UnimplementedHermitRPCServer) ListenerStopById(context.Context, *commonpb.
 func (UnimplementedHermitRPCServer) ListenerDeleteById(context.Context, *commonpb.Id) (*commonpb.Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListenerDeleteById not implemented")
 }
+func (UnimplementedHermitRPCServer) ListenerPayloadsById(context.Context, *commonpb.Id) (*commonpb.Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListenerPayloadsById not implemented")
+}
+func (UnimplementedHermitRPCServer) ListenerPayloadsDeleteById(context.Context, *ListenerPayload) (*commonpb.Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListenerPayloadsDeleteById not implemented")
+}
 func (UnimplementedHermitRPCServer) ListenerGetById(context.Context, *commonpb.Id) (*Listener, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListenerGetById not implemented")
 }
@@ -424,6 +463,9 @@ func (UnimplementedHermitRPCServer) PayloadStagerGenerate(context.Context, *Payl
 }
 func (UnimplementedHermitRPCServer) PayloadShellcodeGenerate(context.Context, *PayloadShellcode) (*commonpb.Binary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PayloadShellcodeGenerate not implemented")
+}
+func (UnimplementedHermitRPCServer) AgentDeleteById(context.Context, *commonpb.Id) (*commonpb.Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AgentDeleteById not implemented")
 }
 func (UnimplementedHermitRPCServer) AgentGetById(context.Context, *commonpb.Id) (*Agent, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AgentGetById not implemented")
@@ -645,6 +687,42 @@ func _HermitRPC_ListenerDeleteById_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HermitRPC_ListenerPayloadsById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(commonpb.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HermitRPCServer).ListenerPayloadsById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpcpb.HermitRPC/ListenerPayloadsById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HermitRPCServer).ListenerPayloadsById(ctx, req.(*commonpb.Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HermitRPC_ListenerPayloadsDeleteById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListenerPayload)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HermitRPCServer).ListenerPayloadsDeleteById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpcpb.HermitRPC/ListenerPayloadsDeleteById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HermitRPCServer).ListenerPayloadsDeleteById(ctx, req.(*ListenerPayload))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HermitRPC_ListenerGetById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(commonpb.Id)
 	if err := dec(in); err != nil {
@@ -734,6 +812,24 @@ func _HermitRPC_PayloadShellcodeGenerate_Handler(srv interface{}, ctx context.Co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HermitRPCServer).PayloadShellcodeGenerate(ctx, req.(*PayloadShellcode))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HermitRPC_AgentDeleteById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(commonpb.Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HermitRPCServer).AgentDeleteById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpcpb.HermitRPC/AgentDeleteById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HermitRPCServer).AgentDeleteById(ctx, req.(*commonpb.Id))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -929,6 +1025,14 @@ var HermitRPC_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HermitRPC_ListenerDeleteById_Handler,
 		},
 		{
+			MethodName: "ListenerPayloadsById",
+			Handler:    _HermitRPC_ListenerPayloadsById_Handler,
+		},
+		{
+			MethodName: "ListenerPayloadsDeleteById",
+			Handler:    _HermitRPC_ListenerPayloadsDeleteById_Handler,
+		},
+		{
 			MethodName: "ListenerGetById",
 			Handler:    _HermitRPC_ListenerGetById_Handler,
 		},
@@ -943,6 +1047,10 @@ var HermitRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PayloadShellcodeGenerate",
 			Handler:    _HermitRPC_PayloadShellcodeGenerate_Handler,
+		},
+		{
+			MethodName: "AgentDeleteById",
+			Handler:    _HermitRPC_AgentDeleteById_Handler,
 		},
 		{
 			MethodName: "AgentGetById",

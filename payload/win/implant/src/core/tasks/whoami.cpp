@@ -63,14 +63,16 @@ namespace Task
 
             if (System::Priv::CheckPrivilege(hToken, privName))
             {
-                wFlag = L"Enabled";
+                // wFlag = L"Enabled";
+                wFlag = L"o";
             }
             else
             {
-                wFlag = L"Disabled";
+                // wFlag = L"Disabled";
+                wFlag = L"x";
             }
 
-            result += std::wstring(privName) + L"\t\t\t" + wFlag + L"\n";
+            result += wFlag + L" " + std::wstring(privName) + L"\n";
         }
 
         if (pPrivileges)

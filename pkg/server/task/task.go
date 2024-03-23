@@ -39,6 +39,11 @@ func AdjustTask(task string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+	case strings.HasPrefix(task, "runas "):
+		task, err = SetTaskRunAs(task)
+		if err != nil {
+			return "", err
+		}
 	case strings.HasPrefix(task, "token "):
 		task, err = SetTaskToken(task)
 		if err != nil {

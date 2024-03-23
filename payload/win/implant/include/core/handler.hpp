@@ -2,45 +2,19 @@
 #define HERMIT_CORE_HANDLER_HPP
 
 #include "core/task.hpp"
+#include "core/state.hpp"
 #include "core/system.hpp"
 #include "core/utils.hpp"
 
 namespace Handler
 {
-	std::wstring GetInitialInfo();
-
-	BOOL CheckIn(
-        HINTERNET hConnect,
-        LPCWSTR lpHost,
-        INTERNET_PORT nPort,
-        LPCWSTR lpPath,
-        const std::wstring& wInfoJson
-    );
-
-	std::wstring GetTask(
-		HINTERNET hConnect,
-		LPCWSTR lpHost,
-		INTERNET_PORT nPort,
-		LPCWSTR lpPath
-	);
-
-	std::wstring ExecuteTask(
-		HINSTANCE hInstance,
-		INT nCmdShow,
-		HINTERNET hConnect,
-		const std::wstring& task,
-		INT &nSleep
-	);
-
-	BOOL SendTaskResult(
-		HINTERNET hConnect,
-		LPCWSTR lpHost,
-		INTERNET_PORT nPort,
-		LPCWSTR lpPath,
-		const std::wstring& task,
-		const std::wstring& taskResult
-	);
+	std::wstring GetInitialInfo(State::StateManager& sm);
+	VOID InitHTTP(State::StateManager& sm);
+	VOID CloseHTTP(State::StateManager& sm);
+	BOOL CheckIn(State::StateManager& sm, const std::wstring& wInfoJson);
+	BOOL GetTask(State::StateManager& sm);
+	BOOL ExecuteTask(State::StateManager& sm);
+	BOOL SendTaskResult(State::StateManager& sm);
 }
-
 
 #endif // HERMIT_CORE_HANDLER_HPP

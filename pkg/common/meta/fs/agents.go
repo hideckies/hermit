@@ -41,6 +41,14 @@ func GetAgentLootDir(agentName string, isClient bool) (string, error) {
 	return fmt.Sprintf("%s/loot", agentDir), nil
 }
 
+func GetAgentNoteFile(agentName string, isClient bool) (string, error) {
+	agentDir, err := GetAgentDir(agentName, isClient)
+	if err != nil {
+		return "", nil
+	}
+	return fmt.Sprintf("%s/note", agentDir), nil
+}
+
 func GetAgentTasksFile(agentName string, isClient bool) (string, error) {
 	agentDir, err := GetAgentDir(agentName, isClient)
 	if err != nil {
@@ -63,6 +71,13 @@ func MakeAgentChildDirs(agentName string, isClient bool) error {
 	if err != nil {
 		return err
 	}
+
+	// Create 'note' file
+	noteFile, err := os.Create(fmt.Sprintf("%s/note", agentDir))
+	if err != nil {
+		return err
+	}
+	noteFile.Close()
 
 	// Create '.tasks' file under 'tasks' folder
 	tasksFile := agentDir + "/.tasks"

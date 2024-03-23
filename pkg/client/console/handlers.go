@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -189,8 +190,44 @@ func HandleListenerPayloadsById(
 		return err
 	}
 
-	// TODO
-	fmt.Printf("Not implemented yet: %s\n", listenerId)
+	lis, err := rpc.RequestListenerGetById(c, ctx, listenerId)
+	if err != nil {
+		return err
+	}
+
+	payloads, err := rpc.RequestListenerPayloadsById(c, ctx, uint(listenerId))
+	if err != nil {
+		return fmt.Errorf("listener payloads not found: %v", err)
+	}
+
+	payloadsSplit := strings.Split(payloads, "\n")
+
+	// As needed, delete a specific payload.
+	payloadsSplit = append(payloadsSplit, "Cancel")
+	label := fmt.Sprintf("Payloads hosted on %s", lis.Name)
+	res, err := stdin.Select(label, payloadsSplit)
+	if err != nil {
+		return err
+	}
+	if res == "Cancel" {
+		return fmt.Errorf("canceled")
+	}
+
+	isDelete, err := stdin.Confirm(fmt.Sprintf("Delete '%s'?", res))
+	if err != nil {
+		return err
+	}
+	if isDelete {
+		// Request to delete a payload.
+		_, err := rpc.RequestListenerPayloadsDeleteById(c, ctx, uint(listenerId), res)
+		if err != nil {
+			return err
+		}
+		stdout.LogSuccess("Payload deleted.")
+	} else {
+		stdout.LogWarn("Canceled")
+	}
+
 	return nil
 }
 
@@ -344,16 +381,31 @@ func HandleAgentUseById(
 	return nil
 }
 
-func HandleAgentDeleteById(line string, argStartIdx int) error {
+func HandleAgentDeleteById(
+	line string,
+	argStartIdx int,
+	c rpcpb.HermitRPCClient,
+	ctx context.Context,
+) error {
+	res, err := stdin.Confirm("Are you sure you want to delete the agent?")
+	if err != nil {
+		return err
+	}
+	if !res {
+		return fmt.Errorf("canceled")
+	}
+
 	agentId, err := stdin.ParseArgUint(line, argStartIdx)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Delete agent %d", agentId)
-	// TODO
-	// ...
+	err = rpc.RequestAgentDeleteById(c, ctx, agentId)
+	if err != nil {
+		return err
+	}
 
+	stdout.LogSuccess("Agent deleted.")
 	return nil
 }
 
@@ -374,6 +426,38 @@ func HandleAgentInfoById(
 	}
 
 	agent.PrintAgentDetails(ag)
+	return nil
+}
+
+func HandleAgentNoteById(
+	line string,
+	argStartIdx int,
+	c rpcpb.HermitRPCClient,
+	ctx context.Context,
+) error {
+	agentId, err := stdin.ParseArgUint(line, argStartIdx)
+	if err != nil {
+		return err
+	}
+
+	ag, err := rpc.RequestAgentGetById(c, ctx, agentId)
+	if err != nil {
+		return fmt.Errorf("agent not found: %v", err)
+	}
+
+	agMemoFile, err := metafs.GetAgentNoteFile(ag.Name, true)
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("nano", agMemoFile)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -417,6 +501,43 @@ func HandleAmAgentInfo(
 
 	stdout.LogSuccess("")
 	agent.PrintAgentDetails(targetAgent)
+	return nil
+}
+
+func HandleAmAgentNote(
+	clientState *state.ClientState,
+	c rpcpb.HermitRPCClient,
+	ctx context.Context,
+) error {
+	ags, err := rpc.RequestAgentGetAll(c, ctx)
+	if err != nil {
+		return err
+	}
+
+	var targetAgent *agent.Agent
+	for _, ag := range ags {
+		if ag.Uuid == clientState.AgentMode.Uuid {
+			targetAgent = ag
+			break
+		}
+	}
+	if targetAgent == nil {
+		return fmt.Errorf("agent not found")
+	}
+
+	agMemoFile, err := metafs.GetAgentNoteFile(targetAgent.Name, true)
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("nano", agMemoFile)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

