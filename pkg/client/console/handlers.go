@@ -20,6 +20,7 @@ import (
 	"github.com/hideckies/hermit/pkg/server/agent"
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/operator"
+	"github.com/hideckies/hermit/pkg/server/task"
 )
 
 func HandleInvalidCommand(line string) {
@@ -547,8 +548,13 @@ func HandleAmTaskSetByAgentName(
 	c rpcpb.HermitRPCClient,
 	ctx context.Context,
 ) error {
+	task, err := task.AdjustTask(line)
+	if err != nil {
+		return err
+	}
+
 	// Send request to the server for setting a task
-	err := rpc.RequestTaskSetByAgentName(c, ctx, line, clientState.AgentMode.Name)
+	err = rpc.RequestTaskSetByAgentName(c, ctx, task, clientState.AgentMode.Name)
 	if err != nil {
 		return err
 	}

@@ -81,6 +81,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/core/tasks/reg.cpp
             src/core/tasks/rm.cpp
             src/core/tasks/rmdir.cpp
+            src/core/tasks/rportfwd.cpp
             src/core/tasks/runas.cpp
             src/core/tasks/screenshot.cpp
             src/core/tasks/shellcode.cpp

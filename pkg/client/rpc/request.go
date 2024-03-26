@@ -12,7 +12,6 @@ import (
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/operator"
 	"github.com/hideckies/hermit/pkg/server/payload"
-	"github.com/hideckies/hermit/pkg/server/task"
 )
 
 func RequestSayHello(c rpcpb.HermitRPCClient, ctx context.Context) (string, error) {
@@ -388,12 +387,7 @@ func RequestTaskSetByAgentName(
 	_task string,
 	agentName string,
 ) error {
-	task, err := task.AdjustTask(_task)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.TaskSetByAgentName(ctx, &rpcpb.Task{Task: task, AgentName: agentName})
+	_, err := c.TaskSetByAgentName(ctx, &rpcpb.Task{Task: _task, AgentName: agentName})
 	if err != nil {
 		return err
 	}

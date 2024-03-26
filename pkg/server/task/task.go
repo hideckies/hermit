@@ -39,6 +39,16 @@ func AdjustTask(task string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+	case task == "rportfwd add":
+		task, err = SetTaskRportfwdAdd(task)
+		if err != nil {
+			return "", err
+		}
+	case task == "rportfwd rm":
+		task, err = SetTaskRportfwdRm(task)
+		if err != nil {
+			return "", err
+		}
 	case strings.HasPrefix(task, "runas "):
 		task, err = SetTaskRunAs(task)
 		if err != nil {

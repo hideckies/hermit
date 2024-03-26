@@ -10,6 +10,11 @@ namespace Task
         std::string fileContent = Utils::Convert::VecCharToString(byteData);
         std::wstring wFileContent = Utils::Convert::UTF8Decode(fileContent);
 
+        if (wFileContent == L"")
+        {
+            return L"Error: Failed to read a file.";
+        }
+
         return wFileContent;
     }
 }
