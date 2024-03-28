@@ -1,87 +1,74 @@
-#ifndef HERMIT_STATE_HPP
-#define HERMIT_STATE_HPP
+#ifndef HERMIT_CORE_STATE_HPP
+#define HERMIT_CORE_STATE_HPP
 
+#include <winsock2.h>
+#include <winternl.h>
 #include <windows.h>
 #include <winhttp.h>
-#include <string>
+
+#include "core/socket.hpp"
+#include "core/procs.hpp"
+#include "core/system.hpp"
 
 namespace State
 {
     struct State
     {
-        HINSTANCE hInstance;
-        INT nCmdShow;
-        LPCWSTR lpPayloadType;
-        LPCWSTR lpListenerProtocol;
-        LPCWSTR lpListenerHost;
-        INTERNET_PORT nListenerPort;
-        LPCWSTR lpReqPathCheckIn;
-        LPCWSTR lpReqPathDownload;
-        LPCWSTR lpReqPathTaskGet;
-        LPCWSTR lpReqPathTaskResult;
-        LPCWSTR lpReqPathUpload;
-        LPCWSTR lpReqPathWebSocket;
-        INT nSleep;
-        INT nJitter;
-        INT nKillDate;
-        std::wstring wUUID;
-        std::wstring wTask;
-        std::wstring wTaskResult;
-        HINTERNET hSession;
-        HINTERNET hConnect;
-        HINTERNET hRequest;
+        // Thread environment block
+        PTEB            pTeb;
+
+        // Module handlers
+        HMODULE         hNTDLL;
+        HMODULE         hWinHTTPDLL;
+
+        // Procs loaded dynamatically
+        Procs::PPROCS   pProcs;
+
+        // wWinMain arguments
+        HINSTANCE       hInstance;
+        INT             nCmdShow;
+
+        // Payload type
+        LPCWSTR         lpPayloadType;
+
+        // Listener options
+        LPCWSTR         lpListenerProto;
+        LPCWSTR         lpListenerHost;
+        INTERNET_PORT   nListenerPort;
+
+        // Request paths
+        LPCWSTR         lpReqPathCheckIn;
+        LPCWSTR         lpReqPathTaskGet;
+        LPCWSTR         lpReqPathTaskResult;
+        LPCWSTR         lpReqPathDownload;
+        LPCWSTR         lpReqPathUpload;
+        LPCWSTR         lpReqPathWebSocket;
+
+        // Beacon options
+        INT             nSleep;
+        INT             nJitter;
+        INT             nKillDate;
+
+        // Agent options
+        std::wstring    wUUID;
+        std::wstring    wTask;
+        std::wstring    wTaskResult;
+
+        // WinHTTP handlers
+        HINTERNET       hSession;
+        HINTERNET       hConnect;
+        HINTERNET       hRequest;
+
+        // Socket
+        Socket::PSOCKET_DATA pSocket;
+
+        // Quit beacon
         BOOL bQuit;
     };
 
-	struct StateManager {
-		State currState;
+    typedef State* PState;
 
-        VOID SetHInstance(HINSTANCE hInstance);
-        VOID SetCmdShow(INT nCmdShow);
-        VOID SetPayloadType(LPCWSTR wPayloadType);
-        VOID SetListenerProtocol(LPCWSTR lpProtocol);
-		VOID SetListenerHost(LPCWSTR lpHost);
-		VOID SetListenerPort(INTERNET_PORT nPort);
-        VOID SetReqPathCheckIn(LPCWSTR lpReqPathCheckIn);
-        VOID SetReqPathDownload(LPCWSTR lpReqPathDownload);
-        VOID SetReqPathTaskGet(LPCWSTR lpReqPathTaskGet);
-        VOID SetReqPathTaskResult(LPCWSTR lpReqPathTaskResult);
-        VOID SetReqPathUpload(LPCWSTR lpReqPathUpload);
-        VOID SetReqPathWebSocket(LPCWSTR lpReqPathWebSocket);
-		VOID SetSleep(INT nSleep);
-		VOID SetJitter(INT nJitter);
-		VOID SetKillDate(INT nKillDate);
-		VOID SetUUID(const std::wstring& wUUID);
-		VOID SetTask(const std::wstring& wTask);
-        VOID SetTaskResult(const std::wstring& wTaskResult);
-		VOID SetHSession(HINTERNET hSession);
-		VOID SetHConnect(HINTERNET hConnect);
-		VOID SetHRequest(HINTERNET hRequest);
-        VOID SetQuit(BOOL bQuit);
-
-        HINSTANCE GetHInstance() const;
-        INT GetCmdShow() const;
-        LPCWSTR GetPayloadType() const;
-        LPCWSTR GetListenerProtocol() const;
-		LPCWSTR GetListenerHost() const;
-		INTERNET_PORT GetListenerPort() const;
-        LPCWSTR GetReqPathCheckIn() const;
-        LPCWSTR GetReqPathDownload() const;
-        LPCWSTR GetReqPathTaskGet() const;
-        LPCWSTR GetReqPathTaskResult() const;
-        LPCWSTR GetReqPathUpload() const;
-        LPCWSTR GetReqPathWebSocket() const;
-		INT GetSleep() const;
-		INT GetJitter() const;
-		INT GetKillDate() const;
-		std::wstring GetUUID() const;
-		std::wstring GetTask() const;
-        std::wstring GetTaskResult() const;
-		HINTERNET GetHSession() const;
-		HINTERNET GetHConnect() const;
-		HINTERNET GetHRequest() const;
-        BOOL GetQuit() const;
-	};
+    VOID Free(PState pState);
 }
 
-#endif // HERMIT_STATE_HPP
+#endif // HERMIT_CORE_STATE_HPP

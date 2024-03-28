@@ -53,8 +53,18 @@ func run(configPath string) error {
 	}
 	defer database.DB.Close()
 
+	// Get all listeners
+	liss, err := database.ListenerGetAll()
+	if err != nil {
+		return err
+	}
+
 	// Initialize a job
 	j := job.NewJob()
+	// Add listener jobs
+	for _, lis := range liss {
+		j.NewListenerJob(lis.Uuid)
+	}
 
 	// Initialize a server state
 	serverState, err := state.NewServerState(serverConfig, database, j)
@@ -73,7 +83,6 @@ func run(configPath string) error {
 		return err
 	}
 
-	// go j.Run()
 	go rpc.Run(serverState)
 	go console.Readline(serverState, ope.Uuid)
 

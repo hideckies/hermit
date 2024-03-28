@@ -101,12 +101,14 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 	outFile = fmt.Sprintf("%s/%s.%s.%s", payloadsDir, i.Name, i.Arch, i.Format)
 
 	// Get request paths randomly
-	requestPathCheckIn := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/checkin"])
-	requestPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/download"])
-	requestPathTaskGet := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/task/get"])
-	requestPathTaskResult := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/task/result"])
-	requestPathUpload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/upload"])
-	requestPathWebSocket := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/websocket"])
+	reqPathCheckIn := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/checkin"])
+	reqPathTaskGet := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/task/get"])
+	reqPathTaskResult := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/task/result"])
+	reqPathWebSocket := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/websocket"])
+	reqPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/download"])
+	reqPathUpload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/upload"])
+	reqPathSocketOpen := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/socket/open"])
+	reqPathSocketClose := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/socket/close"])
 
 	// Change to the paylaod directory
 	if i.Os == "linux" {
@@ -133,12 +135,14 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			fmt.Sprintf("-DLISTENER_PROTOCOL=\"%s\"", i.Lprotocol),
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", i.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(i.Lport)),
-			fmt.Sprintf("-DREQUEST_PATH_CHECKIN=\"%s\"", requestPathCheckIn),
-			fmt.Sprintf("-DREQUEST_PATH_DOWNLOAD=\"%s\"", requestPathDownload),
-			fmt.Sprintf("-DREQUEST_PATH_TASKGET=\"%s\"", requestPathTaskGet),
-			fmt.Sprintf("-DREQUEST_PATH_TASKRESULT=\"%s\"", requestPathTaskResult),
-			fmt.Sprintf("-DREQUEST_PATH_UPLOAD=\"%s\"", requestPathUpload),
-			fmt.Sprintf("-DREQUEST_PATH_WEBSOCKET=\"%s\"", requestPathWebSocket),
+			fmt.Sprintf("-DREQUEST_PATH_CHECKIN=\"%s\"", reqPathCheckIn),
+			fmt.Sprintf("-DREQUEST_PATH_TASKGET=\"%s\"", reqPathTaskGet),
+			fmt.Sprintf("-DREQUEST_PATH_TASKRESULT=\"%s\"", reqPathTaskResult),
+			fmt.Sprintf("-DREQUEST_PATH_WEBSOCKET=\"%s\"", reqPathWebSocket),
+			fmt.Sprintf("-DREQUEST_PATH_DOWNLOAD=\"%s\"", reqPathDownload),
+			fmt.Sprintf("-DREQUEST_PATH_UPLOAD=\"%s\"", reqPathUpload),
+			fmt.Sprintf("-DREQUEST_PATH_SOCKET_OPEN=\"%s\"", reqPathSocketOpen),
+			fmt.Sprintf("-DREQUEST_PATH_SOCKET_CLOSE=\"%s\"", reqPathSocketClose),
 			"-S.",
 			"-Bbuild",
 		)
@@ -150,7 +154,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			"cmake",
 			"--build", "build",
 			"--config", "Release",
-			// "-j", fmt.Sprint(serverState.NumCPU),
+			"-j", fmt.Sprint(serverState.NumCPU),
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)

@@ -7,10 +7,11 @@ import (
 	"github.com/hideckies/hermit/pkg/server/listener"
 )
 
-func (j *Job) WaitListenerStart(database *db.Database, lis *listener.Listener) error {
+func (j *Job) WaitListenerStart(database *db.Database, lis *listener.Listener, lisJob *ListenerJob) error {
 	for {
 		select {
-		case <-j.ChListenerReady:
+		// case <-j.ChListenerReady:
+		case <-lisJob.ChReady:
 			lis.Active = true
 
 			// Add the listener to database or update
@@ -30,7 +31,8 @@ func (j *Job) WaitListenerStart(database *db.Database, lis *listener.Listener) e
 				}
 			}
 			return nil
-		case <-j.ChListenerError:
+		// case <-j.ChListenerError:
+		case <-lisJob.ChError:
 			return fmt.Errorf("error starting a listener")
 		default:
 		}
@@ -38,11 +40,17 @@ func (j *Job) WaitListenerStart(database *db.Database, lis *listener.Listener) e
 }
 
 func (j *Job) WaitListenerStop(database *db.Database, lis *listener.Listener) error {
+	// Get listener job
+	lisJob, err := j.GetListenerJob(lis.Uuid)
+	if err != nil {
+		return err
+	}
+
 	for {
 		select {
-		case <-j.ChListenerError:
+		case <-lisJob.ChError:
 			return fmt.Errorf("error stopping a listener")
-		case <-j.ChListenerQuit:
+		case <-lisJob.ChQuit:
 			// Set "inactive" on the database
 			err := database.ListenerUpdateActiveByUuid(lis.Uuid, false)
 			if err != nil {

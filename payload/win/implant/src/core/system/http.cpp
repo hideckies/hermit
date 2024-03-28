@@ -2,36 +2,31 @@
 
 namespace System::Http
 {
-	VOID WinHttpCloseHandles(
-		HINTERNET hSession,
-		HINTERNET hConnect,
-		HINTERNET hRequest
+	WinHttpHandlers InitRequest(
+		Procs::PPROCS pProcs,
+		LPCWSTR lpHost,
+		INTERNET_PORT nPort
 	) {
-		if (hRequest) WinHttpCloseHandle(hRequest);
-		if (hConnect) WinHttpCloseHandle(hConnect);
-		if (hSession) WinHttpCloseHandle(hSession);
-	}
-
-	WinHttpHandlers InitRequest(LPCWSTR lpHost, INTERNET_PORT nPort)
-	{
 		HINTERNET hSession = NULL;
 		HINTERNET hConnect = NULL;
 
-		hSession = WinHttpOpen(
+		hSession = pProcs->lpWinHttpOpen(
 			L"",
 			WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
 			WINHTTP_NO_PROXY_NAME,
-			WINHTTP_NO_PROXY_BYPASS, 0
+			WINHTTP_NO_PROXY_BYPASS,
+			0
 		);
 		if (!hSession) {
 			return {hSession, hConnect};
 		}
 
-		hConnect = WinHttpConnect(hSession, lpHost, nPort, 0);
+		hConnect = pProcs->lpWinHttpConnect(hSession, lpHost, nPort, 0);
 		return {hSession, hConnect};
 	}
 
 	WinHttpResponse SendRequest(
+		Procs::PPROCS pProcs,
 		HINTERNET hConnect,
 		LPCWSTR lpHost,
 		INTERNET_PORT nPort,
@@ -49,7 +44,7 @@ namespace System::Http
 		DWORD dwStatusCode = 0;
 		DWORD dwStatusCodeSize = sizeof(dwStatusCode);
 
-		hRequest = WinHttpOpenRequest(
+		hRequest = pProcs->lpWinHttpOpenRequest(
 			hConnect,
 			lpMethod,
 			lpPath,
@@ -67,7 +62,7 @@ namespace System::Http
 					SECURITY_FLAG_IGNORE_CERT_CN_INVALID |
 					SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
 
-		bResult = WinHttpSetOption(
+		bResult = pProcs->lpWinHttpSetOption(
 			hRequest,
 			WINHTTP_OPTION_SECURITY_FLAGS,
 			&dwSecFlags,
@@ -82,7 +77,7 @@ namespace System::Http
 			lpHeaders = WINHTTP_NO_ADDITIONAL_HEADERS;
 		}
 
-		bResult = WinHttpSendRequest(
+		bResult = pProcs->lpWinHttpSendRequest(
 			hRequest,
 			lpHeaders,
 			lpHeaders ? -1 : 0,
@@ -96,7 +91,7 @@ namespace System::Http
 		}
 
 		if (lpData) {
-			bResult = WinHttpWriteData(
+			bResult = pProcs->lpWinHttpWriteData(
 				hRequest,
 				lpData,
 				dwDataLength,
@@ -104,12 +99,12 @@ namespace System::Http
 			);
 		}
 
-		bResult = WinHttpReceiveResponse(hRequest, NULL);
+		bResult = pProcs->lpWinHttpReceiveResponse(hRequest, NULL);
 		if (!bResult) {
 			return {FALSE, hRequest, 0};
 		}
 
-		bResult = WinHttpQueryHeaders(
+		bResult = pProcs->lpWinHttpQueryHeaders(
 			hRequest, 
 			WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, 
 			WINHTTP_HEADER_NAME_BY_INDEX, 
@@ -125,7 +120,7 @@ namespace System::Http
 	}
 
 	// Read response as bytes.
-	std::vector<BYTE> ReadResponseBytes(HINTERNET hRequest) {
+	std::vector<BYTE> ReadResponseBytes(Procs::PPROCS pProcs, HINTERNET hRequest) {
 		std::vector<BYTE> respBytes;
 
 		DWORD dwSize = 0;
@@ -136,7 +131,7 @@ namespace System::Http
 		{
 			dwSize = 0;
 
-			if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
+			if (!pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
 			{
 				return respBytes;
 			}
@@ -154,7 +149,7 @@ namespace System::Http
 			}
 
 			ZeroMemory(pBuffer, dwSize);
-			if (!WinHttpReadData(
+			if (!pProcs->lpWinHttpReadData(
 				hRequest,
 				pBuffer,
 				dwSize,
@@ -173,7 +168,7 @@ namespace System::Http
 	}
 
 	// Read response as text.
-	std::wstring ReadResponseText(HINTERNET hRequest) {
+	std::wstring ReadResponseText(Procs::PPROCS pProcs, HINTERNET hRequest) {
 		std::wstring respText;
 
 		DWORD dwSize = 0;
@@ -182,7 +177,7 @@ namespace System::Http
 
 		do
 		{
-			if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
+			if (!pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
 			{
 				break;
 			}
@@ -199,7 +194,7 @@ namespace System::Http
 
 			// Read the data
 			ZeroMemory(pszOutBuffer, dwSize+1);
-			if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
+			if (!pProcs->lpWinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
 			{
 				break;
 			}
@@ -219,7 +214,11 @@ namespace System::Http
 	}
 
 	// Read response data and write it to a file.
-	BOOL WriteResponseData(HINTERNET hRequest, const std::wstring& outFile) {
+	BOOL WriteResponseData(
+		Procs::PPROCS pProcs,
+		HINTERNET hRequest,
+		const std::wstring& outFile
+	) {
 		DWORD dwSize = 0;
 		DWORD dwRead = 0;
 		LPSTR pszOutBuffer;
@@ -241,7 +240,7 @@ namespace System::Http
 
 		do
 		{
-			if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
+			if (!pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
 			{
 				break;
 			}
@@ -258,7 +257,7 @@ namespace System::Http
 
 			// Read the data
 			ZeroMemory(pszOutBuffer, dwSize+1);
-			if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
+			if (!pProcs->lpWinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
 			{
 				// Could not read data.
 			}
@@ -285,6 +284,7 @@ namespace System::Http
 
 	// Wrapper for send&read&write response.
 	BOOL DownloadFile(
+		Procs::PPROCS pProcs,
 		HINTERNET hConnect,
 		LPCWSTR lpHost,
 		INTERNET_PORT nPort,
@@ -297,6 +297,7 @@ namespace System::Http
 		std::string sDest = Utils::Convert::UTF8Encode(wDest);
 
 		WinHttpResponse resp = SendRequest(
+			pProcs,
 			hConnect,
 			lpHost,
 			nPort,
@@ -311,12 +312,23 @@ namespace System::Http
 			return FALSE;
 		}
 
-		if (!WriteResponseData(resp.hRequest, wDest))
+		if (!WriteResponseData(pProcs, resp.hRequest, wDest))
 		{
 			return FALSE;
 		}
 
 		return TRUE;
+	}
+
+	VOID WinHttpCloseHandles(
+		Procs::PPROCS pProcs,
+		HINTERNET hSession,
+		HINTERNET hConnect,
+		HINTERNET hRequest
+	) {
+		if (hRequest) pProcs->lpWinHttpCloseHandle(hRequest);
+		if (hConnect) pProcs->lpWinHttpCloseHandle(hConnect);
+		if (hSession) pProcs->lpWinHttpCloseHandle(hSession);
 	}
 }
 

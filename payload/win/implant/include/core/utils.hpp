@@ -2,7 +2,10 @@
 #define HERMIT_CORE_UTILS_HPP
 
 #include <windows.h>
+#include <ctime>
+#include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 
 namespace Utils::Convert
@@ -22,6 +25,14 @@ namespace Utils::Convert
 
     // LPSTR -> wchar_t*
     wchar_t* LPSTRToWCHAR_T(LPSTR lpStr);
+
+    // IPv4(wstring) -> DWORD
+    DWORD IPv4ToDWORD(const std::wstring& wIP);
+}
+
+namespace Utils::Random
+{
+    INT RandomINT();
 }
 
 namespace Utils::Split

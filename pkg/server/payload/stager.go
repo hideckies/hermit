@@ -128,7 +128,7 @@ func (s *Stager) Generate(serverState *state.ServerState) (data []byte, outFile 
 			"cmake",
 			"--build", "build",
 			"--config", "Release",
-			// "-j", fmt.Sprint(serverState.NumCPU),
+			"-j", fmt.Sprint(serverState.NumCPU),
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)

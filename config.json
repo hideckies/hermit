@@ -6,12 +6,6 @@
     ],
     "listeners": {
         "fakeRoutes": {
-            "/download": [
-                "/20211004.pdf",
-                "/Meeting_2023-06-12.pdf",
-                "/OpenSans-Bold.woff",
-                "/Roboto-Bold.woff"
-            ],
             "/implant/checkin": [
                 "/contact",
                 "/search"
@@ -28,10 +22,6 @@
                 "/chat",
                 "/ws"
             ],
-            "/upload": [
-                "/feed",
-                "/change"
-            ],
             "/stager/download": [
                 "/20200524.pdf",
                 "/Meeting_2022-01-23.pdf",
@@ -39,6 +29,24 @@
                 "/a1b2c3d4e5f6g7h8i.woff",
                 "/OpenSans-Regular.woff",
                 "/Roboto-BoldItalic.woff"
+            ],
+            "/download": [
+                "/20211004.pdf",
+                "/Meeting_2023-06-12.pdf",
+                "/OpenSans-Bold.woff",
+                "/Roboto-Bold.woff"
+            ],
+            "/upload": [
+                "/feed",
+                "/change"
+            ],
+            "/socket/open": [
+                "/privacy",
+                "/readme.txt"
+            ],
+            "/socket/close": [
+                "/index.html",
+                "/about.html"
             ]
         },
         "responseHeaders": [

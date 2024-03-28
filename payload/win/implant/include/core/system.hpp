@@ -1,17 +1,20 @@
 #ifndef HERMIT_CORE_SYSTEM_HPP
 #define HERMIT_CORE_SYSTEM_HPP
 
+#include "core/state.hpp" // need to include it first to avoid winsock2.h and windows.h error
 #include <windows.h>
 #include <winhttp.h>
+#include <winreg.h>
 #include <fstream>
-#include <iterator>
 #include <lm.h>
+#include <map>
 #include <sddl.h>
-#include <sstream>
 #include <string>
 #include <strsafe.h>
+#include <synchapi.h>
 #include <vector>
-#include "core/macros.hpp"
+
+#include "core/procs.hpp"
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
 
@@ -23,6 +26,7 @@ namespace System::Arch
 namespace System::Env
 {
     std::wstring GetStrings(const std::wstring& envVar);
+    std::map<std::wstring, std::wstring> GetAll();
 }
 
 namespace System::Fs
@@ -52,18 +56,10 @@ namespace System::Group
 
 namespace System::Http
 {
-    VOID WinHttpCloseHandles(
-        HINTERNET hSession,
-        HINTERNET hConnect,
-        HINTERNET hRequest
-    );
-
     struct WinHttpHandlers {
         HINTERNET hSession;
         HINTERNET hConnect;
     };
-
-    WinHttpHandlers InitRequest(LPCWSTR lpHost, INTERNET_PORT nPort);
 
     struct WinHttpResponse {
         BOOL bResult;
@@ -71,7 +67,13 @@ namespace System::Http
         DWORD dwStatusCode;
     };
 
+    WinHttpHandlers InitRequest(
+		Procs::PPROCS pProcs,
+		LPCWSTR lpHost,
+		INTERNET_PORT nPort
+	);
     WinHttpResponse SendRequest(
+        Procs::PPROCS pProcs,
         HINTERNET hConnect,
         LPCWSTR lpHost,
         INTERNET_PORT nPort,
@@ -81,11 +83,21 @@ namespace System::Http
         LPVOID lpData,
         DWORD dwDataLength
     );
-
-    std::vector<BYTE> ReadResponseBytes(HINTERNET hRequest);
-    std::wstring ReadResponseText(HINTERNET hRequest);
-    BOOL WriteResponseData(HINTERNET hRequest, const std::wstring& outFile);
+    std::vector<BYTE> ReadResponseBytes(
+        Procs::PPROCS pProcs,
+        HINTERNET hRequest
+    );
+    std::wstring ReadResponseText(
+        Procs::PPROCS pProcs,
+        HINTERNET hRequest
+    );
+    BOOL WriteResponseData(
+        Procs::PPROCS pProcs,
+        HINTERNET hRequest,
+        const std::wstring& outFile
+    );
     BOOL DownloadFile(
+        Procs::PPROCS pProcs,
         HINTERNET hConnect,
         LPCWSTR lpHost,
         INTERNET_PORT nPort,
@@ -93,6 +105,12 @@ namespace System::Http
         LPCWSTR lpHeaders,
         const std::wstring& wSrc,
         const std::wstring& wDest
+    );
+    VOID WinHttpCloseHandles(
+        Procs::PPROCS pProcs,
+        HINTERNET hSession,
+        HINTERNET hConnect,
+        HINTERNET hRequest
     );
 }
 

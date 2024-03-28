@@ -32,12 +32,14 @@ add_compile_definitions(PAYLOAD_TYPE=${PAYLOAD_TYPE})
 add_compile_definitions(LISTENER_PROTOCOL=${LISTENER_PROTOCOL})
 add_compile_definitions(LISTENER_HOST=${LISTENER_HOST})
 add_compile_definitions(LISTENER_PORT=${LISTENER_PORT})
-add_compile_definitions(REQUEST_PATH_DOWNLOAD=${REQUEST_PATH_DOWNLOAD})
 add_compile_definitions(REQUEST_PATH_CHECKIN=${REQUEST_PATH_CHECKIN})
 add_compile_definitions(REQUEST_PATH_TASKGET=${REQUEST_PATH_TASKGET})
 add_compile_definitions(REQUEST_PATH_TASKRESULT=${REQUEST_PATH_TASKRESULT})
-add_compile_definitions(REQUEST_PATH_UPLOAD=${REQUEST_PATH_UPLOAD})
 add_compile_definitions(REQUEST_PATH_WEBSOCKET=${REQUEST_PATH_WEBSOCKET})
+add_compile_definitions(REQUEST_PATH_DOWNLOAD=${REQUEST_PATH_DOWNLOAD})
+add_compile_definitions(REQUEST_PATH_UPLOAD=${REQUEST_PATH_UPLOAD})
+add_compile_definitions(REQUEST_PATH_SOCKET_OPEN=${REQUEST_PATH_SOCKET_OPEN})
+add_compile_definitions(REQUEST_PATH_SOCKET_CLOSE=${REQUEST_PATH_SOCKET_CLOSE})
 
 # SOURCE
 if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
@@ -45,6 +47,8 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/main/beacon_${PAYLOAD_FORMAT}.cpp
             src/hermit.cpp
             src/core/handler.cpp
+            src/core/procs.cpp
+            src/core/socket.cpp
             src/core/state.cpp
             src/core/stdout.cpp
             src/core/system/arch.cpp
@@ -64,6 +68,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/core/tasks/creds.cpp
             src/core/tasks/dll.cpp
             src/core/tasks/download.cpp
+            src/core/tasks/env.cpp
             src/core/tasks/execute.cpp
             src/core/tasks/group.cpp
             src/core/tasks/history.cpp
@@ -91,6 +96,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
             src/core/tasks/user.cpp
             src/core/tasks/whoami.cpp
             src/core/utils/convert.cpp
+            src/core/utils/random.cpp
             src/core/utils/split.cpp
     )
 # elseif(${PAYLOAD_TYPE} STREQUAL \"interactive\")

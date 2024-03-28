@@ -96,5 +96,22 @@ namespace Utils::Convert
         MultiByteToWideChar(CP_UTF8, 0, lpStr, -1, wstr, wchars_num);
         return wstr;
     }
+
+    // IPv4(wstring) -> DWORD
+    DWORD IPv4ToDWORD(const std::wstring& wIP)
+    {
+        DWORD dwResult = 0;
+        int shift = 24;
+
+        std::wstringstream ss(wIP);
+        std::wstring section;
+        while (std::getline(ss, section, L'.')) {
+            DWORD value = std::stoul(section);
+            dwResult |= (value << shift);
+            shift -= 8;
+        }
+
+        return dwResult;
+    }
 }
 

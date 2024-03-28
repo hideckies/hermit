@@ -20,6 +20,7 @@ import (
 	"github.com/hideckies/hermit/pkg/common/utils"
 	"github.com/hideckies/hermit/pkg/server/agent"
 	"github.com/hideckies/hermit/pkg/server/db"
+	"github.com/hideckies/hermit/pkg/server/job"
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/state"
 )
@@ -42,6 +43,9 @@ type StagerData struct {
 	Arch       string `json:"arch"`
 	Hostname   string `json:"hostname"`
 	LoaderType string `json:"loaderType"`
+}
+
+type SocketData struct {
 }
 
 // This function is used for verifying the connected agent.
@@ -137,7 +141,7 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 
 		ags, err := database.AgentGetAll()
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Error: Failed to get all agents.")
 			return
 		}
 		var targetAgent *agent.Agent = nil
@@ -148,25 +152,25 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 			}
 		}
 		if targetAgent == nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Error: The agent UUID not found.")
 			return
 		}
 
 		// Get tasks
 		tasks, err := metafs.ReadAgentTasks(targetAgent.Name, false)
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Error: Failed to read a task.")
 			return
 		}
 		if len(tasks) == 0 {
-			ctx.String(http.StatusOK, "")
+			ctx.String(http.StatusBadRequest, "Tasks are not set.")
 			return
 		}
 		// Get the first task and remove it from task list
 		task := tasks[0]
 		err = metafs.DeleteAgentTask(targetAgent.Name, task, false)
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Error: Failed to delete a task from file.")
 			return
 		}
 
@@ -283,113 +287,6 @@ func handleImplantWebSocket(ctx *gin.Context) {
 	}
 }
 
-func handleDownload(database *db.Database) gin.HandlerFunc {
-	fn := func(ctx *gin.Context) {
-		// Get the client UUID
-		clientUUID := ctx.GetHeader("X-UUID")
-
-		// Check if the agent exists on the database
-		ags, err := database.AgentGetAll()
-		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
-			return
-		}
-		agentExists := false
-		for _, ag := range ags {
-			if ag.Uuid == clientUUID {
-				agentExists = true
-				break
-			}
-		}
-		if !agentExists {
-			ctx.String(http.StatusBadRequest, "")
-			return
-		}
-
-		w := ctx.Writer
-		header := w.Header()
-		header.Set("Transfer-Encoding", "chunked")
-		header.Set("Content-Type", "application/octet-stream")
-
-		// Read the request data (file path to download)
-		filenameBytes, err := ctx.GetRawData()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.(http.Flusher).Flush()
-			return
-		}
-		filename := string(filenameBytes)
-
-		// Prepare the file
-		data, err := os.ReadFile(filename)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.(http.Flusher).Flush()
-			return
-		}
-
-		// Send chunked data
-		w.WriteHeader(http.StatusOK)
-		chunkedData := utils.ChunkData(data)
-		for _, c := range chunkedData {
-			w.Write(c)
-			w.(http.Flusher).Flush()
-			time.Sleep(time.Duration(1) * time.Second)
-		}
-	}
-	return gin.HandlerFunc(fn)
-}
-
-func handleUpload(database *db.Database) gin.HandlerFunc {
-	fn := func(ctx *gin.Context) {
-		// Get the client UUID
-		clientUUID := ctx.GetHeader("X-UUID")
-
-		// Get the agent
-		ags, err := database.AgentGetAll()
-		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
-			return
-		}
-		var targetAgent *agent.Agent = nil
-		for _, ag := range ags {
-			if ag.Uuid == clientUUID {
-				targetAgent = ag
-				break
-			}
-		}
-		if targetAgent == nil {
-			ctx.String(http.StatusBadRequest, "")
-			return
-		}
-
-		// Get the download path
-		downloadPath := ctx.GetHeader("X-File")
-		// Check if the file already exists
-		if _, err := os.Stat(downloadPath); err == nil {
-			ctx.String(http.StatusBadRequest, "")
-			return
-		}
-
-		// Read data from the file
-		data, err := ctx.GetRawData()
-		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
-			return
-		}
-
-		// Save the file
-		err = os.WriteFile(downloadPath, data, 0644)
-		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
-			return
-		}
-
-		ctx.String(http.StatusOK, "")
-	}
-	return gin.HandlerFunc(fn)
-}
-
 func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		w := ctx.Writer
@@ -498,6 +395,127 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
+func handleDownload(database *db.Database) gin.HandlerFunc {
+	fn := func(ctx *gin.Context) {
+		// Get the client UUID
+		clientUUID := ctx.GetHeader("X-UUID")
+
+		// Check if the agent exists on the database
+		ags, err := database.AgentGetAll()
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+		agentExists := false
+		for _, ag := range ags {
+			if ag.Uuid == clientUUID {
+				agentExists = true
+				break
+			}
+		}
+		if !agentExists {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+
+		w := ctx.Writer
+		header := w.Header()
+		header.Set("Transfer-Encoding", "chunked")
+		header.Set("Content-Type", "application/octet-stream")
+
+		// Read the request data (file path to download)
+		filenameBytes, err := ctx.GetRawData()
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.(http.Flusher).Flush()
+			return
+		}
+		filename := string(filenameBytes)
+
+		// Prepare the file
+		data, err := os.ReadFile(filename)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.(http.Flusher).Flush()
+			return
+		}
+
+		// Send chunked data
+		w.WriteHeader(http.StatusOK)
+		chunkedData := utils.ChunkData(data)
+		for _, c := range chunkedData {
+			w.Write(c)
+			w.(http.Flusher).Flush()
+			time.Sleep(time.Duration(1) * time.Second)
+		}
+	}
+	return gin.HandlerFunc(fn)
+}
+
+func handleUpload(database *db.Database) gin.HandlerFunc {
+	fn := func(ctx *gin.Context) {
+		// Get the client UUID
+		clientUUID := ctx.GetHeader("X-UUID")
+
+		// Get the agent
+		ags, err := database.AgentGetAll()
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+		var targetAgent *agent.Agent = nil
+		for _, ag := range ags {
+			if ag.Uuid == clientUUID {
+				targetAgent = ag
+				break
+			}
+		}
+		if targetAgent == nil {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+
+		// Get the download path
+		downloadPath := ctx.GetHeader("X-File")
+		// Check if the file already exists
+		if _, err := os.Stat(downloadPath); err == nil {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+
+		// Read data from the file
+		data, err := ctx.GetRawData()
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+
+		// Save the file
+		err = os.WriteFile(downloadPath, data, 0644)
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+
+		ctx.String(http.StatusOK, "")
+	}
+	return gin.HandlerFunc(fn)
+}
+
+func handleSocketOpen(database *db.Database) gin.HandlerFunc {
+	fn := func(ctx *gin.Context) {
+		return
+	}
+	return gin.HandlerFunc(fn)
+}
+
+func handleSocketClose(database *db.Database) gin.HandlerFunc {
+	fn := func(ctx *gin.Context) {
+		return
+	}
+	return gin.HandlerFunc(fn)
+}
+
 func httpsRoutes(
 	router *gin.Engine,
 	lis *listener.Listener,
@@ -517,19 +535,26 @@ func httpsRoutes(
 	for _, r := range fakeRoutes["/implant/websocket"] {
 		router.GET(r, handleImplantWebSocket)
 	}
+	for _, r := range fakeRoutes["/stager/download"] {
+		router.POST(r, handleStagerDownload(lis))
+	}
 	for _, r := range fakeRoutes["/download"] {
 		router.POST(r, handleDownload(serverState.DB))
 	}
 	for _, r := range fakeRoutes["/upload"] {
 		router.POST(r, handleUpload(serverState.DB))
 	}
-	for _, r := range fakeRoutes["/stager/download"] {
-		router.POST(r, handleStagerDownload(lis))
+	for _, r := range fakeRoutes["/socket/open"] {
+		router.POST(r, handleSocketOpen(serverState.DB))
+	}
+	for _, r := range fakeRoutes["/socket/close"] {
+		router.POST(r, handleSocketClose(serverState.DB))
 	}
 }
 
 func HttpsStart(
 	lis *listener.Listener,
+	lisJob *job.ListenerJob,
 	serverState *state.ServerState,
 ) error {
 	// Get server certificate paths
@@ -553,27 +578,24 @@ func HttpsStart(
 	go func() {
 		for {
 			select {
-			case uuid := <-serverState.Job.ChReqListenerQuit:
-				if uuid == lis.Uuid {
-					if err := srv.Close(); err != nil {
-						serverState.Job.ChListenerError <- lis.Uuid
-						break
-					}
-				} else {
-					continue
+			case uuid := <-lisJob.ChReqQuit:
+				if err := srv.Close(); err != nil {
+					lisJob.ChError <- uuid
 				}
 			default:
 			}
 		}
 	}()
 
-	serverState.Job.ChListenerReady <- lis.Uuid
+	// serverState.Job.ChListenerReady <- lis.Uuid
+	lisJob.ChReady <- lis.Uuid
 
 	if err := srv.ListenAndServeTLS(serverCertPath, serverKeyPath); err != nil {
 		if err == http.ErrServerClosed {
-			serverState.Job.ChListenerQuit <- lis.Uuid
+			lisJob.ChQuit <- lis.Uuid
 			return nil
 		} else {
+			stdout.LogInfo("srv.ListenAndServeTLS else")
 			return err
 		}
 	}

@@ -82,8 +82,11 @@ func HandleListenerStart(serverState *state.ServerState) error {
 		return err
 	}
 
-	go handler.ListenerStart(lis, serverState)
-	err = serverState.Job.WaitListenerStart(serverState.DB, lis)
+	// Create new listener job
+	lisJob := serverState.Job.NewListenerJob(lis.Uuid)
+
+	go handler.ListenerStart(lis, lisJob, serverState)
+	err = serverState.Job.WaitListenerStart(serverState.DB, lis, lisJob)
 	if err != nil {
 		return err
 	}
@@ -106,8 +109,14 @@ func HandleListenerStartById(line string, argStartIdx int, serverState *state.Se
 		return fmt.Errorf("the listener is already running")
 	}
 
-	go handler.ListenerStart(lis, serverState)
-	err = serverState.Job.WaitListenerStart(serverState.DB, lis)
+	// Get listener job
+	lisJob, err := serverState.Job.GetListenerJob(lis.Uuid)
+	if err != nil {
+		return err
+	}
+
+	go handler.ListenerStart(lis, lisJob, serverState)
+	err = serverState.Job.WaitListenerStart(serverState.DB, lis, lisJob)
 	if err != nil {
 		return err
 	}
@@ -130,7 +139,13 @@ func HandleListenerStopById(line string, argStartIdx int, serverState *state.Ser
 		return fmt.Errorf("listener already stopped")
 	}
 
-	serverState.Job.ChReqListenerQuit <- lis.Uuid
+	// Get listener job and send a channel to quit request
+	lisJob, err := serverState.Job.GetListenerJob(lis.Uuid)
+	if err != nil {
+		return err
+	}
+	// serverState.Job.ChReqListenerQuit <- lis.Uuid
+	lisJob.ChReqQuit <- lis.Uuid
 
 	err = serverState.Job.WaitListenerStop(serverState.DB, lis)
 	if err != nil {
@@ -154,7 +169,14 @@ func HandleListenerDeleteById(line string, argStartIdx int, serverState *state.S
 		return fmt.Errorf("the listener is running. stop it before deleting")
 	}
 
+	// Delete listener from database
 	err = serverState.DB.ListenerDeleteById(listenerId)
+	if err != nil {
+		return err
+	}
+
+	// Delete listener job
+	err = serverState.Job.RemoveListenerJob(lis.Uuid)
 	if err != nil {
 		return err
 	}
@@ -378,11 +400,11 @@ func HandleAgentDeleteById(line string, argStartIdx int, serverState *state.Serv
 	}
 
 	// Delete the related folder
-	lootAgentDir, err := metafs.GetAgentLootDir(ag.Name, false)
+	agentDir, err := metafs.GetAgentDir(ag.Name, false)
 	if err != nil {
 		return err
 	}
-	err = os.RemoveAll(lootAgentDir)
+	err = os.RemoveAll(agentDir)
 	if err != nil {
 		return err
 	}

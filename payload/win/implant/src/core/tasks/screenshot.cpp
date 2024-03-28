@@ -333,17 +333,17 @@ namespace Task::Helper::Screenshot
 
 namespace Task
 {
-    std::wstring Screenshot(State::StateManager& sm)
+    std::wstring Screenshot(State::PState pState)
     {
-        Task::Helper::Screenshot::MyRegisterClass(sm.GetHInstance());
+        Task::Helper::Screenshot::MyRegisterClass(pState->hInstance);
 
         // Perform application initialization:
-        if (!Task::Helper::Screenshot::InitInstance(sm.GetHInstance(), sm.GetCmdShow()))
+        if (!Task::Helper::Screenshot::InitInstance(pState->hInstance, pState->nCmdShow))
         {
             return L"Error: Could not initialize.";
         }
 
-        HACCEL hAccelTable = LoadAccelerators(sm.GetHInstance(), MAKEINTRESOURCE(IDC_GDICAPTURINGANIMAGE));
+        HACCEL hAccelTable = LoadAccelerators(pState->hInstance, MAKEINTRESOURCE(IDC_GDICAPTURINGANIMAGE));
 
         MSG msg;
         while (GetMessage(&msg, nullptr, 0, 0))

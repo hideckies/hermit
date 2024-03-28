@@ -2,12 +2,10 @@
 #define HERMIT_HPP
 
 #include "core/handler.hpp"
-#include "core/state.hpp"
-#include "core/system.hpp"
 
 namespace Hermit
 {
-	BOOL Run(
+	VOID Run(
 		HINSTANCE       hInstance,
 		INT             nCmdShow,
 		LPCWSTR			lpPayloadType,

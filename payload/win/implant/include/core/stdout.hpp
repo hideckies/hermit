@@ -10,5 +10,4 @@ namespace Stdout
     INT DisplayErrorMessageBoxW(LPCWSTR caption);
 }
 
-
 #endif // HERMIT_CORE_STDOUT_HPP

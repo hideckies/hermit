@@ -2,35 +2,40 @@ package task
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/hideckies/hermit/pkg/common/stdin"
 	"github.com/hideckies/hermit/pkg/common/stdout"
-	"github.com/hideckies/hermit/pkg/server/service"
 )
 
 func SetTaskRportfwdAdd(task string) (string, error) {
-	lport, err := stdin.ReadInput("Local Port", "8080")
+	lIP, err := stdin.ReadInput("Local IP to bind", "0.0.0.0")
 	if err != nil {
 		return "", err
 	}
 
-	rip, err := stdin.ReadInput("Remote IP", "0.0.0.0")
+	lPort, err := stdin.ReadInput("Local Port to bind", "8080")
 	if err != nil {
 		return "", err
 	}
 
-	rport, err := stdin.ReadInput("Remote Port", "8000")
+	fwIP, err := stdin.ReadInput("Remote IP to forward", "0.0.0.0")
 	if err != nil {
 		return "", err
 	}
 
-	task = task + " " + lport + " " + rip + " " + rport
+	fwPort, err := stdin.ReadInput("Remote Port to forward", "8000")
+	if err != nil {
+		return "", err
+	}
+
+	task = task + " " + lIP + " " + lPort + " " + fwIP + " " + fwPort
 
 	// Display the input
 	items := []stdout.SingleTableItem{
-		stdout.NewSingleTableItem("Local port to listen", lport),
-		stdout.NewSingleTableItem("Remote ip/port to forward", fmt.Sprintf("%s:%s", rip, rport)),
+		stdout.NewSingleTableItem("Bind IP", lIP),
+		stdout.NewSingleTableItem("Bind Port", lPort),
+		stdout.NewSingleTableItem("Forward IP", fwIP),
+		stdout.NewSingleTableItem("Forward Port", fwPort),
 	}
 	stdout.PrintSingleTable("Reverse Port Forwarding Options", items)
 
@@ -41,23 +46,6 @@ func SetTaskRportfwdAdd(task string) (string, error) {
 	if !yes {
 		return "", fmt.Errorf("canceld")
 	}
-
-	// Start listener for SSH server
-	lport64, err := strconv.ParseUint(lport, 10, 64)
-	if err != nil {
-		return "", err
-	}
-	lport16 := uint16(lport64)
-
-	rport64, err := strconv.ParseUint(rport, 10, 64)
-	if err != nil {
-		return "", err
-	}
-	rport16 := uint16(rport64)
-
-	go service.RTunnelListenerStart("127.0.0.1", lport16, rip, rport16)
-
-	task = "Not implemented yet."
 
 	return task, nil
 }
