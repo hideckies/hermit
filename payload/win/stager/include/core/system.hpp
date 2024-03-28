@@ -6,6 +6,8 @@
 #include <string>
 #include <tlhelp32.h>
 #include <vector>
+
+#include "core/procs.hpp"
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
 
@@ -21,18 +23,10 @@ namespace System::Env
 
 namespace System::Http
 {
-    VOID WinHttpCloseHandles(
-        HINTERNET hSession,
-        HINTERNET hConnect,
-        HINTERNET hRequest
-    );
-
     struct WinHttpHandlers {
         HINTERNET hSession;
         HINTERNET hConnect;
     };
-
-    WinHttpHandlers InitRequest(LPCWSTR lpHost, INTERNET_PORT nPort);
 
     struct WinHttpResponse {
         BOOL bResult;
@@ -40,7 +34,14 @@ namespace System::Http
         DWORD dwStatusCode;
     };
 
+    WinHttpHandlers InitRequest(
+        Procs::PPROCS pProcs,
+        LPCWSTR lpHost,
+        INTERNET_PORT nPort
+    );
+
     WinHttpResponse SendRequest(
+        Procs::PPROCS pProcs,
         HINTERNET hConnect,
         LPCWSTR lpHost,
         INTERNET_PORT nPort,
@@ -50,15 +51,33 @@ namespace System::Http
         LPVOID lpData,
         DWORD dwDataLength
     );
-    std::vector<BYTE> ReadResponseBytes(HINTERNET hRequest);
-    BOOL WriteResponseData(HINTERNET hRequest, const std::wstring& outFile);
+
+    std::vector<BYTE> ReadResponseBytes(
+        Procs::PPROCS pProcs,
+        HINTERNET hRequest
+    );
+
+    BOOL WriteResponseData(
+        Procs::PPROCS pProcs,
+        HINTERNET hRequest,
+        const std::wstring& outFile
+    );
+
     BOOL DownloadFile(
+        Procs::PPROCS pProcs,
         HINTERNET hConnect,
         LPCWSTR lpHost,
         INTERNET_PORT nPort,
         LPCWSTR lpPath,
         const std::wstring& wSrc,
         const std::wstring& wDest
+    );
+
+    VOID WinHttpCloseHandles(
+        Procs::PPROCS pProcs,
+        HINTERNET hSession,
+        HINTERNET hConnect,
+        HINTERNET hRequest
     );
 }
 

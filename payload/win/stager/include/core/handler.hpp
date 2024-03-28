@@ -9,7 +9,7 @@
 
 namespace Handler
 {
-    std::wstring GetInitialInfo();
+    std::wstring GetInitialInfoJSON();
 }
 
 #endif // HERMIT_CORE_HANDLER_HPP

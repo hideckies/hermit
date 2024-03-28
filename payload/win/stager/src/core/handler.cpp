@@ -2,7 +2,7 @@
 
 namespace Handler
 {
-    std::wstring GetInitialInfo()
+    std::wstring GetInitialInfoJSON()
     {
         std::wstring wOS = L"windows";
         std::wstring wArch = L"";
