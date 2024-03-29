@@ -266,14 +266,14 @@ func RequestPayloadStagerGenerate(
 	stg *payload.Stager,
 ) ([]byte, error) {
 	r, err := c.PayloadStagerGenerate(ctx, &rpcpb.PayloadStager{
-		Os:        stg.Os,
-		Arch:      stg.Arch,
-		Format:    stg.Format,
-		Lhost:     stg.Lhost,
-		Lport:     int32(stg.Lport),
-		Type:      stg.Type,
-		Technique: stg.Technique,
-		Process:   stg.Process,
+		Os:              stg.Os,
+		Arch:            stg.Arch,
+		Format:          stg.Format,
+		Lhost:           stg.Lhost,
+		Lport:           int32(stg.Lport),
+		Type:            stg.Type,
+		Technique:       stg.Technique,
+		ProcessToInject: stg.ProcessToInject,
 	})
 	if err != nil {
 		return []byte{}, err

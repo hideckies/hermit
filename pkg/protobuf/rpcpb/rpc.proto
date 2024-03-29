@@ -103,7 +103,7 @@ message PayloadStager {
   int32 lport = 9;
   string type = 10;
   string technique = 11;
-  string process = 12;
+  string processToInject = 12;
 }
 
 message PayloadShellcode {

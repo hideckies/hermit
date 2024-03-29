@@ -331,7 +331,7 @@ func (s *HermitRPCServer) PayloadStagerGenerate(
 		uint16(stg.Lport),
 		stg.Type,
 		stg.Technique,
-		stg.Process,
+		stg.ProcessToInject,
 	)
 	data, _, err := newStg.Generate(s.serverState)
 	if err != nil {
