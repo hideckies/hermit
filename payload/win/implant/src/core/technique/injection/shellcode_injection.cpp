@@ -40,13 +40,14 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        hThread = CreateRemoteThread(
+        hThread = CreateRemoteThreadEx(
             hProcess,
             NULL,
             0,
             (LPTHREAD_START_ROUTINE)remoteBuffer,
             NULL,
             0,
+            NULL,
             NULL
         );
         if (!hThread)

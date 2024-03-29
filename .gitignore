@@ -6,6 +6,7 @@
 
 # The build directories for payloads.
 /payload/**/*/build
+/payload/**/*/__pycache__
 
 # Python virtual environment for documentation
 venv

@@ -10,6 +10,12 @@
                 "/contact",
                 "/search"
             ],
+            "/implant/download": [
+                "/20211004.pdf",
+                "/Meeting_2023-06-12.pdf",
+                "/OpenSans-Bold.woff",
+                "/Roboto-Bold.woff"
+            ],
             "/implant/task/get": [
                 "/about",
                 "/feedback"
@@ -17,6 +23,10 @@
             "/implant/task/result": [
                 "/products",
                 "/unsubscribe"
+            ],
+            "/implant/upload": [
+                "/feed",
+                "/change"
             ],
             "/implant/websocket": [
                 "/chat",
@@ -29,16 +39,6 @@
                 "/a1b2c3d4e5f6g7h8i.woff",
                 "/OpenSans-Regular.woff",
                 "/Roboto-BoldItalic.woff"
-            ],
-            "/download": [
-                "/20211004.pdf",
-                "/Meeting_2023-06-12.pdf",
-                "/OpenSans-Bold.woff",
-                "/Roboto-Bold.woff"
-            ],
-            "/upload": [
-                "/feed",
-                "/change"
             ],
             "/socket/open": [
                 "/privacy",

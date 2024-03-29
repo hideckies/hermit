@@ -14,18 +14,18 @@ import (
 )
 
 type Stager struct {
-	Id        uint
-	Uuid      string
-	Name      string
-	Os        string
-	Arch      string
-	Format    string
-	Lprotocol string
-	Lhost     string
-	Lport     uint16
-	Type      string // "dll-loader", "exec-loader", "shellcode-loader"
-	Technique string
-	Process   string // process name to inject
+	Id              uint
+	Uuid            string
+	Name            string
+	Os              string
+	Arch            string
+	Format          string
+	Lprotocol       string
+	Lhost           string
+	Lport           uint16
+	Type            string // "dll-loader", "exec-loader", "shellcode-loader"
+	Technique       string // Evasion technique
+	ProcessToInject string
 }
 
 func NewStager(
@@ -40,7 +40,7 @@ func NewStager(
 	lport uint16,
 	stgType string,
 	technique string,
-	process string,
+	processToInject string,
 ) *Stager {
 	if _uuid == "" {
 		_uuid = uuid.NewString()
@@ -50,18 +50,18 @@ func NewStager(
 	}
 
 	return &Stager{
-		Id:        id,
-		Uuid:      _uuid,
-		Name:      name,
-		Os:        os,
-		Arch:      arch,
-		Format:    format,
-		Lprotocol: lprotocol,
-		Lhost:     lhost,
-		Lport:     lport,
-		Type:      stgType,
-		Technique: technique,
-		Process:   process,
+		Id:              id,
+		Uuid:            _uuid,
+		Name:            name,
+		Os:              os,
+		Arch:            arch,
+		Format:          format,
+		Lprotocol:       lprotocol,
+		Lhost:           lhost,
+		Lport:           lport,
+		Type:            stgType,
+		Technique:       technique,
+		ProcessToInject: processToInject,
 	}
 }
 
@@ -112,7 +112,7 @@ func (s *Stager) Generate(serverState *state.ServerState) (data []byte, outFile 
 			fmt.Sprintf("-DPAYLOAD_FORMAT=%s", s.Format),
 			fmt.Sprintf("-DPAYLOAD_TYPE=\"%s\"", s.Type),
 			fmt.Sprintf("-DPAYLOAD_TECHNIQUE=\"%s\"", s.Technique),
-			fmt.Sprintf("-DPAYLOAD_PROCESS=\"%s\"", s.Process),
+			fmt.Sprintf("-DPAYLOAD_PROCESS_TO_INJECT=\"%s\"", s.ProcessToInject),
 			fmt.Sprintf("-DLISTENER_PROTOCOL=\"%s\"", s.Lprotocol),
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", s.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(s.Lport)),

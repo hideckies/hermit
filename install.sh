@@ -115,15 +115,6 @@ install_pkg() {
     fi
 }
 
-metasploit_exists() {
-    log "Checking if the 'msfvenom' binary exists on the system..."
-
-    if command -v msfvenom > /dev/null 2>&1; then
-        return 0
-    else return 1
-    fi
-}
-
 golang_exists() {
     log "Checking if the 'go' binary exists on the system..."
 
@@ -139,11 +130,6 @@ install_c2_server() {
 
     if ! install_pkg; then
         log_error "Installing packages failed."
-        exit 1
-    fi
-
-    if ! metasploit_exists; then
-        log_error "Metasploit Framework does not exist on your system. Please install it by following the guide: https://docs.metasploit.com/docs/using-metasploit/getting-started/nightly-installers.html"
         exit 1
     fi
 

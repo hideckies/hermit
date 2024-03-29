@@ -25,7 +25,7 @@ include_directories(include)
 # DEFINE
 add_compile_definitions(PAYLOAD_TYPE=${PAYLOAD_TYPE})
 add_compile_definitions(PAYLOAD_TECHNIQUE=${PAYLOAD_TECHNIQUE})
-add_compile_definitions(PAYLOAD_PROCESS=${PAYLOAD_PROCESS})
+add_compile_definitions(PAYLOAD_PROCESS_TO_INJECT=${PAYLOAD_PROCESS_TO_INJECT})
 add_compile_definitions(LISTENER_PROTOCOL=${LISTENER_PROTOCOL})
 add_compile_definitions(LISTENER_HOST=${LISTENER_HOST})
 add_compile_definitions(LISTENER_PORT=${LISTENER_PORT})

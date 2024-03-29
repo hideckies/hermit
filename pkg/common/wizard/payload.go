@@ -20,7 +20,7 @@ func WizardPayloadType() string {
 		"stager/dll-loader",
 		"stager/exec-loader",
 		"stager/shellcode-loader",
-		"shellcode/cmd",
+		"shellcode/exec",
 		// "shellcode/dll-loader",
 		// "shellcode/exec-loader",
 		// "shellcode/shellcode-loader",
@@ -179,7 +179,7 @@ func wizardPayloadBase(
 	return oOs, oArch, oFormat, oLprotocol, oLhost, oLport, nil
 }
 
-func WizardPayloadImplantGenerate(
+func WizardPayloadImplant(
 	host string,
 	listeners []*listener.Listener,
 	payloadType string,
@@ -287,7 +287,7 @@ func WizardPayloadImplantGenerate(
 	), nil
 }
 
-func WizardPayloadStagerGenerate(
+func WizardPayloadStager(
 	host string,
 	listeners []*listener.Listener,
 	payloadType string,
@@ -305,7 +305,7 @@ func WizardPayloadStagerGenerate(
 	if oType == "dll-loader" {
 		items = []string{
 			"dll-injection",
-			// "reflective-dll-injection",
+			"reflective-dll-injection",
 			// "indirect-syscalls",
 		}
 	} else if oType == "exec-loader" {
@@ -316,6 +316,8 @@ func WizardPayloadStagerGenerate(
 	} else if oType == "shellcode-loader" {
 		items = []string{
 			"shellcode-injection",
+			"shellcode-execution-via-fibers",
+			"shellcode-execution-via-apc-and-nttestalert",
 			// "dll-hollowing",
 			// "process-mockingjay",
 		}
@@ -329,15 +331,17 @@ func WizardPayloadStagerGenerate(
 		break
 	}
 
-	// Process name to inject
-	var oProcess string
-	for {
-		res, err := stdin.ReadInput("Process to Inject", "notepad.exe")
-		if err != nil {
-			continue
+	// Target process name to inject
+	var oProcessToInject string = ""
+	if oTechnique == "dll-injection" || oTechnique == "shellcode-injection" {
+		for {
+			res, err := stdin.ReadInput("Target Process to Inject", "notepad.exe")
+			if err != nil {
+				continue
+			}
+			oProcessToInject = res
+			break
 		}
-		oProcess = res
-		break
 	}
 
 	table := []stdout.SingleTableItem{
@@ -347,7 +351,7 @@ func WizardPayloadStagerGenerate(
 		stdout.NewSingleTableItem("Listener", fmt.Sprintf("%s://%s:%d", strings.ToLower(oLprotocol), oLhost, oLport)),
 		stdout.NewSingleTableItem("Type", oType),
 		stdout.NewSingleTableItem("Technique", oTechnique),
-		stdout.NewSingleTableItem("Process", oProcess),
+		stdout.NewSingleTableItem("Process To Inject", oProcessToInject),
 	}
 	stdout.PrintSingleTable("Stager Options", table)
 
@@ -376,11 +380,11 @@ func WizardPayloadStagerGenerate(
 		oLport,
 		oType,
 		oTechnique,
-		oProcess,
+		oProcessToInject,
 	), nil
 }
 
-func WizardPayloadShellcodeGenerate(
+func WizardPayloadShellcode(
 	host string,
 	listeners []*listener.Listener,
 	payloadType string,
@@ -392,7 +396,7 @@ func WizardPayloadShellcodeGenerate(
 
 	oType := strings.Replace(payloadType, "shellcode/", "", -1)
 	oTypeArgs := ""
-	if oType == "cmd" {
+	if oType == "exec" {
 		for {
 			res, err := stdin.ReadInput("Command to execute", "calc.exe")
 			if err != nil {
@@ -402,6 +406,29 @@ func WizardPayloadShellcodeGenerate(
 			oTypeArgs = res
 			break
 		}
+	}
+
+	table := []stdout.SingleTableItem{
+		stdout.NewSingleTableItem("Target OS", oOs),
+		stdout.NewSingleTableItem("Target Arch", oArch),
+		stdout.NewSingleTableItem("Format", oFormat),
+		stdout.NewSingleTableItem("Listener", fmt.Sprintf("%s://%s:%d", strings.ToLower(oLprotocol), oLhost, oLport)),
+		stdout.NewSingleTableItem("Type", oType),
+		stdout.NewSingleTableItem("Type Args", oTypeArgs),
+	}
+	stdout.PrintSingleTable("Shellcode Options", table)
+
+	var proceed bool
+	for {
+		res, err := stdin.Confirm("Proceed?")
+		if err != nil {
+			continue
+		}
+		proceed = res
+		break
+	}
+	if !proceed {
+		return nil, fmt.Errorf("canceled")
 	}
 
 	return payload.NewShellcode(

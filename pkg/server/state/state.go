@@ -1,7 +1,6 @@
 package state
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 
@@ -30,8 +29,6 @@ func NewServerState(conf *config.ServerConfig, db *db.Database, job *job.Job) (*
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("NUMCPU: %d", runtime.NumCPU())
 
 	return &ServerState{
 		Conf:      conf,

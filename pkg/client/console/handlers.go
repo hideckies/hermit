@@ -258,7 +258,7 @@ func HandlePayloadGen(
 	payloadType := wizard.WizardPayloadType()
 
 	if strings.HasPrefix(payloadType, "implant") {
-		imp, err := wizard.WizardPayloadImplantGenerate(
+		imp, err := wizard.WizardPayloadImplant(
 			meta.GetSpecificHost(clientState.Conf.Server.Host), liss, payloadType)
 		if err != nil {
 			return err
@@ -288,7 +288,7 @@ func HandlePayloadGen(
 
 		stdout.LogSuccess(fmt.Sprintf("Implant saved at %s", color.HiGreenString(outFile)))
 	} else if strings.HasPrefix(payloadType, "stager") {
-		stg, err := wizard.WizardPayloadStagerGenerate(
+		stg, err := wizard.WizardPayloadStager(
 			meta.GetSpecificHost(clientState.Conf.Server.Host),
 			liss,
 			payloadType,
@@ -321,7 +321,7 @@ func HandlePayloadGen(
 
 		stdout.LogSuccess(fmt.Sprintf("Stager saved at %s", color.HiGreenString(outFile)))
 	} else if strings.HasPrefix(payloadType, "shellcode") {
-		shc, err := wizard.WizardPayloadShellcodeGenerate(
+		shc, err := wizard.WizardPayloadShellcode(
 			meta.GetSpecificHost(clientState.Conf.Server.Host),
 			liss,
 			payloadType,
