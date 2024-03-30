@@ -57,33 +57,51 @@ Currently, the following tasks are available:
 TASK
 ====
 
-  cat      <FILE>        : Print the contents of a file
-  cd       <DIR>         : Change the working directory
-  cp       <SRC> <DEST>  : Copy a file
-  download <SRC> <DEST>  : Download a file from the target computer
-  execute  <CMD>         : Execute a system command on target computer
-  ip                     : Get IP addresses for target computer
-  keylog   <NUM>         : Keylogging for N seconds
-  kill                   : Stop the implant process
-  ls       <DIR>         : List files in a directory
-  migrate  <PID>         : Get into another process
-  mkdir    <DIR>         : Create a new directory
-  mv       <SRC> <DEST>  : Move a file to a destination location
-  net                    : Get TCP connections
-  procdump <PID>         : Dump process memory to a specified output file
-  ps                     : List processes that are running
-  ps kill  <PID>         : Kill a specified process
-  pwd                    : Print the current working directory
-  rm       <FILE>        : Remove a file
-  rmdir    <DIR>         : Remove a directory
-  screenshot             : Take a screenshot on target computer
-  sleep    <NUM>         : Set sleep time (seconds) between requests from beacon
-  upload   <SRC> <DEST>  : Upload a file to the target computer
-  whoami                 : Print the current username
+  cat          <FILE>       : Print the contents of a file
+  cd           <DIR>        : Change the working directory
+  connect      <URL>        : Change listener URL to connect
+  cp           <SRC> <DEST> : Copy a file
+  creds steal               : Steal credentials from various resources on the target computer
+  dll          <PID> <FILE> : Load DLL and inject modules into the specified process
+  download     <SRC> <DEST> : Download a file from the target computer
+  env                       : Print environment variables
+  execute      <CMD>        : Execute a system command on target computer
+  groups                    : Print all local groups
+  history                   : Retrieve information from history files of applications
+  ip                        : Get the network interface information on target computer
+  jitter       <NUM>        : Set jitter time (seconds) between requests from beacon
+  keylog       <NUM>        : Keylogging for N seconds
+  kill                      : Terminate the implant process
+  ls           <DIR>        : List files in a directory
+  migrate      <PID>        : Migrate the implant into another process
+  mkdir        <DIR>        : Create a new directory
+  mv           <SRC> <DEST> : Move a file to a destination location
+  net                       : Get TCP connections
+  procdump     <PID>        : Dump process memory to a specified output file
+  ps                        : List processes that are running
+  ps kill      <PID>        : Kill a specified process
+  pwd                       : Print the current working directory
+  reg subkeys               : Enumerate subkeys for the specified open registry key
+  reg values                : Enumerate the specified registry values.
+  rm           <FILE>       : Remove a file
+  rmdir        <DIR>        : Remove a directory
+  rportfwd add              : Reverse port forwarding with the specified remote ip/port
+  rportfwd ls               : List settings for reverse port forwarding
+  rportfwd rm               : Stop and remove listener for reverse port forwarding
+  runas        <USER> <CMD> : Execute a program as another user
+  screenshot                : Take a screenshot on target computer
+  shellcode    <PID> <FILE> : Inject shellcode into the specified process
+  sleep        <NUM>        : Set sleep time (seconds) between requests from beacon
+  token revert              : Revert back to the original process token
+  token steal  <PID>        : Steal token from the specified process and impersonate process
+  upload       <SRC> <DEST> : Upload a file to the target computer
+  users                     : Print all local users
+  whoami                    : Print the current user name
+  whoami priv               : Print the current user privileges
 
-  task clean             : Remove all tasks from waitlist
-  task list              : List tasks waiting for the results
-  tasks                  : Alias for 'task list'
+  task clear                : Remove all tasks from waitlist
+  task list                 : List tasks waiting for the results
+  tasks                     : Alias for 'task list'
 ```
 
 First, let's try sending the `whoami` task to the agent.  
@@ -92,10 +110,8 @@ This task retrieves the username on the victim machine.
 ![task send](../assets/images/terminal/task_send.png)
 
 To see the tasks waiting for results, run the `tasks` command.  
-*However the Implant beacon sleep time is 3 seconds by default, so you need to run thie `tasks` command immediately after executing the `whoami` command.
 
-
-After a few seconds, if the task is successful, you can see the task results with the `loot` command:
+After few seconds, if the task is successful, you can see the task results with the `loot` command:
 
 ![loot](../assets/images/terminal/loot.png)
 

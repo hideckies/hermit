@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Kill(State::PState pState)
+    std::wstring Kill(State::PSTATE pState)
     {
         pState->bQuit = TRUE;
         return L"Success: Exit after completing remaining processes.";

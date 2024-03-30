@@ -210,7 +210,7 @@ func WizardPayloadImplant(
 		}
 	}
 
-	var oJitter uint = 10
+	var oJitter uint = 5
 	if oType == "beacon" {
 		for {
 			res, err := stdin.ReadInput("Jitter", fmt.Sprint(oJitter))
@@ -232,7 +232,7 @@ func WizardPayloadImplant(
 	var oKillDateStr string = meta.GetFutureDateTime(1, 0, 0)
 	var oKillDate uint
 	for {
-		res, err := stdin.ReadInput("KillDate", oKillDateStr)
+		res, err := stdin.ReadInput("KillDate (UTC)", oKillDateStr)
 		if err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 			continue
@@ -247,6 +247,17 @@ func WizardPayloadImplant(
 		break
 	}
 
+	var oIndirectSyscalls bool = false
+	for {
+		yes, err := stdin.Confirm("Enable Indirect Syscalls?")
+		if err != nil {
+			stdout.LogFailed(fmt.Sprint(err))
+			continue
+		}
+		oIndirectSyscalls = yes
+		break
+	}
+
 	table := []stdout.SingleTableItem{
 		stdout.NewSingleTableItem("Type", oType),
 		stdout.NewSingleTableItem("Target OS", oOs),
@@ -255,7 +266,8 @@ func WizardPayloadImplant(
 		stdout.NewSingleTableItem("Listener", fmt.Sprintf("%s://%s:%d", strings.ToLower(oLprotocol), oLhost, oLport)),
 		stdout.NewSingleTableItem("Sleep", fmt.Sprint(oSleep)),
 		stdout.NewSingleTableItem("Jitter", fmt.Sprint(oJitter)),
-		stdout.NewSingleTableItem("KillDate", oKillDateStr),
+		stdout.NewSingleTableItem("KillDate (UTC)", oKillDateStr),
+		stdout.NewSingleTableItem("Indirect Syscalls", fmt.Sprintf("%t", oIndirectSyscalls)),
 	}
 	stdout.PrintSingleTable("Implant Options", table)
 
@@ -284,6 +296,7 @@ func WizardPayloadImplant(
 		oSleep,
 		oJitter,
 		oKillDate,
+		oIndirectSyscalls,
 	), nil
 }
 

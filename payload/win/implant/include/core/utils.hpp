@@ -33,6 +33,7 @@ namespace Utils::Convert
 namespace Utils::Random
 {
     INT RandomINT();
+    VOID RandomSleep(INT nSleep, INT nJitter);
 }
 
 namespace Utils::Split

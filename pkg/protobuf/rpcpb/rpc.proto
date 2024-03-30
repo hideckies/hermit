@@ -89,6 +89,7 @@ message PayloadImplant {
   int64 sleep = 11;
   int64 jitter = 12;
   int64 killDate = 13;
+  bool indirectSyscalls = 14;
 }
 
 message PayloadStager {

@@ -49,6 +49,11 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
         NULL,
         0,
         PAYLOAD_TYPE_W,
+        #ifdef PAYLOAD_INDIRECT_SYSCALLS
+		TRUE,
+		#else
+		FALSE,
+		#endif
         LISTENER_PROTOCOL_W,
         LISTENER_HOST_W,
         (INTERNET_PORT)LISTENER_PORT,

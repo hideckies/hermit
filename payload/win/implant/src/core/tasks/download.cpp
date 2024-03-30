@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Download(State::PState pState, const std::wstring& wSrc, const std::wstring& wDest)
+    std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest)
     {
         std::wstring wHeaders;
         System::Http::WinHttpResponse resp;

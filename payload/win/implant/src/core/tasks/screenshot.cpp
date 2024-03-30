@@ -333,7 +333,7 @@ namespace Task::Helper::Screenshot
 
 namespace Task
 {
-    std::wstring Screenshot(State::PState pState)
+    std::wstring Screenshot(State::PSTATE pState)
     {
         Task::Helper::Screenshot::MyRegisterClass(pState->hInstance);
 

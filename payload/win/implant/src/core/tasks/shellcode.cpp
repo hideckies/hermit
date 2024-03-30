@@ -2,7 +2,7 @@
 
 namespace Task
 {
-     std::wstring Shellcode(State::PState pState, const std::wstring& wPid, const std::wstring& wSrc)
+     std::wstring Shellcode(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc)
      {
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
         std::string sSrc = Utils::Convert::UTF8Encode(wSrc);

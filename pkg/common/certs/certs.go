@@ -105,7 +105,7 @@ func generateCertificate[K *ecdsa.PrivateKey | *rsa.PrivateKey](
 	listenerName string,
 	privateKey K,
 ) ([]byte, []byte, error) {
-	notBefore := time.Now()
+	notBefore := time.Now().UTC()
 	days := getRandomInt(365) * -1
 	notBefore = notBefore.AddDate(0, 0, days)
 	notAfter := notBefore.Add(validFor)

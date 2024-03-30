@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Upload(State::PState pState, const std::wstring& wSrc, const std::wstring& wDest)
+    std::wstring Upload(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest)
     {
         std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
 

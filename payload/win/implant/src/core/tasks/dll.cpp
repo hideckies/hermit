@@ -3,7 +3,7 @@
 namespace Task
 {
     // Load DLL and spawn modules.
-    std::wstring Dll(State::PState pState, const std::wstring& wPid, const std::wstring& wSrc)
+    std::wstring Dll(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc)
     {
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
 

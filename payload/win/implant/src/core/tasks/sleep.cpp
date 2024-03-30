@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Sleep(State::PState pState, const std::wstring& wSleep)
+    std::wstring SleepSet(State::PSTATE pState, const std::wstring& wSleep)
     {
         INT nSleep = std::stoi(wSleep);
         pState->nSleep = nSleep;

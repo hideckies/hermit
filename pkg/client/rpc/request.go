@@ -243,16 +243,17 @@ func RequestPayloadImplantGenerate(
 	imp *payload.Implant,
 ) ([]byte, error) {
 	r, err := c.PayloadImplantGenerate(ctx, &rpcpb.PayloadImplant{
-		Os:        imp.Os,
-		Arch:      imp.Arch,
-		Format:    imp.Format,
-		Lprotocol: imp.Lprotocol,
-		Lhost:     imp.Lhost,
-		Lport:     int32(imp.Lport),
-		Type:      imp.Type,
-		Sleep:     int64(imp.Sleep),
-		Jitter:    int64(imp.Jitter),
-		KillDate:  int64(imp.KillDate),
+		Os:               imp.Os,
+		Arch:             imp.Arch,
+		Format:           imp.Format,
+		Lprotocol:        imp.Lprotocol,
+		Lhost:            imp.Lhost,
+		Lport:            int32(imp.Lport),
+		Type:             imp.Type,
+		Sleep:            int64(imp.Sleep),
+		Jitter:           int64(imp.Jitter),
+		KillDate:         int64(imp.KillDate),
+		IndirectSyscalls: imp.IndirectSyscalls,
 	})
 	if err != nil {
 		return []byte{}, err

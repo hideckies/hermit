@@ -36,12 +36,12 @@ func GetCurrentDir() string {
 }
 
 func GetCurrentDate() string {
-	now := time.Now()
+	now := time.Now().UTC()
 	return now.Format("2006-01-02")
 }
 
 func GetCurrentDateTime() string {
-	now := time.Now()
+	now := time.Now().UTC()
 	return now.Format("2006-01-02 15:04:05")
 }
 
@@ -54,31 +54,31 @@ func GetCurrentDateTimeNumbersOnly() string {
 }
 
 func GetCurrentTimestamp() int {
-	now := time.Now()
+	now := time.Now().UTC()
 	return int(now.Unix())
 }
 
 func GetFutureDate(years int, months int, days int) string {
-	now := time.Now()
+	now := time.Now().UTC()
 	future := now.AddDate(years, months, days)
 	return future.Format("2006-01-02")
 }
 
 func GetFutureDateTime(years int, months int, days int) string {
-	now := time.Now()
+	now := time.Now().UTC()
 	future := now.AddDate(years, months, days)
-	return future.Format("2006-01-02 15:01:02")
+	return future.Format("2006-01-02 15:04:05")
 }
 
 func GetFutureTimestamp(years int, months int, days int) int {
-	now := time.Now()
+	now := time.Now().UTC()
 	future := now.AddDate(years, months, days)
 	return int(future.Unix())
 }
 
 func GetDateTimeFromTimestamp(timeStamp int) string {
-	tm := time.Unix(int64(timeStamp), 0)
-	return tm.Format("2006-01-02 15:01:02")
+	tm := time.Unix(int64(timeStamp), 0).UTC()
+	return tm.Format("2006-01-02 15:04:05")
 }
 
 func ParseDateInt(dateStr string) (int, error) {
@@ -94,7 +94,7 @@ func ParseDateTimeInt(dateTimeStr string) (int, error) {
 		return -1, fmt.Errorf("invalid datetime format")
 	}
 
-	t, err := time.Parse("2006-01-02 15:01:02", dateTimeStr)
+	t, err := time.Parse("2006-01-02 15:04:05", dateTimeStr)
 	if err != nil {
 		return -1, nil
 	}

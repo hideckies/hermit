@@ -279,6 +279,36 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 		case strings.HasPrefix(task, "download "):
 			downloadPath := string(data)
 			content = fmt.Sprintf("Downloaded at %s", downloadPath)
+		case strings.HasPrefix(task, "jitter "):
+			jitterTimeStr := strings.Split(task, " ")[1]
+			jitterTime, err := strconv.ParseUint(jitterTimeStr, 10, 64)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			// Update jitter time on the database
+			targetAgent.Jitter = uint(jitterTime)
+			err = database.AgentUpdate(targetAgent)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			content = "The jitter time has been updated."
+		case strings.HasPrefix(task, "killdate "):
+			killDateStr := strings.Split(task, " ")[1]
+			killDate, err := strconv.ParseUint(killDateStr, 10, 64)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			// Update killdate on the database
+			targetAgent.KillDate = uint(killDate)
+			err = database.AgentUpdate(targetAgent)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			content = "The killdate has been updated."
 		case strings.HasPrefix(task, "procdump "), task == "screenshot":
 			// Write a dump file.
 			outFile, err := metafs.WriteAgentLootFile(targetAgent.Name, data, false, task)
@@ -301,7 +331,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 				ctx.String(http.StatusBadRequest, "")
 				return
 			}
-			content = "The sleep time has been changed."
+			content = "The sleep time has been updated."
 		case strings.HasPrefix(task, "upload "):
 			uploadPath := string(data)
 			content = fmt.Sprintf("Uploaded at %s", uploadPath)

@@ -79,9 +79,10 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("history"),
 	// readline.PcItem("inline-execute"), Execute an object file
 	readline.PcItem("ip"),
+	readline.PcItem("jitter"),
 	readline.PcItem("keylog"),
 	readline.PcItem("kill"),
-	// readline.PcItem("killdate"), Change kill date for the implant
+	readline.PcItem("killdate"),
 	readline.PcItem("ls"),
 	readline.PcItem("migrate"),
 	readline.PcItem("mkdir"),
@@ -194,8 +195,10 @@ func ConsoleUsage(w io.Writer, isClient bool, isAgentMode bool) {
 		io.WriteString(w, "  groups                    : Print all local groups\n")
 		io.WriteString(w, "  history                   : Retrieve information from history files of applications\n")
 		io.WriteString(w, "  ip                        : Get the network interface information on target computer\n")
+		io.WriteString(w, "  jitter       <NUM>        : Set jitter time (seconds) between requests from beacon\n")
 		io.WriteString(w, "  keylog       <NUM>        : Keylogging for N seconds\n")
 		io.WriteString(w, "  kill                      : Terminate the implant process\n")
+		io.WriteString(w, "  killdate     <DATETIME>   : Change killdate (UTC) for the implant beacon [format: \"2025-01-01 00:00:00\"]\n")
 		io.WriteString(w, "  ls           <DIR>        : List files in a directory\n")
 		io.WriteString(w, "  migrate      <PID>        : Migrate the implant into another process\n")
 		io.WriteString(w, "  mkdir        <DIR>        : Create a new directory\n")

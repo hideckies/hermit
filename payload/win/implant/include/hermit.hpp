@@ -1,7 +1,8 @@
-#ifndef HERMIT_HPP
-#define HERMIT_HPP
+#ifndef HERMIT_HERMIT_HPP
+#define HERMIT_HERMIT_HPP
 
 #include "core/handler.hpp"
+#include "core/utils.hpp"
 
 namespace Hermit
 {
@@ -9,6 +10,7 @@ namespace Hermit
 		HINSTANCE       hInstance,
 		INT             nCmdShow,
 		LPCWSTR			lpPayloadType,
+		BOOL			bIndirectSyscalls,
 		LPCWSTR			lpProtocol,
 		LPCWSTR 		lpHost,
 		INTERNET_PORT 	nPort,
@@ -24,5 +26,4 @@ namespace Hermit
 	);
 }
 
-
-#endif // HERMIT_HPP
+#endif // HERMIT_HERMIT_HPP

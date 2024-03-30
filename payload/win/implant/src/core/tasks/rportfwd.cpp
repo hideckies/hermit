@@ -5,7 +5,7 @@ namespace Task
     // Reference:
     // https://github.com/HavocFramework/Havoc/blob/main/payloads/Demon/src/core/Socket.c#L59
     std::wstring RportfwdAdd(
-        State::PState pState,
+        State::PSTATE pState,
         const std::wstring& wLIP,
         const std::wstring& wLPort,
         const std::wstring& wFwdIP,
@@ -31,7 +31,7 @@ namespace Task
         return L"Success: rportfwd socket started.";
     }
 
-    std::wstring RportfwdLs(State::PState pState)
+    std::wstring RportfwdLs(State::PSTATE pState)
     {
         return L"Warn Not implemented yet.";
     }

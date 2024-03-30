@@ -2,7 +2,7 @@
 
 namespace State
 {
-    VOID Free(PState pState)
+    VOID Free(PSTATE pState)
     {
         // Close HINTERNET handlers.
         System::Http::WinHttpCloseHandles(
@@ -19,6 +19,7 @@ namespace State
         delete pState->pTeb;
         delete pState->pProcs;
         delete pState->pSocket;
+        delete pState->pSyscalls;
         delete pState;
     }
 }

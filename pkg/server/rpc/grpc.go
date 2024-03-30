@@ -307,6 +307,7 @@ func (s *HermitRPCServer) PayloadImplantGenerate(
 		uint(imp.Sleep),
 		uint(imp.Jitter),
 		uint(imp.KillDate),
+		imp.IndirectSyscalls,
 	)
 	data, _, err := newImp.Generate(s.serverState)
 	if err != nil {

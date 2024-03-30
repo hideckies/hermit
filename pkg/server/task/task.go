@@ -32,6 +32,11 @@ func AdjustTask(task string) (string, error) {
 		if !yes {
 			return "", fmt.Errorf("canceld")
 		}
+	case strings.HasPrefix(task, "killdate "):
+		task, err = SetTaskKillDate(task)
+		if err != nil {
+			return "", err
+		}
 	case task == "ls":
 		task = "ls ."
 	case strings.HasPrefix(task, "reg "):
