@@ -54,7 +54,11 @@ func GetSpecificHost(host string) string {
 		// If the specific bind address is not set, get the Ipv4 address of the `eth0` interface.
 		ipv4Addr, err := GetInterfaceIpv4Addr("eth0")
 		if err != nil {
-			return "localhost"
+			// If not found 'eth', try 'ens33'.
+			ipv4Addr, err = GetInterfaceIpv4Addr("ens33")
+			if err != nil {
+				return "localhost"
+			}
 		}
 		return ipv4Addr
 	} else if host == "127.0.0.1" || host == "::1" {

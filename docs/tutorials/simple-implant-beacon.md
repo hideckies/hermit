@@ -17,7 +17,7 @@ Go to the Hermit project directory then run `./hermit` command.
 
 ## 3. Generate Implant Payload
 
-![payload gen](../assets/images/terminal/payload_gen.png)
+![payload gen](../assets/images/terminal/payload_gen_implant_beacon_win_amd64_exe.png)
 
 The implant is saved under `$HOME/.hermit/server/listeners/listener-<name>/payloads/` folder.  
 
@@ -107,7 +107,7 @@ TASK
 First, let's try sending the `whoami` task to the agent.  
 This task retrieves the username on the victim machine.  
 
-![task send](../assets/images/terminal/task_send.png)
+![task send](../assets/images/terminal/task_send_whoami.png)
 
 To see the tasks waiting for results, run the `tasks` command.  
 
@@ -117,7 +117,13 @@ After few seconds, if the task is successful, you can see the task results with 
 
 Please try other tasks as well.
 
-## 7. Quit Agent Mode
+## 7. Stop Implant & Quit Agent Mode
 
-After emulations, simply run the `exit` command to quit Agent Mode.  
-You should quit and return to the original console.
+After enumerations, stop the implant with the `kill` command:
+
+```sh
+Hermit > kill
+```
+
+Then run `exit` command to quit the agent mode.
+

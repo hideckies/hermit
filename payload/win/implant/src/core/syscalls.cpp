@@ -8,7 +8,7 @@ namespace Syscalls
     {
         SYSCALL syscall = {0};
 
-        UINT_PTR pNtFuncAddr = NULL;
+        UINT_PTR pNtFuncAddr = (UINT_PTR)nullptr;
         BYTE syscallOpcode[2] = {0x0F, 0x05};
 
         pNtFuncAddr = (UINT_PTR)GetProcAddress(hNTDLL, lpNtFunc);
