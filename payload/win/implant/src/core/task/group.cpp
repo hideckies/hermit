@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Groups()
+    std::wstring GroupLs()
     {
         std::wstring result = L"";
 

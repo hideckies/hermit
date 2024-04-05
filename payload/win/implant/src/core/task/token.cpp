@@ -81,7 +81,7 @@ namespace Task
 
     // Reference:
     // https://cocomelonc.github.io/tutorial/2022/09/25/token-theft-1.html
-    std::wstring TokenSteal(const std::wstring& wPid, const std::wstring& wProcName)
+    std::wstring TokenSteal(const std::wstring& wPid, const std::wstring& wProcName, bool bLogin)
     {
         HANDLE hToken = NULL;
 
@@ -107,7 +107,7 @@ namespace Task
             return L"Error: Could not get token of the specified process.";
         }
 
-        if (wProcName == L"login")
+        if (bLogin)
         {
             if (!ImpersonateLoggedOnUser(hToken))
             {

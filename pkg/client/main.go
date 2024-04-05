@@ -77,23 +77,25 @@ func run(configPath string) error {
 	defer conn.Close()
 
 	c := rpcpb.NewHermitRPCClient(conn)
+	clientState.RPCClient = c
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	clientState.Ctx = ctx
 
 	// Add the operator to the database.
-	res, err := rpc.RequestOperatorRegister(c, ctx, *clientConfig)
+	res, err := rpc.RequestOperatorRegister(clientState)
 	if err != nil {
 		return err
 	}
 	stdout.LogSuccess(res)
 
-	if err := console.Readline(c, ctx, clientState); err != nil {
+	if err := console.Readline(clientState); err != nil {
 		return err
 	}
 
 	// Send a request to the C2 server for deleting the current operator
-	_, err = rpc.RequestOperatorDeleteByUuid(c, ctx, clientConfig.Uuid)
+	_, err = rpc.RequestOperatorDeleteByUuid(clientState)
 	if err != nil {
 		return err
 	}

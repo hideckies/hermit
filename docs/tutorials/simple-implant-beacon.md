@@ -1,5 +1,9 @@
 # Simple Implant Beacon
 
+⚠️ **Due to major updates to the project, this tutorial may contain slightly inaccurate information. Please wait for a while until it is updated.**
+
+---
+
 This page introduces the basic usage of execute the implant beacon on Windows victim machine.  
 
 Assume that you've already installed Hermit.  

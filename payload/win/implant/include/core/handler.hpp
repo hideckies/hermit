@@ -2,10 +2,16 @@
 #define HERMIT_CORE_HANDLER_HPP
 
 #include "core/task.hpp"
+#include "core/crypt.hpp"
+#include "core/json.hpp"
+#include "core/parser.hpp"
 #include "core/procs.hpp"
 #include "core/state.hpp"
+#include "core/stdout.hpp"
 #include "core/system.hpp"
 #include "core/utils.hpp"
+
+using json = nlohmann::json;
 
 namespace Handler
 {

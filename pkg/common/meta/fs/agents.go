@@ -250,6 +250,8 @@ func WriteAgentLootFile(
 	} else if fileType == "screenshot" {
 		targetDir := lootDir + "/screenshots"
 		filename = fmt.Sprintf("%s/screenshot_%s.png", targetDir, meta.GetCurrentDateTimeNumbersOnly())
+	} else {
+		return "", fmt.Errorf("invalid filetype")
 	}
 
 	if filename == "" {

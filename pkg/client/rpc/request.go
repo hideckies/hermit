@@ -1,11 +1,10 @@
 package rpc
 
 import (
-	"context"
 	"io"
 	"strings"
 
-	"github.com/hideckies/hermit/pkg/common/config"
+	"github.com/hideckies/hermit/pkg/client/state"
 	"github.com/hideckies/hermit/pkg/protobuf/commonpb"
 	"github.com/hideckies/hermit/pkg/protobuf/rpcpb"
 	"github.com/hideckies/hermit/pkg/server/agent"
@@ -14,31 +13,27 @@ import (
 	"github.com/hideckies/hermit/pkg/server/payload"
 )
 
-func RequestSayHello(c rpcpb.HermitRPCClient, ctx context.Context) (string, error) {
-	r, err := c.SayHello(ctx, &commonpb.Empty{})
+func RequestSayHello(clientState *state.ClientState) (string, error) {
+	r, err := clientState.RPCClient.SayHello(clientState.Ctx, &commonpb.Empty{})
 	if err != nil {
 		return "", err
 	}
 	return r.GetText(), nil
 }
 
-func RequestGetVersion(c rpcpb.HermitRPCClient, ctx context.Context) (string, error) {
-	r, err := c.GetVersion(ctx, &commonpb.Empty{})
+func RequestGetVersion(clientState *state.ClientState) (string, error) {
+	r, err := clientState.RPCClient.GetVersion(clientState.Ctx, &commonpb.Empty{})
 	if err != nil {
 		return "", err
 	}
 	return r.GetText(), nil
 }
 
-func RequestOperatorRegister(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	conf config.ClientConfig,
-) (string, error) {
-	r, err := c.OperatorRegister(ctx, &rpcpb.Operator{
+func RequestOperatorRegister(clientState *state.ClientState) (string, error) {
+	r, err := clientState.RPCClient.OperatorRegister(clientState.Ctx, &rpcpb.Operator{
 		Id:    -1, // this value is not used
-		Uuid:  conf.Uuid,
-		Name:  conf.Operator,
+		Uuid:  clientState.Conf.Uuid,
+		Name:  clientState.Conf.Operator,
 		Login: "",
 	})
 	if err != nil {
@@ -47,24 +42,19 @@ func RequestOperatorRegister(
 	return r.GetText(), nil
 }
 
-func RequestOperatorDeleteByUuid(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	operatorUuid string,
-) (string, error) {
-	r, err := c.OperatorDeleteByUuid(ctx, &commonpb.Uuid{Value: operatorUuid})
+func RequestOperatorDeleteByUuid(clientState *state.ClientState) (string, error) {
+	r, err := clientState.RPCClient.OperatorDeleteByUuid(
+		clientState.Ctx,
+		&commonpb.Uuid{Value: clientState.Conf.Uuid},
+	)
 	if err != nil {
 		return "", err
 	}
 	return r.GetText(), nil
 }
 
-func RequestOperatorGetById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	operatorId uint,
-) (*operator.Operator, error) {
-	r, err := c.OperatorGetById(ctx, &commonpb.Id{Value: int64(operatorId)})
+func RequestOperatorGetById(clientState *state.ClientState, operatorId uint) (*operator.Operator, error) {
+	r, err := clientState.RPCClient.OperatorGetById(clientState.Ctx, &commonpb.Id{Value: int64(operatorId)})
 	if err != nil {
 		return nil, err
 	}
@@ -72,11 +62,8 @@ func RequestOperatorGetById(
 	return operator.NewOperator(uint(r.GetId()), r.GetUuid(), r.GetName(), r.GetLogin()), nil
 }
 
-func RequestOperatorGetAll(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-) ([]*operator.Operator, error) {
-	stream, err := c.OperatorGetAll(ctx, &commonpb.Empty{})
+func RequestOperatorGetAll(clientState *state.ClientState) ([]*operator.Operator, error) {
+	stream, err := clientState.RPCClient.OperatorGetAll(clientState.Ctx, &commonpb.Empty{})
 	if err != nil {
 		return nil, err
 	}
@@ -99,12 +86,8 @@ func RequestOperatorGetAll(
 	return ops, nil
 }
 
-func RequestListenerStart(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	lis *listener.Listener,
-) (string, error) {
-	r, err := c.ListenerStart(ctx, &rpcpb.Listener{
+func RequestListenerStart(clientState *state.ClientState, lis *listener.Listener) (string, error) {
+	r, err := clientState.RPCClient.ListenerStart(clientState.Ctx, &rpcpb.Listener{
 		Protocol: lis.Protocol,
 		Host:     lis.Addr,
 		Port:     int32(lis.Port),
@@ -116,48 +99,33 @@ func RequestListenerStart(
 	return r.GetText(), nil
 }
 
-func RequestListenerStartById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	listenerId uint,
-) (string, error) {
-	r, err := c.ListenerStartById(ctx, &commonpb.Id{Value: int64(listenerId)})
+func RequestListenerStartById(clientState *state.ClientState, listenerId uint) (string, error) {
+	r, err := clientState.RPCClient.ListenerStartById(clientState.Ctx, &commonpb.Id{Value: int64(listenerId)})
 	if err != nil {
 		return "", err
 	}
 	return r.GetText(), nil
 }
 
-func RequestListenerStopById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	listenerId uint,
+func RequestListenerStopById(clientState *state.ClientState, listenerId uint,
 ) (string, error) {
-	r, err := c.ListenerStopById(ctx, &commonpb.Id{Value: int64(listenerId)})
+	r, err := clientState.RPCClient.ListenerStopById(clientState.Ctx, &commonpb.Id{Value: int64(listenerId)})
 	if err != nil {
 		return "", err
 	}
 	return r.GetText(), nil
 }
 
-func RequestListenerDeleteById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	listenerId uint,
-) (string, error) {
-	r, err := c.ListenerDeleteById(ctx, &commonpb.Id{Value: int64(listenerId)})
+func RequestListenerDeleteById(clientState *state.ClientState, listenerId uint) (string, error) {
+	r, err := clientState.RPCClient.ListenerDeleteById(clientState.Ctx, &commonpb.Id{Value: int64(listenerId)})
 	if err != nil {
 		return "", err
 	}
 	return r.GetText(), nil
 }
 
-func RequestListenerGetById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	listenerId uint,
-) (*listener.Listener, error) {
-	r, err := c.ListenerGetById(ctx, &commonpb.Id{Value: int64(listenerId)})
+func RequestListenerGetById(clientState *state.ClientState, listenerId uint) (*listener.Listener, error) {
+	r, err := clientState.RPCClient.ListenerGetById(clientState.Ctx, &commonpb.Id{Value: int64(listenerId)})
 	if err != nil {
 		return nil, err
 	}
@@ -173,12 +141,9 @@ func RequestListenerGetById(
 	), nil
 }
 
-func RequestListenerPayloadsById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	listenerId uint,
+func RequestListenerPayloadsById(clientState *state.ClientState, listenerId uint,
 ) (string, error) {
-	r, err := c.ListenerPayloadsById(ctx, &commonpb.Id{Value: int64(listenerId)})
+	r, err := clientState.RPCClient.ListenerPayloadsById(clientState.Ctx, &commonpb.Id{Value: int64(listenerId)})
 	if err != nil {
 		return "", err
 	}
@@ -186,12 +151,11 @@ func RequestListenerPayloadsById(
 }
 
 func RequestListenerPayloadsDeleteById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
+	clientState *state.ClientState,
 	listenerId uint,
 	payloadName string,
 ) (string, error) {
-	r, err := c.ListenerPayloadsDeleteById(ctx, &rpcpb.ListenerPayload{
+	r, err := clientState.RPCClient.ListenerPayloadsDeleteById(clientState.Ctx, &rpcpb.ListenerPayload{
 		Id:          int64(listenerId),
 		PayloadName: payloadName,
 	})
@@ -201,11 +165,8 @@ func RequestListenerPayloadsDeleteById(
 	return r.GetText(), nil
 }
 
-func RequestListenerGetAll(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-) ([]*listener.Listener, error) {
-	stream, err := c.ListenerGetAll(ctx, &commonpb.Empty{})
+func RequestListenerGetAll(clientState *state.ClientState) ([]*listener.Listener, error) {
+	stream, err := clientState.RPCClient.ListenerGetAll(clientState.Ctx, &commonpb.Empty{})
 	if err != nil {
 		return nil, err
 	}
@@ -237,12 +198,8 @@ func RequestListenerGetAll(
 	return listeners, nil
 }
 
-func RequestPayloadImplantGenerate(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	imp *payload.Implant,
-) ([]byte, error) {
-	r, err := c.PayloadImplantGenerate(ctx, &rpcpb.PayloadImplant{
+func RequestPayloadImplantGenerate(clientState *state.ClientState, imp *payload.Implant) ([]byte, error) {
+	r, err := clientState.RPCClient.PayloadImplantGenerate(clientState.Ctx, &rpcpb.PayloadImplant{
 		Os:               imp.Os,
 		Arch:             imp.Arch,
 		Format:           imp.Format,
@@ -261,12 +218,8 @@ func RequestPayloadImplantGenerate(
 	return r.GetData(), nil
 }
 
-func RequestPayloadStagerGenerate(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	stg *payload.Stager,
-) ([]byte, error) {
-	r, err := c.PayloadStagerGenerate(ctx, &rpcpb.PayloadStager{
+func RequestPayloadStagerGenerate(clientState *state.ClientState, stg *payload.Stager) ([]byte, error) {
+	r, err := clientState.RPCClient.PayloadStagerGenerate(clientState.Ctx, &rpcpb.PayloadStager{
 		Os:              stg.Os,
 		Arch:            stg.Arch,
 		Format:          stg.Format,
@@ -282,12 +235,8 @@ func RequestPayloadStagerGenerate(
 	return r.GetData(), nil
 }
 
-func RequestPayloadShellcodeGenerate(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	shc *payload.Shellcode,
-) ([]byte, error) {
-	r, err := c.PayloadShellcodeGenerate(ctx, &rpcpb.PayloadShellcode{
+func RequestPayloadShellcodeGenerate(clientState *state.ClientState, shc *payload.Shellcode) ([]byte, error) {
+	r, err := clientState.RPCClient.PayloadShellcodeGenerate(clientState.Ctx, &rpcpb.PayloadShellcode{
 		Os:       shc.Os,
 		Arch:     shc.Arch,
 		Format:   shc.Format,
@@ -302,12 +251,8 @@ func RequestPayloadShellcodeGenerate(
 	return r.GetData(), nil
 }
 
-func RequestAgentDeleteById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	agentId uint,
-) error {
-	_, err := c.AgentDeleteById(ctx, &commonpb.Id{Value: int64(agentId)})
+func RequestAgentDeleteById(clientState *state.ClientState, agentId uint) error {
+	_, err := clientState.RPCClient.AgentDeleteById(clientState.Ctx, &commonpb.Id{Value: int64(agentId)})
 	if err != nil {
 		return err
 	}
@@ -315,12 +260,8 @@ func RequestAgentDeleteById(
 	return nil
 }
 
-func RequestAgentGetById(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	agentId uint,
-) (*agent.Agent, error) {
-	r, err := c.AgentGetById(ctx, &commonpb.Id{Value: int64(agentId)})
+func RequestAgentGetById(clientState *state.ClientState, agentId uint) (*agent.Agent, error) {
+	r, err := clientState.RPCClient.AgentGetById(clientState.Ctx, &commonpb.Id{Value: int64(agentId)})
 	if err != nil {
 		return nil, err
 	}
@@ -341,11 +282,8 @@ func RequestAgentGetById(
 	), nil
 }
 
-func RequestAgentGetAll(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-) ([]*agent.Agent, error) {
-	stream, err := c.AgentGetAll(ctx, &commonpb.Empty{})
+func RequestAgentGetAll(clientState *state.ClientState) ([]*agent.Agent, error) {
+	stream, err := clientState.RPCClient.AgentGetAll(clientState.Ctx, &commonpb.Empty{})
 	if err != nil {
 		return nil, err
 	}
@@ -383,60 +321,54 @@ func RequestAgentGetAll(
 }
 
 func RequestTaskSetByAgentName(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
+	clientState *state.ClientState,
 	_task string,
-	agentName string,
 ) error {
-	_, err := c.TaskSetByAgentName(ctx, &rpcpb.Task{Task: _task, AgentName: agentName})
+	_, err := clientState.RPCClient.TaskSetByAgentName(
+		clientState.Ctx,
+		&rpcpb.Task{Task: _task, AgentName: clientState.AgentMode.Name},
+	)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func RequestTaskClearByAgentName(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	agentName string,
-) error {
-	_, err := c.TaskClearByAgentName(ctx, &rpcpb.Task{AgentName: agentName})
+func RequestTaskClearByAgentName(clientState *state.ClientState) error {
+	_, err := clientState.RPCClient.TaskClearByAgentName(
+		clientState.Ctx,
+		&rpcpb.Task{AgentName: clientState.AgentMode.Name},
+	)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func RequestTaskListByAgentName(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	agentName string,
-) (string, error) {
-	r, err := c.TaskListByAgentName(ctx, &rpcpb.Task{AgentName: agentName})
+func RequestTaskListByAgentName(clientState *state.ClientState) (string, error) {
+	r, err := clientState.RPCClient.TaskListByAgentName(
+		clientState.Ctx,
+		&rpcpb.Task{AgentName: clientState.AgentMode.Name},
+	)
 	if err != nil {
 		return "", err
 	}
 	return r.GetText(), nil
 }
 
-func RequestLootGetAll(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	agentName string,
-) (string, error) {
-	r, err := c.LootGetAll(ctx, &rpcpb.Loot{AgentName: agentName})
+func RequestLootGetAll(clientState *state.ClientState) (string, error) {
+	r, err := clientState.RPCClient.LootGetAll(
+		clientState.Ctx,
+		&rpcpb.Loot{AgentName: clientState.AgentMode.Name},
+	)
 	if err != nil {
 		return "", err
 	}
 	return r.GetText(), nil
 }
 
-func RequestLootClearByAgentName(
-	c rpcpb.HermitRPCClient,
-	ctx context.Context,
-	agentName string,
-) (string, error) {
-	r, err := c.LootClearByAgentName(ctx, &rpcpb.Loot{AgentName: agentName})
+func RequestLootClearByAgentName(clientState *state.ClientState, agentName string) (string, error) {
+	r, err := clientState.RPCClient.LootClearByAgentName(clientState.Ctx, &rpcpb.Loot{AgentName: agentName})
 	if err != nil {
 		return "", err
 	}

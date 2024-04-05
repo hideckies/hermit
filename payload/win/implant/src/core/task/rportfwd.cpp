@@ -36,10 +36,7 @@ namespace Task
         return L"Warn Not implemented yet.";
     }
 
-    std::wstring RportfwdRm(
-        const std::wstring& wIP,
-        const std::wstring& wPort
-    ) {
+    std::wstring RportfwdRm(State::PSTATE pState) {
         return L"Warn: Not implemented yet.";
     }
 }

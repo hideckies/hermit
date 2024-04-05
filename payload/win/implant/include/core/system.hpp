@@ -106,6 +106,15 @@ namespace System::Http
         const std::wstring& wSrc,
         const std::wstring& wDest
     );
+    BOOL UploadFile(
+        Procs::PPROCS pProcs,
+        HINTERNET hConnect,
+        LPCWSTR lpHost,
+        INTERNET_PORT nPort,
+        LPCWSTR lpPath,
+        LPCWSTR lpHeaders,
+        const std::wstring& wSrc
+    );
     VOID WinHttpCloseHandles(
         Procs::PPROCS pProcs,
         HINTERNET hSession,

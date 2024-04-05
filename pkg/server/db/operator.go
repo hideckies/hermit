@@ -1,8 +1,6 @@
 package db
 
-import (
-	"github.com/hideckies/hermit/pkg/server/operator"
-)
+import "github.com/hideckies/hermit/pkg/server/operator"
 
 func (d *Database) OperatorAdd(ope *operator.Operator) error {
 	exists, err := d.OperatorExistsByUuid(ope.Uuid)

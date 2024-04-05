@@ -34,7 +34,7 @@ namespace Task::Helper::Reg
         HKEY hRootKey,
         const std::wstring& wSubKey,
         DWORD dwOptions,
-        BOOL bRecurse
+        BOOL bRecursive
     ) {
         std::vector<std::wstring> vSubKeys = {};
 
@@ -104,7 +104,7 @@ namespace Task::Helper::Reg
                 std::wstring wNewSubKey = wSubKey + L"\\" + wName;
                 vSubKeys.push_back(wNewSubKey);
 
-                if (bRecurse)
+                if (bRecursive)
                 {
                     std::vector<std::wstring> vSubKeys2 = ListRegSubKeys(
                         hRootKey,
@@ -127,7 +127,7 @@ namespace Task::Helper::Reg
 
 namespace Task
 {
-    std::wstring RegSubKeys(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecurse)
+    std::wstring RegSubKeys(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive)
     {
         HKEY hRootKey = Task::Helper::Reg::GetRegRootKey(wRootKey);
         if (hRootKey == NULL)
@@ -139,7 +139,7 @@ namespace Task
             hRootKey,
             wSubKey,
             KEY_READ,
-            bRecurse
+            bRecursive
         );
         if (vSubKeys.size() == 0)
         {
@@ -156,7 +156,7 @@ namespace Task
         return result;
     }
 
-    std::wstring RegValues(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecurse)
+    std::wstring RegValues(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive)
     {
         std::wstring result = L"";
         std::vector<std::wstring> vSubKeys = {wSubKey};
@@ -171,7 +171,7 @@ namespace Task
             hRootKey,
             wSubKey,
             KEY_READ,
-            bRecurse
+            bRecursive
         );
         vSubKeys.insert(vSubKeys.end(), vNewSubKeys.begin(), vNewSubKeys.end());
 

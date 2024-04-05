@@ -20,8 +20,8 @@ I'm developing this for my learning purpose.
 
 ## Warning
 
-This project can be used for educational purpose only.  
-It's prohibited to use it on systems which is not under your control.
+- This project can be used for educational purpose only. It's prohibited to use it on systems which is not under your control.
+- I'm a crypto amateur so I cannot guarantee that the implementation of the encryption is not vulnerable.
 
 <br />
 

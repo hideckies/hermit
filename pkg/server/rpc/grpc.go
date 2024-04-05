@@ -6,13 +6,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hideckies/hermit/pkg/common/handler"
 	"github.com/hideckies/hermit/pkg/common/meta"
 	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/protobuf/commonpb"
 	"github.com/hideckies/hermit/pkg/protobuf/rpcpb"
-	"github.com/hideckies/hermit/pkg/server/handler"
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/loot"
+	"github.com/hideckies/hermit/pkg/server/operator"
 	"github.com/hideckies/hermit/pkg/server/payload"
 	"github.com/hideckies/hermit/pkg/server/state"
 )
@@ -34,7 +35,8 @@ func (s *HermitRPCServer) OperatorRegister(
 	ctx context.Context,
 	ope *rpcpb.Operator,
 ) (*commonpb.Message, error) {
-	_, err := handler.OperatorRegister(ope.Uuid, ope.Name, s.serverState.DB)
+	newOp := operator.NewOperator(0, ope.Uuid, ope.Name, "")
+	err := s.serverState.DB.OperatorAdd(newOp)
 	if err != nil {
 		return nil, err
 	}
@@ -43,9 +45,9 @@ func (s *HermitRPCServer) OperatorRegister(
 
 func (s *HermitRPCServer) OperatorDeleteByUuid(
 	ctx context.Context,
-	operatorUuid *commonpb.Uuid,
+	operatorUUID *commonpb.Uuid,
 ) (*commonpb.Message, error) {
-	err := s.serverState.DB.OperatorDeleteByUuid(operatorUuid.Value)
+	err := s.serverState.DB.OperatorDeleteByUuid(operatorUUID.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +56,9 @@ func (s *HermitRPCServer) OperatorDeleteByUuid(
 
 func (s *HermitRPCServer) OperatorGetById(
 	ctx context.Context,
-	operatorId *commonpb.Id,
+	operatorID *commonpb.Id,
 ) (*rpcpb.Operator, error) {
-	op, err := s.serverState.DB.OperatorGetById(uint(operatorId.Value))
+	op, err := s.serverState.DB.OperatorGetById(uint(operatorID.Value))
 	if err != nil {
 		return nil, err
 	}

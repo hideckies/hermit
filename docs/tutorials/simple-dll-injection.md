@@ -1,5 +1,9 @@
 # Simple DLL Injection
 
+⚠️ **Due to major updates to the project, this tutorial may contain slightly inaccurate information. Please wait for a while until it is updated.**
+
+---
+
 In this tutorial, we generate a stager that loads our DLL implant into another process on Windows victim machine. Then make the C2 agent to communicate with our C2 server.   
 
 Assume that you've completed [the Simple Implant Beacon tutorial](./simple-implant-beacon.md).  
