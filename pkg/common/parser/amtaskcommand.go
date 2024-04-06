@@ -925,6 +925,11 @@ func (c *amTaskTokenStealCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
+	// If process is not set and
+	if c.Process == "" && !c.Login {
+		return fmt.Errorf("you must set either '--process' or '--login' flag")
+	}
+
 	task, err := _task.NewTask(strings.Join(ctx.Args[:2], " "), map[string]string{
 		"pid":     fmt.Sprint(c.Pid),
 		"process": c.Process,

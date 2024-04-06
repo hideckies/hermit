@@ -91,26 +91,42 @@ namespace System::Fs
         return files;
     }
     
-    std::vector<char> ReadBytesFromFile(const std::wstring& wFilePath)
+    std::vector<BYTE> ReadBytesFromFile(const std::wstring& wFilePath)
     {
-        std::string sFilePath = Utils::Convert::UTF8Encode(wFilePath);
-
-        std::ifstream file(sFilePath, std::ios::binary);
-        if (!file.is_open())
+        // Open file
+        HANDLE hFile = CreateFile(
+            wFilePath.c_str(),
+            GENERIC_READ,
+            FILE_SHARE_READ,
+            NULL,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL
+        );
+        if (hFile == INVALID_HANDLE_VALUE)
         {
-            return std::vector<char>();
+            return std::vector<BYTE>();
         }
 
-        // Get the file size
-        file.seekg(0, std::ios::end);
-        std::streampos fileSize = file.tellg();
-        file.seekg(0, std::ios::beg);
+        // Get file size
+        DWORD dwFileSize = GetFileSize(hFile, NULL);
+        if (dwFileSize == INVALID_FILE_SIZE)
+        {
+            CloseHandle(hFile);
+            return std::vector<BYTE>();
+        }
 
-        // Reserve capacity
-        std::vector<char> buffer(fileSize);
+        // Allocate a buffer
+        std::vector<BYTE> buffer(dwFileSize);
 
-        file.read(buffer.data(), fileSize);
-        file.close();
+        DWORD dwBytesRead;
+        if (!ReadFile(hFile, buffer.data(), dwFileSize, &dwBytesRead, NULL))
+        {
+            CloseHandle(hFile);
+            return std::vector<BYTE>();
+        }
+
+        CloseHandle(hFile);
 
         return buffer;
     }

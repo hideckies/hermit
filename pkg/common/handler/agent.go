@@ -137,6 +137,10 @@ func HandleAgentNoteById(
 		cmd.Stdout = os.Stdout
 		err = cmd.Run()
 		if err != nil {
+			// If error occured, try 'vim'.
+			cmd := exec.Command("vim", agNoteFile)
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
 			return err
 		}
 	} else if clientState.Conf != nil {

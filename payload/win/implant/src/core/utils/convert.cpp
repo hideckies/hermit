@@ -2,10 +2,20 @@
 
 namespace Utils::Convert
 {
+    std::string BytePointerToString(const BYTE* pByte)
+    {
+        size_t size = sizeof(pByte) / sizeof(pByte[0]);
+        return std::string(reinterpret_cast<const char*>(pByte), size);
+    }
+
+    std::string VecByteToString(std::vector<BYTE> bytes)
+    {
+        return std::string(bytes.begin(), bytes.end());
+    }
+
     std::string VecCharToString(std::vector<char> chars)
     {
-        std::string s(chars.begin(), chars.end());
-        return s;
+        return std::string(chars.begin(), chars.end());
     }
 
     std::string UTF8Encode(const std::wstring& wstr)

@@ -8,6 +8,24 @@ namespace Crypt
         // ...
     }
 
+    BYTE hexCharToByte(char cHex)
+    {
+        if ('0' <= cHex && cHex <= '9')
+        {
+            return cHex - '0';
+        }
+        else if ('a' <= cHex && cHex <= 'f')
+        {
+            return cHex - 'a' + 10;
+        }
+        else if ('A' <= cHex && cHex <= 'F')
+        {
+            return cHex - 'A' + 10;
+        }
+
+        return 0;
+    }
+
     std::wstring HexEncode(const std::wstring& wStr)
     {
         std::string sStr = Utils::Convert::UTF8Encode(wStr);
@@ -56,29 +74,29 @@ namespace Crypt
         return wDecoded;
     }
 
-    std::string HexEncodeData(const std::vector<char>& data)
+    std::string HexEncodeData(const std::vector<BYTE>& data)
     {
         std::stringstream ss;
-        ss << std::hex << std::setfill('0');
-        for (char c : data)
+        for (BYTE byte : data)
         {
-            ss << std::setw(2) << static_cast<unsigned int>(static_cast<unsigned char>(c));
+            ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<INT>(byte);
         }
         return ss.str();
     }
 
-    std::vector<char> HexDecodeData(const std::string& sHex)
+    std::vector<BYTE> HexDecodeData(const std::string& sHex)
     {
-        std::vector<char> result;
+        std::vector<BYTE> result;
         for (size_t i = 0; i < sHex.length(); i += 2)
         {
-            char byte = static_cast<char>(std::stoi(sHex.substr(i, 2), nullptr, 16));
-            result.push_back(byte);
+            BYTE high = hexCharToByte(sHex[i]);
+            BYTE low = hexCharToByte(sHex[i + 1]);
+            result.push_back((high << 4) | low);
         }
         return result;
     }
 
-    std::string EncryptData(const std::vector<char>& plaindata)
+    std::string EncryptData(const std::vector<BYTE>& plaindata)
     {
         std::string encodedData = HexEncodeData(plaindata);
 
@@ -88,9 +106,9 @@ namespace Crypt
         return encodedData;
     }
 
-    std::vector<char> DecryptData(const std::string& cipherdata)
+    std::vector<BYTE> DecryptData(const std::string& cipherdata)
     {
-        std::vector<char> decodedData = HexDecodeData(cipherdata);
+        std::vector<BYTE> decodedData = HexDecodeData(cipherdata);
 
         // TODO: Implement decryption
         // ...

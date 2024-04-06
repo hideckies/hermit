@@ -59,7 +59,7 @@ func verifyAgentCheckIn(ag *agent.Agent, ip string, os string, arch string, host
 	}
 }
 
-func handleImplantCheckIn(lis *listener.Listener, database *db.Database) gin.HandlerFunc {
+func handleImplantCheckIn(database *db.Database) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		clientIP := ctx.ClientIP()
 
@@ -180,10 +180,12 @@ func handleImplantDownload(database *db.Database) gin.HandlerFunc {
 			w.(http.Flusher).Flush()
 			return
 		}
+		// Encrypt the data
+		dataEnc := crypt.EncryptData(data)
 
 		// Send chunked data
 		w.WriteHeader(http.StatusOK)
-		chunkedData := utils.ChunkData(data)
+		chunkedData := utils.ChunkData(dataEnc)
 		for _, c := range chunkedData {
 			w.Write(c)
 			w.(http.Flusher).Flush()
@@ -632,7 +634,7 @@ func httpsRoutes(
 	fakeRoutes := serverState.Conf.Listener.FakeRoutes
 
 	for _, r := range fakeRoutes["/implant/checkin"] {
-		router.POST(r, handleImplantCheckIn(lis, serverState.DB))
+		router.POST(r, handleImplantCheckIn(serverState.DB))
 	}
 	for _, r := range fakeRoutes["/implant/download"] {
 		router.POST(r, handleImplantDownload(serverState.DB))
@@ -666,7 +668,12 @@ func HttpsStart(
 	serverState *state.ServerState,
 ) error {
 	// Get server certificate paths
-	serverCertPath, serverKeyPath, err := certs.GetCertificatePath(certs.CATYPE_HTTPS, false, false, lis.Name)
+	serverCertPath, serverKeyPath, err := certs.GetCertificatePath(
+		certs.CATYPE_HTTPS,
+		false,
+		false,
+		lis.Name,
+	)
 	if err != nil {
 		return err
 	}
@@ -695,7 +702,6 @@ func HttpsStart(
 		}
 	}()
 
-	// serverState.Job.ChListenerReady <- lis.Uuid
 	lisJob.ChReady <- lis.Uuid
 
 	if err := srv.ListenAndServeTLS(serverCertPath, serverKeyPath); err != nil {

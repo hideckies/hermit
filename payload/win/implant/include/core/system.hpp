@@ -45,7 +45,7 @@ namespace System::Fs
 
     std::wstring GetAbsolutePath(const std::wstring& wPath);
     std::vector<std::wstring> GetFilesInDirectory(const std::wstring& wDirPath, BOOL bRecurse);
-    std::vector<char> ReadBytesFromFile(const std::wstring& wFilePath);
+    std::vector<BYTE> ReadBytesFromFile(const std::wstring& wFilePath);
     BOOL MyWriteFile(const std::wstring& wFilePath, LPCVOID lpData, DWORD dwDataSize);
 }
 

