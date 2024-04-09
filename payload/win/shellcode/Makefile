@@ -4,5 +4,5 @@ SCRIPT = script/shellcode_generator.py
 OUTFILE = ${OUTPUT}
 
 x64:
-	@ python3 ${SCRIPT} -t ${SHELLCODE_TYPE} -c "${SHELLCODE_TYPE_ARGS}" -o ${OUTFILE}
+	@ python3 ${SCRIPT} -t ${SHELLCODE_TYPE} -c ${SHELLCODE_TYPE_ARGS} -o ${OUTFILE}
 

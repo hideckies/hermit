@@ -7,6 +7,7 @@
 #include <tlhelp32.h>
 #include <vector>
 
+#include "core/crypt.hpp"
 #include "core/procs.hpp"
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
@@ -57,19 +58,14 @@ namespace System::Http
         HINTERNET hRequest
     );
 
-    BOOL WriteResponseData(
-        Procs::PPROCS pProcs,
-        HINTERNET hRequest,
-        const std::wstring& outFile
-    );
-
     BOOL DownloadFile(
         Procs::PPROCS pProcs,
         HINTERNET hConnect,
         LPCWSTR lpHost,
         INTERNET_PORT nPort,
         LPCWSTR lpPath,
-        const std::wstring& wSrc,
+        LPCWSTR lpHeaders,
+        const std::wstring& wInfoJSON,
         const std::wstring& wDest
     );
 

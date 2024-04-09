@@ -90,7 +90,7 @@ Hermit [agent-abcd] > connect https://172.12.34.56:12345
 
 ## `cp`
 
-Copies a file from our machine to victim machine.  
+Copies a file to destination path on a victim machine.  
 We can specify an absolute path or a relative path.
 
 ```sh

@@ -125,7 +125,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			return nil, "", err
 		}
 
-		// Compile assembly
+		// Compile assembly and generate an object file.
 		asmSrc := "src/asm/syscalls."
 		if i.Arch == "amd64" {
 			asmSrc += "x64.asm"
@@ -135,6 +135,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		asmObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
 		_, err = meta.ExecCommand("nasm", "-f", "win64", "-o", asmObj, asmSrc)
 		if err != nil {
+			os.Chdir(serverState.CWD)
 			return nil, "", fmt.Errorf("nasm error: %v", err)
 		}
 
@@ -167,6 +168,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
+			os.Remove(asmObj)
 			return nil, "", fmt.Errorf("create build directory error: %v", err)
 		}
 		_, err = meta.ExecCommand(
@@ -177,8 +179,11 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
+			os.Remove(asmObj)
 			return nil, "", fmt.Errorf("cmake error: %v", err)
 		}
+
+		os.Remove(asmObj)
 	}
 
 	data, err = os.ReadFile(outFile)

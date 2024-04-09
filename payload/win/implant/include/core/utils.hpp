@@ -15,7 +15,6 @@ namespace Utils::Convert
 
     // vector<BYTE> -> string
     std::string VecByteToString(std::vector<BYTE> bytes);
-
     // vector<char> -> string
     std::string VecCharToString(std::vector<char> chars);
 

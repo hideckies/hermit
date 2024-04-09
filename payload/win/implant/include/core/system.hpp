@@ -91,11 +91,6 @@ namespace System::Http
         Procs::PPROCS pProcs,
         HINTERNET hRequest
     );
-    BOOL WriteResponseData(
-        Procs::PPROCS pProcs,
-        HINTERNET hRequest,
-        const std::wstring& outFile
-    );
     BOOL DownloadFile(
         Procs::PPROCS pProcs,
         HINTERNET hConnect,

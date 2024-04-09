@@ -3,6 +3,7 @@
 
 #include <windows.h>
 
+#include "core/crypt.hpp"
 #include "core/handler.hpp"
 #include "core/procs.hpp"
 #include "core/system.hpp"

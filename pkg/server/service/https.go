@@ -585,8 +585,6 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 			}
 		}
 		if targetPayloadPath == "" {
-			// TODO: If there are not target payloads, set default paylaod.
-			// ...
 			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()
 			return
@@ -599,10 +597,12 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 			w.(http.Flusher).Flush()
 			return
 		}
+		// Encrypt the data
+		dataEnc := crypt.EncryptData(data)
 
 		// Send chunked data
 		w.WriteHeader(http.StatusOK)
-		chunkedData := utils.ChunkData(data)
+		chunkedData := utils.ChunkData(dataEnc)
 		for _, c := range chunkedData {
 			w.Write(c)
 			w.(http.Flusher).Flush()

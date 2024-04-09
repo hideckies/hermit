@@ -2,6 +2,11 @@
 
 namespace Utils::Convert
 {
+    std::string VecByteToString(std::vector<BYTE> bytes)
+    {
+        return std::string(bytes.begin(), bytes.end());
+    }
+    
     std::string VecCharToString(std::vector<char> chars)
     {
         std::string s(chars.begin(), chars.end());
@@ -69,6 +74,23 @@ namespace Utils::Convert
         );
 
         return wstrTo;
+    }
+
+    // wstring -> DWORD (unsigned long)
+    DWORD WstringToDWORD(const std::wstring& wStr, int base)
+    {
+        std::string sStr = UTF8Encode(wStr);
+        char* pEnds;
+        DWORD dwStr = (DWORD)strtoul(sStr.c_str(), &pEnds, base);
+        return dwStr;
+    }
+
+    // DWORD (unsigned long) -> wstring
+    std::wstring DWORDToWstring(DWORD dwSrc)
+    {
+        std::string sSrc = std::to_string(dwSrc);
+        std::wstring wDest = UTF8Decode(sSrc);
+        return wDest;
     }
 
     // LPCWSTR (UTF-16) -> string (UTF-8)

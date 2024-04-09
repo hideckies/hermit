@@ -21,6 +21,7 @@ func WizardPayloadType() string {
 		"stager/exec-loader",
 		"stager/shellcode-loader",
 		"shellcode/exec",
+		// "shellcode/revshell",
 		// "shellcode/dll-loader",
 		// "shellcode/exec-loader",
 		// "shellcode/shellcode-loader",
