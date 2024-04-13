@@ -154,6 +154,52 @@ namespace System::Http
 		return bytes;
 	}
 
+	// Read response as text.
+	std::wstring ReadResponseText(Procs::PPROCS pProcs, HINTERNET hRequest) {
+		std::wstring respText;
+
+		DWORD dwSize = 0;
+		DWORD dwRead = 0;
+		LPSTR pszOutBuffer;
+
+		do
+		{
+			if (!pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
+			{
+				break;
+			}
+
+			// No more available data.
+			if (!dwSize)
+				break;
+
+			pszOutBuffer = new char[dwSize+1];
+			if (!pszOutBuffer)
+			{
+				break;
+			}
+
+			// Read the data
+			ZeroMemory(pszOutBuffer, dwSize+1);
+			if (!pProcs->lpWinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
+			{
+				break;
+			}
+
+			// Convert from UTF-8 to UTF-16
+			wchar_t* wOutBuffer = Utils::Convert::LPSTRToWCHAR_T(pszOutBuffer);
+			respText.append(wOutBuffer);
+			
+			// Free the memory allocated to the buffer.
+			delete [] pszOutBuffer;
+
+			if (!dwRead)
+				break;
+		} while (dwSize > 0);
+
+		return respText;
+	}
+
 	// Wrapper for send&read&write response data
 	BOOL DownloadFile(
 		Procs::PPROCS pProcs,
@@ -199,14 +245,14 @@ namespace System::Http
 		}
 
 		// Read file
-		std::vector<BYTE> bytes = ReadResponseBytes(pProcs, resp.hRequest);
-		if (bytes.size() == 0)
+		std::wstring wEnc = ReadResponseText(pProcs, resp.hRequest);
+		if (wEnc.length() == 0)
 		{
 			return FALSE;
 		}
 
 		// Decrypt data
-		std::vector<BYTE> decBytes = Crypt::DecryptData(Utils::Convert::VecByteToString(bytes));
+		std::vector<BYTE> decBytes = Crypt::Decrypt(wEnc);
 		
 		// Write data to file
 		DWORD dwWritten;

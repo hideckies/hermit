@@ -1,7 +1,13 @@
 # Hermit C2
 
 Command and Control Framework. 
-I'm developing this for my learning purpose.
+I'm developing this for my learning purpose.  
+
+**By the way, it's not related to the Spyware named "Hermit".** Although the name is duplicated, I like this name.  
+
+<br />
+
+## Demo
 
 ![demo](assets/hermit_demo.gif)
 

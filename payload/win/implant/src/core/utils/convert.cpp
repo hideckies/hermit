@@ -8,16 +8,6 @@ namespace Utils::Convert
         return std::string(reinterpret_cast<const char*>(pByte), size);
     }
 
-    std::string VecByteToString(std::vector<BYTE> bytes)
-    {
-        return std::string(bytes.begin(), bytes.end());
-    }
-
-    std::string VecCharToString(std::vector<char> chars)
-    {
-        return std::string(chars.begin(), chars.end());
-    }
-
     std::string UTF8Encode(const std::wstring& wstr)
     {
         if( wstr.empty() ) {

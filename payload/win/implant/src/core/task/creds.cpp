@@ -83,7 +83,7 @@
             //                 continue;
             //             }
 
-            //             std::wstring wCred = Utils::Convert::UTF8Decode(Utils::Convert::VecCharToString(readBytes));
+            //             std::wstring wCred = Utils::Convert::UTF8Decode(std::string(readBytes.begin(), readBytes.end()));
             //             wCreds.push_back(wCred);
 
             //             result.insert(std::make_pair(wFile, wCreds));
@@ -100,7 +100,7 @@
             //             continue;
             //         }
 
-            //         std::wstring wCred = Utils::Convert::UTF8Decode(Utils::Convert::VecCharToString(readBytes));
+            //         std::wstring wCred = Utils::Convert::UTF8Decode(std::string(readBytes.begin(), readByte.end()));
             //         wCreds.push_back(wCred);
 
             //         result.insert(std::make_pair(wTarget, wCreds));

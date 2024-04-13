@@ -18,6 +18,8 @@
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
 
+#define INFO_BUFFER_SIZE 32767
+
 namespace System::Arch
 {
     std::wstring GetName(WORD wProcessorArchitecture);
@@ -72,6 +74,7 @@ namespace System::Http
 		LPCWSTR lpHost,
 		INTERNET_PORT nPort
 	);
+
     WinHttpResponse SendRequest(
         Procs::PPROCS pProcs,
         HINTERNET hConnect,
@@ -83,14 +86,17 @@ namespace System::Http
         LPVOID lpData,
         DWORD dwDataLength
     );
+
     std::vector<BYTE> ReadResponseBytes(
         Procs::PPROCS pProcs,
         HINTERNET hRequest
     );
+
     std::wstring ReadResponseText(
         Procs::PPROCS pProcs,
         HINTERNET hRequest
     );
+
     BOOL DownloadFile(
         Procs::PPROCS pProcs,
         HINTERNET hConnect,
@@ -101,6 +107,7 @@ namespace System::Http
         const std::wstring& wSrc,
         const std::wstring& wDest
     );
+
     BOOL UploadFile(
         Procs::PPROCS pProcs,
         HINTERNET hConnect,
@@ -110,6 +117,7 @@ namespace System::Http
         LPCWSTR lpHeaders,
         const std::wstring& wSrc
     );
+    
     VOID WinHttpCloseHandles(
         Procs::PPROCS pProcs,
         HINTERNET hSession,

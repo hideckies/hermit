@@ -2,17 +2,6 @@
 
 namespace Utils::Convert
 {
-    std::string VecByteToString(std::vector<BYTE> bytes)
-    {
-        return std::string(bytes.begin(), bytes.end());
-    }
-    
-    std::string VecCharToString(std::vector<char> chars)
-    {
-        std::string s(chars.begin(), chars.end());
-        return s;
-    }
-
     std::string UTF8Encode(const std::wstring& wstr)
     {
         if( wstr.empty() ) {
@@ -76,30 +65,13 @@ namespace Utils::Convert
         return wstrTo;
     }
 
-    // wstring -> DWORD (unsigned long)
-    DWORD WstringToDWORD(const std::wstring& wStr, int base)
+    // LPSTR (UTF-8) -> wchar_t* (UTF-16)
+    wchar_t* LPSTRToWCHAR_T(LPSTR lpStr)
     {
-        std::string sStr = UTF8Encode(wStr);
-        char* pEnds;
-        DWORD dwStr = (DWORD)strtoul(sStr.c_str(), &pEnds, base);
-        return dwStr;
-    }
-
-    // DWORD (unsigned long) -> wstring
-    std::wstring DWORDToWstring(DWORD dwSrc)
-    {
-        std::string sSrc = std::to_string(dwSrc);
-        std::wstring wDest = UTF8Decode(sSrc);
-        return wDest;
-    }
-
-    // LPCWSTR (UTF-16) -> string (UTF-8)
-    std::string LPCWSTRToString(LPCWSTR lpcwStr)
-    {
-        INT strLength = WideCharToMultiByte(CP_UTF8, 0, lpcwStr, -1, NULL, 0, NULL, NULL);
-        std::string strData(strLength, 0);
-        WideCharToMultiByte(CP_UTF8, 0, lpcwStr, -1, &strData[0], strLength, NULL, NULL);
-        return strData;
+        int wchars_num = MultiByteToWideChar(CP_UTF8, 0, lpStr, -1, NULL, 0);
+        wchar_t* wstr = new wchar_t[wchars_num];
+        MultiByteToWideChar(CP_UTF8, 0, lpStr, -1, wstr, wchars_num);
+        return wstr;
     }
 }
 

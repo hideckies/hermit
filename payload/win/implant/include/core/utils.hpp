@@ -13,11 +13,6 @@ namespace Utils::Convert
     // BYTE* -> string
     std::string BytePointerToString(const BYTE* pByte);
 
-    // vector<BYTE> -> string
-    std::string VecByteToString(std::vector<BYTE> bytes);
-    // vector<char> -> string
-    std::string VecCharToString(std::vector<char> chars);
-
     // wstring -> string (UTF8)
     std::string UTF8Encode(const std::wstring& wstr);
     // string (UTF8) -> wstring

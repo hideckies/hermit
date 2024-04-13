@@ -14,7 +14,7 @@ using json = nlohmann::json;
 
 namespace Parser
 {
-    json ParseTask(const std::wstring& wTask);
+    json ParseTask(const std::wstring& taskBytes);
 }
 
 #endif // HERMIT_CORE_PARSER_HPP

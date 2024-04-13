@@ -58,6 +58,11 @@ namespace System::Http
         HINTERNET hRequest
     );
 
+    std::wstring ReadResponseText(
+        Procs::PPROCS pProcs,
+        HINTERNET hRequest
+    );
+
     BOOL DownloadFile(
         Procs::PPROCS pProcs,
         HINTERNET hConnect,

@@ -4,24 +4,6 @@
 // DLL
 #define DLLEXPORT __declspec(dllexport)
 
-// COMMON
-#define MAX_TRIES 3
-
-#define MAX_BUFFER_SIZE 65536
-#define INFO_BUFFER_SIZE 32767
-#define BUFFER_SIZE 8192
-#define WORKING_BUFFER_SIZE 15000
-
-#define MAX_REG_KEY_LENGTH 255
-#define MAX_REG_VALUE_NAME 16383
-
-#define NUMHOOKS 7
-
-#define IDS_APP_TITLE 1
-#define IDC_GDICAPTURINGANIMAGE 1
-#define IDI_GDICAPTURINGANIMAGE 2
-#define IDI_SMALL 3
-
 // FUNCTIONS
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
 

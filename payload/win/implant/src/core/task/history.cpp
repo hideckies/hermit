@@ -18,7 +18,7 @@ namespace Task
             result += wHistoryFile + L"\n";
             result += std::wstring(wcslen(wHistoryFile.c_str()), L'-') + L"\n";
 
-            std::wstring wHistory = Utils::Convert::UTF8Decode(Utils::Convert::VecByteToString(historyBytes));
+            std::wstring wHistory = Utils::Convert::UTF8Decode(std::string(historyBytes.begin(), historyBytes.end()));
             result += wHistory + L"\n\n";
         }
 
@@ -50,7 +50,7 @@ namespace Task
         //         continue;
         //     }
 
-        //     std::wstring wContent = UTF8Decode(Utils::Convert::VecCharToString(readBytes));
+        //     std::wstring wContent = UTF8Decode(std::string(readBytes.begin(), readBytes.end()));
         //     result += wContent + L"\n\n";
         // }
 
@@ -84,7 +84,7 @@ namespace Task
         //             result += fileName + L"\n";
         //             result += std::wstring(wcslen(fileName.c_str()), L'-') + L"\n";
 
-        //             std::wstring wContent = Utils::Convert::UTF8Decode(Utils::Convert::VecCharToString(readBytes));
+        //             std::wstring wContent = Utils::Convert::UTF8Decode(std::string(readBytes.begin(), readBytes.end()));
         //             result += wContent + L"\n\n";
         //         }
         //     }

