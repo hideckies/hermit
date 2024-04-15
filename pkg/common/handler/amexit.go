@@ -11,7 +11,7 @@ func HandleAmExit(
 ) error {
 	// Go back to the root console mode
 	if serverState.Conf != nil {
-		serverState.AgentMode = servState.AgentMode{}
+		serverState.AgentMode = &servState.AgentMode{}
 	} else if clientState.Conf != nil {
 		clientState.AgentMode = cliState.AgentMode{}
 	}

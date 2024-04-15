@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -12,6 +13,8 @@ namespace Utils::Convert
 {
     // BYTE* -> string
     std::string BytePointerToString(const BYTE* pByte);
+    // vector<BYTE> -> string
+    std::string VecByteToHexString(const std::vector<BYTE> bytes);
 
     // wstring -> string (UTF8)
     std::string UTF8Encode(const std::wstring& wstr);

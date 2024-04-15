@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 
+	"github.com/hideckies/hermit/pkg/common/crypt"
 	"github.com/hideckies/hermit/pkg/server/agent"
 )
 
@@ -22,9 +23,22 @@ func (d *Database) AgentAdd(ag *agent.Agent) error {
 
 	stmt, err := tx.Prepare(`
 	INSERT INTO agent (
-		uuid, name, ip, os, arch, hostname, listenerURL, implantType, checkin, sleep, jitter, killdate
+		uuid,
+		name,
+		ip,
+		os,
+		arch,
+		hostname,
+		listenerURL,
+		implantType,
+		checkin,
+		sleep,
+		jitter,
+		killdate,
+		aesKey,
+		aesIV
 	) VALUES (
-		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 	)
 	`)
 	if err != nil {
@@ -45,6 +59,8 @@ func (d *Database) AgentAdd(ag *agent.Agent) error {
 		int(ag.Sleep),
 		int(ag.Jitter),
 		int(ag.KillDate),
+		ag.AES.Key.Base64,
+		ag.AES.IV.Base64,
 	)
 	if err != nil {
 		return err
@@ -91,9 +107,24 @@ func (d *Database) AgentUpdate(ag *agent.Agent) error {
 	}
 
 	stmt, err := d.DB.Prepare(`
-	UPDATE agent
-	SET name = ?, ip = ?, os = ?, arch = ?, hostname = ?, listenerURL = ?, implantType = ?, checkin = ?, sleep = ?, jitter = ?, killdate = ?
-	WHERE uuid = ?
+	UPDATE
+		agent
+	SET
+		name 		= ?,
+		ip 			= ?,
+		os 			= ?,
+		arch 		= ?,
+		hostname 	= ?,
+		listenerURL	= ?,
+		implantType = ?,
+		checkin 	= ?,
+		sleep 		= ?,
+		jitter 		= ?,
+		killdate 	= ?,
+		aesKey		= ?,
+		aesIV 		= ?
+	WHERE
+		uuid = ?
 	`)
 	if err != nil {
 		return err
@@ -112,6 +143,8 @@ func (d *Database) AgentUpdate(ag *agent.Agent) error {
 		int(ag.Sleep),
 		int(ag.Jitter),
 		int(ag.KillDate),
+		ag.AES.Key.Base64,
+		ag.AES.IV.Base64,
 		ag.Uuid,
 	)
 	if err != nil {
@@ -183,8 +216,26 @@ func (d *Database) AgentDeleteAll() error {
 
 func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 	stmt, err := d.DB.Prepare(`
-	SELECT id, uuid, name, ip, os, arch, hostname, listenerURL, implantType, checkin, sleep, jitter, killdate
-	FROM agent WHERE id = ?
+	SELECT
+		id,
+		uuid,
+		name,
+		ip,
+		os,
+		arch,
+		hostname,
+		listenerURL,
+		implantType,
+		checkin,
+		sleep,
+		jitter,
+		killdate,
+		aesKey,
+		aesIV
+	FROM
+		agent
+	WHERE
+		id = ?
 	`)
 	if err != nil {
 		return nil, err
@@ -205,6 +256,8 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		sleep       int
 		jitter      int
 		killDate    int
+		aesKey      string
+		aesIV       string
 	)
 	err = stmt.QueryRow(agentId).Scan(
 		&id,
@@ -220,11 +273,19 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		&sleep,
 		&jitter,
 		&killDate,
+		&aesKey,
+		&aesIV,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return agent.NewAgent(
+
+	newAES, err := crypt.NewAESFromBase64Pairs(aesKey, aesIV)
+	if err != nil {
+		return nil, err
+	}
+
+	newAgent, err := agent.NewAgent(
 		uint(id),
 		uuid,
 		name,
@@ -238,13 +299,37 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		uint(sleep),
 		uint(jitter),
 		uint(killDate),
-	), nil
+		newAES,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return newAgent, nil
 }
 
 func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 	stmt, err := d.DB.Prepare(`
-	SELECT id, uuid, name, ip, os, arch, hostname, listenerURL, implantType, checkin, sleep, jitter, killdate
-	FROM agent WHERE uuid = ?
+	SELECT
+		id,
+		uuid,
+		name,
+		ip,
+		os,
+		arch,
+		hostname,
+		listenerURL,
+		implantType,
+		checkin,
+		sleep,
+		jitter,
+		killdate,
+		aesKey,
+		aesIV
+	FROM
+		agent
+	WHERE
+		uuid = ?
 	`)
 	if err != nil {
 		return nil, err
@@ -265,6 +350,8 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		sleep       int
 		jitter      int
 		killDate    int
+		aesKey      string
+		aesIV       string
 	)
 	err = stmt.QueryRow(agentUuid).Scan(
 		&id,
@@ -280,11 +367,19 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		&sleep,
 		&jitter,
 		&killDate,
+		&aesKey,
+		&aesIV,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return agent.NewAgent(
+
+	newAES, err := crypt.NewAESFromBase64Pairs(aesKey, aesIV)
+	if err != nil {
+		return nil, err
+	}
+
+	newAgent, err := agent.NewAgent(
 		uint(id),
 		uuid,
 		name,
@@ -298,13 +393,35 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		uint(sleep),
 		uint(jitter),
 		uint(killDate),
-	), nil
+		newAES,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return newAgent, nil
 }
 
 func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 	rows, err := d.DB.Query(`
-	SELECT id, uuid, name, ip, os, arch, hostname, listenerURL, implantType, checkin, sleep, jitter, killdate
-	FROM agent
+	SELECT
+		id,
+		uuid,
+		name,
+		ip,
+		os,
+		arch,
+		hostname,
+		listenerURL,
+		implantType,
+		checkin,
+		sleep,
+		jitter,
+		killdate,
+		aesKey,
+		aesIV
+	FROM
+		agent
 	`)
 	if err != nil {
 		return nil, err
@@ -328,6 +445,8 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 			sleep       int
 			jitter      int
 			killDate    int
+			aesKey      string
+			aesIV       string
 		)
 		err = rows.Scan(
 			&id,
@@ -343,12 +462,19 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 			&sleep,
 			&jitter,
 			&killDate,
+			&aesKey,
+			&aesIV,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		ag := agent.NewAgent(
+		newAES, err := crypt.NewAESFromBase64Pairs(aesKey, aesIV)
+		if err != nil {
+			return nil, err
+		}
+
+		ag, err := agent.NewAgent(
 			uint(id),
 			uuid,
 			name,
@@ -362,7 +488,12 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 			uint(sleep),
 			uint(jitter),
 			uint(killDate),
+			newAES,
 		)
+		if err != nil {
+			return nil, err
+		}
+
 		ags = append(ags, ag)
 	}
 	return ags, nil

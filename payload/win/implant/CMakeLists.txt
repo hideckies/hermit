@@ -43,6 +43,8 @@ add_compile_definitions(REQUEST_PATH_UPLOAD=${REQUEST_PATH_UPLOAD})
 add_compile_definitions(REQUEST_PATH_WEBSOCKET=${REQUEST_PATH_WEBSOCKET})
 add_compile_definitions(REQUEST_PATH_SOCKET_OPEN=${REQUEST_PATH_SOCKET_OPEN})
 add_compile_definitions(REQUEST_PATH_SOCKET_CLOSE=${REQUEST_PATH_SOCKET_CLOSE})
+add_compile_definitions(AES_KEY_BASE64=${AES_KEY_BASE64})
+add_compile_definitions(AES_IV_BASE64=${AES_IV_BASE64})
 
 # SOURCES
 set(SOURCE_ASM
@@ -118,7 +120,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
 endif()
 
 # LINK LIBRATILIES
-link_libraries(crypt32 dbghelp gdi32 gdiplus iphlpapi netapi32 ntdll psapi shlwapi winhttp wsock32 ws2_32)
+link_libraries(bcrypt crypt32 dbghelp gdi32 gdiplus iphlpapi netapi32 ntdll psapi shlwapi winhttp wsock32 ws2_32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

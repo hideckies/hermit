@@ -13,7 +13,16 @@ func PrintAgents(ags []*Agent) {
 		return
 	}
 
-	tHead := []string{"ID", "Name", "IP", "OS/Arch", "Hostname", "ListenerURL", "ImplantType", "CheckIn"}
+	tHead := []string{
+		"ID",
+		"Name",
+		"IP",
+		"OS/Arch",
+		"Hostname",
+		"ListenerURL",
+		"ImplantType",
+		"CheckIn",
+	}
 	tRows := [][]string{}
 	for _, ag := range ags {
 		tRows = append(tRows, []string{
@@ -47,6 +56,8 @@ func PrintAgentDetails(ag *Agent) {
 		stdout.NewSingleTableItem("Sleep", fmt.Sprint(ag.Sleep)),
 		stdout.NewSingleTableItem("Jitter", fmt.Sprint(ag.Jitter)),
 		stdout.NewSingleTableItem("KillDate", meta.GetDateTimeFromTimestamp(int(ag.KillDate))),
+		stdout.NewSingleTableItem("AES Key", ag.AES.Key.Base64),
+		stdout.NewSingleTableItem("AES IV", ag.AES.IV.Base64),
 	}
 
 	stdout.LogSuccess("")

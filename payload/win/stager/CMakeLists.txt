@@ -30,6 +30,8 @@ add_compile_definitions(LISTENER_PROTOCOL=${LISTENER_PROTOCOL})
 add_compile_definitions(LISTENER_HOST=${LISTENER_HOST})
 add_compile_definitions(LISTENER_PORT=${LISTENER_PORT})
 add_compile_definitions(REQUEST_PATH_DOWNLOAD=${REQUEST_PATH_DOWNLOAD})
+add_compile_definitions(AES_KEY_BASE64=${AES_KEY_BASE64})
+add_compile_definitions(AES_IV_BASE64=${AES_IV_BASE64})
 
 # SOURCE
 set(COMMON_SOURCES
@@ -55,7 +57,7 @@ elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode-loader\")
 endif()
 
 # LINK LIBRATILIES
-link_libraries(crypt32 winhttp wsock32)
+link_libraries(bcrypt crypt32 winhttp wsock32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

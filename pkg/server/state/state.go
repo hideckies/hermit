@@ -25,7 +25,7 @@ type ServerState struct {
 	Job       *job.Job
 	Parser    *kong.Kong
 	Operator  *operator.Operator // Current operator
-	AgentMode AgentMode
+	AgentMode *AgentMode
 	Continue  bool // Is console continue or not
 }
 
@@ -41,7 +41,7 @@ func NewServerState(conf *config.ServerConfig, db *db.Database, job *job.Job) (*
 		NumCPU:    runtime.NumCPU(),
 		DB:        db,
 		Job:       job,
-		AgentMode: AgentMode{},
+		AgentMode: &AgentMode{},
 		Continue:  true,
 	}, nil
 }

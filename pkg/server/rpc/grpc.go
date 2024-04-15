@@ -417,6 +417,8 @@ func (s *HermitRPCServer) AgentGetById(
 		Sleep:       int64(ag.Sleep),
 		Jitter:      int64(ag.Jitter),
 		KillDate:    int64(ag.KillDate),
+		AesKey:      ag.AES.Key.Base64,
+		AesIV:       ag.AES.IV.Base64,
 	}, nil
 }
 
@@ -444,6 +446,8 @@ func (s *HermitRPCServer) AgentGetAll(
 			Sleep:       int64(ag.Sleep),
 			Jitter:      int64(ag.Jitter),
 			KillDate:    int64(ag.KillDate),
+			AesKey:      ag.AES.Key.Base64,
+			AesIV:       ag.AES.IV.Base64,
 		}
 		if err := stream.Send(a); err != nil {
 			return err

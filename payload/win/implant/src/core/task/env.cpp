@@ -5,7 +5,7 @@ typedef std::map<std::wstring, std::wstring> env_t;
 namespace Task
 {
     std::wstring EnvLs()
-    {
+    {        
         std::wstring result = L"";
 
         std::map<std::wstring, std::wstring> env = System::Env::GetAll();

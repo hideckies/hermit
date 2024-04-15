@@ -363,6 +363,7 @@ namespace Task
 
         BOOL bResult = System::Http::UploadFile(
             pState->pProcs,
+            pState->pCrypt,
             pState->hConnect,
             pState->lpListenerHost,
             pState->nListenerPort,

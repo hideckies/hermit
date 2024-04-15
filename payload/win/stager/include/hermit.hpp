@@ -19,6 +19,7 @@ namespace Hermit
     VOID Free(
         HMODULE hWinHTTPDLL,
         Procs::PPROCS pProcs,
+        Crypt::PCRYPT pCrypt,
         HINTERNET hSession,
         HINTERNET hConnect,
         HINTERNET hRequest

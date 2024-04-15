@@ -2,13 +2,13 @@
 
 namespace Parser
 {
-    json ParseTask(const std::wstring& wTask)
-    {
-        // Decrypt
-        std::vector<BYTE> bytes = Crypt::Decrypt(wTask);
-
+    json ParseTask(
+        const std::vector<BYTE> task,
+        BCRYPT_KEY_HANDLE hKey,
+        std::vector<BYTE> iv
+    ) {
         // Parse JSON
-        json j = json::parse(std::string(bytes.begin(), bytes.end()));
+        json j = json::parse(std::string(task.begin(), task.end()));
 
         return j;
     }

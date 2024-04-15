@@ -99,6 +99,7 @@ namespace System::Http
 
     BOOL DownloadFile(
         Procs::PPROCS pProcs,
+        Crypt::PCRYPT pCrypt,
         HINTERNET hConnect,
         LPCWSTR lpHost,
         INTERNET_PORT nPort,
@@ -110,6 +111,7 @@ namespace System::Http
 
     BOOL UploadFile(
         Procs::PPROCS pProcs,
+        Crypt::PCRYPT pCrypt,
         HINTERNET hConnect,
         LPCWSTR lpHost,
         INTERNET_PORT nPort,

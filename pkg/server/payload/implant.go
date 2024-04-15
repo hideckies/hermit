@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/google/uuid"
+	"github.com/hideckies/hermit/pkg/common/crypt"
 	"github.com/hideckies/hermit/pkg/common/meta"
 	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/utils"
@@ -113,6 +114,12 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 	reqPathSocketOpen := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/socket/open"])
 	reqPathSocketClose := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/socket/close"])
 
+	// Generate random AES key and IV
+	newAES, err := crypt.NewAES()
+	if err != nil {
+		return nil, "", err
+	}
+
 	// Change to the payload directory
 	if i.Os == "linux" {
 		return nil, "", fmt.Errorf("linux target is not implemented yet")
@@ -163,6 +170,8 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			fmt.Sprintf("-DREQUEST_PATH_WEBSOCKET=\"%s\"", reqPathWebSocket),
 			fmt.Sprintf("-DREQUEST_PATH_SOCKET_OPEN=\"%s\"", reqPathSocketOpen),
 			fmt.Sprintf("-DREQUEST_PATH_SOCKET_CLOSE=\"%s\"", reqPathSocketClose),
+			fmt.Sprintf("-DAES_KEY_BASE64=\"%s\"", newAES.Key.Base64),
+			fmt.Sprintf("-DAES_IV_BASE64=\"%s\"", newAES.IV.Base64),
 			"-S.",
 			"-Bbuild",
 		)

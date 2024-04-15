@@ -1,6 +1,9 @@
 package agent
 
-import "github.com/hideckies/hermit/pkg/common/utils"
+import (
+	"github.com/hideckies/hermit/pkg/common/crypt"
+	"github.com/hideckies/hermit/pkg/common/utils"
+)
 
 type Agent struct {
 	Id          uint
@@ -16,6 +19,7 @@ type Agent struct {
 	Sleep       uint
 	Jitter      uint
 	KillDate    uint
+	AES         *crypt.AES
 }
 
 func NewAgent(
@@ -32,10 +36,20 @@ func NewAgent(
 	sleep uint,
 	jitter uint,
 	killDate uint,
-) *Agent {
+	aes *crypt.AES,
+) (*Agent, error) {
 	if name == "" {
 		name = utils.GenerateRandomHumanName(false, "agent")
 	}
+
+	var aesErr error
+	if aes == nil {
+		aes, aesErr = crypt.NewAES()
+		if aesErr != nil {
+			return nil, aesErr
+		}
+	}
+
 	return &Agent{
 		Id:          id,
 		Uuid:        uuid,
@@ -50,5 +64,6 @@ func NewAgent(
 		Sleep:       sleep,
 		Jitter:      jitter,
 		KillDate:    killDate,
-	}
+		AES:         aes,
+	}, nil
 }

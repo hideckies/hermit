@@ -203,6 +203,7 @@ namespace System::Http
 	// Wrapper for send&read&write response data
 	BOOL DownloadFile(
 		Procs::PPROCS pProcs,
+		Crypt::PCRYPT pCrypt,
 		HINTERNET hConnect,
 		LPCWSTR lpHost,
 		INTERNET_PORT nPort,
@@ -252,7 +253,7 @@ namespace System::Http
 		}
 
 		// Decrypt data
-		std::vector<BYTE> decBytes = Crypt::Decrypt(wEnc);
+		std::vector<BYTE> decBytes = Crypt::Decrypt(wEnc, pCrypt->pAES->hKey, pCrypt->pAES->iv);
 		
 		// Write data to file
 		DWORD dwWritten;

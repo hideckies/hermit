@@ -44,10 +44,10 @@ func NewDatabase() (*Database, error) {
 func (d *Database) init() error {
 	_, err := d.DB.Exec(`
 	CREATE TABLE operator (
-		id INTEGER NOT NULL PRIMARY KEY,
-		uuid TEXT,
-		name TEXT,
-		login TEXT
+		id 		INTEGER NOT NULL PRIMARY KEY,
+		uuid 	TEXT,
+		name 	TEXT,
+		login 	TEXT
 	)`)
 	if err != nil {
 		return err
@@ -56,13 +56,13 @@ func (d *Database) init() error {
 	_, err = d.DB.Exec(`
 	CREATE TABLE listener (
 		id INTEGER NOT NULL PRIMARY KEY,
-		uuid TEXT,
-		name TEXT,
-		protocol TEXT,
-		host TEXT,
-		port INTEGER,
-		domains TEXT,
-		active TEXT
+		uuid		TEXT,
+		name		TEXT,
+		protocol	TEXT,
+		host		TEXT,
+		port 		INTEGER,
+		domains 	TEXT,
+		active 		TEXT
 	)`)
 	if err != nil {
 		return err
@@ -70,19 +70,21 @@ func (d *Database) init() error {
 
 	_, err = d.DB.Exec(`
 	CREATE TABLE agent (
-		id INTEGER NOT NULL PRIMARY KEY,
-		uuid TEXT,
-		name TEXT,
-		ip TEXT,
-		os TEXT,
-		arch TEXT,
-		hostname TEXT,
+		id 			INTEGER NOT NULL PRIMARY KEY,
+		uuid 		TEXT,
+		name 		TEXT,
+		ip 			TEXT,
+		os 			TEXT,
+		arch 		TEXT,
+		hostname 	TEXT,
 		listenerURL TEXT,
 		implantType TEXT,
-		checkin TEXT,
-		sleep INTEGER,
-		jitter INTEGER,
-		killdate INTEGER
+		checkin 	TEXT,
+		sleep 		INTEGER,
+		jitter 		INTEGER,
+		killdate 	INTEGER,
+		aesKey 		TEXT,
+		aesIV 		TEXT
 	)`)
 	if err != nil {
 		return err

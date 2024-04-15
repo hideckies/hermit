@@ -22,7 +22,9 @@ namespace Hermit
 		LPCWSTR			lpReqPathWebSocket,
 		INT 			nSleep,
 		INT				nJitter,
-		INT				nKillDate
+		INT				nKillDate,
+		LPCWSTR			lpKey,
+		LPCWSTR			lpIV
 	);
 }
 
