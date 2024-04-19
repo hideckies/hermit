@@ -2,13 +2,16 @@
 
 namespace Task
 {
-     std::wstring Mkdir(const std::wstring& wDir)
+     std::wstring Mkdir(State::PSTATE pState, const std::wstring& wDir)
      {
-        if (!CreateDirectoryW(wDir.c_str(), NULL))
+        HANDLE hDir = System::Fs::CreateNewDirectory(pState->pProcs, wDir);
+        if (!hDir)
         {
-            return L"Error: Could not create a new directory.";
+            return L"Error: Failed to create a new directory.";
         }
 
-        return L"Success: New directory has been created.";
+        pState->pProcs->lpNtClose(hDir);
+
+        return L"Success: New directory created.";
      }
 }

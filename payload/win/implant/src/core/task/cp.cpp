@@ -2,11 +2,13 @@
 
 namespace Task
 {
-    std::wstring Cp(const std::wstring& wSrc, const std::wstring& wDest)
+    std::wstring Cp(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest)
     {
-        if (!CopyFileW(wSrc.c_str(), wDest.c_str(), TRUE))
+        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(pState->pProcs, wSrc);
+
+        if (!System::Fs::WriteBytesToFile(pState->pProcs, wDest, bytes))
         {
-            return L"Error: Could not copy the file.";
+            return L"Error: Failed to write file.";
         }
 
         return L"Success: File has been copied.";

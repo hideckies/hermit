@@ -2,7 +2,7 @@
 
 namespace Procs
 {
-    PPROCS FindProcs(HMODULE hWinHTTPDLL)
+    PPROCS FindProcs(HMODULE hNTDLL, HMODULE hWinHTTPDLL)
     {
         PPROCS pProcs = new PROCS;
 

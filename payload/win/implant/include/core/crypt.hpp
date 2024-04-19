@@ -1,6 +1,9 @@
 #ifndef HERMIT_CORE_CRYPT_HPP
 #define HERMIT_CORE_CRYPT_HPP
 
+#include "core/stdout.hpp"
+#include "core/utils.hpp"
+
 #include <windows.h>
 #include <wincrypt.h>
 #include <bcrypt.h>
@@ -9,9 +12,6 @@
 #include <string>
 #include <sstream>
 #include <vector>
-
-#include "core/stdout.hpp"
-#include "core/utils.hpp"
 
 #define AES_KEY_LENGTH 16
 #define AES_IV_LENGTH 16

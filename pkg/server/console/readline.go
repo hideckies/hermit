@@ -30,6 +30,9 @@ func Readline(serverState *state.ServerState) {
 	defer ri.Close()
 	ri.CaptureExitSignal()
 
+	// This is only used for passing the ctx.Run function as argument.
+	clientState := cliState.NewClientState(nil)
+
 	isAgentMode := false
 	var currentParser *kong.Kong
 
@@ -99,7 +102,7 @@ func Readline(serverState *state.ServerState) {
 			continue
 		}
 
-		err = ctx.Run(ctx, serverState, &cliState.ClientState{})
+		err = ctx.Run(ctx, serverState, clientState)
 		if err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 			continue

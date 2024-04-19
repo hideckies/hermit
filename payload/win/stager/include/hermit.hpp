@@ -2,28 +2,24 @@
 #define HERMIT_HPP
 
 #include <windows.h>
+#include <winhttp.h>
 
 #include "core/crypt.hpp"
 #include "core/handler.hpp"
+#include "core/macros.hpp"
 #include "core/procs.hpp"
+#include "core/state.hpp"
 #include "core/system.hpp"
 #include "core/technique.hpp"
 #include "core/utils.hpp"
 
 namespace Hermit
 {
+    State::PSTATE Init();
+
     VOID DLLLoader();
     VOID ExecLoader();
     VOID ShellcodeLoader();
-
-    VOID Free(
-        HMODULE hWinHTTPDLL,
-        Procs::PPROCS pProcs,
-        Crypt::PCRYPT pCrypt,
-        HINTERNET hSession,
-        HINTERNET hConnect,
-        HINTERNET hRequest
-    );
 }
 
 #endif // HERMIT_HPP

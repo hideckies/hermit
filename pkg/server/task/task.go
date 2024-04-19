@@ -175,6 +175,26 @@ func (t *Task) Encode() (string, error) {
 	return string(jsonData), nil
 }
 
+// The function is used for pretty print when 'task' and 'loot' commands.
+func FormatTaskFromJsonStr(taskJSONStr string) (string, error) {
+	var task Task
+	if err := json.Unmarshal([]byte(taskJSONStr), &task); err != nil {
+		return "", err
+	}
+
+	command := task.Command.Name
+	args := task.Args
+
+	var taskStr string
+	taskStr += command
+
+	for key, val := range args {
+		taskStr += fmt.Sprintf(" --%s %s", key, val)
+	}
+
+	return taskStr, nil
+}
+
 type TaskResult struct {
 	Task   Task   `json:"task"`
 	Result string `json:result`

@@ -1,13 +1,13 @@
 #include "core/task.hpp"
 
 namespace Task {
-    std::wstring Cd(const std::wstring& wDestDir)
+    std::wstring Cd(State::PSTATE pState, const std::wstring& wDestDir)
     {
-        if (!SetCurrentDirectoryW(wDestDir.c_str()))
+        if (!System::Fs::ChangeCurrentDirectory(pState->pProcs, wDestDir))
         {
-            return L"Error: Could not change current directory.";
+            return L"Error: Failed to change current directory.";
         }
 
-        return L"Success: Current directory has been changed.";
+        return L"Success: Current directory changed.";
     }
 }

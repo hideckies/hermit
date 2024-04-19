@@ -16,27 +16,29 @@ namespace Task
         DWORD dwFwdIP = Utils::Convert::IPv4ToDWORD(wFwdIP);
         DWORD dwFwdPort = Utils::Convert::WstringToDWORD(wFwdPort, 10);
 
-        Socket::PSOCKET_DATA pSocket = Socket::NewSocket(
-            SOCKET_TYPE_REVERSE_PORT_FORWARDING,
-            dwLIP,
-            dwLPort,
-            dwFwdIP,
-            dwFwdPort,
-            0
-        );
+        // Socket::PSOCKET_DATA pSocket = Socket::NewSocket(
+        //     SOCKET_TYPE_REVERSE_PORT_FORWARDING,
+        //     dwLIP,
+        //     dwLPort,
+        //     dwFwdIP,
+        //     dwFwdPort,
+        //     0
+        // );
 
-        // Set the socket to current state.
-        pState->pSocket = pSocket;
+        // // Set the socket to current state.
+        // pState->pSocket = pSocket;
 
-        return L"Success: rportfwd socket started.";
+        // return L"Success: rportfwd socket started.";
+
+        return L"Warning: Currently maintenance.";
     }
 
     std::wstring RportfwdLs(State::PSTATE pState)
     {
-        return L"Warn Not implemented yet.";
+        return L"Warning: Not implemented yet.";
     }
 
     std::wstring RportfwdRm(State::PSTATE pState) {
-        return L"Warn: Not implemented yet.";
+        return L"Warning: Not implemented yet.";
     }
 }

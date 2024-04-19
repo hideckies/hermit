@@ -2,7 +2,7 @@
 
 namespace State
 {
-    VOID Free(PSTATE pState)
+     VOID Free(PSTATE pState)
     {
         // Free allocated buffers of crypto
         Crypt::Cleanup(
@@ -25,9 +25,10 @@ namespace State
 
         delete pState->pCrypt->pAES;
         delete pState->pCrypt;
-        delete pState->pTeb;
+        // delete pState->pTeb;
         delete pState->pProcs;
         // delete pState->pSocket;
+        // delete pState->pSyscalls;
         delete pState;
     }
 }

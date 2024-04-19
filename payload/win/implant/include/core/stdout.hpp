@@ -1,6 +1,9 @@
 #ifndef HERMIT_CORE_STDOUT_HPP
 #define HERMIT_CORE_STDOUT_HPP
 
+#include "core/procs.hpp"
+#include "core/utils.hpp"
+
 #include <windows.h>
 
 namespace Stdout

@@ -56,7 +56,7 @@ set(SOURCE_CORE
         src/core/handler.cpp
         src/core/parser.cpp
         src/core/procs.cpp
-        src/core/socket.cpp
+        # src/core/socket.cpp
         src/core/state.cpp
         src/core/stdout.cpp
         src/core/syscalls.cpp
@@ -64,7 +64,9 @@ set(SOURCE_CORE
         src/core/system/env.cpp
         src/core/system/fs.cpp
         src/core/system/group.cpp
+        src/core/system/handle.cpp
         src/core/system/http.cpp
+        src/core/system/pipe.cpp
         src/core/system/priv.cpp
         src/core/system/process.cpp
         src/core/system/user.cpp

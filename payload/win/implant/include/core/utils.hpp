@@ -26,8 +26,8 @@ namespace Utils::Convert
     // DWORD (unsigned long) -> wstring
     std::wstring DWORDToWstring(DWORD dwSrc);
 
-    // LPSTR -> wchar_t*
-    wchar_t* LPSTRToWCHAR_T(LPSTR lpStr);
+    // LPSTR -> PWCHAR
+    PWCHAR LPSTRToPWCHAR(LPSTR lpStr);
 
     // IPv4(wstring) -> DWORD
     DWORD IPv4ToDWORD(const std::wstring& wIP);

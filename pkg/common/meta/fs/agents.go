@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/hideckies/hermit/pkg/common/meta"
+	"github.com/hideckies/hermit/pkg/server/task"
 )
 
 func GetAgentsDir(isClient bool) (string, error) {
@@ -192,7 +193,7 @@ func DeleteAllAgentTasks(agentName string, isClient bool) error {
 
 func WriteAgentLoot(
 	agentName string,
-	taskName string,
+	taskJsonStr string,
 	taskResult string,
 	isClient bool,
 ) (
@@ -204,7 +205,7 @@ func WriteAgentLoot(
 		return "", err
 	}
 
-	if taskName == "" {
+	if taskJsonStr == "" {
 		return "", fmt.Errorf("no task")
 	}
 
@@ -213,15 +214,18 @@ func WriteAgentLoot(
 
 	lootFile := fmt.Sprintf("%s/%s", lootDir, "loot_"+filename+".txt")
 
-	label := currDateTime + " : " + taskName
+	taskStr, err := task.FormatTaskFromJsonStr(taskJsonStr)
+	if err != nil {
+		return "", err
+	}
+
+	label := currDateTime + " : " + taskStr
 	labelUnderBar := strings.Repeat("=", len(label))
 
 	err = os.WriteFile(
 		lootFile,
 		[]byte(
-			label+"\n"+
-				labelUnderBar+"\n"+
-				taskResult+"\n",
+			label+"\n"+labelUnderBar+"\n"+taskResult+"\n",
 		),
 		0644,
 	)

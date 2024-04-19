@@ -2,7 +2,32 @@
 
 namespace Task
 {
-    std::wstring Ps()
+    std::wstring PsKill(Procs::PPROCS pProcs, const std::wstring& wPid)
+    {
+        DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
+
+        HANDLE hProcess = System::Process::ProcessOpen(
+            pProcs,
+            dwPid,
+            PROCESS_TERMINATE
+        );
+        if (!hProcess)
+        {
+            return L"Error: Could not open the process.";
+        }
+
+        if (!System::Process::ProcessTerminate(pProcs, hProcess, EXIT_SUCCESS))
+        {
+            pProcs->lpNtClose(hProcess);
+            return L"Error: Could not terminte the process.";
+        }
+
+        pProcs->lpNtClose(hProcess);
+
+        return L"Success: Process has been terminated.";
+    }
+
+    std::wstring PsLs(Procs::PPROCS pProcs)
     {
         HANDLE hSnapshot;
         PROCESSENTRY32W pe32;
@@ -20,6 +45,7 @@ namespace Task
         if (!Process32FirstW(hSnapshot, &pe32))
         {
             CloseHandle(hSnapshot);
+            // Procs::Call::HCloseHandle(pProcs, hSnapshot);
             return L"Error: Could not get the first process.";
         }
 
@@ -41,6 +67,7 @@ namespace Task
         } while (Process32NextW(hSnapshot, &pe32));
 
         CloseHandle(hSnapshot);
+        // Procs::Call::HCloseHandle(pProcs, hSnapshot);
 
         if (wcscmp(wProcesses.c_str(), L"") == 0)
         {
@@ -52,26 +79,5 @@ namespace Task
         std::wstring wHeaderBar = L"---\t----\n";
 
         return wHeader + wHeaderBar + wProcesses;
-    }
-
-    std::wstring PsKill(const std::wstring& wPid)
-    {
-        DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
-
-        HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
-        if (!hProcess)
-        {
-            return L"Error: Could not open the process.";
-        }
-
-        if (!TerminateProcess(hProcess, EXIT_SUCCESS))
-        {
-            CloseHandle(hProcess);
-            return L"Error: Could not terminte the process.";
-        }
-
-        CloseHandle(hProcess);
-
-        return L"Success: Process has been terminated.";
     }
 }

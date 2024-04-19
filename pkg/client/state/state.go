@@ -27,5 +27,6 @@ func NewClientState(conf *config.ClientConfig) *ClientState {
 	return &ClientState{
 		Conf:      conf,
 		AgentMode: AgentMode{},
+		Continue:  true,
 	}
 }

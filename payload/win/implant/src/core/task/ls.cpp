@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Ls(const std::wstring& wDir)
+    std::wstring Ls(State::PSTATE pState, const std::wstring& wDir)
     {
         std::wstring result;
 
@@ -13,29 +13,25 @@ namespace Task
         size_t dirLength;
         HANDLE hFind = INVALID_HANDLE_VALUE;
 
-        StringCchLengthW(wDir.c_str(), MAX_PATH, &dirLength);
-        if (dirLength > MAX_PATH)
+        std::wstring wDirAbsPath = System::Fs::GetAbsolutePath(wDir, FALSE);
+        std::wstring wDirAbsPathExtended = System::Fs::GetAbsolutePath(wDir, TRUE);
+        if (wDirAbsPath == L"" || wDirAbsPathExtended == L"")
         {
-            return L"Error: Directory path is too long.";
+            return L"Error: Failed to get the absolute path for the directory.";
         }
 
-        StringCchCopyW(wTargetDir, MAX_PATH, wDir.c_str());
-        StringCchCatW(wTargetDir, MAX_PATH, L"\\*");
+        // Add "\\*" to the directory path
+        wDirAbsPathExtended += L"\\*";
 
         // Find the first file in the directory.
-        hFind = FindFirstFile(wTargetDir, &ffd);
+        hFind = FindFirstFileW(wDirAbsPathExtended.c_str(), &ffd);
         if (hFind == INVALID_HANDLE_VALUE)
         {
             return L"Error: Could not find the first file in the directory.";
         }
 
-        std::wstring wDirPath = System::Fs::GetAbsolutePath(wTargetDir);
-        if (wDirPath == L"")
-        {
-            return L"Error: Failed to get the absolute path for the directory.";
-        }
         result += std::wstring(L"Directory: ");
-        result += std::wstring(wDirPath);
+        result += std::wstring(wDirAbsPath);
         result += std::wstring(L"\n\n");
         
         // List all files in the directory

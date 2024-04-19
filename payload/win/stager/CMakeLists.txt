@@ -41,6 +41,7 @@ set(COMMON_SOURCES
         src/core/technique/injection/dll_injection.cpp
         src/core/technique/injection/shellcode_injection.cpp
         src/core/handler.cpp
+        src/core/state.cpp
         src/core/stdout.cpp
         src/core/system/arch.cpp
         src/core/system/env.cpp

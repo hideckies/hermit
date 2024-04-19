@@ -3,7 +3,6 @@ package console
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/alecthomas/kong"
 	"github.com/chzyer/readline"
@@ -21,13 +20,19 @@ func Readline(clientState *state.ClientState) error {
 	ri, err := stdin.InitReadline(true, "/tmp/readline_client.tmp")
 	if err != nil {
 		stdout.LogFailed(fmt.Sprint(err))
-		os.Exit(1)
+		return err
 	}
 	defer ri.Close()
 	ri.CaptureExitSignal()
 
 	isAgentMode := false
 	var currentParser *kong.Kong
+
+	// This is only used for passing the ctx.Run function as argument.
+	serverState, err := servState.NewServerState(nil, nil, nil)
+	if err != nil {
+		return err
+	}
 
 	for {
 		isAgentMode = clientState.AgentMode.Name != ""
@@ -90,11 +95,12 @@ func Readline(clientState *state.ClientState) error {
 		if err != nil {
 			if err, ok := err.(*kong.ParseError); ok {
 				stdout.LogFailed(err.Error())
+				stdout.LogInfo("Run 'help <command>' for usage.")
 			}
 			continue
 		}
 
-		err = ctx.Run(ctx, &servState.ServerState{}, clientState)
+		err = ctx.Run(ctx, serverState, clientState)
 		if err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 			continue

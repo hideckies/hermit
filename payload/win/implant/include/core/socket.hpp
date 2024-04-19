@@ -5,9 +5,9 @@
 #define SOCKET_TYPE_REVERSE_PORT_FORWARDING 0x1
 #define SOCKET_TYPE_CLIENT 0x2
 
-#include <winsock2.h>
-
 #include "core/macros.hpp"
+
+// #include <winsock2.h>
 
 namespace Socket
 {

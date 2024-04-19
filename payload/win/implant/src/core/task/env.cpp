@@ -4,11 +4,11 @@ typedef std::map<std::wstring, std::wstring> env_t;
 
 namespace Task
 {
-    std::wstring EnvLs()
+    std::wstring EnvLs(State::PSTATE pState)
     {        
         std::wstring result = L"";
 
-        std::map<std::wstring, std::wstring> env = System::Env::GetAll();
+        std::map<std::wstring, std::wstring> env = System::Env::GetAll(pState->pProcs);
 
         if (env.size() == 0)
         {

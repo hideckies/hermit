@@ -44,6 +44,4 @@ namespace Syscalls
 
         return pSyscalls;
     }
-
-    // NTSTATUS SysNtOpenProcess();
 }

@@ -38,7 +38,7 @@ namespace Procs
 
     typedef PROCS* PPROCS;
 
-    PPROCS FindProcs(HMODULE hWinHTTPDLL);
+    PPROCS FindProcs(HMODULE hNTDLL, HMODULE hWinHTTPDLL);
 }
 
 #endif // HERMIT_CORE_PROCS_HPP

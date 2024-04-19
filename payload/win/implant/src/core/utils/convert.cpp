@@ -98,8 +98,8 @@ namespace Utils::Convert
         return wDest;
     }
 
-    // LPSTR (UTF-8) -> wchar_t* (UTF-16)
-    wchar_t* LPSTRToWCHAR_T(LPSTR lpStr)
+    // LPSTR (UTF-8) -> PWCHAR (UTF-16)
+    PWCHAR LPSTRToPWCHAR(LPSTR lpStr)
     {
         int wchars_num = MultiByteToWideChar(CP_UTF8, 0, lpStr, -1, NULL, 0);
         wchar_t* wstr = new wchar_t[wchars_num];

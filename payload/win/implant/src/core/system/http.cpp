@@ -144,8 +144,12 @@ namespace System::Http
 				else
 				{
 					ZeroMemory(tempBuffer, dwSize+1);
-					if (pProcs->lpWinHttpReadData(hRequest, (LPVOID)tempBuffer, dwSize, &dwDownloaded))
-					{
+					if (pProcs->lpWinHttpReadData(
+						hRequest,
+						(LPVOID)tempBuffer,
+						dwSize,
+						&dwDownloaded
+					)) {
 						// Add to buffer;
 						for (size_t i = 0; i < dwDownloaded; ++i)
 						{
@@ -187,14 +191,18 @@ namespace System::Http
 			}
 
 			// Read the data
-			ZeroMemory(pszOutBuffer, dwSize+1);
-			if (!pProcs->lpWinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
-			{
+			pProcs->lpRtlZeroMemory(pszOutBuffer, dwSize+1);
+			if (!pProcs->lpWinHttpReadData(
+				hRequest,
+				(LPVOID)pszOutBuffer,
+				dwSize,
+				&dwRead
+			)) {
 				break;
 			}
 
 			// Convert from UTF-8 to UTF-16
-			wchar_t* wOutBuffer = Utils::Convert::LPSTRToWCHAR_T(pszOutBuffer);
+			PWCHAR wOutBuffer = Utils::Convert::LPSTRToPWCHAR(pszOutBuffer);
 			respText.append(wOutBuffer);
 			
 			// Free the memory allocated to the buffer.
@@ -222,6 +230,7 @@ namespace System::Http
 		std::string sSrc = Utils::Convert::UTF8Encode(wSrc);
 		std::string sDest = Utils::Convert::UTF8Encode(wDest);
 
+		// Send request
 		WinHttpResponse resp = SendRequest(
 			pProcs,
 			hConnect,
@@ -238,26 +247,10 @@ namespace System::Http
 			return FALSE;
 		}
 
-		// std::ofstream outFile(sFile, std::ios::binary);
-		HANDLE hFile = CreateFileW(
-			wDest.c_str(),
-			GENERIC_WRITE,
-			0,
-			NULL,
-			CREATE_ALWAYS,
-			FILE_ATTRIBUTE_NORMAL,
-			NULL
-		);
-		if (hFile == INVALID_HANDLE_VALUE)
-		{
-			return FALSE;
-		}
-
-		// Read file
+		// Read response data
 		std::wstring wEnc = ReadResponseText(pProcs, resp.hRequest);
 		if (wEnc.length() == 0)
 		{
-			CloseHandle(hFile);
 			return FALSE;
 		}
 
@@ -269,14 +262,10 @@ namespace System::Http
 		);
 		
 		// Write data to file
-		DWORD dwWritten;
-		if (!WriteFile(hFile, bytes.data(), bytes.size(), &dwWritten, NULL))
+		if (!System::Fs::WriteBytesToFile(pProcs, wDest, bytes))
 		{
-			CloseHandle(hFile);
 			return FALSE;
 		}
-
-		CloseHandle(hFile);
 
 		return TRUE;
 	}
@@ -292,7 +281,7 @@ namespace System::Http
         const std::wstring& wSrc
     ) {
         // Read a local file.
-        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(wSrc);
+        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(pProcs, wSrc);
         // Encrypt the data
         std::wstring wEnc = Crypt::Encrypt(
 			bytes,
@@ -331,5 +320,3 @@ namespace System::Http
 		if (hSession) pProcs->lpWinHttpCloseHandle(hSession);
 	}
 }
-
-

@@ -23,11 +23,11 @@ namespace Handler
 	BOOL TaskExecute(State::PSTATE pState);
 	BOOL TaskResultSend(State::PSTATE pState);
 	BOOL Task(State::PSTATE pState);
-	BOOL SocketAccept(State::PSTATE pState);
-	BOOL SocketRead(State::PSTATE pState);
+	// BOOL SocketAccept(State::PSTATE pState);
+	// BOOL SocketRead(State::PSTATE pState);
 	// BOOL SocketClose(State::PSTATE pState);
 	// BOOL SocketKill(State::PSTATE pState);
-	BOOL Socket(State::PSTATE pState);
+	// BOOL Socket(State::PSTATE pState);
 	BOOL IsKillDateReached(INT nKillDate);
 }
 

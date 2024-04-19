@@ -3,9 +3,9 @@
 HINSTANCE hInst;
 std::wstring wWindowClassName = L"MainWindowClass";
 // std::wstring wFilenameBmp = L"tmp.bmp";
-std::wstring wFilenameBmp = System::Env::GetStrings(L"%TEMP%") + L"\\tmp.bmp";
+std::wstring wFilenameBmp ;
 // std::wstring wFilenamePng = L"tmp.png";
-std::wstring wFilenamePng = System::Env::GetStrings(L"%TEMP%") + L"\\tmp.png";
+std::wstring wFilenamePng;
 
 namespace Task::Helper::Screenshot
 {
@@ -335,6 +335,9 @@ namespace Task
 {
     std::wstring Screenshot(State::PSTATE pState)
     {
+        wFilenameBmp = System::Env::GetStrings(pState->pProcs, L"%TEMP%") + L"\\tmp.bmp";
+        wFilenamePng = System::Env::GetStrings(pState->pProcs, L"%TEMP%") + L"\\tmp.png";
+
         Task::Helper::Screenshot::MyRegisterClass(pState->hInstance);
 
         // Perform application initialization:

