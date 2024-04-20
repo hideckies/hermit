@@ -2,11 +2,11 @@
 
 namespace Procs
 {
-    PPROCS FindProcs(HMODULE hNTDLL, HMODULE hWinHTTPDLL, BOOL bIndirectSyscalls)
+    PPROCS FindProcs(HMODULE hNTDLL, HMODULE hWinHTTPDLL, BOOL bIndirectSyscall)
     {
         PPROCS pProcs = new PROCS;
-    
-        // NT APIs
+
+        // NTAPIs
         pProcs->lpNtCreateProcess           = reinterpret_cast<LPPROC_NTCREATEPROCESS>(GetProcAddress(hNTDLL, "NtCreateProcess"));
         pProcs->lpNtOpenProcess             = reinterpret_cast<LPPROC_NTOPENPROCESS>(GetProcAddress(hNTDLL, "NtOpenProcess"));
         pProcs->lpNtTerminateProcess        = reinterpret_cast<LPPROC_NTTERMINATEPROCESS>(GetProcAddress(hNTDLL, "NtTerminateProcess"));
@@ -21,17 +21,15 @@ namespace Procs
         pProcs->lpNtCreateFile              = reinterpret_cast<LPPROC_NTCREATEFILE>(GetProcAddress(hNTDLL, "NtCreateFile"));
         pProcs->lpNtReadFile                = reinterpret_cast<LPPROC_NTREADFILE>(GetProcAddress(hNTDLL, "NtReadFile"));
         pProcs->lpNtWriteFile               = reinterpret_cast<LPPROC_NTWRITEFILE>(GetProcAddress(hNTDLL, "NtWriteFile"));
-        pProcs->lpNtCreateNamedPipeFile     = reinterpret_cast<LPPROC_NTCREATENAMEDPIPEFILE>(GetProcAddress(hNTDLL, "NtCreateNamedPipeFile"));
-        pProcs->lpNtSetInformationFile      = reinterpret_cast<LPPROC_NTSETINFORMATIONFILE>(GetProcAddress(hNTDLL, "NtSetInformationFile"));
-        pProcs->lpNtQueryInformationFile    = reinterpret_cast<LPPROC_NTSETINFORMATIONFILE>(GetProcAddress(hNTDLL, "NtQueryInformationFile"));
 
-        // NT APIs (Runtime Library)
+        // NTAPIs (Runtime Library)
         pProcs->lpRtlAllocateHeap           = reinterpret_cast<LPPROC_RTLALLOCATEHEAP>(GetProcAddress(hNTDLL, "RtlAllocateHeap"));
         pProcs->lpRtlZeroMemory             = reinterpret_cast<LPPROC_RTLZEROMEMORY>(GetProcAddress(hNTDLL, "RtlZeroMemory"));
         pProcs->lpRtlInitUnicodeString      = reinterpret_cast<LPPROC_RTLINITUNICODESTRING>(GetProcAddress(hNTDLL, "RtlInitUnicodeString"));
         pProcs->lpRtlStringCchCatW          = reinterpret_cast<LPPROC_RTLSTRINGCCHCATW>(GetProcAddress(hNTDLL, "RtlStringCchCatW"));
         pProcs->lpRtlStringCchCopyW         = reinterpret_cast<LPPROC_RTLSTRINGCCHCOPYW>(GetProcAddress(hNTDLL, "RtlStringCchCopyW"));
         pProcs->lpRtlStringCchLengthW       = reinterpret_cast<LPPROC_RTLSTRINGCCHLENGTHW>(GetProcAddress(hNTDLL, "RtlStringCchLengthW"));
+        pProcs->lpRtlNtStatusToDosError     = reinterpret_cast<LPPROC_RTLNTSTATUSTODOSERROR>(GetProcAddress(hNTDLL, "RtlNtStatusToDosError"));
 
         // WINAPIs
         pProcs->lpWinHttpOpen               = reinterpret_cast<LPPROC_WINHTTPOPEN>(GetProcAddress(hWinHTTPDLL, "WinHttpOpen"));
@@ -45,33 +43,6 @@ namespace Procs
         pProcs->lpWinHttpQueryDataAvailable = reinterpret_cast<LPPROC_WINHTTPQUERYDATAAVAILABLE>(GetProcAddress(hWinHTTPDLL, "WinHttpQueryDataAvailable"));
         pProcs->lpWinHttpReadData           = reinterpret_cast<LPPROC_WINHTTPREADDATA>(GetProcAddress(hWinHTTPDLL, "WinHttpReadData"));
         pProcs->lpWinHttpCloseHandle        = reinterpret_cast<LPPROC_WINHTTPCLOSEHANDLE>(GetProcAddress(hWinHTTPDLL, "WinHttpCloseHandle"));
-
-        if (bIndirectSyscalls)
-        {
-            pProcs->sysNtCreateProcess          = Syscalls::FindSyscall(hNTDLL, "NtCreateProcess");
-            pProcs->sysNtOpenProcess            = Syscalls::FindSyscall(hNTDLL, "NtOpenProcess");
-            pProcs->sysNtTerminateProcess       = Syscalls::FindSyscall(hNTDLL, "NtTerminateProcess");
-            pProcs->sysNtCreateThreadEx         = Syscalls::FindSyscall(hNTDLL, "NtCreateThreadEx");
-            pProcs->sysNtResumeThread           = Syscalls::FindSyscall(hNTDLL, "NtResumeThread");
-            pProcs->sysNtAllocateVirtualMemory  = Syscalls::FindSyscall(hNTDLL, "NtAllocateVirtualMemory");
-            pProcs->sysNtWriteVirtualMemory     = Syscalls::FindSyscall(hNTDLL, "NtWriteVirtualMemory");
-            pProcs->sysNtFreeVirtualMemory      = Syscalls::FindSyscall(hNTDLL, "NtFreeVirtualMemory");
-            pProcs->sysNtDuplicateObject        = Syscalls::FindSyscall(hNTDLL, "NtDuplicateObject");
-            pProcs->sysNtWaitForSingleObject    = Syscalls::FindSyscall(hNTDLL, "NtWaitForSingleObject");
-            pProcs->sysNtClose                  = Syscalls::FindSyscall(hNTDLL, "NtClose");
-            pProcs->sysNtCreateFile             = Syscalls::FindSyscall(hNTDLL, "NtCreateFile");
-            pProcs->sysNtReadFile               = Syscalls::FindSyscall(hNTDLL, "NtReadFile");
-            pProcs->sysNtWriteFile              = Syscalls::FindSyscall(hNTDLL, "NtWriteFile");
-            pProcs->sysNtCreateNamedPipeFile    = Syscalls::FindSyscall(hNTDLL, "NtCreateNamedPipeFile");
-            pProcs->sysNtSetInformationFile     = Syscalls::FindSyscall(hNTDLL, "NtSetInformationFile");
-            pProcs->sysNtQueryInformationFile   = Syscalls::FindSyscall(hNTDLL, "NtQueryInformationFile");
-            pProcs->sysRtlAllocateHeap          = Syscalls::FindSyscall(hNTDLL, "RtlAllocateHeap");
-            pProcs->sysRtlZeroMemory            = Syscalls::FindSyscall(hNTDLL, "RtlZeroMemory");
-            pProcs->sysRtlInitUnicodeString     = Syscalls::FindSyscall(hNTDLL, "RtlInitUnicodeString");
-            pProcs->sysRtlStringCchCatW         = Syscalls::FindSyscall(hNTDLL, "RtlStringCchCatW");
-            pProcs->sysRtlStringCchCopyW        = Syscalls::FindSyscall(hNTDLL, "RtlStringCchCopyW");
-            pProcs->sysRtlStringCchLengthW      = Syscalls::FindSyscall(hNTDLL, "RtlStringCchLengthW");
-        }
 
         return pProcs;
     }

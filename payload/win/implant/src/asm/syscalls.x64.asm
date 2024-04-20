@@ -1,61 +1,23 @@
-section .data
-    extern NtOpenProcessSSN
-    extern NtOpenProcessAddr
+; Inspired:
+;   https://github.com/HavocFramework/Havoc/blob/ea3646e055eb1612dcc956130fd632029dbf0b86/payloads/Demon/src/asm/Syscall.x64.asm#L1
 
 section .text
+    global SysSample
+    global SysSet
+    global SysInvoke
 
-    ; global SysSet
-    ; global SysInvoke
+SysSample:
+    mov rax, rcx
+    mov eax, [rax]
+    add eax, [rax + 0x8]
+    ret
 
-    ; global SysNtOpenProcess
-    ; global SysNtAllocateVirtualMemory
-    ; global SysNtWriteVirtualMemory
-    ; global SysNtCreateThreadEx
-    ; global SysNtWaitForSingleObject
-    ; global SysNtClose
+SysSet:
+    mov r11, rcx
+    ret
 
-    ; SysSet:
-    ;     mov r11, rcx
-    ;     ret
-
-    ; SysInvoke:
-    ;     mov r10, rcx
-    ;     mov eax, [r11 + 0x8]
-    ;     jmp qword [r11]
-    ;     ret
-
-    ; SysNtOpenProcess:
-        mov r10, rcx
-        mov eax, NtOpenProcessSSN
-        jmp qword [NtOpenProcessAddr]
-        ret
-
-    ; SysNtAllocateVirtualMemory:
-    ;     mov r10, rcx
-    ;     mov eax, NtAllocateVirtualMemorySSN
-    ;     jmp qword [NtAllocateVirtualMemorySyscall]
-    ;     ret
-
-    ; SysNtWriteVirtualMemory:
-    ;     mov r10, rcx
-    ;     mov eax, NtWriteVirtualMemorySSN
-    ;     jmp qword [NtWriteVirtualMemorySyscall]
-    ;     ret
-
-    ; SysNtCreateThreadEx:
-    ;     mov r10, rcx
-    ;     mov eax, NtCreateThreadExSSN
-    ;     jmp qword [NtCreateThreadExSyscall]
-    ;     ret
-
-    ; SysNtWaitForSingleObject:
-    ;     mov r10, rcx
-    ;     mov eax, NtWaitForSingleObjectSSN
-    ;     jmp qword [NtWaitForSingleObjectSyscall]
-    ;     ret
-
-    ; SysNtClose:
-    ;     mov r10, rcx
-    ;     mov eax, NtCloseSSN
-    ;     jmp qword [NtCloseSyscall]
-    ;     ret
+SysInvoke:
+    mov r10, rcx
+    mov eax, [r11 + 0x8]
+    jmp qword [r11]
+    ret

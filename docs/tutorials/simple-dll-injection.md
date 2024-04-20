@@ -1,6 +1,6 @@
 # Simple DLL Injection
 
-In this tutorial, we generate a stager that loads our DLL implant into another process on Windows victim machine. Then make the C2 agent to communicate with our C2 server.   
+In this tutorial, we generate **DLL Implant** and **Loader** which loads the DLL into memory on Windows victim machine. Then make the C2 agent to communicate with our C2 server.   
 
 Assume that you've completed [the Simple Implant Beacon tutorial](./simple-implant-beacon.md).  
 
@@ -48,16 +48,16 @@ We can freely delete arbitrary payload by selecting a payload on this menu (of c
 
 This payload is stored under `$HOME/.hermit/server/listeners/listener-<name>/payloads/`. The DLL loader that we will create later will find this DLL file in this directory and load it automatically, so don't move this payload.
 
-## 4. Generate DLL Loader (Stager)
+## 4. Generate DLL Loader
 
-Next, generate a stager that loads our DLL implant and inject it on specific process.  
+Next, generate a DLL loader that loads the DLL implant and inject it on specific process.  
 Run `payload gen` command again:
 
-![payload gen](../assets/images/terminal/payload_gen_stager_dll_loader_win_amd64_exe.png)
+![payload gen](../assets/images/terminal/payload_gen_loader_dll_win_amd64_exe.png)
 
 In the option wizard, choose the following options at least:
 
-- What to generate?         -> `stager/dll-loader`
+- What to generate?         -> `loader/dll`
 - OS/Arch/Format            -> `windows/amd64/exe`
 - Listener URL              -> (Same URL as when generating the DLL)
 - Technique                 -> `dll-injection`
@@ -65,26 +65,26 @@ In the option wizard, choose the following options at least:
 
 This stager is also generated under `$HOME/.hermit/server/listeners/listener-<name>/payloads/`. 
 
-### Transfer Stager
+### Transfer the Loader
 
-**Now we need to transfer the generetad stager to Windows victim machine.**
+**Now we need to transfer the generetad loader to Windows victim machine.**
 
-## 5. Execute Stager
+## 5. Execute Loader
 
-In Windows victime machine, at first, start `notepad.exe` as target process to inject DLL:
+In Windows victime machine, at first, start `notepad.exe` as target process to inject our DLL into:
 
 ```ps title="Windows Victim Machine"
 PS C:\Users\victim\Desktop> notepad
 ```
 
 That's because we've specified `notepad.exe` (by default) as target process in the previous **Generate DLL Loader** section.  
-By doing so, our stager can inject the DLL into the `notepad` process.
+By doing so, our loader can inject the DLL into the `notepad` process.
 
-Finally we can execute the stager as below:
+Finally we can execute the loader as below:
 
 ```ps title="Windows Victim Machine"
 # Replace the filename with our own.
-PS C:\Users\victim\Desktop> .\stager.exe
+PS C:\Users\victim\Desktop> .\loader.exe
 ```
 
 ## 6. Switch to Agent Mode
@@ -107,9 +107,10 @@ Hermit [agent-abcd] > ps ls
 
 This task prints all running processes on victim machine. 
 
-After a few seconds, run the `loot show` command to see the result:
+After a few seconds, run the `task results` or `loot show` command to see the result:
 
 ```sh title="Hermit C2 Server Console [Agent Mode]"
+Hermit [agent-abcd] > task results
 Hermit [agent-abcd] > loot show
 ```
 
@@ -119,7 +120,7 @@ Looking at the task result, we can see that our DLL implant is running on the `N
 
 ![loot ps](../assets/images/terminal/loot_show_ps.png)
 
-That's because the stager injected the DLL implant into the `notepad.exe` process.
+That's because the loader injected the DLL into the `notepad.exe` process.
 
 ## 8. Stop Implant & Quit Agent Mode
 

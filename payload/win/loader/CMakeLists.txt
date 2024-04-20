@@ -45,15 +45,16 @@ set(COMMON_SOURCES
         src/core/stdout.cpp
         src/core/system/arch.cpp
         src/core/system/env.cpp
+        src/core/system/fs.cpp
         src/core/system/http.cpp
         src/core/system/process.cpp
         src/core/utils/convert.cpp
 )
-if(${PAYLOAD_TYPE} STREQUAL \"dll-loader\")
+if(${PAYLOAD_TYPE} STREQUAL \"dll\")
     set(SOURCE src/main/dll_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
-elseif(${PAYLOAD_TYPE} STREQUAL \"exec-loader\")
+elseif(${PAYLOAD_TYPE} STREQUAL \"exec\")
     set(SOURCE src/main/exec_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
-elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode-loader\")
+elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode\")
     set(SOURCE src/main/shellcode_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
 endif()
 

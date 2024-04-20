@@ -318,11 +318,11 @@ func (s *HermitRPCServer) PayloadImplantGenerate(
 	return &commonpb.Binary{Data: data}, nil
 }
 
-func (s *HermitRPCServer) PayloadStagerGenerate(
+func (s *HermitRPCServer) PayloadLoaderGenerate(
 	ctx context.Context,
-	stg *rpcpb.PayloadStager,
+	stg *rpcpb.PayloadLoader,
 ) (*commonpb.Binary, error) {
-	newStg := payload.NewStager(
+	newStg := payload.NewLoader(
 		uint(stg.Id),
 		stg.Uuid,
 		stg.Name,

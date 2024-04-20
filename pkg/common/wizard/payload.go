@@ -17,9 +17,9 @@ func WizardPayloadType() string {
 	items := []string{
 		"implant/beacon",
 		// "implant/interactive",
-		"stager/dll-loader",
-		"stager/exec-loader",
-		"stager/shellcode-loader",
+		"loader/dll",
+		"loader/exec",
+		"loader/shellcode",
 		"shellcode/exec",
 		// "shellcode/revshell",
 		// "shellcode/dll-loader",
@@ -301,33 +301,36 @@ func WizardPayloadImplant(
 	), nil
 }
 
-func WizardPayloadStager(
+func WizardPayloadLoader(
 	host string,
 	listeners []*listener.Listener,
 	payloadType string,
-) (*payload.Stager, error) {
+) (*payload.Loader, error) {
 	oOs, oArch, oFormat, oLprotocol, oLhost, oLport, err := wizardPayloadBase(host, listeners, false)
 	if err != nil {
 		return nil, err
 	}
 
-	oType := strings.Replace(payloadType, "stager/", "", -1)
+	oType := strings.Replace(payloadType, "loader/", "", -1)
 
 	// Technique
 	var oTechnique string
 	var items []string
-	if oType == "dll-loader" {
+	if oType == "dll" {
+		// DLL Loader
 		items = []string{
 			"dll-injection",
 			"reflective-dll-injection",
 			// "indirect-syscalls",
 		}
-	} else if oType == "exec-loader" {
+	} else if oType == "exec" {
+		// Exec Loader
 		items = []string{
 			"direct-execution",
 			// "process-doppeleganging",
 		}
-	} else if oType == "shellcode-loader" {
+	} else if oType == "shellcode" {
+		// Shellcode Loader
 		items = []string{
 			"shellcode-injection",
 			"shellcode-execution-via-fibers",
@@ -367,7 +370,7 @@ func WizardPayloadStager(
 		stdout.NewSingleTableItem("Technique", oTechnique),
 		stdout.NewSingleTableItem("Process To Inject", oProcessToInject),
 	}
-	stdout.PrintSingleTable("Stager Options", table)
+	stdout.PrintSingleTable("Loader Options", table)
 
 	var proceed bool
 	for {
@@ -382,7 +385,7 @@ func WizardPayloadStager(
 		return nil, fmt.Errorf("canceled")
 	}
 
-	return payload.NewStager(
+	return payload.NewLoader(
 		0,
 		"",
 		"",

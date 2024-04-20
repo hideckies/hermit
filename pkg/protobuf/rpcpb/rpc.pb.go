@@ -401,7 +401,7 @@ func (x *PayloadImplant) GetIndirectSyscalls() bool {
 	return false
 }
 
-type PayloadStager struct {
+type PayloadLoader struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -420,8 +420,8 @@ type PayloadStager struct {
 	ProcessToInject string `protobuf:"bytes,12,opt,name=processToInject,proto3" json:"processToInject,omitempty"`
 }
 
-func (x *PayloadStager) Reset() {
-	*x = PayloadStager{}
+func (x *PayloadLoader) Reset() {
+	*x = PayloadLoader{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_rpcpb_rpc_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -429,13 +429,13 @@ func (x *PayloadStager) Reset() {
 	}
 }
 
-func (x *PayloadStager) String() string {
+func (x *PayloadLoader) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PayloadStager) ProtoMessage() {}
+func (*PayloadLoader) ProtoMessage() {}
 
-func (x *PayloadStager) ProtoReflect() protoreflect.Message {
+func (x *PayloadLoader) ProtoReflect() protoreflect.Message {
 	mi := &file_rpcpb_rpc_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -447,89 +447,89 @@ func (x *PayloadStager) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PayloadStager.ProtoReflect.Descriptor instead.
-func (*PayloadStager) Descriptor() ([]byte, []int) {
+// Deprecated: Use PayloadLoader.ProtoReflect.Descriptor instead.
+func (*PayloadLoader) Descriptor() ([]byte, []int) {
 	return file_rpcpb_rpc_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *PayloadStager) GetId() int64 {
+func (x *PayloadLoader) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *PayloadStager) GetUuid() string {
+func (x *PayloadLoader) GetUuid() string {
 	if x != nil {
 		return x.Uuid
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetName() string {
+func (x *PayloadLoader) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetOs() string {
+func (x *PayloadLoader) GetOs() string {
 	if x != nil {
 		return x.Os
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetArch() string {
+func (x *PayloadLoader) GetArch() string {
 	if x != nil {
 		return x.Arch
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetFormat() string {
+func (x *PayloadLoader) GetFormat() string {
 	if x != nil {
 		return x.Format
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetLprotocol() string {
+func (x *PayloadLoader) GetLprotocol() string {
 	if x != nil {
 		return x.Lprotocol
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetLhost() string {
+func (x *PayloadLoader) GetLhost() string {
 	if x != nil {
 		return x.Lhost
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetLport() int32 {
+func (x *PayloadLoader) GetLport() int32 {
 	if x != nil {
 		return x.Lport
 	}
 	return 0
 }
 
-func (x *PayloadStager) GetType() string {
+func (x *PayloadLoader) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetTechnique() string {
+func (x *PayloadLoader) GetTechnique() string {
 	if x != nil {
 		return x.Technique
 	}
 	return ""
 }
 
-func (x *PayloadStager) GetProcessToInject() string {
+func (x *PayloadLoader) GetProcessToInject() string {
 	if x != nil {
 		return x.ProcessToInject
 	}
@@ -974,7 +974,7 @@ var file_rpcpb_rpc_proto_rawDesc = []byte{
 	0x72, 0x65, 0x63, 0x74, 0x53, 0x79, 0x73, 0x63, 0x61, 0x6c, 0x6c, 0x73, 0x18, 0x0e, 0x20, 0x01,
 	0x28, 0x08, 0x52, 0x10, 0x69, 0x6e, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74, 0x53, 0x79, 0x73, 0x63,
 	0x61, 0x6c, 0x6c, 0x73, 0x22, 0xa9, 0x02, 0x0a, 0x0d, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64,
-	0x53, 0x74, 0x61, 0x67, 0x65, 0x72, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x4c, 0x6f, 0x61, 0x64, 0x65, 0x72, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18, 0x02,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61,
 	0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x0e,
@@ -1092,9 +1092,9 @@ var file_rpcpb_rpc_proto_rawDesc = []byte{
 	0x65, 0x72, 0x61, 0x74, 0x65, 0x12, 0x15, 0x2e, 0x72, 0x70, 0x63, 0x70, 0x62, 0x2e, 0x50, 0x61,
 	0x79, 0x6c, 0x6f, 0x61, 0x64, 0x49, 0x6d, 0x70, 0x6c, 0x61, 0x6e, 0x74, 0x1a, 0x10, 0x2e, 0x63,
 	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x70, 0x62, 0x2e, 0x42, 0x69, 0x6e, 0x61, 0x72, 0x79, 0x22, 0x00,
-	0x12, 0x41, 0x0a, 0x15, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x53, 0x74, 0x61, 0x67, 0x65,
+	0x12, 0x41, 0x0a, 0x15, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x4c, 0x6f, 0x61, 0x64, 0x65,
 	0x72, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x65, 0x12, 0x14, 0x2e, 0x72, 0x70, 0x63, 0x70,
-	0x62, 0x2e, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x53, 0x74, 0x61, 0x67, 0x65, 0x72, 0x1a,
+	0x62, 0x2e, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x4c, 0x6f, 0x61, 0x64, 0x65, 0x72, 0x1a,
 	0x10, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x70, 0x62, 0x2e, 0x42, 0x69, 0x6e, 0x61, 0x72,
 	0x79, 0x22, 0x00, 0x12, 0x47, 0x0a, 0x18, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x53, 0x68,
 	0x65, 0x6c, 0x6c, 0x63, 0x6f, 0x64, 0x65, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x65, 0x12,
@@ -1158,7 +1158,7 @@ var file_rpcpb_rpc_proto_goTypes = []interface{}{
 	(*Listener)(nil),         // 1: rpcpb.Listener
 	(*ListenerPayload)(nil),  // 2: rpcpb.ListenerPayload
 	(*PayloadImplant)(nil),   // 3: rpcpb.PayloadImplant
-	(*PayloadStager)(nil),    // 4: rpcpb.PayloadStager
+	(*PayloadLoader)(nil),    // 4: rpcpb.PayloadLoader
 	(*PayloadShellcode)(nil), // 5: rpcpb.PayloadShellcode
 	(*Agent)(nil),            // 6: rpcpb.Agent
 	(*Task)(nil),             // 7: rpcpb.Task
@@ -1185,7 +1185,7 @@ var file_rpcpb_rpc_proto_depIdxs = []int32{
 	11, // 12: rpcpb.HermitRPC.ListenerGetById:input_type -> commonpb.Id
 	9,  // 13: rpcpb.HermitRPC.ListenerGetAll:input_type -> commonpb.Empty
 	3,  // 14: rpcpb.HermitRPC.PayloadImplantGenerate:input_type -> rpcpb.PayloadImplant
-	4,  // 15: rpcpb.HermitRPC.PayloadStagerGenerate:input_type -> rpcpb.PayloadStager
+	4,  // 15: rpcpb.HermitRPC.PayloadLoaderGenerate:input_type -> rpcpb.PayloadLoader
 	5,  // 16: rpcpb.HermitRPC.PayloadShellcodeGenerate:input_type -> rpcpb.PayloadShellcode
 	11, // 17: rpcpb.HermitRPC.AgentDeleteById:input_type -> commonpb.Id
 	11, // 18: rpcpb.HermitRPC.AgentGetById:input_type -> commonpb.Id
@@ -1211,7 +1211,7 @@ var file_rpcpb_rpc_proto_depIdxs = []int32{
 	1,  // 38: rpcpb.HermitRPC.ListenerGetById:output_type -> rpcpb.Listener
 	1,  // 39: rpcpb.HermitRPC.ListenerGetAll:output_type -> rpcpb.Listener
 	13, // 40: rpcpb.HermitRPC.PayloadImplantGenerate:output_type -> commonpb.Binary
-	13, // 41: rpcpb.HermitRPC.PayloadStagerGenerate:output_type -> commonpb.Binary
+	13, // 41: rpcpb.HermitRPC.PayloadLoaderGenerate:output_type -> commonpb.Binary
 	13, // 42: rpcpb.HermitRPC.PayloadShellcodeGenerate:output_type -> commonpb.Binary
 	12, // 43: rpcpb.HermitRPC.AgentDeleteById:output_type -> commonpb.Message
 	6,  // 44: rpcpb.HermitRPC.AgentGetById:output_type -> rpcpb.Agent
@@ -1284,7 +1284,7 @@ func file_rpcpb_rpc_proto_init() {
 			}
 		}
 		file_rpcpb_rpc_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PayloadStager); i {
+			switch v := v.(*PayloadLoader); i {
 			case 0:
 				return &v.state
 			case 1:

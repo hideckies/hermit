@@ -212,23 +212,41 @@ namespace System::Fs
         IO_STATUS_BLOCK ioStatusBlock;
         OBJECT_ATTRIBUTES objAttr;
         UNICODE_STRING uniFilePath;
-
+        
         pProcs->lpRtlInitUnicodeString(&uniFilePath, wFileAbsPath.c_str());
         InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, NULL, NULL);
 
-        status = pProcs->lpNtCreateFile(
+        //     status = pProcs->lpNtCreateFile(
+        //         &hFile,
+        //         FILE_GENERIC_READ,
+        //         &objAttr,
+        //         &ioStatusBlock,
+        //         NULL,
+        //         FILE_ATTRIBUTE_NORMAL,
+        //         FILE_SHARE_READ,
+        //         OPEN_EXISTING,
+        //         FILE_SYNCHRONOUS_IO_NONALERT,
+        //         NULL,
+        //         0
+        //     );
+        // }
+
+        status = CallSysInvoke(
+            &pProcs->sysNtCreateFile,
+            pProcs->lpNtCreateFile,
             &hFile,
             FILE_GENERIC_READ,
             &objAttr,
             &ioStatusBlock,
-            NULL,
+            (PLARGE_INTEGER)nullptr,
             FILE_ATTRIBUTE_NORMAL,
             FILE_SHARE_READ,
             OPEN_EXISTING,
             FILE_SYNCHRONOUS_IO_NONALERT,
-            NULL,
+            nullptr,
             0
         );
+
         if (status != STATUS_SUCCESS)
         {            
             return std::vector<BYTE>();

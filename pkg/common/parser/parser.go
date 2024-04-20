@@ -24,6 +24,9 @@ type GrammarGeneral struct {
 	// LISTENER
 	Listener  listenerCmd     `cmd:"" help:"Manage listeners." group:"LISTENER:"`
 	Listeners listenerListCmd `cmd:"" help:"Alias for 'listener list'." group:"LISTENER:"`
+
+	// PAYLOAD
+	Payload payloadCmd `cmd:"" help:"Manage payloads." group:"PAYLOAD:"`
 }
 
 type GrammarRoot struct {
@@ -34,9 +37,6 @@ type GrammarRoot struct {
 
 	// CONFIG
 	ClientConfig clientConfigCmd `cmd:"" help:"Manage client config." group:"CONFIG:"`
-
-	// PAYLOAD
-	Payload payloadCmd `cmd:"" help:"Manage payloads." group:"PAYLOAD:"`
 
 	// AGENT
 	Agent  agentCmd     `cmd:"" help:"Manage agents." group:"AGENT:"`
@@ -108,7 +108,7 @@ type GrammarAgentMode struct {
 	Tasks amTaskListCmd `cmd:"" help:"Alias for 'task list'" group:"TASK MANAGE:"`
 
 	// LOOT
-	Loot amLootCmd `cmd:"" help:"Manage loot." group:"LOOT:"`
+	Loot amLootCmd `cmd:"" help:"Manage loot. We can see task results with this command." group:"LOOT:"`
 }
 
 func NewParser(grammar interface{}, addr string, domains []string) (*kong.Kong, error) {

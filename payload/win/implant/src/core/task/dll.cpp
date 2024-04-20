@@ -32,7 +32,7 @@ namespace Task
         // Inject DLL
         if (!Technique::Injection::DllInjection(pState->pProcs, dwPid, (LPVOID)wDllDest.c_str(), dwDllDestSize))
         {
-            return L"Error: Failed to injection DLL.";
+            return L"Error: Failed to inject DLL.";
         }
 
         return L"Success: Dll injected successfully.";

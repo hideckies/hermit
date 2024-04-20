@@ -22,7 +22,15 @@ namespace Hermit
 		LPCWSTR 		lpKey,
 		LPCWSTR 		lpIV
 	) {
-		 HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
+		// TEST (I'll remove the following lines eventually) ----------------------
+		// Cord sysCord;
+		// sysCord.x = 10;
+		// sysCord.y = 20;
+		// DWORD c = SysSample(&sysCord);
+		// Stdout::DisplayMessageBoxA(std::to_string(c).c_str(), "SysSample3");
+		// ------------------------------------------------------------------------
+
+		HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
         if (!hNTDLL)
         {
 			return;

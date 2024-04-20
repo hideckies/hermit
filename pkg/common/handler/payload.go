@@ -50,8 +50,8 @@ func HandlePayloadGen(
 
 			spin.Stop()
 			stdout.LogSuccess(fmt.Sprintf("Implant saved at %s", color.HiGreenString(outFile)))
-		} else if strings.HasPrefix(payloadType, "stager") {
-			stg, err := wizard.WizardPayloadStager(
+		} else if strings.HasPrefix(payloadType, "loader") {
+			ldr, err := wizard.WizardPayloadLoader(
 				meta.GetSpecificHost(serverState.Conf.Host),
 				liss,
 				payloadType,
@@ -61,10 +61,10 @@ func HandlePayloadGen(
 			}
 
 			fmt.Println()
-			spin := stdout.NewSpinner("Generating a stager...")
+			spin := stdout.NewSpinner("Generating a loader...")
 			spin.Start()
 
-			_, outFile, err := stg.Generate(serverState)
+			_, outFile, err := ldr.Generate(serverState)
 			if err != nil {
 				spin.Stop()
 				return err
@@ -138,8 +138,8 @@ func HandlePayloadGen(
 			}
 
 			stdout.LogSuccess(fmt.Sprintf("Implant saved at %s", color.HiGreenString(outFile)))
-		} else if strings.HasPrefix(payloadType, "stager") {
-			stg, err := wizard.WizardPayloadStager(
+		} else if strings.HasPrefix(payloadType, "loader") {
+			ldr, err := wizard.WizardPayloadLoader(
 				meta.GetSpecificHost(clientState.Conf.Server.Host),
 				liss,
 				payloadType,
@@ -150,7 +150,7 @@ func HandlePayloadGen(
 
 			spin := stdout.NewSpinner("Generating a payload...")
 			spin.Start()
-			data, err := rpc.RequestPayloadStagerGenerate(clientState, stg)
+			data, err := rpc.RequestPayloadLoaderGenerate(clientState, ldr)
 			if err != nil {
 				spin.Stop()
 				return err
@@ -163,7 +163,7 @@ func HandlePayloadGen(
 				return err
 			}
 			payloadsDir := fmt.Sprintf("%s/client/payloads", appDir)
-			outFile := fmt.Sprintf("%s/%s.%s", payloadsDir, stg.Name, stg.Format)
+			outFile := fmt.Sprintf("%s/%s.%s", payloadsDir, ldr.Name, ldr.Format)
 
 			err = os.WriteFile(outFile, data, 0755)
 			if err != nil {

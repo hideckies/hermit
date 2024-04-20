@@ -35,7 +35,22 @@ func (c *amTaskListCmd) Run(
 	return nil
 }
 
+type amTaskResultsCmd struct{}
+
+func (c *amTaskResultsCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	err := handler.HandleAmLootShow(serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type amTaskCmd struct {
-	Clear amTaskClearCmd `cmd:"" help:"Clear all tasks set."`
-	List  amTaskListCmd  `cmd:"" help:"List all tasks that are waiting for results."`
+	Clear   amTaskClearCmd   `cmd:"" help:"Clear all tasks set."`
+	List    amTaskListCmd    `cmd:"" help:"List all tasks that are waiting for results."`
+	Results amTaskResultsCmd `cmd:"" help:"Print all task results. This is the alias for 'loot show' command."`
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/hideckies/hermit/pkg/server/state"
 )
 
-type Stager struct {
+type Loader struct {
 	Id              uint
 	Uuid            string
 	Name            string
@@ -24,12 +24,12 @@ type Stager struct {
 	Lprotocol       string
 	Lhost           string
 	Lport           uint16
-	Type            string // "dll-loader", "exec-loader", "shellcode-loader"
+	Type            string // "dll", "exec", "shellcode"
 	Technique       string // Evasion technique
 	ProcessToInject string
 }
 
-func NewStager(
+func NewLoader(
 	id uint,
 	_uuid string,
 	name string,
@@ -42,15 +42,15 @@ func NewStager(
 	stgType string,
 	technique string,
 	processToInject string,
-) *Stager {
+) *Loader {
 	if _uuid == "" {
 		_uuid = uuid.NewString()
 	}
 	if name == "" {
-		name = utils.GenerateRandomAnimalName(false, fmt.Sprintf("stager-%s", stgType))
+		name = utils.GenerateRandomAnimalName(false, fmt.Sprintf("loader-%s", stgType))
 	}
 
-	return &Stager{
+	return &Loader{
 		Id:              id,
 		Uuid:            _uuid,
 		Name:            name,
@@ -66,7 +66,7 @@ func NewStager(
 	}
 }
 
-func (s *Stager) Generate(serverState *state.ServerState) (data []byte, outFile string, err error) {
+func (s *Loader) Generate(serverState *state.ServerState) (data []byte, outFile string, err error) {
 	// Get the correspoiding listener
 	liss, err := serverState.DB.ListenerGetAll()
 	if err != nil {
@@ -91,7 +91,7 @@ func (s *Stager) Generate(serverState *state.ServerState) (data []byte, outFile 
 	outFile = fmt.Sprintf("%s/%s.%s.%s", payloadsDir, s.Name, s.Arch, s.Format)
 
 	// Get request path
-	requestPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/stager/download"])
+	requestPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/loader/download"])
 
 	// Generate random AES key and IV
 	newAES, err := crypt.NewAES()
@@ -104,7 +104,7 @@ func (s *Stager) Generate(serverState *state.ServerState) (data []byte, outFile 
 		return nil, "", fmt.Errorf("linux target is not implemented yet")
 	} else if s.Os == "windows" {
 		// Change directory
-		os.Chdir("./payload/win/stager")
+		os.Chdir("./payload/win/loader")
 		_, err = meta.ExecCommand("rm", "-rf", "build")
 		if err != nil {
 			os.Chdir(serverState.CWD)

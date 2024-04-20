@@ -33,7 +33,7 @@ service HermitRPC {
 
   // PAYLOAD
   rpc PayloadImplantGenerate (PayloadImplant) returns (commonpb.Binary) {}
-  rpc PayloadStagerGenerate (PayloadStager) returns (commonpb.Binary) {}
+  rpc PayloadLoaderGenerate (PayloadLoader) returns (commonpb.Binary) {}
   rpc PayloadShellcodeGenerate (PayloadShellcode) returns (commonpb.Binary) {}
 
   // AGENT
@@ -92,7 +92,7 @@ message PayloadImplant {
   bool indirectSyscalls = 14;
 }
 
-message PayloadStager {
+message PayloadLoader {
   int64 id = 1;
   string uuid = 2;
   string name = 3;
