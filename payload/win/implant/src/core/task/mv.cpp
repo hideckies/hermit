@@ -2,9 +2,10 @@
 
 namespace Task
 {
-    std::wstring Mv(const std::wstring& wSrc, const std::wstring& wDest)
+    std::wstring Mv(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest)
     {
         if (!MoveFileW(wSrc.c_str(), wDest.c_str()))
+        // if (!System::Fs::FileMove(pState->pProcs, wSrc, wDest)) // Bug: the 'FileMove' function forcefully terminates the program.
         {
             return L"Error: Could not move a file.";
         }

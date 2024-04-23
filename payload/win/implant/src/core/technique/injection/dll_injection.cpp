@@ -41,7 +41,7 @@ namespace Technique::Injection
             pBaseAddr,
             lpDllPath,
             dwDllPathSize,
-            NULL
+            nullptr
         )) {
             System::Process::VirtualMemoryFree(
                 pProcs,
@@ -90,7 +90,7 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
+        pProcs->lpNtWaitForSingleObject(hThread, FALSE, nullptr);
 
         pProcs->lpNtClose(hProcess);
         pProcs->lpNtClose(hThread);

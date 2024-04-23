@@ -6,7 +6,7 @@ namespace Task
     {
         std::wstring result = L"";
 
-        std::vector<std::wstring> groups = System::Group::GetAllGroups();
+        std::vector<std::wstring> groups = System::Group::AllGroupsGet();
         if (groups.size() == 0)
         {
             return L"Error: Groups not found.";

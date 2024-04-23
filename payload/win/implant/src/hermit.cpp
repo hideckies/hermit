@@ -30,6 +30,12 @@ namespace Hermit
 		// Stdout::DisplayMessageBoxA(std::to_string(c).c_str(), "SysSample3");
 		// ------------------------------------------------------------------------
 
+		HMODULE hKernel32DLL = LoadLibrary(L"kernel32.dll");
+		if (!hKernel32DLL)
+		{
+			return;
+		}
+
 		HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
         if (!hNTDLL)
         {
@@ -47,6 +53,7 @@ namespace Hermit
 
 		pState->pCrypt				= Crypt::InitCrypt(lpKey, lpIV);
 		pState->pTeb 				= NtCurrentTeb();
+		pState->hKernel32DLL		= hKernel32DLL;
 		pState->hNTDLL				= hNTDLL;
 		pState->hWinHTTPDLL			= hWinHTTPDLL;
 		pState->pProcs 				= Procs::FindProcs(hNTDLL, hWinHTTPDLL, bIndirectSyscalls);

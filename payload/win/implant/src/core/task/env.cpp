@@ -8,7 +8,7 @@ namespace Task
     {        
         std::wstring result = L"";
 
-        std::map<std::wstring, std::wstring> env = System::Env::GetAll(pState->pProcs);
+        std::map<std::wstring, std::wstring> env = System::Env::EnvAllGet(pState->pProcs);
 
         if (env.size() == 0)
         {

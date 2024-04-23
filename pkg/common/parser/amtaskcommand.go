@@ -545,14 +545,20 @@ func (c *amTaskPsKillCmd) Run(
 	return nil
 }
 
-type amTaskPsLsCmd struct{}
+type amTaskPsLsCmd struct {
+	Filter  string `short:"f" optional:"" help:"Filter processes by specified string."`
+	Exclude string `short:"x" optional:"" help:"Exclude processes by sprcified string."`
+}
 
 func (c *amTaskPsLsCmd) Run(
 	ctx *kong.Context,
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
-	task, err := _task.NewTask(strings.Join(ctx.Args[:2], " "), map[string]string{})
+	task, err := _task.NewTask(strings.Join(ctx.Args[:2], " "), map[string]string{
+		"filter":  c.Filter,
+		"exclude": c.Exclude,
+	})
 	if err != nil {
 		return err
 	}
@@ -592,80 +598,42 @@ func (c *amTaskPwdCmd) Run(
 // REG
 type amTaskRegAddCmd struct{}
 
+type amTaskRegQueryCmd struct {
+	Path      string `arg:"" required:"" help:"Specify the registry path."`
+	Recursive bool   `short:"r" optional:"" help:"List recursively."`
+}
+
+func (c *amTaskRegQueryCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask(strings.Join(ctx.Args[:2], " "), map[string]string{
+		"keyPath":   c.Path,
+		"recursive": fmt.Sprintf("%t", c.Recursive),
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type amTaskRegRmCmd struct{}
 
 type amTaskRegSaveCmd struct{}
-
-type amTaskRegSubkeysCmd struct {
-	Path      string `arg:"" required:"" help:"Specify the registry path."`
-	Recursive bool   `short:"r" optional:"" help:"List recursively."`
-}
-
-func (c *amTaskRegSubkeysCmd) Run(
-	ctx *kong.Context,
-	serverState *servState.ServerState,
-	clientState *cliState.ClientState,
-) error {
-	// Split path
-	keySplit := strings.Split(c.Path, "\\")
-	rootKey := keySplit[0]
-	subKey := strings.Join(keySplit[1:], "\\")
-
-	task, err := _task.NewTask(strings.Join(ctx.Args[:2], " "), map[string]string{
-		"rootkey":   rootKey,
-		"subkey":    subKey,
-		"recursive": fmt.Sprintf("%t", c.Recursive),
-	})
-	if err != nil {
-		return err
-	}
-
-	err = handler.HandleAmTaskSet(task, serverState, clientState)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type amTaskRegValuesCmd struct {
-	Path      string `arg:"" required:"" help:"Specify the registry path."`
-	Recursive bool   `short:"r" optional:"" help:"List recursively."`
-}
-
-func (c *amTaskRegValuesCmd) Run(
-	ctx *kong.Context,
-	serverState *servState.ServerState,
-	clientState *cliState.ClientState,
-) error {
-	// Split path
-	keySplit := strings.Split(c.Path, "\\")
-	rootKey := keySplit[0]
-	subKey := strings.Join(keySplit[1:], "\\")
-
-	task, err := _task.NewTask(strings.Join(ctx.Args[:2], " "), map[string]string{
-		"rootkey":   rootKey,
-		"subkey":    subKey,
-		"recursive": fmt.Sprintf("%t", c.Recursive),
-	})
-	if err != nil {
-		return err
-	}
-
-	err = handler.HandleAmTaskSet(task, serverState, clientState)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 type amTaskRegWriteCmd struct{}
 
 type amTaskRegCmd struct {
 	// Add     amTaskRegAddCmd     `cmd:"" help:"Add new registry key."`
+	Query amTaskRegQueryCmd `cmd:"" help:"Enumerate subkeys for the specified path."`
 	// Rm      amTaskRegRmCmd      `cmd:"" help:"Remove registry key."`
 	// Save    amTaskRegSaveCmd    `cmd:"" help:"Save and download registry hives."`
-	Subkeys amTaskRegSubkeysCmd `cmd:"" help:"Enumerate subkeys for the specified open registry key."`
-	Values  amTaskRegValuesCmd  `cmd:"" help:"Enumerate the specified registry values."`
 	// Write   amTaskRegWriteCmd   `cmd:"" help:" Write values to the specified registry key"`
 }
 

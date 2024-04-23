@@ -26,6 +26,7 @@ namespace State
         PTEB                pTeb;
 
         // Module handlers
+        HMODULE             hKernel32DLL;
         HMODULE             hNTDLL;
         HMODULE             hWinHTTPDLL;
 

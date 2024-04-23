@@ -127,136 +127,191 @@ namespace Task::Helper::Reg
 
 namespace Task
 {
-    std::wstring RegSubKeys(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive)
+    std::wstring RegQuery(State::PSTATE pState, const std::wstring& wKeyPath, BOOL bRecursive)
     {
-        HKEY hRootKey = Task::Helper::Reg::GetRegRootKey(wRootKey);
-        if (hRootKey == NULL)
-        {
-            return L"Error: Could not get root key.";
-        }
+        NTSTATUS status;
+        ULONG resultLength;
 
-        std::vector<std::wstring> vSubKeys = Task::Helper::Reg::ListRegSubKeys(
-            hRootKey,
-            wSubKey,
-            KEY_READ,
-            bRecursive
+        // Open key
+        HANDLE hKey = System::Registry::RegOpenKey(
+            pState->pProcs,
+            wKeyPath,
+            KEY_QUERY_VALUE
         );
-        if (vSubKeys.size() == 0)
+        if (!hKey)
         {
-            return L"SubKeys not found.";
+            return L"Error: Failed to open key.";
         }
 
-        std::wstring result = L"";
+        // Query the key information
+        KEY_FULL_INFORMATION keyInfo;
 
-        for(std::wstring wSubKey : vSubKeys)
-        {
-            result += wRootKey + L"\\" + wSubKey + L"\n";
-        }
-
-        return result;
-    }
-
-    std::wstring RegValues(const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive)
-    {
-        std::wstring result = L"";
-        std::vector<std::wstring> vSubKeys = {wSubKey};
-
-        HKEY hRootKey = Task::Helper::Reg::GetRegRootKey(wRootKey);
-        if (hRootKey == NULL)
-        {
-            return L"Error: Could not get root key.";
-        }
-
-        std::vector<std::wstring> vNewSubKeys = Task::Helper::Reg::ListRegSubKeys(
-            hRootKey,
-            wSubKey,
-            KEY_READ,
-            bRecursive
+        status = CallSysInvoke(
+            &pState->pProcs->sysNtQueryKey,
+            pState->pProcs->lpNtQueryKey,
+            hKey,
+            KeyFullInformation,
+            &keyInfo,
+            sizeof(keyInfo),
+            &resultLength
         );
-        vSubKeys.insert(vSubKeys.end(), vNewSubKeys.begin(), vNewSubKeys.end());
+        if (status != STATUS_SUCCESS)
+        {
+            Stdout::DisplayMessageBoxW(
+                Utils::Convert::DWORDToWstring(status).c_str(),
+                L"NtQueryKey status"
+            );
+            System::Handle::HandleClose(pState->pProcs, hKey);
+            return FALSE;
+        }
+
+        ULONG numOfValues = keyInfo.Values;
 
         // Enumerate key values
-        LONG lStatus;
-        HKEY hKey = NULL;
-        for (std::wstring weSubKey : vSubKeys)
+        KEY_VALUE_FULL_INFORMATION keyValueInfo;
+        ULONG idx = 0;
+        std::wstring result = L"";
+        for (idx = 0; idx < numOfValues; ++idx)
         {
-            result += wRootKey + L"\\" + weSubKey + L"\n";
-
-            lStatus = RegOpenKeyExW(
-                hRootKey,
-                weSubKey.c_str(),
-                0,
-                KEY_READ,
-                &hKey
+            status = CallSysInvoke(
+                &pState->pProcs->sysNtEnumerateValueKey,
+                pState->pProcs->lpNtEnumerateValueKey,
+                hKey,
+                idx,
+                KeyValueFullInformation,
+                &keyValueInfo,
+                sizeof(keyValueInfo) + 1024,
+                &resultLength
             );
-            if (lStatus != ERROR_SUCCESS)
+
+            if (status == STATUS_NO_MORE_ENTRIES)
+            {
+                break;
+            }
+
+            if (status != STATUS_SUCCESS)
             {
                 continue;
             }
 
-            DWORD dwIndex = 0;
-            WCHAR valueName[MAX_REG_KEY_LENGTH];
-            DWORD dwValueNameLen = MAX_REG_KEY_LENGTH;
-            BYTE dataBuffer[BUFFER_SIZE];
-            DWORD dwDataSize = sizeof(dataBuffer);
-            DWORD dwType;
-
-            do {
-                lStatus = RegEnumValueW(
-                    hKey,
-                    dwIndex,
-                    valueName,
-                    &dwValueNameLen,
-                    0,
-                    &dwType,
-                    dataBuffer,
-                    &dwDataSize
-                );
-
-                if (lStatus == ERROR_NO_MORE_ITEMS)
-                {
-                    break;
-                }
-                if (lStatus == ERROR_SUCCESS)
-                {
-                    std::wstring wValueName(valueName);
-                    if (wValueName == L"")
-                    {
-                        wValueName = L"(Default)";
-                    }
-                    result += L"  " + wValueName + L"\t";
-
-                    std::wstring wType = L"";
-                    if (dwType == REG_DWORD)
-                    {
-                        result += L"REG_DWORD\t";
-                        DWORD _dwValue = *reinterpret_cast<DWORD*>(dataBuffer);
-                        result += Utils::Convert::DWORDToWstring(_dwValue) + L"\n";
-                    }
-                    else if (dwType == REG_SZ)
-                    {
-                        result += L"REG_SZ\t";
-                        result += std::wstring(reinterpret_cast<wchar_t*>(dataBuffer), dwDataSize / sizeof(wchar_t)) + L"\n";
-                    }
-                    else
-                    {
-                        result += L"\n";
-                    }
-                }
-
-                dwIndex++;
-            } while (1);
-
-            RegCloseKey(hKey);
+            std::wstring wValueName(keyValueInfo.Name, keyValueInfo.NameLength / sizeof(WCHAR));
+            std::wstring wValueData(reinterpret_cast<WCHAR*>(reinterpret_cast<BYTE*>(&keyValueInfo) + keyValueInfo.DataOffset), keyValueInfo.DataLength / sizeof(WCHAR));
+        
+            result += wValueName + L"\n";
+            result += L"\t" + wValueData + L"\n\n";
         }
+
+        System::Handle::HandleClose(pState->pProcs, hKey);
 
         if (result == L"")
         {
-            result = L"Key values not found.";
+            return L"Error: Failed to get key information.";
         }
 
-        RegCloseKey(hKey);
-
         return result;
+
+
+
+
+        // std::wstring result = L"";
+        // std::vector<std::wstring> vSubKeys = {wSubKey};
+
+        // HKEY hRootKey = Task::Helper::Reg::GetRegRootKey(wRootKey);
+        // if (hRootKey == NULL)
+        // {
+        //     return L"Error: Could not get root key.";
+        // }
+
+        // std::vector<std::wstring> vNewSubKeys = Task::Helper::Reg::ListRegSubKeys(
+        //     hRootKey,
+        //     wSubKey,
+        //     KEY_READ,
+        //     bRecursive
+        // );
+        // vSubKeys.insert(vSubKeys.end(), vNewSubKeys.begin(), vNewSubKeys.end());
+
+        // // Enumerate key values
+        // LONG lStatus;
+        // HKEY hKey = NULL;
+        // for (std::wstring weSubKey : vSubKeys)
+        // {
+        //     result += wRootKey + L"\\" + weSubKey + L"\n";
+
+        //     lStatus = RegOpenKeyExW(
+        //         hRootKey,
+        //         weSubKey.c_str(),
+        //         0,
+        //         KEY_READ,
+        //         &hKey
+        //     );
+        //     if (lStatus != ERROR_SUCCESS)
+        //     {
+        //         continue;
+        //     }
+
+        //     DWORD dwIndex = 0;
+        //     WCHAR valueName[MAX_REG_KEY_LENGTH];
+        //     DWORD dwValueNameLen = MAX_REG_KEY_LENGTH;
+        //     BYTE dataBuffer[BUFFER_SIZE];
+        //     DWORD dwDataSize = sizeof(dataBuffer);
+        //     DWORD dwType;
+
+        //     do {
+        //         lStatus = RegEnumValueW(
+        //             hKey,
+        //             dwIndex,
+        //             valueName,
+        //             &dwValueNameLen,
+        //             0,
+        //             &dwType,
+        //             dataBuffer,
+        //             &dwDataSize
+        //         );
+
+        //         if (lStatus == ERROR_NO_MORE_ITEMS)
+        //         {
+        //             break;
+        //         }
+        //         if (lStatus == ERROR_SUCCESS)
+        //         {
+        //             std::wstring wValueName(valueName);
+        //             if (wValueName == L"")
+        //             {
+        //                 wValueName = L"(Default)";
+        //             }
+        //             result += L"  " + wValueName + L"\t";
+
+        //             std::wstring wType = L"";
+        //             if (dwType == REG_DWORD)
+        //             {
+        //                 result += L"REG_DWORD\t";
+        //                 DWORD _dwValue = *reinterpret_cast<DWORD*>(dataBuffer);
+        //                 result += Utils::Convert::DWORDToWstring(_dwValue) + L"\n";
+        //             }
+        //             else if (dwType == REG_SZ)
+        //             {
+        //                 result += L"REG_SZ\t";
+        //                 result += std::wstring(reinterpret_cast<wchar_t*>(dataBuffer), dwDataSize / sizeof(wchar_t)) + L"\n";
+        //             }
+        //             else
+        //             {
+        //                 result += L"\n";
+        //             }
+        //         }
+
+        //         dwIndex++;
+        //     } while (1);
+
+        //     RegCloseKey(hKey);
+        // }
+
+        // if (result == L"")
+        // {
+        //     result = L"Key values not found.";
+        // }
+
+        // RegCloseKey(hKey);
+
+        // return result;
     }
 }

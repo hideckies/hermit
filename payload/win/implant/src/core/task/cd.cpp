@@ -3,7 +3,7 @@
 namespace Task {
     std::wstring Cd(State::PSTATE pState, const std::wstring& wDestDir)
     {
-        if (!System::Fs::ChangeCurrentDirectory(pState->pProcs, wDestDir))
+        if (!System::Fs::DirectoryChangeCurrent(pState->pProcs, wDestDir))
         {
             return L"Error: Failed to change current directory.";
         }

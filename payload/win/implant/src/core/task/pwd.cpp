@@ -2,15 +2,16 @@
 
 namespace Task
 {
-    std::wstring Pwd()
+    std::wstring Pwd(State::PSTATE pState)
     {
-        WCHAR wBuffer[MAX_PATH];
-        DWORD dwRet;
-
-        dwRet = GetCurrentDirectoryW(MAX_PATH, wBuffer);
+        WCHAR wBuffer[MAX_PATH];        
+        ULONG dwRet = pState->pProcs->lpRtlGetCurrentDirectory_U(
+            MAX_PATH,
+            wBuffer
+        );
         if (dwRet == 0 || dwRet > MAX_PATH)
         {
-            return L"Error: Could not get current directory.";
+            return L"Error: Failed to get current directory.";
         }
         
         return std::wstring(wBuffer);

@@ -29,7 +29,7 @@ namespace Task
         }
 
         // Read the executable file data to write process memory.
-        std::vector<BYTE> bytes = System::Fs::ReadBytesFromFile(pState->pProcs, std::wstring(execName));
+        std::vector<BYTE> bytes = System::Fs::FileRead(pState->pProcs, std::wstring(execName));
 
         // Open target process to migrate.
         HANDLE hTargetProcess = System::Process::ProcessOpen(

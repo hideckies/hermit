@@ -13,24 +13,24 @@ namespace System::Fs
         g_dwBytesTransferred = dwNumberOfBytesTransfered;
     }
 
-    std::wstring GetAbsolutePath(const std::wstring& wPath, BOOL bExtendLength)
-    {
-        DWORD dwRet = 0;
-        BOOL success;
+    std::wstring AbsolutePathGet(
+        Procs::PPROCS pProcs,
+        const std::wstring& wPath,
+        BOOL bExtendLength
+    ) {
+        // DWORD dwRet = 0;
         WCHAR wBuffer[MAX_PATH] = TEXT("");
         WCHAR wBuf[MAX_PATH] = TEXT("");
         WCHAR** lppPart = {NULL};
 
-        dwRet = GetFullPathName(
+        NTSTATUS status = CallSysInvoke(
+            &pProcs->sysRtlGetFullPathName_U,
+            pProcs->lpRtlGetFullPathName_U,
             wPath.c_str(),
             MAX_PATH,
             wBuffer,
             lppPart
         );
-        if (dwRet == 0)
-        {
-            return L"";
-        }
 
         if (bExtendLength)
         {
@@ -42,33 +42,49 @@ namespace System::Fs
         }
     }
 
-    BOOL ChangeCurrentDirectory(
+    HANDLE DirectoryCreate(
         Procs::PPROCS pProcs,
-        const std::wstring& wDestPath
+        const std::wstring& wDirPath
     ) {
-         // if (pProcs->lpNtSetInformationProcess)
-        // {
-        //     NTSTATUS ntStatus = pProcs->lpNtSetInformationProcess(
-        //         GetCurrentProcess(),
-        //         ProcessCurrentDirectory,
-        //         lpPathName,
-        //         wcslen(lpPathName) * sizeof(WCHAR)
-        //     );
-        //     if (ntStatus != 0)
-        //     {
-        //         return FALSE;
-        //     }
-        //     return TRUE;
-        // }
-        // else
-        // {
-        //     return SetCurrentDirectoryW(lpPathName);
-        // }
+        std::wstring wDirAbsPath = System::Fs::AbsolutePathGet(pProcs, wDirPath, TRUE);
 
-        return SetCurrentDirectoryW(wDestPath.c_str());
+        NTSTATUS status;
+        HANDLE hDir;
+
+        IO_STATUS_BLOCK ioStatusBlock;
+        OBJECT_ATTRIBUTES objAttr;
+        UNICODE_STRING uniDirPath;
+
+        status = CallSysInvoke(
+            &pProcs->sysRtlInitUnicodeString,
+            pProcs->lpRtlInitUnicodeString,
+            &uniDirPath,
+            wDirAbsPath.c_str()
+        );
+        InitializeObjectAttributes(&objAttr, &uniDirPath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+
+        status = pProcs->lpNtCreateFile(
+            &hDir,
+            FILE_GENERIC_WRITE | SYNCHRONIZE,
+            &objAttr,
+            &ioStatusBlock,
+            NULL,
+            FILE_ATTRIBUTE_DIRECTORY,
+            0,
+            FILE_CREATE,
+            FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT,
+            NULL,
+            0
+        );
+        if (status != STATUS_SUCCESS)
+        {            
+            return NULL;
+        }
+
+        return hDir;
     }
 
-    std::vector<std::wstring> GetFilesInDirectory(Procs::PPROCS pProcs, const std::wstring& wDirPath, BOOL bRecurse)
+    std::vector<std::wstring> DirectoryGetFiles(Procs::PPROCS pProcs, const std::wstring& wDirPath, BOOL bRecurse)
     {
         std::vector<std::wstring> files = {};
 
@@ -103,11 +119,15 @@ namespace System::Fs
 
             if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                // std::wstring wFullDirName = GetAbsolutePath(wPathName);
+                // std::wstring wFullDirName = System::Fs::AbsolutePathGet(wPathName);
 
                 if (bRecurse && wFullPathName != wDirPath)
                 {
-                    std::vector<std::wstring> childFiles = GetFilesInDirectory(pProcs, wFullPathName, bRecurse);
+                    std::vector<std::wstring> childFiles = System::Fs::DirectoryGetFiles(
+                        pProcs,
+                        wFullPathName,
+                        bRecurse
+                    );
                     files.insert(files.end(), childFiles.begin(), childFiles.end());
                 }
                 else
@@ -124,49 +144,40 @@ namespace System::Fs
         return files;
     }
 
-    HANDLE CreateNewDirectory(
+    BOOL DirectoryChangeCurrent(
         Procs::PPROCS pProcs,
-        const std::wstring& wDirPath
+        const std::wstring& wDestPath
     ) {
-        std::wstring wDirAbsPath = GetAbsolutePath(wDirPath, TRUE);
-
+        UNICODE_STRING uniDestPath;
         NTSTATUS status;
-        HANDLE hDir;
 
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES objAttr;
-        UNICODE_STRING uniDirPath;
+        std::wstring wDestAbsPath = System::Fs::AbsolutePathGet(pProcs, wDestPath, FALSE);
+        CallSysInvoke(
+            &pProcs->sysRtlInitUnicodeString,
+            pProcs->lpRtlInitUnicodeString,
+            &uniDestPath,
+            wDestAbsPath.c_str()
+        );
 
-        pProcs->lpRtlInitUnicodeString(&uniDirPath, wDirAbsPath.c_str());
-        InitializeObjectAttributes(&objAttr, &uniDirPath, OBJ_CASE_INSENSITIVE, NULL, NULL);
-
-        status = pProcs->lpNtCreateFile(
-            &hDir,
-            FILE_GENERIC_WRITE | SYNCHRONIZE,
-            &objAttr,
-            &ioStatusBlock,
-            NULL,
-            FILE_ATTRIBUTE_DIRECTORY,
-            0,
-            FILE_CREATE,
-            FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT,
-            NULL,
-            0
+        status = CallSysInvoke(
+            &pProcs->sysRtlSetCurrentDirectory_U,
+            pProcs->lpRtlSetCurrentDirectory_U,
+            &uniDestPath
         );
         if (status != STATUS_SUCCESS)
-        {            
-            return NULL;
+        {
+            return FALSE;
         }
 
-        return hDir;
+        return TRUE;
     }
 
-    HANDLE CreateNewFile(
+    HANDLE FileCreate(
         Procs::PPROCS       pProcs,
-        const std::wstring& wFilePath
+        const std::wstring& wFilePath,
+        DWORD               dwCreateDisposition,
+        DWORD               dwCreateOptions
     ) {
-        std::wstring wFileAbsPath = System::Fs::GetAbsolutePath(wFilePath, TRUE);
-
         NTSTATUS status;
         HANDLE hFile;
 
@@ -175,8 +186,14 @@ namespace System::Fs
         OBJECT_ATTRIBUTES objAttr;
         UNICODE_STRING uniFilePath;
 
-        pProcs->lpRtlInitUnicodeString(&uniFilePath, wFileAbsPath.c_str());
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, NULL, NULL);
+        std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
+        CallSysInvoke(
+            &pProcs->sysRtlInitUnicodeString,
+            pProcs->lpRtlInitUnicodeString,
+            &uniFilePath,
+            wFileAbsPath.c_str()
+        );
+        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = pProcs->lpNtCreateFile(
             &hFile,
@@ -186,8 +203,8 @@ namespace System::Fs
             NULL,
             FILE_ATTRIBUTE_NORMAL,
             FILE_SHARE_READ | FILE_SHARE_WRITE,
-            CREATE_ALWAYS,
-            FILE_NON_DIRECTORY_FILE | FILE_ATTRIBUTE_NORMAL,
+            dwCreateDisposition, // e.g. CREATE_ALWAYS, OPEN_IF, 
+            dwCreateOptions, // e.g. FILE_NON_DIRECTORY_FILE | FILE_ATTRIBUTE_NORMAL,
             NULL,
             0
         );
@@ -199,12 +216,10 @@ namespace System::Fs
         return hFile;
     }
     
-    std::vector<BYTE> ReadBytesFromFile(
+    std::vector<BYTE> FileRead(
         Procs::PPROCS       pProcs,
         const std::wstring& wFilePath
     ) {
-        std::wstring wFileAbsPath = GetAbsolutePath(wFilePath, TRUE);
-
         NTSTATUS status;
         HANDLE hFile;
 
@@ -213,23 +228,14 @@ namespace System::Fs
         OBJECT_ATTRIBUTES objAttr;
         UNICODE_STRING uniFilePath;
         
-        pProcs->lpRtlInitUnicodeString(&uniFilePath, wFileAbsPath.c_str());
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, NULL, NULL);
-
-        //     status = pProcs->lpNtCreateFile(
-        //         &hFile,
-        //         FILE_GENERIC_READ,
-        //         &objAttr,
-        //         &ioStatusBlock,
-        //         NULL,
-        //         FILE_ATTRIBUTE_NORMAL,
-        //         FILE_SHARE_READ,
-        //         OPEN_EXISTING,
-        //         FILE_SYNCHRONOUS_IO_NONALERT,
-        //         NULL,
-        //         0
-        //     );
-        // }
+        std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
+        CallSysInvoke(
+            &pProcs->sysRtlInitUnicodeString,
+            pProcs->lpRtlInitUnicodeString,
+            &uniFilePath,
+            wFileAbsPath.c_str()
+        );
+        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = CallSysInvoke(
             &pProcs->sysNtCreateFile,
@@ -238,7 +244,7 @@ namespace System::Fs
             FILE_GENERIC_READ,
             &objAttr,
             &ioStatusBlock,
-            (PLARGE_INTEGER)nullptr,
+            nullptr,
             FILE_ATTRIBUTE_NORMAL,
             FILE_SHARE_READ,
             OPEN_EXISTING,
@@ -246,7 +252,6 @@ namespace System::Fs
             nullptr,
             0
         );
-
         if (status != STATUS_SUCCESS)
         {            
             return std::vector<BYTE>();
@@ -254,7 +259,9 @@ namespace System::Fs
 
         // Get file size
         FILE_STANDARD_INFORMATION fileInfo;
-        status = pProcs->lpNtQueryInformationFile(
+        status = CallSysInvoke(
+            &pProcs->sysNtQueryInformationFile,
+            pProcs->lpNtQueryInformationFile,
             hFile,
             &ioStatusBlock,
             &fileInfo,
@@ -269,58 +276,56 @@ namespace System::Fs
 
         // Allocate a buffer
         ULONG bufferSize = (ULONG)fileInfo.EndOfFile.QuadPart;
-        // DWORD dwBufferSize = fileInfo.EndOfFile.u.LowPart;
-        // Stdout::DisplayMessageBoxW(Utils::Convert::DWORDToWstring(dwBufferSize).c_str(), L"dwBufferSize");
         std::vector<BYTE> buffer(bufferSize);
 
         // Read file contents
         LARGE_INTEGER byteOffset;
         byteOffset.QuadPart = 0;
 
-        status = pProcs->lpNtReadFile(
+        status = CallSysInvoke(
+            &pProcs->sysNtReadFile,
+            pProcs->lpNtReadFile,
             hFile,
-            NULL,
-            NULL,
-            NULL,
+            nullptr,
+            nullptr,
+            nullptr,
             &ioStatusBlock,
             buffer.data(),
             bufferSize,
             &byteOffset,
-            NULL
+            nullptr
         );
         if (status == STATUS_PENDING)
         {
-            status = pProcs->lpNtWaitForSingleObject(hFile, FALSE, NULL);
+            System::Handle::HandleWait(pProcs, hFile, FALSE, nullptr);
             if (status != STATUS_SUCCESS)
             {
-                pProcs->lpNtClose(hFile);
+                System::Handle::HandleClose(pProcs, hFile);
                 return std::vector<BYTE>();
             }
         }
         if (status != STATUS_SUCCESS)
         {
-            pProcs->lpNtClose(hFile);
+            System::Handle::HandleClose(pProcs, hFile);
             return std::vector<BYTE>();
         }
 
         if (ioStatusBlock.Information <= 0)
         {
-            pProcs->lpNtClose(hFile);
+            System::Handle::HandleClose(pProcs, hFile);
             return std::vector<BYTE>();
         }
 
-        pProcs->lpNtClose(hFile);
+        System::Handle::HandleClose(pProcs, hFile);
 
         return buffer;
     }
 
-    BOOL WriteBytesToFile(
+    BOOL FileWrite(
         Procs::PPROCS               pProcs,
         const std::wstring&         wFilePath,
         const std::vector<BYTE>&    bytes
     ) {
-        std::wstring wFileAbsPath = GetAbsolutePath(wFilePath, TRUE);
-
         NTSTATUS status;
         HANDLE hFile;
 
@@ -329,20 +334,28 @@ namespace System::Fs
         OBJECT_ATTRIBUTES objAttr;
         UNICODE_STRING uniFilePath;
 
-        pProcs->lpRtlInitUnicodeString(&uniFilePath, wFileAbsPath.c_str());
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, NULL, NULL);
+        std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
+        status = CallSysInvoke(
+            &pProcs->sysRtlInitUnicodeString,
+            pProcs->lpRtlInitUnicodeString,
+            &uniFilePath,
+            wFileAbsPath.c_str()
+        );
+        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
-        status = pProcs->lpNtCreateFile(
+        status = CallSysInvoke(
+            &pProcs->sysNtCreateFile,
+            pProcs->lpNtCreateFile,
             &hFile,
             FILE_GENERIC_WRITE,
             &objAttr,
             &ioStatusBlock,
-            NULL,
+            nullptr,
             FILE_ATTRIBUTE_NORMAL,
             FILE_SHARE_READ | FILE_SHARE_WRITE,
             FILE_OPEN_IF,
             FILE_NON_DIRECTORY_FILE,
-            NULL,
+            nullptr,
             0
         );
         if (status != STATUS_SUCCESS)
@@ -354,44 +367,163 @@ namespace System::Fs
         LARGE_INTEGER byteOffset;
         byteOffset.QuadPart = 0;
 
-        status = pProcs->lpNtWriteFile(
+        status = CallSysInvoke(
+            &pProcs->sysNtWriteFile,
+            pProcs->lpNtWriteFile,
             hFile,
-            NULL,
-            NULL,
-            NULL,
+            nullptr,
+            nullptr,
+            nullptr,
             &ioStatusBlock,
             (PVOID)bytes.data(),
             bytes.size(),
             &byteOffset,
-            NULL
+            nullptr
         );
         if (status == STATUS_PENDING)
         {
-            status = pProcs->lpNtWaitForSingleObject(hFile, FALSE, NULL);
-            if (status != STATUS_SUCCESS)
+            if (!System::Handle::HandleWait(pProcs, hFile, FALSE, nullptr))
             {
-                pProcs->lpNtClose(hFile);
+                System::Handle::HandleClose(pProcs, hFile);
                 return FALSE;
             }
+            status = STATUS_SUCCESS;
         }
         if (status != STATUS_SUCCESS)
         {
-            pProcs->lpNtClose(hFile);
+            System::Handle::HandleClose(pProcs, hFile);
             return FALSE;
         }
 
         if (ioStatusBlock.Information <= 0)
         {
-            pProcs->lpNtClose(hFile);
+            System::Handle::HandleClose(pProcs, hFile);
             return FALSE;
         }
 
-        pProcs->lpNtClose(hFile);
+        System::Handle::HandleClose(pProcs, hFile);
 
         return TRUE;
     }
 
-    DWORD FileSizeGet(
+    BOOL FileMove(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wSrc,
+        const std::wstring& wDest
+    ) {
+        NTSTATUS status;
+
+        std::wstring wSrcAbs = System::Fs::AbsolutePathGet(pProcs, wSrc, TRUE);
+        std::wstring wDestAbs = System::Fs::AbsolutePathGet(pProcs, wDest, TRUE);
+
+        UNICODE_STRING uniSrc;
+        UNICODE_STRING uniDest;
+
+        status = CallSysInvoke(
+            &pProcs->sysRtlInitUnicodeString,
+            pProcs->lpRtlInitUnicodeString,
+            &uniSrc,
+            wSrcAbs.c_str()
+        );
+        status = CallSysInvoke(
+            &pProcs->sysRtlInitUnicodeString,
+            pProcs->lpRtlInitUnicodeString,
+            &uniDest,
+            wDestAbs.c_str()
+        );
+
+        // Open source handle
+        HANDLE hSrc;
+        IO_STATUS_BLOCK ioStatusBlock;
+        OBJECT_ATTRIBUTES oa;
+        InitializeObjectAttributes(&oa, &uniSrc, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+
+        status = CallSysInvoke(
+            &pProcs->sysNtCreateFile,
+            pProcs->lpNtCreateFile,
+            &hSrc,
+            DELETE,
+            &oa,
+            &ioStatusBlock,
+            nullptr,
+            FILE_ATTRIBUTE_NORMAL,
+            0,
+            FILE_OPEN,
+            0,
+            nullptr,
+            0
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            return FALSE;
+        }
+
+        // Change file information
+        // ULONG uSizeNeeded = sizeof(FILE_RENAME_INFORMATION) + uniDest.Length;
+
+        FILE_RENAME_INFORMATION renameInfo;
+        renameInfo.ReplaceIfExists = TRUE;
+        renameInfo.RootDirectory = nullptr;
+        renameInfo.FileNameLength = uniDest.Length;
+
+        RtlCopyMemory(renameInfo.FileName, uniDest.Buffer, uniDest.Length);
+
+        status = CallSysInvoke(
+            &pProcs->sysNtSetInformationFile,
+            pProcs->lpNtSetInformationFile,
+            hSrc,
+            &ioStatusBlock,
+            &renameInfo,
+            sizeof(renameInfo) + uniDest.Length,
+            FileRenameInformation
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            System::Handle::HandleClose(pProcs, hSrc);
+            return FALSE;
+        }
+
+        System::Handle::HandleClose(pProcs, hSrc);
+
+        return TRUE;
+    }
+
+    BOOL FileDelete(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wFilePath
+    ) {
+         NTSTATUS status;
+
+        std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
+
+        UNICODE_STRING uniFilePath;
+
+        status = CallSysInvoke(
+            &pProcs->sysRtlInitUnicodeString,
+            pProcs->lpRtlInitUnicodeString,
+            &uniFilePath,
+            wFileAbsPath.c_str()
+        );
+
+        // Open source handle
+        IO_STATUS_BLOCK ioStatusBlock;
+        OBJECT_ATTRIBUTES oa;
+        InitializeObjectAttributes(&oa, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+
+        status = CallSysInvoke(
+            &pProcs->sysNtDeleteFile,
+            pProcs->lpNtDeleteFile,
+            &oa
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    DWORD FileGetSize(
         Procs::PPROCS   pProcs,
         HANDLE          hFile
     ) {
@@ -401,7 +533,9 @@ namespace System::Fs
         IO_STATUS_BLOCK ioStatusBlock;
         FILE_STANDARD_INFORMATION fileInfo;
 
-        status = pProcs->lpNtQueryInformationFile(
+        status = CallSysInvoke(
+            &pProcs->sysNtQueryInformationFile,
+            pProcs->lpNtQueryInformationFile,
             hFile,
             &ioStatusBlock,
             &fileInfo,

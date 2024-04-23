@@ -2,7 +2,7 @@
 
 namespace System::Priv
 {
-	BOOL CheckPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege)
+	BOOL PrivilegeCheck(HANDLE hToken, LPCTSTR lpszPrivilege)
 	{
 		PRIVILEGE_SET ps;
 		LUID luid;
@@ -32,7 +32,7 @@ namespace System::Priv
 	
 	// Reference:
 	// https://learn.microsoft.com/en-us/windows/win32/secauthz/enabling-and-disabling-privileges-in-c--
-	BOOL SetPrivilege(
+	BOOL PrivilegeSet(
 		HANDLE hToken,
 		LPCTSTR lpszPrivilege,
 		BOOL bEnablePrivilege

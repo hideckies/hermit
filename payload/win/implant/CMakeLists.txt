@@ -66,9 +66,9 @@ set(SOURCE_CORE
         src/core/system/group.cpp
         src/core/system/handle.cpp
         src/core/system/http.cpp
-        src/core/system/pipe.cpp
         src/core/system/priv.cpp
         src/core/system/process.cpp
+        src/core/system/registry.cpp
         src/core/system/user.cpp
         src/core/technique/injection/dll_injection.cpp
         src/core/technique/injection/shellcode_injection.cpp
@@ -122,7 +122,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
 endif()
 
 # LINK LIBRATILIES
-link_libraries(bcrypt crypt32 dbghelp gdi32 gdiplus iphlpapi netapi32 ntdll psapi shlwapi winhttp wsock32 ws2_32)
+link_libraries(bcrypt crypt32 dbghelp gdi32 gdiplus iphlpapi netapi32 ntdll psapi winhttp wsock32 ws2_32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

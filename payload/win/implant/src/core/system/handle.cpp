@@ -1,30 +1,34 @@
 #include "core/system.hpp"
 
-namespace Handle
+namespace System::Handle
 {
-    BOOL SetHandleInformation(
-        Procs::PPROCS   pProcs,
-        HANDLE          hObject,
-        DWORD           dwMask,
-        DWORD           dwFlags
-    ) {
-        // IO_STATUS_BLOCK ioStatusBlock;
-        // FILE_END_OF_FILE_INFORMATION handleInfo;
+    BOOL HandleClose(Procs::PPROCS pProcs, HANDLE handle)
+    {
+        NTSTATUS status = CallSysInvoke(
+            &pProcs->sysNtClose,
+            pProcs->lpNtClose,
+            handle
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            return FALSE;
+        }
+        return TRUE;
+    }
 
-        // handleInfo.Flags = dwFlags;
-
-        // NTSTATUS status = pProcs->lpNtSetInformationFile(
-        //     hObject,
-        //     &ioStatusBlock,
-        //     &handleInfo,
-        //     sizeof(FILE_END_OF_FILE_INFORMATION),
-        //     FileHandleFlagInformation
-        // );
-        // if (status != 0)
-        // {
-        //     return FALSE;
-        // }
-
+    BOOL HandleWait(Procs::PPROCS pProcs, HANDLE handle, BOOL bAlertable, PLARGE_INTEGER pTimeout)
+    {
+        NTSTATUS status = CallSysInvoke(
+            &pProcs->sysNtWaitForSingleObject,
+            pProcs->lpNtWaitForSingleObject,
+            handle,
+            bAlertable,
+            pTimeout
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            return FALSE;
+        }
         return TRUE;
     }
 }

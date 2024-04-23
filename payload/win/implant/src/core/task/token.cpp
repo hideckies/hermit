@@ -31,8 +31,8 @@ namespace Task::Helper::Token
         PROCESS_INFORMATION pi;
         BOOL bResults = FALSE;
 
-        pProcs->lpRtlZeroMemory(&si, sizeof(STARTUPINFOW));
-        pProcs->lpRtlZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+        RtlZeroMemory(&si, sizeof(STARTUPINFOW));
+        RtlZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
         si.cb = sizeof(STARTUPINFOW);
 
         bResults = DuplicateTokenEx(
@@ -95,9 +95,9 @@ namespace Task
         {
             return L"Error: Could not open the process token.";
         }
-        if (!System::Priv::CheckPrivilege(hToken, SE_DEBUG_NAME))
+        if (!System::Priv::PrivilegeCheck(hToken, SE_DEBUG_NAME))
         {
-            if (!System::Priv::SetPrivilege(hToken, SE_DEBUG_NAME, TRUE))
+            if (!System::Priv::PrivilegeSet(hToken, SE_DEBUG_NAME, TRUE))
             {
                 return L"Error: Could not set SeDebugPrivilege to current process.";
             }

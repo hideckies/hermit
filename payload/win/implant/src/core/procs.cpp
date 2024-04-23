@@ -9,6 +9,7 @@ namespace Procs
         // NT APIs
         pProcs->lpNtCreateProcess           = reinterpret_cast<LPPROC_NTCREATEPROCESS>(GetProcAddress(hNTDLL, "NtCreateProcess"));
         pProcs->lpNtOpenProcess             = reinterpret_cast<LPPROC_NTOPENPROCESS>(GetProcAddress(hNTDLL, "NtOpenProcess"));
+        pProcs->lpNtOpenProcessToken        = reinterpret_cast<LPPROC_NTOPENPROCESSTOKEN>(GetProcAddress(hNTDLL, "NtOpenProcessToken"));
         pProcs->lpNtTerminateProcess        = reinterpret_cast<LPPROC_NTTERMINATEPROCESS>(GetProcAddress(hNTDLL, "NtTerminateProcess"));
         pProcs->lpNtCreateThreadEx          = reinterpret_cast<LPPROC_NTCREATETHREADEX>(GetProcAddress(hNTDLL, "NtCreateThreadEx"));
         pProcs->lpNtResumeThread            = reinterpret_cast<LPPROC_NTRESUMETHREAD>(GetProcAddress(hNTDLL, "NtResumeThread"));
@@ -19,19 +20,29 @@ namespace Procs
         pProcs->lpNtWaitForSingleObject     = reinterpret_cast<LPPROC_NTWAITFORSINGLEOBJECT>(GetProcAddress(hNTDLL, "NtWaitForSingleObject"));
         pProcs->lpNtClose                   = reinterpret_cast<LPPROC_NTCLOSE>(GetProcAddress(hNTDLL, "NtClose"));
         pProcs->lpNtCreateFile              = reinterpret_cast<LPPROC_NTCREATEFILE>(GetProcAddress(hNTDLL, "NtCreateFile"));
+        pProcs->lpNtOpenFile                = reinterpret_cast<LPPROC_NTOPENFILE>(GetProcAddress(hNTDLL, "NtOpenFile"));
         pProcs->lpNtReadFile                = reinterpret_cast<LPPROC_NTREADFILE>(GetProcAddress(hNTDLL, "NtReadFile"));
         pProcs->lpNtWriteFile               = reinterpret_cast<LPPROC_NTWRITEFILE>(GetProcAddress(hNTDLL, "NtWriteFile"));
+        pProcs->lpNtDeleteFile              = reinterpret_cast<LPPROC_NTDELETEFILE>(GetProcAddress(hNTDLL, "NtDeleteFile"));
         pProcs->lpNtCreateNamedPipeFile     = reinterpret_cast<LPPROC_NTCREATENAMEDPIPEFILE>(GetProcAddress(hNTDLL, "NtCreateNamedPipeFile"));
         pProcs->lpNtSetInformationFile      = reinterpret_cast<LPPROC_NTSETINFORMATIONFILE>(GetProcAddress(hNTDLL, "NtSetInformationFile"));
         pProcs->lpNtQueryInformationFile    = reinterpret_cast<LPPROC_NTSETINFORMATIONFILE>(GetProcAddress(hNTDLL, "NtQueryInformationFile"));
+        pProcs->lpNtQueryInformationToken   = reinterpret_cast<LPPROC_NTQUERYINFORMATIONTOKEN>(GetProcAddress(hNTDLL, "NtQueryInformationToken"));
+        pProcs->lpNtQuerySystemInformation  = reinterpret_cast<LPPROC_NTQUERYSYSTEMINFORMATION>(GetProcAddress(hNTDLL, "NtQuerySystemInformation"));
+        pProcs->lpNtSystemDebugControl      = reinterpret_cast<LPPROC_NTSYSTEMDEBUGCONTROL>(GetProcAddress(hNTDLL, "NtSystemDebugControl"));
+        pProcs->lpNtOpenKeyEx               = reinterpret_cast<LPPROC_NTOPENKEYEX>(GetProcAddress(hNTDLL, "NtOpenKeyEx"));
+        pProcs->lpNtQueryKey                = reinterpret_cast<LPPROC_NTQUERYKEY>(GetProcAddress(hNTDLL, "NtQueryKey"));
+        pProcs->lpNtEnumerateValueKey       = reinterpret_cast<LPPROC_NTENUMERATEVALUEKEY>(GetProcAddress(hNTDLL, "NtEnumerateValueKey"));
 
         // NT APIs (Runtime Library)
         pProcs->lpRtlAllocateHeap           = reinterpret_cast<LPPROC_RTLALLOCATEHEAP>(GetProcAddress(hNTDLL, "RtlAllocateHeap"));
-        pProcs->lpRtlZeroMemory             = reinterpret_cast<LPPROC_RTLZEROMEMORY>(GetProcAddress(hNTDLL, "RtlZeroMemory"));
         pProcs->lpRtlInitUnicodeString      = reinterpret_cast<LPPROC_RTLINITUNICODESTRING>(GetProcAddress(hNTDLL, "RtlInitUnicodeString"));
         pProcs->lpRtlStringCchCatW          = reinterpret_cast<LPPROC_RTLSTRINGCCHCATW>(GetProcAddress(hNTDLL, "RtlStringCchCatW"));
         pProcs->lpRtlStringCchCopyW         = reinterpret_cast<LPPROC_RTLSTRINGCCHCOPYW>(GetProcAddress(hNTDLL, "RtlStringCchCopyW"));
         pProcs->lpRtlStringCchLengthW       = reinterpret_cast<LPPROC_RTLSTRINGCCHLENGTHW>(GetProcAddress(hNTDLL, "RtlStringCchLengthW"));
+        pProcs->lpRtlGetCurrentDirectory_U  = reinterpret_cast<LPPROC_RTLGETCURRENTDIRECTORY_U>(GetProcAddress(hNTDLL, "RtlGetCurrentDirectory_U"));
+        pProcs->lpRtlSetCurrentDirectory_U  = reinterpret_cast<LPPROC_RTLSETCURRENTDIRECTORY_U>(GetProcAddress(hNTDLL, "RtlSetCurrentDirectory_U"));
+        pProcs->lpRtlGetFullPathName_U      = reinterpret_cast<LPPROC_RTLGETFULLPATHNAME_U>(GetProcAddress(hNTDLL, "RtlGetFullPathName_U"));
 
         // WINAPIs
         pProcs->lpWinHttpOpen               = reinterpret_cast<LPPROC_WINHTTPOPEN>(GetProcAddress(hWinHTTPDLL, "WinHttpOpen"));
@@ -50,6 +61,7 @@ namespace Procs
         {
             pProcs->sysNtCreateProcess          = Syscalls::FindSyscall(hNTDLL, "NtCreateProcess");
             pProcs->sysNtOpenProcess            = Syscalls::FindSyscall(hNTDLL, "NtOpenProcess");
+            pProcs->sysNtOpenProcessToken       = Syscalls::FindSyscall(hNTDLL, "NtOpenProcessToken");
             pProcs->sysNtTerminateProcess       = Syscalls::FindSyscall(hNTDLL, "NtTerminateProcess");
             pProcs->sysNtCreateThreadEx         = Syscalls::FindSyscall(hNTDLL, "NtCreateThreadEx");
             pProcs->sysNtResumeThread           = Syscalls::FindSyscall(hNTDLL, "NtResumeThread");
@@ -60,17 +72,28 @@ namespace Procs
             pProcs->sysNtWaitForSingleObject    = Syscalls::FindSyscall(hNTDLL, "NtWaitForSingleObject");
             pProcs->sysNtClose                  = Syscalls::FindSyscall(hNTDLL, "NtClose");
             pProcs->sysNtCreateFile             = Syscalls::FindSyscall(hNTDLL, "NtCreateFile");
+            pProcs->sysNtOpenFile               = Syscalls::FindSyscall(hNTDLL, "NtOpenFile");
             pProcs->sysNtReadFile               = Syscalls::FindSyscall(hNTDLL, "NtReadFile");
             pProcs->sysNtWriteFile              = Syscalls::FindSyscall(hNTDLL, "NtWriteFile");
+            pProcs->sysNtDeleteFile             = Syscalls::FindSyscall(hNTDLL, "NtDeleteFile");
             pProcs->sysNtCreateNamedPipeFile    = Syscalls::FindSyscall(hNTDLL, "NtCreateNamedPipeFile");
-            pProcs->sysNtSetInformationFile     = Syscalls::FindSyscall(hNTDLL, "NtSetInformationFile");
             pProcs->sysNtQueryInformationFile   = Syscalls::FindSyscall(hNTDLL, "NtQueryInformationFile");
+            pProcs->sysNtSetInformationFile     = Syscalls::FindSyscall(hNTDLL, "NtSetInformationFile");
+            pProcs->sysNtQueryInformationToken  = Syscalls::FindSyscall(hNTDLL, "NtQueryInformationToken");
+            pProcs->sysNtQuerySystemInformation = Syscalls::FindSyscall(hNTDLL, "NtQuerySystemInformation");
+            pProcs->sysNtSystemDebugControl     = Syscalls::FindSyscall(hNTDLL, "NtSystemDebugControl");
+            pProcs->sysNtOpenKeyEx              = Syscalls::FindSyscall(hNTDLL, "NtOpenKeyEx");
+            pProcs->sysNtQueryKey               = Syscalls::FindSyscall(hNTDLL, "NtQueryKey");
+            pProcs->sysNtEnumerateValueKey      = Syscalls::FindSyscall(hNTDLL, "NtEnumerateValueKey");
+
             pProcs->sysRtlAllocateHeap          = Syscalls::FindSyscall(hNTDLL, "RtlAllocateHeap");
-            pProcs->sysRtlZeroMemory            = Syscalls::FindSyscall(hNTDLL, "RtlZeroMemory");
             pProcs->sysRtlInitUnicodeString     = Syscalls::FindSyscall(hNTDLL, "RtlInitUnicodeString");
             pProcs->sysRtlStringCchCatW         = Syscalls::FindSyscall(hNTDLL, "RtlStringCchCatW");
             pProcs->sysRtlStringCchCopyW        = Syscalls::FindSyscall(hNTDLL, "RtlStringCchCopyW");
             pProcs->sysRtlStringCchLengthW      = Syscalls::FindSyscall(hNTDLL, "RtlStringCchLengthW");
+            pProcs->sysRtlGetCurrentDirectory_U = Syscalls::FindSyscall(hNTDLL, "RtlGetCurrentDirectory_U");
+            pProcs->sysRtlSetCurrentDirectory_U = Syscalls::FindSyscall(hNTDLL, "RtlSetCurrentDirectory_U");
+            pProcs->sysRtlGetFullPathName_U     = Syscalls::FindSyscall(hNTDLL, "RtlGetFullPathName_U");
         }
 
         return pProcs;

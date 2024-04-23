@@ -2,7 +2,7 @@
 
 namespace System::User
 {
-    std::wstring GetAccountName()
+    std::wstring UserAccountNameGet()
     {
         std::wstring result;
 
@@ -28,7 +28,7 @@ namespace System::User
         return result;
     }
 
-    std::wstring GetSID()
+    std::wstring UserSIDGet(Procs::PPROCS pProcs)
     {
         // Get access token of current process.
         HANDLE hToken;
@@ -72,7 +72,7 @@ namespace System::User
         return std::wstring(pSidStr);
     }
 
-    std::vector<std::wstring> GetAllUsers()
+    std::vector<std::wstring> AllUsersGet()
     {
         std::vector<std::wstring> users = {};
 

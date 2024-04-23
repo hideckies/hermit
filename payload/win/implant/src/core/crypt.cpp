@@ -10,7 +10,7 @@ namespace Crypt
             data.data(),
             static_cast<DWORD>(data.size()),
             CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF,
-            NULL,
+            nullptr,
             &dw64Len
         )) {
             return L"";
@@ -45,10 +45,10 @@ namespace Crypt
             w64.c_str(),
             w64.length(),
             CRYPT_STRING_BASE64,
-            NULL,
+            nullptr,
             &cbBinary,
-            NULL,
-            NULL
+            nullptr,
+            nullptr
         )) {
             return std::vector<BYTE>();
         }
@@ -61,8 +61,8 @@ namespace Crypt
             CRYPT_STRING_BASE64,
             bytes.data(),
             &cbBinary,
-            NULL,
-            NULL
+            nullptr,
+            nullptr
         )) {
             return std::vector<BYTE>();
         }
@@ -93,9 +93,9 @@ namespace Crypt
     {
         BCRYPT_ALG_HANDLE hAlg;
         BCRYPT_KEY_HANDLE hKey;
-        PBYTE pbKey = NULL;
-        PBYTE pbIV = NULL;
-        PBYTE pbKeyObj = NULL;
+        PBYTE pbKey = nullptr;
+        PBYTE pbIV = nullptr;
+        PBYTE pbKeyObj = nullptr;
         DWORD cbKeyObj = 0;
         DWORD cbBlockLen = 0;
         DWORD cbData = 0;
@@ -108,7 +108,7 @@ namespace Crypt
         if (BCryptOpenAlgorithmProvider(
             &hAlg,
             BCRYPT_AES_ALGORITHM,
-            NULL,
+            nullptr,
             0
         ) != 0) {
             return nullptr;
@@ -128,7 +128,7 @@ namespace Crypt
 
         // Allocate the key object on the heap.
         pbKeyObj = (PBYTE)HeapAlloc(GetProcessHeap(), 0, cbKeyObj);
-        if (pbKeyObj == NULL)
+        if (pbKeyObj == nullptr)
         {
             return nullptr;
         }
@@ -201,10 +201,10 @@ namespace Crypt
             hKey,
             (PBYTE)plaindata.data(),
             plaindata.size(),
-            NULL,
+            nullptr,
             iv.data(),
             iv.size(),
-            NULL,
+            nullptr,
             0,
             &cbData,
             BCRYPT_BLOCK_PADDING
@@ -220,7 +220,7 @@ namespace Crypt
             hKey,
             (PBYTE)plaindata.data(),
             plaindata.size(),
-            NULL,
+            nullptr,
             iv.data(),
             iv.size(),
             cipherdata.data(),
@@ -251,10 +251,10 @@ namespace Crypt
             hKey, 
             cipherdata.data(),
             cipherdata.size(),
-            NULL,
+            nullptr,
             iv.data(),
             iv.size(),
-            NULL, 
+            nullptr, 
             0, 
             &cbPlaindata, 
             BCRYPT_BLOCK_PADDING
@@ -270,7 +270,7 @@ namespace Crypt
             hKey, 
             cipherdata.data(),
             cipherdata.size(),
-            NULL,
+            nullptr,
             iv.data(),
             iv.size(),
             plaindata.data(),

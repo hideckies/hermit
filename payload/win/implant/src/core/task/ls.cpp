@@ -13,8 +13,8 @@ namespace Task
         size_t dirLength;
         HANDLE hFind = INVALID_HANDLE_VALUE;
 
-        std::wstring wDirAbsPath = System::Fs::GetAbsolutePath(wDir, FALSE);
-        std::wstring wDirAbsPathExtended = System::Fs::GetAbsolutePath(wDir, TRUE);
+        std::wstring wDirAbsPath = System::Fs::AbsolutePathGet(pState->pProcs, wDir, FALSE);
+        std::wstring wDirAbsPathExtended = System::Fs::AbsolutePathGet(pState->pProcs, wDir, TRUE);
         if (wDirAbsPath == L"" || wDirAbsPathExtended == L"")
         {
             return L"Error: Failed to get the absolute path for the directory.";

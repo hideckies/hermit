@@ -20,49 +20,45 @@
 
 #define INFO_BUFFER_SIZE 32767
 
+namespace System::Handle
+{
+    BOOL HandleClose(Procs::PPROCS pProcs, HANDLE handle);
+    BOOL HandleWait(Procs::PPROCS pProcs, HANDLE handle, BOOL bAlertable, PLARGE_INTEGER pTimeout);
+}
+
 namespace System::Arch
 {
-    std::wstring GetName(WORD wProcessorArchitecture);
+    std::wstring ArchGetName(WORD wProcessorArchitecture);
 }
 
 namespace System::Env
 {
-    std::wstring GetStrings(
+    std::wstring EnvStringsGet(
         Procs::PPROCS       pProcs,
         const std::wstring& envVar
     );
-    std::map<std::wstring, std::wstring> GetAll(Procs::PPROCS pProcs);
+    std::map<std::wstring, std::wstring> EnvAllGet(Procs::PPROCS pProcs);
 }
 
 namespace System::Group
 {
-    std::vector<std::wstring> GetAllGroups();
+    std::vector<std::wstring> AllGroupsGet();
 }
 
 namespace System::User
 {
-    std::wstring GetAccountName(); // retrieves computer name and username.
-    std::wstring GetSID();
-    std::vector<std::wstring> GetAllUsers();
+    std::wstring UserAccountNameGet(); // retrieves computer name and username.
+    std::wstring UserSIDGet(Procs::PPROCS pProcs);
+    std::vector<std::wstring> AllUsersGet();
 }
 
 namespace System::Priv
 {
-    BOOL CheckPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege);
-    BOOL SetPrivilege(
-        HANDLE hToken,
+    BOOL PrivilegeCheck(HANDLE hToken, LPCTSTR lpszPrivilege);
+    BOOL PrivilegeSet(
+        HANDLE  hToken,
         LPCTSTR lpszPrivilege,
-        BOOL bEnablePrivilege
-    );
-}
-
-namespace System::Handle
-{
-    BOOL SetHandleInformation(
-        Procs::PPROCS   pProcs,
-        HANDLE          hObject,
-        DWORD           dwMask,
-        DWORD           dwFlags
+        BOOL    bEnablePrivilege
     );
 }
 
@@ -77,6 +73,11 @@ namespace System::Process
     HANDLE ProcessOpen(
         Procs::PPROCS   pProcs,
         DWORD           dwProcessID,
+        DWORD           dwDesiredAccess
+    );
+    HANDLE ProcessTokenOpen(
+        Procs::PPROCS   pProcs,
+        HANDLE          hProcess,
         DWORD           dwDesiredAccess
     );
     BOOL ProcessTerminate(
@@ -123,54 +124,57 @@ namespace System::Process
     );
 }
 
-namespace System::Pipe
-{
-    BOOL PipeCreate(
-        Procs::PPROCS   pProcs,
-        PHANDLE         phRead,
-        PHANDLE         phWrite
-    );
-}
-
 namespace System::Fs
 {
     VOID CALLBACK FileIOCompletionRoutine(
-        DWORD dwErrorCode,
-        DWORD dwNumberOfBytesTransfered,
-        LPOVERLAPPED lpOverlapped
+        DWORD           dwErrorCode,
+        DWORD           dwNumberOfBytesTransfered,
+        LPOVERLAPPED    lpOverlapped
     );
 
-    std::wstring GetAbsolutePath(
+    std::wstring AbsolutePathGet(
+        Procs::PPROCS       pProcs,
         const std::wstring& wPath,
-        BOOL bExtendLength
+        BOOL                bExtendLength
     );
-    BOOL ChangeCurrentDirectory(
-        Procs::PPROCS pProcs,
-        const std::wstring& wDestPath
-    );
-    std::vector<std::wstring> GetFilesInDirectory(
-        Procs::PPROCS pProcs,
-        const std::wstring& wDirPath,
-        BOOL bRecurse
-    );
-    HANDLE CreateNewDirectory(
-        Procs::PPROCS pProcs,
+    HANDLE DirectoryCreate(
+        Procs::PPROCS       pProcs,
         const std::wstring& wDirPath
     );
-    HANDLE CreateNewFile(
-        Procs::PPROCS pProcs,
+    std::vector<std::wstring> DirectoryGetFiles(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wDirPath,
+        BOOL                bRecurse
+    );
+    BOOL DirectoryChangeCurrent(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wDestPath
+    );
+    HANDLE FileCreate(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wFilePath,
+        DWORD               dwCreateDisposition,
+        DWORD               dwCreateOptions
+    );
+    std::vector<BYTE> FileRead(
+        Procs::PPROCS       pProcs,
         const std::wstring& wFilePath
     );
-    std::vector<BYTE> ReadBytesFromFile(
-        Procs::PPROCS pProcs,
-        const std::wstring& wFilePath
-    );
-    BOOL WriteBytesToFile(
+    BOOL FileWrite(
         Procs::PPROCS               pProcs,
         const std::wstring&         wFilePath,
         const std::vector<BYTE>&    bytes
     );
-    DWORD FileSizeGet(
+    BOOL FileMove(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wSrc,
+        const std::wstring& wDest
+    );
+    BOOL FileDelete(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wFilePath
+    );
+    DWORD FileGetSize(
         Procs::PPROCS   pProcs,
         HANDLE          hFile
     );
@@ -183,61 +187,66 @@ namespace System::Http
         HINTERNET hConnect;
     };
     struct WinHttpResponse {
-        BOOL bResult;
-        HINTERNET hRequest;
-        DWORD dwStatusCode;
+        BOOL        bResult;
+        HINTERNET   hRequest;
+        DWORD       dwStatusCode;
     };
 
-    WinHttpHandlers InitRequest(
-		Procs::PPROCS pProcs,
-		LPCWSTR lpHost,
-		INTERNET_PORT nPort
+    WinHttpHandlers RequestInit(
+		Procs::PPROCS   pProcs,
+		LPCWSTR         lpHost,
+		INTERNET_PORT   nPort
 	);
-    WinHttpResponse SendRequest(
-        Procs::PPROCS pProcs,
-        HINTERNET hConnect,
-        LPCWSTR lpHost,
-        INTERNET_PORT nPort,
-        LPCWSTR lpPath,
-        LPCWSTR lpMethod,
-        LPCWSTR lpHeaders,
-        LPVOID lpData,
-        DWORD dwDataLength
+    WinHttpResponse RequestSend(
+        Procs::PPROCS   pProcs,
+        HINTERNET       hConnect,
+        LPCWSTR         lpHost,
+        INTERNET_PORT   nPort,
+        LPCWSTR         lpPath,
+        LPCWSTR         lpMethod,
+        LPCWSTR         lpHeaders,
+        LPVOID          lpData,
+        DWORD           dwDataLength
     );
-    std::vector<BYTE> ReadResponseBytes(
-        Procs::PPROCS pProcs,
-        HINTERNET hRequest
+    std::wstring ResponseRead(
+        Procs::PPROCS   pProcs,
+        HINTERNET       hRequest
     );
-    std::wstring ReadResponseText(
-        Procs::PPROCS pProcs,
-        HINTERNET hRequest
-    );
-    BOOL DownloadFile(
-        Procs::PPROCS pProcs,
-        Crypt::PCRYPT pCrypt,
-        HINTERNET hConnect,
-        LPCWSTR lpHost,
-        INTERNET_PORT nPort,
-        LPCWSTR lpPath,
-        LPCWSTR lpHeaders,
+    BOOL FileDownload(
+        Procs::PPROCS       pProcs,
+        Crypt::PCRYPT       pCrypt,
+        HINTERNET           hConnect,
+        LPCWSTR             lpHost,
+        INTERNET_PORT       nPort,
+        LPCWSTR             lpPath,
+        LPCWSTR             lpHeaders,
         const std::wstring& wSrc,
         const std::wstring& wDest
     );
-    BOOL UploadFile(
-        Procs::PPROCS pProcs,
-        Crypt::PCRYPT pCrypt,
-        HINTERNET hConnect,
-        LPCWSTR lpHost,
-        INTERNET_PORT nPort,
-        LPCWSTR lpPath,
-        LPCWSTR lpHeaders,
+    BOOL FileUpload(
+        Procs::PPROCS       pProcs,
+        Crypt::PCRYPT       pCrypt,
+        HINTERNET           hConnect,
+        LPCWSTR             lpHost,
+        INTERNET_PORT       nPort,
+        LPCWSTR             lpPath,
+        LPCWSTR             lpHeaders,
         const std::wstring& wSrc
     );
     VOID WinHttpCloseHandles(
-        Procs::PPROCS pProcs,
-        HINTERNET hSession,
-        HINTERNET hConnect,
-        HINTERNET hRequest
+        Procs::PPROCS   pProcs,
+        HINTERNET       hSession,
+        HINTERNET       hConnect,
+        HINTERNET       hRequest
+    );
+}
+
+namespace System::Registry
+{
+    HANDLE RegOpenKey(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wKeyPath,
+        DWORD               dwAccessMask
     );
 }
 

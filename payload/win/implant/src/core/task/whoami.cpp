@@ -4,7 +4,7 @@ namespace Task
 {
     std::wstring Whoami()
     {
-        std::wstring wAccountName = System::User::GetAccountName();
+        std::wstring wAccountName = System::User::UserAccountNameGet();
         if (wAccountName == L"")
         {
             return L"Error: Failed to get the account name.";
@@ -61,7 +61,7 @@ namespace Task
                 break;
             }
 
-            if (System::Priv::CheckPrivilege(hToken, privName))
+            if (System::Priv::PrivilegeCheck(hToken, privName))
             {
                 // wFlag = L"Enabled";
                 wFlag = L"o";

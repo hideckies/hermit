@@ -9,7 +9,7 @@ namespace Task
         wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
         wHeaders += L"X-FILE: " + wDest + L"\r\n";
 
-        BOOL bResult = System::Http::UploadFile(
+        BOOL bResult = System::Http::FileUpload(
             pState->pProcs,
             pState->pCrypt,
             pState->hConnect,

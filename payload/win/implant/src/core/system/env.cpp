@@ -2,7 +2,7 @@
 
 namespace System::Env
 {
-	std::wstring GetStrings(Procs::PPROCS pProcs, const std::wstring& envVar)
+	std::wstring EnvStringsGet(Procs::PPROCS pProcs, const std::wstring& envVar)
 	{
 		wchar_t envStrings[INFO_BUFFER_SIZE];
 
@@ -17,7 +17,7 @@ namespace System::Env
 
 	// Reference:
 	// https://github.com/microsoft/Detours/blob/4b8c659f549b0ab21cf649377c7a84eb708f5e68/samples/tracebld/trcbld.cpp#L815
-	std::map<std::wstring, std::wstring> GetAll(Procs::PPROCS pProcs)
+	std::map<std::wstring, std::wstring> EnvAllGet(Procs::PPROCS pProcs)
 	{
         std::map<std::wstring, std::wstring> result;
 

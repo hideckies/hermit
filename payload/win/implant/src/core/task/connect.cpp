@@ -15,7 +15,7 @@ namespace Task
 
         // Reinit WinHTTP handlers.
         // *Cannot invoke the 'InitHTTP' function of Handler due to circular reference.
-        System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+        System::Http::WinHttpHandlers handlers = System::Http::RequestInit(
             pState->pProcs,
             pState->lpListenerHost,
             pState->nListenerPort

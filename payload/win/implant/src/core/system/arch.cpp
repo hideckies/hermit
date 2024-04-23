@@ -2,7 +2,7 @@
 
 namespace System::Arch
 {
-	std::wstring GetName(WORD wProcessorArchitecture)
+	std::wstring ArchGetName(WORD wProcessorArchitecture)
 	{
 		switch (wProcessorArchitecture) {
 			case PROCESSOR_ARCHITECTURE_INTEL:

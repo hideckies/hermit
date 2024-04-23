@@ -2,7 +2,7 @@
 
 namespace System::Group
 {
-    std::vector<std::wstring> GetAllGroups()
+    std::vector<std::wstring> AllGroupsGet()
     {
         std::vector<std::wstring> groups = {};
 

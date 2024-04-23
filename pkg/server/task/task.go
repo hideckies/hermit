@@ -31,23 +31,22 @@ const (
 	TASK_PS_KILL      = 0x23
 	TASK_PS_LS        = 0x24
 	TASK_PWD          = 0x25
-	TASK_REG_SUBKEYS  = 0x26
-	TASK_REG_VALUES   = 0x27
-	TASK_RM           = 0x28
-	TASK_RMDIR        = 0x29
-	TASK_RPORTFWD_ADD = 0x30
-	TASK_RPORTFWD_LS  = 0x31
-	TASK_RPORTFWD_RM  = 0x32
-	TASK_RUNAS        = 0x33
-	TASK_SCREENSHOT   = 0x34
-	TASK_SHELLCODE    = 0x35
-	TASK_SLEEP        = 0x36
-	TASK_TOKEN_REVERT = 0x37
-	TASK_TOKEN_STEAL  = 0x38
-	TASK_UPLOAD       = 0x39
-	TASK_USER_LS      = 0x40
-	TASK_WHOAMI       = 0x41
-	TASK_WHOAMI_PRIV  = 0x42
+	TASK_REG_QUERY    = 0x26
+	TASK_RM           = 0x27
+	TASK_RMDIR        = 0x28
+	TASK_RPORTFWD_ADD = 0x29
+	TASK_RPORTFWD_LS  = 0x30
+	TASK_RPORTFWD_RM  = 0x31
+	TASK_RUNAS        = 0x32
+	TASK_SCREENSHOT   = 0x33
+	TASK_SHELLCODE    = 0x34
+	TASK_SLEEP        = 0x35
+	TASK_TOKEN_REVERT = 0x36
+	TASK_TOKEN_STEAL  = 0x37
+	TASK_UPLOAD       = 0x38
+	TASK_USER_LS      = 0x39
+	TASK_WHOAMI       = 0x40
+	TASK_WHOAMI_PRIV  = 0x41
 )
 
 func GetTaskCode(task string) (int, error) {
@@ -102,10 +101,8 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_PS_LS, nil
 	case "pwd":
 		return TASK_PWD, nil
-	case "reg subkeys":
-		return TASK_REG_SUBKEYS, nil
-	case "reg values":
-		return TASK_REG_VALUES, nil
+	case "reg query":
+		return TASK_REG_QUERY, nil
 	case "rm":
 		return TASK_RM, nil
 	case "rmdir":
