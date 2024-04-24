@@ -320,21 +320,22 @@ func (s *HermitRPCServer) PayloadImplantGenerate(
 
 func (s *HermitRPCServer) PayloadLoaderGenerate(
 	ctx context.Context,
-	stg *rpcpb.PayloadLoader,
+	ldr *rpcpb.PayloadLoader,
 ) (*commonpb.Binary, error) {
 	newStg := payload.NewLoader(
-		uint(stg.Id),
-		stg.Uuid,
-		stg.Name,
-		stg.Os,
-		stg.Arch,
-		stg.Format,
-		stg.Lprotocol,
-		stg.Lhost,
-		uint16(stg.Lport),
-		stg.Type,
-		stg.Technique,
-		stg.ProcessToInject,
+		uint(ldr.Id),
+		ldr.Uuid,
+		ldr.Name,
+		ldr.Os,
+		ldr.Arch,
+		ldr.Format,
+		ldr.Lprotocol,
+		ldr.Lhost,
+		uint16(ldr.Lport),
+		ldr.Type,
+		ldr.Technique,
+		ldr.ProcessToInject,
+		ldr.IndirectSyscalls,
 	)
 	data, _, err := newStg.Generate(s.serverState)
 	if err != nil {

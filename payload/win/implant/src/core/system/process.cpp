@@ -6,13 +6,19 @@ namespace System::Process
 		Procs::PPROCS 	pProcs,
 		LPCWSTR 		lpApplicationName,
 		DWORD 			dwDesiredAccess,
-		HANDLE 			hParentProcess
+		HANDLE 			hParentProcess,
+		HANDLE			hToken
 	) {
 		HANDLE hProcess;
 		OBJECT_ATTRIBUTES objAttr;
 		UNICODE_STRING uniAppName;
 
-		RtlInitUnicodeString(&uniAppName, lpApplicationName);
+		CallSysInvoke(
+			&pProcs->sysRtlInitUnicodeString,
+			pProcs->lpRtlInitUnicodeString,
+			&uniAppName,
+			lpApplicationName
+		);
 		InitializeObjectAttributes(&objAttr, &uniAppName, 0, nullptr, nullptr);
 
 		// Create a new process.
@@ -26,11 +32,33 @@ namespace System::Process
 			FALSE,
 			nullptr,
 			nullptr,
-			nullptr
+			hToken
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return nullptr;
+			STARTUPINFO si;
+			PROCESS_INFORMATION pi;
+			RtlZeroMemory(&si, sizeof(si));
+			si.cb = sizeof(si);
+
+			if (CreateProcessW(
+				lpApplicationName,
+				nullptr,
+				nullptr,
+				nullptr,
+				FALSE,
+				0,
+				nullptr,
+				nullptr,
+				&si,
+				&pi
+			)) {
+				return pi.hProcess;
+			}
+			else
+			{
+				return nullptr;
+			}
 		}
 
 		return hProcess;
@@ -47,14 +75,22 @@ namespace System::Process
 		clientId.UniqueThread = nullptr;
 		static OBJECT_ATTRIBUTES oa = { sizeof(oa) };
 		
-		CallSysInvoke(
+		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtOpenProcess,
 			pProcs->lpNtOpenProcess,
 			&hProcess,
-			dwDesiredAccess,
+			(ULONG)dwDesiredAccess,
 			&oa,
 			&clientId
 		);
+		if (status != STATUS_SUCCESS)
+		{
+			hProcess = OpenProcess(
+				dwDesiredAccess,
+				FALSE,
+				dwProcessID
+			);
+		}
 
 		return hProcess;
 	}
@@ -66,13 +102,23 @@ namespace System::Process
     ) {
 		HANDLE hToken;
 
-		CallSysInvoke(
+		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtOpenProcessToken,
 			pProcs->lpNtOpenProcessToken,
 			hProcess,
 			dwDesiredAccess,
 			&hToken
 		);
+		if (status != STATUS_SUCCESS)
+		{
+			if (!OpenProcessToken(
+				hProcess,
+				dwDesiredAccess,
+				&hToken
+			)) {
+				return nullptr;
+			}
+		}
 
 		return hToken;
 	}
@@ -90,7 +136,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return FALSE;
+			return TerminateProcess(hProcess, EXIT_SUCCESS);
 		}
 		return TRUE;
 	}
@@ -104,7 +150,7 @@ namespace System::Process
 	) {
         PVOID baseAddr;
 
-		CallSysInvoke(
+		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtAllocateVirtualMemory,
 			pProcs->lpNtAllocateVirtualMemory,
 			hProcess,
@@ -114,6 +160,16 @@ namespace System::Process
             dwAllocationType,
             dwProtect
 		);
+		if (status != STATUS_SUCCESS)
+		{
+			baseAddr = VirtualAllocEx(
+                hProcess,
+                nullptr,
+                (SIZE_T)dwSize,
+                dwAllocationType,
+                dwProtect
+            );
+		}
 
         return baseAddr;
     }
@@ -121,7 +177,7 @@ namespace System::Process
 	BOOL VirtualMemoryFree(
 		Procs::PPROCS 	pProcs,
 		HANDLE 			hProcess,
-		PVOID* 			lpBaseAddr,
+		PVOID* 			pBaseAddr,
 		SIZE_T 			dwSize,
 		DWORD 			dwFreeType
 	) {
@@ -129,13 +185,17 @@ namespace System::Process
 			&pProcs->sysNtFreeVirtualMemory,
 			pProcs->lpNtFreeVirtualMemory,
 			hProcess,
-			lpBaseAddr,
+			pBaseAddr,
 			&dwSize,
 			dwFreeType
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return FALSE;
+			return VirtualFree(
+				pBaseAddr,
+				dwSize,
+				dwFreeType
+			);
 		}
 	
 		return TRUE;
@@ -144,8 +204,8 @@ namespace System::Process
 	BOOL VirtualMemoryWrite(
 		Procs::PPROCS 	pProcs,
 		HANDLE 			hProcess,
-		LPVOID 			lpBaseAddr,
-		LPVOID 			lpBuffer,
+		PVOID 			pBaseAddr,
+		PVOID 			pBuffer,
 		DWORD 			dwBufferSize,
 		PDWORD 			lpNumberOfBytesWritten
 	) {
@@ -153,14 +213,22 @@ namespace System::Process
 			&pProcs->sysNtWriteVirtualMemory,
 			pProcs->lpNtWriteVirtualMemory,
 			hProcess,
-			lpBaseAddr,
-			(PVOID)lpBuffer,
+			pBaseAddr,
+			pBuffer,
 			dwBufferSize,
 			(PSIZE_T)lpNumberOfBytesWritten
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return FALSE;
+			if (!WriteProcessMemory(
+				hProcess,
+				pBaseAddr,
+				pBuffer,
+				dwBufferSize,
+				reinterpret_cast<SIZE_T*>(lpNumberOfBytesWritten)
+			)) {
+				return FALSE;
+			}
 		}
 		return TRUE;
 	}
@@ -191,7 +259,16 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return nullptr;
+			hThread = CreateRemoteThreadEx(
+				hProcess,
+				nullptr,
+				0,
+				lpThreadStartRoutineAddr,
+				pArgument,
+				0,
+				nullptr,
+				nullptr
+			);
 		}
 
 		return hThread;
@@ -284,7 +361,8 @@ namespace System::Process
 			pProcs,
 			wFilePath.c_str(),
 			PROCESS_ALL_ACCESS,
-			GetCurrentProcess()
+			GetCurrentProcess(),
+			nullptr
 		);
 		if (!hProcess)
 		{

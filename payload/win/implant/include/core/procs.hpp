@@ -37,7 +37,7 @@ namespace Procs
     // NtFreeVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTFREEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, PSIZE_T RegionSize, ULONG FreeType);
     // NtDuplicateObject
-    typedef NTSTATUS (NTAPI* LPPROC_NTDUPLICATEOBJECT)(HANDLE SourceProcessHandle, PHANDLE SourceHandle, HANDLE TargetProcessHandle, PHANDLE TargetHandle, ACCESS_MASK DesiredAccess, BOOLEAN InheritHandle, ULONG Options);
+    typedef NTSTATUS (NTAPI* LPPROC_NTDUPLICATEOBJECT)(HANDLE SourceProcessHandle, HANDLE SourceHandle, HANDLE TargetProcessHandle, PHANDLE TargetHandle, ACCESS_MASK DesiredAccess, ULONG HandleAttributes, ULONG Options);
     // NtWaitForSingleObject
     typedef NTSTATUS (NTAPI* LPPROC_NTWAITFORSINGLEOBJECT)(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout);
     // NtClose
@@ -54,6 +54,8 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTDELETEFILE)(POBJECT_ATTRIBUTES ObjectAttributes);
     // NtCreateNamedPipeFile
     typedef NTSTATUS (NTAPI* LPPROC_NTCREATENAMEDPIPEFILE)(PHANDLE FileHandle, ULONG DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions, ULONG NamedPipeType, ULONG ReadMode, ULONG CompletionMode, ULONG MaximumInstances, ULONG InboundQuota, ULONG OutboundQuota, PLARGE_INTEGER DefaultTimeout);
+    // NtQueryInformationProcess
+    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
     // NtQueryInformationFile
     typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONFILE)(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
     // NtSetInformationFile
@@ -64,6 +66,10 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTQUERYSYSTEMINFORMATION)(SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
     // NtSystemDebugControl
     typedef NTSTATUS (NTAPI* LPPROC_NTSYSTEMDEBUGCONTROL)(SYSDBG_COMMAND Command, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnLength);
+    // NtPrivilegeCheck
+    typedef NTSTATUS (NTAPI* LPPROC_NTPRIVILEGECHECK)(HANDLE ClientToken, PPRIVILEGE_SET RequiredPrivileges, PBOOLEAN Result);
+    // NtAdjustPrivilegesToken
+    typedef NTSTATUS (NTAPI* LPPROC_NTADJUSTPRIVILEGESTOKEN)(HANDLE TokenHandle, BOOLEAN DisableAllPrivileges, PTOKEN_PRIVILEGES NewState, ULONG BufferLength, PTOKEN_PRIVILEGES PreviousState, PULONG ReturnLength);
     // NtOpenKeyEx
     typedef NTSTATUS (NTAPI* LPPROC_NTOPENKEYEX)(PHANDLE KeyHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, ULONG OpenOptions);
     // NtQueryKey
@@ -139,11 +145,14 @@ namespace Procs
         LPPROC_NTWRITEFILE                  lpNtWriteFile                       = nullptr;
         LPPROC_NTDELETEFILE                 lpNtDeleteFile                      = nullptr;
         LPPROC_NTCREATENAMEDPIPEFILE        lpNtCreateNamedPipeFile             = nullptr;
+        LPPROC_NTQUERYINFORMATIONPROCESS    lpNtQueryInformationProcess         = nullptr;
         LPPROC_NTQUERYINFORMATIONFILE       lpNtQueryInformationFile            = nullptr;
         LPPROC_NTQUERYINFORMATIONTOKEN      lpNtQueryInformationToken           = nullptr;
         LPPROC_NTSETINFORMATIONFILE         lpNtSetInformationFile              = nullptr;
         LPPROC_NTQUERYSYSTEMINFORMATION     lpNtQuerySystemInformation          = nullptr;
         LPPROC_NTSYSTEMDEBUGCONTROL         lpNtSystemDebugControl              = nullptr;
+        LPPROC_NTPRIVILEGECHECK             lpNtPrivilegeCheck                  = nullptr;
+        LPPROC_NTADJUSTPRIVILEGESTOKEN      lpNtAdjustPrivilegesToken           = nullptr;
         LPPROC_NTOPENKEYEX                  lpNtOpenKeyEx                       = nullptr;
         LPPROC_NTQUERYKEY                   lpNtQueryKey                        = nullptr;
         LPPROC_NTENUMERATEVALUEKEY          lpNtEnumerateValueKey               = nullptr;
@@ -193,11 +202,14 @@ namespace Procs
         Syscalls::SYSCALL                   sysNtWriteFile                      = {0};
         Syscalls::SYSCALL                   sysNtDeleteFile                     = {0};
         Syscalls::SYSCALL                   sysNtCreateNamedPipeFile            = {0};
+        Syscalls::SYSCALL                   sysNtQueryInformationProcess        = {0};
         Syscalls::SYSCALL                   sysNtQueryInformationFile           = {0};
         Syscalls::SYSCALL                   sysNtSetInformationFile             = {0};
         Syscalls::SYSCALL                   sysNtQueryInformationToken          = {0};
         Syscalls::SYSCALL                   sysNtQuerySystemInformation         = {0};
         Syscalls::SYSCALL                   sysNtSystemDebugControl             = {0};
+        Syscalls::SYSCALL                   sysNtPrivilegeCheck                 = {0};
+        Syscalls::SYSCALL                   sysNtAdjustPrivilegesToken          = {0};
         Syscalls::SYSCALL                   sysNtOpenKeyEx                      = {0};
         Syscalls::SYSCALL                   sysNtQueryKey                       = {0};
         Syscalls::SYSCALL                   sysNtEnumerateValueKey              = {0};

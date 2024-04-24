@@ -4,7 +4,7 @@ namespace Handler
 {
     VOID HTTPInit(State::PSTATE pState)
     {
-		System::Http::WinHttpHandlers handlers = System::Http::InitRequest(
+		System::Http::WinHttpHandlers handlers = System::Http::RequestInit(
             pState->pProcs,
             pState->lpListenerHost,
             pState->nListenerPort

@@ -34,8 +34,7 @@ TASK:
   ps kill         Terminate a process.
   ps ls           List processes.
   pwd             Print the current working directory.
-  reg subkeys     Enumerate subkeys for the specified open registry key.
-  reg values      Enumerate the specified registry values.
+  reg query       Enumerate subkeys for the specified path.
   rm              Remove a file.
   rmdir           Remove a directory.
   rportfwd add    Add settings to reverse port forwarding.
@@ -211,20 +210,12 @@ Lists all running processes.
 
 Manages registy keys.
 
-### `reg subkeys`
+### `reg query`
 
-Lists regisry keys. To list recursively, add `-r` flag.
-
-```sh
-Hermit [agent-abcd] > reg subkeys HKLM\\SOFTWARE -r
-```
-
-### `reg values`
-
-Prints registry values. To print recursively, add `-r` flag.
+Retrieve registry values. For recursively, add `-r` flag.
 
 ```sh
-Hermit [agent-abcd] > reg values HKLM\\SOFTWARE\\Microsoft -r
+Hermit [agent-abcd] > reg query "HKLM\\SOFTWARE\\Microsoft" -r
 ```
 
 ## `runas`

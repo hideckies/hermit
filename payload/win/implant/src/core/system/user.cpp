@@ -2,74 +2,31 @@
 
 namespace System::User
 {
-    std::wstring UserAccountNameGet()
+    std::wstring ComputerNameGet(Procs::PPROCS pProcs)
     {
-        std::wstring result;
-
         WCHAR wInfoBuf[INFO_BUFFER_SIZE] = {'\0'};
         DWORD dwBufCharCount = INFO_BUFFER_SIZE;
 
+        // I think there is no NTAPI to get computer name, so use WINAPI.
         if (!GetComputerNameW(wInfoBuf, &dwBufCharCount))
         {
             return L"Error: Could not get the computer name.";
         }
 
-        result += std::wstring(wInfoBuf);
-        dwBufCharCount = INFO_BUFFER_SIZE;
-        
+        return std::wstring(wInfoBuf);
+    }
+
+    std::wstring UserNameGet(Procs::PPROCS pProcs)
+    {
+        WCHAR wInfoBuf[INFO_BUFFER_SIZE] = {'\0'};
+        DWORD dwBufCharCount = INFO_BUFFER_SIZE;
+
         if (!GetUserNameW(wInfoBuf, &dwBufCharCount))
         {
             return L"Error: Could not get the username.";
         }
 
-        result += std::wstring(L"\\");
-        result += std::wstring(wInfoBuf);
-
-        return result;
-    }
-
-    std::wstring UserSIDGet(Procs::PPROCS pProcs)
-    {
-        // Get access token of current process.
-        HANDLE hToken;
-        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
-        {
-            return L"Error: Failed to open process token.";
-        }
-
-        DWORD dwLengthNeeded;
-        if (!GetTokenInformation(hToken, TokenUser, NULL, 0, &dwLengthNeeded) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-        {
-            CloseHandle(hToken);
-            return L"";
-        }
-
-        PTOKEN_USER pTokenUser = (PTOKEN_USER)GlobalAlloc(GPTR, dwLengthNeeded);
-        if (!pTokenUser)
-        {
-            CloseHandle(hToken);
-            return L"";
-        }
-
-        if (!GetTokenInformation(hToken, TokenUser, pTokenUser, dwLengthNeeded, &dwLengthNeeded))
-        {
-            GlobalFree(pTokenUser);
-            CloseHandle(hToken);
-            return L"";
-        }
-
-        CloseHandle(hToken);
-
-        LPWSTR pSidStr = NULL;
-        if (!ConvertSidToStringSidW(pTokenUser->User.Sid, &pSidStr))
-        {
-            GlobalFree(pTokenUser);
-            return L"";
-        }
-
-        GlobalFree(pTokenUser);
-
-        return std::wstring(pSidStr);
+        return std::wstring(wInfoBuf);
     }
 
     std::vector<std::wstring> AllUsersGet()

@@ -2,12 +2,14 @@
 
 namespace System::Priv
 {
-	BOOL PrivilegeCheck(HANDLE hToken, LPCTSTR lpszPrivilege)
-	{
-		PRIVILEGE_SET ps;
+	BOOL PrivilegeCheck(
+		Procs::PPROCS pProcs,
+		HANDLE hToken,
+		LPCTSTR lpszPrivilege
+	) {
 		LUID luid;
-		BOOL bResult;
 
+		// Check if the privilege name exists.
 		if (!LookupPrivilegeValue(
 			NULL,
 			lpszPrivilege,
@@ -17,22 +19,22 @@ namespace System::Priv
 			return FALSE;
 		}
 
+		PRIVILEGE_SET ps;
+		BOOL bResult = FALSE;
+
 		ps.PrivilegeCount = 1;
 		ps.Control = PRIVILEGE_SET_ALL_NECESSARY;
 		ps.Privilege[0].Attributes = SE_PRIVILEGE_ENABLED;
 		ps.Privilege[0].Luid = luid;
-		PrivilegeCheck(hToken, &ps, &bResult);
-		if (!bResult)
-		{
-			return FALSE;
-		}
 
-		return TRUE;
+		// NtPrivilegeCheck is not working, so use WINAPI.
+		::PrivilegeCheck(hToken, &ps, &bResult);
+
+		return bResult;
 	}
 	
-	// Reference:
-	// https://learn.microsoft.com/en-us/windows/win32/secauthz/enabling-and-disabling-privileges-in-c--
 	BOOL PrivilegeSet(
+		Procs::PPROCS pProcs,
 		HANDLE hToken,
 		LPCTSTR lpszPrivilege,
 		BOOL bEnablePrivilege
@@ -68,8 +70,7 @@ namespace System::Priv
 			sizeof(TOKEN_PRIVILEGES),
 			(PTOKEN_PRIVILEGES)NULL,
 			(PDWORD)NULL
-		))
-		{
+		)) {
 			return FALSE;
 		}
 

@@ -93,6 +93,7 @@ set(SOURCE_CORE
         src/core/task/mkdir.cpp
         src/core/task/mv.cpp
         src/core/task/net.cpp
+        src/core/task/persist.cpp
         src/core/task/procdump.cpp
         src/core/task/ps.cpp
         src/core/task/pwd.cpp

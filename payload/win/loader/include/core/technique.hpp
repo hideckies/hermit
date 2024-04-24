@@ -9,6 +9,18 @@
 #include "core/stdout.hpp"
 #include "core/system.hpp"
 
+// It's used for Reflective DLL Injection.
+typedef struct BASE_RELOCATION_BLOCK {
+	DWORD PageAddress;
+	DWORD BlockSize;
+} BASE_RELOCATION_BLOCK, *PBASE_RELOCATION_BLOCK;
+
+// It's used for Reflective DLL Injection.
+typedef struct BASE_RELOCATION_ENTRY {
+	USHORT Offset : 12;
+	USHORT Type : 4;
+} BASE_RELOCATION_ENTRY, *PBASE_RELOCATION_ENTRY;
+
 namespace Technique::Injection
 {
     BOOL DLLInjection(Procs::PPROCS pProcs, DWORD dwPID, LPVOID lpDllPath, size_t dwDllPathSize);

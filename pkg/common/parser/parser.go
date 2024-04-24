@@ -80,7 +80,7 @@ type GrammarAgentMode struct {
 	Mv       amTaskMvCmd       `cmd:"" help:"Move a file to a destination location." group:"TASK:"`
 	Net      amTaskNetCmd      `cmd:"" help:"Get TCP connections." group:"TASK:"`
 	// Nslookup   amTaskNslookupCmd   `cmd:"" help:"Manage network." group:"TASK:"`
-	// Persist    amTaskPersistCmd    `cmd:"" help:"Make the payload persistence." group:"TASK:"`
+	Persist amTaskPersistCmd `cmd:"" help:"Establish persistence for implant." group:"TASK:"`
 	// Pivot amTaskPivotCmd `cmd:"" help:"Manage pivoting" group:"TASK:"`
 	// PowerShell amTaskPowerShellCmd `cmd:"" help:"Execute PowerShell command." group:"TASK:"`
 	Procdump amTaskProcdumpCmd `cmd:"" help:"Dump process memory to a specified output file." group:"TASK:"`

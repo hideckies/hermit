@@ -501,6 +501,26 @@ func (c *amTaskNetCmd) Run(
 	return nil
 }
 
+// PERSIST
+type amTaskPersistCmd struct{}
+
+func (c *amTaskPersistCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // PROCDUMP
 type amTaskProcdumpCmd struct {
 	Pid uint `arg:"" required:"" help:"Specify the process ID to dump processes."`
@@ -608,8 +628,14 @@ func (c *amTaskRegQueryCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
+	// Split path
+	keySplit := strings.Split(c.Path, "\\")
+	rootKey := keySplit[0]
+	subKey := strings.Join(keySplit[1:], "\\")
+
 	task, err := _task.NewTask(strings.Join(ctx.Args[:2], " "), map[string]string{
-		"keyPath":   c.Path,
+		"rootkey":   rootKey,
+		"subkey":    subKey,
 		"recursive": fmt.Sprintf("%t", c.Recursive),
 	})
 	if err != nil {

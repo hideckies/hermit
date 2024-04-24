@@ -2,9 +2,9 @@
 
 namespace Task
 {
-    std::wstring Rm(const std::wstring& wFile)
+    std::wstring Rm(State::PSTATE pState, const std::wstring& wFile)
     {
-         if (!DeleteFileW(wFile.c_str()))
+        if (!System::Fs::FileDelete(pState->pProcs, wFile))
         {
             return L"Error: Could not delete a file.";
         }

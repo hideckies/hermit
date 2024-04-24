@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Users()
+    std::wstring Users(State::PSTATE pState)
     {
         std::wstring result = L"";
 

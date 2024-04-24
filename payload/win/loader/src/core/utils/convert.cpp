@@ -65,6 +65,14 @@ namespace Utils::Convert
         return wstrTo;
     }
 
+    // DWORD (unsigned long) -> wstring
+    std::wstring DWORDToWstring(DWORD dwSrc)
+    {
+        std::string sSrc = std::to_string(dwSrc);
+        std::wstring wDest = UTF8Decode(sSrc);
+        return wDest;
+    }
+
     // LPSTR (UTF-8) -> wchar_t* (UTF-16)
     wchar_t* LPSTRToWCHAR_T(LPSTR lpStr)
     {

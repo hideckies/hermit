@@ -219,16 +219,17 @@ func RequestPayloadImplantGenerate(clientState *state.ClientState, imp *payload.
 	return r.GetData(), nil
 }
 
-func RequestPayloadLoaderGenerate(clientState *state.ClientState, stg *payload.Loader) ([]byte, error) {
+func RequestPayloadLoaderGenerate(clientState *state.ClientState, ldr *payload.Loader) ([]byte, error) {
 	r, err := clientState.RPCClient.PayloadLoaderGenerate(clientState.Ctx, &rpcpb.PayloadLoader{
-		Os:              stg.Os,
-		Arch:            stg.Arch,
-		Format:          stg.Format,
-		Lhost:           stg.Lhost,
-		Lport:           int32(stg.Lport),
-		Type:            stg.Type,
-		Technique:       stg.Technique,
-		ProcessToInject: stg.ProcessToInject,
+		Os:               ldr.Os,
+		Arch:             ldr.Arch,
+		Format:           ldr.Format,
+		Lhost:            ldr.Lhost,
+		Lport:            int32(ldr.Lport),
+		Type:             ldr.Type,
+		Technique:        ldr.Technique,
+		ProcessToInject:  ldr.ProcessToInject,
+		IndirectSyscalls: ldr.IndirectSyscalls,
 	})
 	if err != nil {
 		return []byte{}, err

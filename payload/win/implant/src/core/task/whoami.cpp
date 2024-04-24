@@ -2,18 +2,25 @@
 
 namespace Task
 {
-    std::wstring Whoami()
+    std::wstring Whoami(State::PSTATE pState)
     {
-        std::wstring wAccountName = System::User::UserAccountNameGet();
-        if (wAccountName == L"")
+        std::wstring wComputerName = System::User::ComputerNameGet(pState->pProcs);
+        if (wComputerName == L"")
         {
-            return L"Error: Failed to get the account name.";
+            return L"Error: Failed to get the computer name.";
+        }
+
+        std::wstring wUserName = System::User::UserNameGet(pState->pProcs);
+        if (wUserName == L"")
+        {
+            return L"Error: Failed to get the username.";
         }
         
-        return wAccountName;
+        return wComputerName + L"\\" + wUserName;
     }
 
-    std::wstring WhoamiPriv()
+    // I couldn't get privileges using NTAPIs so use WINAPIs.
+    std::wstring WhoamiPriv(State::PSTATE pState)
     {
         // Get access token of current process.
         HANDLE hToken;
@@ -61,14 +68,12 @@ namespace Task
                 break;
             }
 
-            if (System::Priv::PrivilegeCheck(hToken, privName))
+            if (System::Priv::PrivilegeCheck(pState->pProcs, hToken, privName))
             {
-                // wFlag = L"Enabled";
                 wFlag = L"o";
             }
             else
             {
-                // wFlag = L"Disabled";
                 wFlag = L"x";
             }
 

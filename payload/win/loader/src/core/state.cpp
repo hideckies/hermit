@@ -28,7 +28,6 @@ namespace State
         // delete pState->pTeb;
         delete pState->pProcs;
         // delete pState->pSocket;
-        // delete pState->pSyscalls;
         delete pState;
     }
 }

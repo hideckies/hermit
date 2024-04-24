@@ -19,6 +19,7 @@
 #include <vector>
 
 #define INFO_BUFFER_SIZE 32767
+#define MAX_REG_KEY_LENGTH 255
 
 namespace System::Handle
 {
@@ -47,18 +48,23 @@ namespace System::Group
 
 namespace System::User
 {
-    std::wstring UserAccountNameGet(); // retrieves computer name and username.
-    std::wstring UserSIDGet(Procs::PPROCS pProcs);
+    std::wstring ComputerNameGet(Procs::PPROCS pProcs);
+    std::wstring UserNameGet(Procs::PPROCS pProcs);
     std::vector<std::wstring> AllUsersGet();
 }
 
 namespace System::Priv
 {
-    BOOL PrivilegeCheck(HANDLE hToken, LPCTSTR lpszPrivilege);
+    BOOL PrivilegeCheck(
+        Procs::PPROCS   pProcs,
+        HANDLE          hToken,
+        LPCTSTR         lpszPrivilege
+    );
     BOOL PrivilegeSet(
-        HANDLE  hToken,
-        LPCTSTR lpszPrivilege,
-        BOOL    bEnablePrivilege
+        Procs::PPROCS   pProcs,
+        HANDLE          hToken,
+        LPCTSTR         lpszPrivilege,
+        BOOL            bEnablePrivilege
     );
 }
 
@@ -68,7 +74,8 @@ namespace System::Process
         Procs::PPROCS   pProcs,
         LPCWSTR         lpApplicationName,
         DWORD           dwDesiredAccess, // e.g. PROCESS_ALL_ACCESS
-        HANDLE          hParentProcess
+        HANDLE          hParentProcess,
+        HANDLE          hToken
     );
     HANDLE ProcessOpen(
         Procs::PPROCS   pProcs,
@@ -95,15 +102,15 @@ namespace System::Process
     BOOL VirtualMemoryFree(
         Procs::PPROCS   pProcs,
         HANDLE 	        hProcess,
-		PVOID* 	        lpBaseAddr,
+		PVOID* 	        pBaseAddr,
 		SIZE_T 	        dwSize,
 		DWORD 	        dwFreeType
     );
     BOOL VirtualMemoryWrite(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
-        LPVOID          lpBaseAddr,
-        LPVOID          lpBuffer,
+        PVOID          pBaseAddr,
+        PVOID          pBuffer,
 		DWORD           dwBufferSize,
         PDWORD 			lpNumberOfBytesWritten
     );
@@ -243,10 +250,14 @@ namespace System::Http
 
 namespace System::Registry
 {
-    HANDLE RegOpenKey(
-        Procs::PPROCS       pProcs,
-        const std::wstring& wKeyPath,
-        DWORD               dwAccessMask
+    HKEY RegParseRootKey(
+        const std::wstring& wRootKey
+    );
+    std::vector<std::wstring> RegEnumSubKeys(
+        HKEY                hRootKey,
+        const std::wstring& wSubKey,
+        DWORD               dwOptions,
+        BOOL                bRecursive
     );
 }
 

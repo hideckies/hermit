@@ -361,6 +361,17 @@ func WizardPayloadLoader(
 		}
 	}
 
+	var oIndirectSyscalls bool = false
+	for {
+		yes, err := stdin.Confirm("Enable Indirect Syscalls?")
+		if err != nil {
+			stdout.LogFailed(fmt.Sprint(err))
+			continue
+		}
+		oIndirectSyscalls = yes
+		break
+	}
+
 	table := []stdout.SingleTableItem{
 		stdout.NewSingleTableItem("Target OS", oOs),
 		stdout.NewSingleTableItem("Target Arch", oArch),
@@ -369,6 +380,7 @@ func WizardPayloadLoader(
 		stdout.NewSingleTableItem("Type", oType),
 		stdout.NewSingleTableItem("Technique", oTechnique),
 		stdout.NewSingleTableItem("Process To Inject", oProcessToInject),
+		stdout.NewSingleTableItem("Indirect Syscalls", fmt.Sprintf("%t", oIndirectSyscalls)),
 	}
 	stdout.PrintSingleTable("Loader Options", table)
 
@@ -398,6 +410,7 @@ func WizardPayloadLoader(
 		oType,
 		oTechnique,
 		oProcessToInject,
+		oIndirectSyscalls,
 	), nil
 }
 

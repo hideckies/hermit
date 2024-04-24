@@ -29,6 +29,9 @@ namespace State
         LPCWSTR             lpPayloadTechnique;
         LPCWSTR             lpPayloadProcessToInject;
 
+        // Payload techniques
+        BOOL                bIndirectSyscalls;
+
         // Listener options
         LPCWSTR             lpListenerProto;
         LPCWSTR             lpListenerHost;

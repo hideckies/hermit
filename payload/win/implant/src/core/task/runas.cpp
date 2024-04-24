@@ -3,16 +3,18 @@
 namespace Task
 {
     std::wstring RunAs(
+        State::PSTATE       pState,
         const std::wstring& wUser,
         const std::wstring& wPassword,
         const std::wstring& wCmd
     ) {
         STARTUPINFOW si;
         PROCESS_INFORMATION pi;
-        ZeroMemory(&si, sizeof(si));
-        ZeroMemory(&pi, sizeof(pi));
+        RtlZeroMemory(&si, sizeof(si));
+        RtlZeroMemory(&pi, sizeof(pi));
         si.cb = sizeof(si);
 
+        // 'RtlCreateUserProcess' might be used instead
         if (!CreateProcessWithLogonW(
             wUser.c_str(),
             NULL,
@@ -29,8 +31,8 @@ namespace Task
             return L"Error: Failed to create a process.";
         }
 
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
+        System::Handle::HandleClose(pState->pProcs, pi.hProcess);
+        System::Handle::HandleClose(pState->pProcs, pi.hThread);
 
         return L"Success: Process created successfully.";
     }

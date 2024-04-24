@@ -23,7 +23,7 @@ namespace Technique::Injection
         );
         if (!pBaseAddr)
         {
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
@@ -42,7 +42,7 @@ namespace Technique::Injection
                 0,
                 MEM_RELEASE
             );
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
@@ -61,14 +61,14 @@ namespace Technique::Injection
                 0,
                 MEM_RELEASE
             );
-            pProcs->lpNtClose(hProcess);
+            System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
 
-        pProcs->lpNtWaitForSingleObject(hThread, FALSE, nullptr);
+        System::Handle::HandleWait(pProcs, hThread, FALSE, nullptr);
 
-        pProcs->lpNtClose(hProcess);
-        pProcs->lpNtClose(hThread);
+        System::Handle::HandleClose(pProcs, hProcess);
+        System::Handle::HandleClose(pProcs, hThread);
 
         return TRUE;
     }
