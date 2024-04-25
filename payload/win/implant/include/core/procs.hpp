@@ -123,6 +123,9 @@ namespace Procs
     // WinHttpCloseHandle
     typedef BOOL (WINAPI* LPPROC_WINHTTPCLOSEHANDLE)(HINTERNET hInternet);
 
+    // **KERNEL32**
+    typedef BOOL (WINAPI* LPPROC_QUERYFULLPROCESSIMAGENAMEW)(HANDLE hProcess, DWORD  dwFlags, LPWSTR lpExeName, PDWORD lpdwSize);
+
     struct PROCS
     {
         // **NATIVE APIs**
@@ -182,6 +185,9 @@ namespace Procs
         LPPROC_WINHTTPREADDATA              lpWinHttpReadData                   = nullptr;
         LPPROC_WINHTTPCLOSEHANDLE           lpWinHttpCloseHandle                = nullptr;
 
+        // **Kernel32**
+        LPPROC_QUERYFULLPROCESSIMAGENAMEW   lpQueryFullProcessImageNameW        = nullptr;
+
         // **SYSCALLS**
         Syscalls::SYSCALL                   sysNtCreateProcess                  = {0};
         Syscalls::SYSCALL                   sysNtOpenProcess                    = {0};
@@ -227,7 +233,7 @@ namespace Procs
     };
     typedef PROCS* PPROCS;
 
-    PPROCS FindProcs(HMODULE hNTDLL, HMODULE hWinHTTPDLL, BOOL bIndirectSyscalls);
+    PPROCS FindProcs(HMODULE hKernel32DLL, HMODULE hNTDLL, HMODULE hWinHTTPDLL, BOOL bIndirectSyscalls);
 }
 
 #endif // HERMIT_CORE_PROCS_HPP

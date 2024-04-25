@@ -252,7 +252,7 @@ namespace Handler
                 wTaskResult = Task::Net();
                 break;
             case TASK_PERSIST:
-                wTaskResult = Task::Persist(pState);
+                wTaskResult = Task::Persist(pState, Utils::Convert::UTF8Decode(args["technique"]));
                 break;
             case TASK_PROCDUMP:
                 wTaskResult = Task::Procdump(pState, Utils::Convert::UTF8Decode(args["pid"]));

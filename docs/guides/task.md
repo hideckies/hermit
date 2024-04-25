@@ -178,6 +178,18 @@ Move a file to specified place.
 Hermit [agent-abcd] > mv ./example.txt C:/Users/John/Documents/example.txt
 ```
 
+## `persist`
+
+Make the implant persistence.  
+After running `persist` command, we can select the technique.  
+
+```sh
+Hermit [agent-abcd] > persist
+```
+
+- **registry/runkey**  
+  Add the entry (the implant file path) to `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+
 ## `procdump`
 
 Dump process memory and save it to dump file.  

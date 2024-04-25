@@ -5,6 +5,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <random>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -36,6 +37,7 @@ namespace Utils::Convert
 namespace Utils::Random
 {
     INT RandomINT();
+    std::wstring RandomString(INT nLen);
     VOID RandomSleep(INT nSleep, INT nJitter);
 }
 

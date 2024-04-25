@@ -137,7 +137,7 @@ Please try other tasks as well.
 
 ## 7. Stop Implant & Quit Agent Mode
 
-After enumerations, stop the implant with the `kill` command:
+After emulation, stop the implant with the `kill` command:
 
 ```sh title="Hermit C2 Server Console [Agent Mode]"
 Hermit [agent-abcd] > kill

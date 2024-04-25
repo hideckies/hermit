@@ -8,6 +8,8 @@ import (
 	cliState "github.com/hideckies/hermit/pkg/client/state"
 	"github.com/hideckies/hermit/pkg/common/handler"
 	"github.com/hideckies/hermit/pkg/common/meta"
+	"github.com/hideckies/hermit/pkg/common/stdin"
+	"github.com/hideckies/hermit/pkg/common/stdout"
 	servState "github.com/hideckies/hermit/pkg/server/state"
 	_task "github.com/hideckies/hermit/pkg/server/task"
 )
@@ -509,7 +511,24 @@ func (c *amTaskPersistCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
-	task, err := _task.NewTask(ctx.Args[0], map[string]string{})
+	// Select the technique
+	items := []string{
+		"registry/runkey",
+		// "registry/netsh",
+		// "schedule",
+		// "service",
+		"cancel",
+	}
+	res, err := stdin.Select("Technique", items)
+	if err != nil {
+		return err
+	}
+	if res == "cancel" {
+		stdout.LogWarn("Canceled")
+		return nil
+	}
+
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{"technique": res})
 	if err != nil {
 		return err
 	}

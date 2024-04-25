@@ -56,7 +56,7 @@ namespace Hermit
 		pState->hKernel32DLL		= hKernel32DLL;
 		pState->hNTDLL				= hNTDLL;
 		pState->hWinHTTPDLL			= hWinHTTPDLL;
-		pState->pProcs 				= Procs::FindProcs(hNTDLL, hWinHTTPDLL, bIndirectSyscalls);
+		pState->pProcs 				= Procs::FindProcs(hKernel32DLL, hNTDLL, hWinHTTPDLL, bIndirectSyscalls);
 		pState->hInstance 			= hInstance;
 		pState->nCmdShow 			= nCmdShow;
 		pState->lpPayloadType 		= lpPayloadType;
