@@ -4,6 +4,8 @@
 #include "core/handler.hpp"
 #include "core/utils.hpp"
 
+#define DLL_QUERY_HMODULE 6
+
 namespace Hermit
 {
 	VOID Run(

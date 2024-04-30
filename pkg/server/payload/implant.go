@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hideckies/hermit/pkg/common/crypt"
@@ -133,23 +134,31 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		}
 
 		// Compile assembly and generate an object file.
-		asmSrc := "src/asm/syscalls."
+		asmSyscallsSrc := "src/asm/syscalls."
 		if i.Arch == "amd64" {
-			asmSrc += "x64.asm"
+			asmSyscallsSrc += "x64.asm"
 		} else {
-			asmSrc += "x86.asm"
+			asmSyscallsSrc += "x86.asm"
 		}
-		asmObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
-		_, err = meta.ExecCommand("nasm", "-f", "win64", "-o", asmObj, asmSrc)
+		asmSyscallsObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
+		_, err = meta.ExecCommand("nasm", "-f", "win64", "-o", asmSyscallsObj, asmSyscallsSrc)
+		if err != nil {
+			os.Chdir(serverState.CWD)
+			return nil, "", fmt.Errorf("nasm error: %v", err)
+		}
+		asmReflectiveSrc := "src/asm/reflective.asm"
+		asmReflectiveObj := fmt.Sprintf("/tmp/reflective-%s.o", uuid.NewString())
+		_, err = meta.ExecCommand("nasm", "-f", "win64", "-o", asmReflectiveObj, asmReflectiveSrc)
 		if err != nil {
 			os.Chdir(serverState.CWD)
 			return nil, "", fmt.Errorf("nasm error: %v", err)
 		}
 
 		// Compile
-		_, err = meta.ExecCommand(
+		outText, err := meta.ExecCommand(
 			"cmake",
-			fmt.Sprintf("-DASM_OBJECT=%s", asmObj),
+			fmt.Sprintf("-DASM_OBJ_SYSCALLS=%s", asmSyscallsObj),
+			fmt.Sprintf("-DASM_OBJ_REFLECTIVE=%s", asmReflectiveObj),
 			fmt.Sprintf("-DOUTPUT_DIRECTORY=%s", payloadsDir),
 			fmt.Sprintf("-DPAYLOAD_NAME=%s", i.Name),
 			fmt.Sprintf("-DPAYLOAD_ARCH=%s", i.Arch),
@@ -177,10 +186,18 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmObj)
-			return nil, "", fmt.Errorf("create build directory error: %v", err)
+			os.Remove(asmSyscallsObj)
+			os.Remove(asmReflectiveObj)
+			return nil, "", fmt.Errorf("cmake error: %v", err)
 		}
-		_, err = meta.ExecCommand(
+		if strings.Contains(strings.ToLower(outText), "error:") {
+			os.Chdir(serverState.CWD)
+			os.Remove(asmSyscallsObj)
+			os.Remove(asmReflectiveObj)
+			return nil, "", fmt.Errorf("cmake error: %s", outText)
+		}
+
+		outText, err = meta.ExecCommand(
 			"cmake",
 			"--build", "build",
 			"--config", "Release",
@@ -188,11 +205,19 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmObj)
+			os.Remove(asmSyscallsObj)
+			os.Remove(asmReflectiveObj)
 			return nil, "", fmt.Errorf("cmake error: %v", err)
 		}
+		if strings.Contains(strings.ToLower(outText), "error:") {
+			os.Chdir(serverState.CWD)
+			os.Remove(asmSyscallsObj)
+			os.Remove(asmReflectiveObj)
+			return nil, "", fmt.Errorf("cmake error: %s", outText)
+		}
 
-		os.Remove(asmObj)
+		os.Remove(asmSyscallsObj)
+		os.Remove(asmReflectiveObj)
 	}
 
 	data, err = os.ReadFile(outFile)

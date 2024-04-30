@@ -1,12 +1,13 @@
 #ifndef HERMIT_CORE_HANDLER_HPP
 #define HERMIT_CORE_HANDLER_HPP
 
-#include <windows.h>
-#include <string>
 #include "core/macros.hpp"
 #include "core/state.hpp"
 #include "core/system.hpp"
 #include "core/utils.hpp"
+
+#include <windows.h>
+#include <string>
 
 namespace Handler
 {

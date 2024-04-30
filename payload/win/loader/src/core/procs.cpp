@@ -9,11 +9,13 @@ namespace Procs
         // NTAPIs
         pProcs->lpNtCreateProcess           = reinterpret_cast<LPPROC_NTCREATEPROCESS>(GetProcAddress(hNTDLL, "NtCreateProcess"));
         pProcs->lpNtOpenProcess             = reinterpret_cast<LPPROC_NTOPENPROCESS>(GetProcAddress(hNTDLL, "NtOpenProcess"));
+        pProcs->lpNtOpenProcessToken        = reinterpret_cast<LPPROC_NTOPENPROCESSTOKEN>(GetProcAddress(hNTDLL, "NtOpenProcessToken"));
         pProcs->lpNtTerminateProcess        = reinterpret_cast<LPPROC_NTTERMINATEPROCESS>(GetProcAddress(hNTDLL, "NtTerminateProcess"));
         pProcs->lpNtCreateThreadEx          = reinterpret_cast<LPPROC_NTCREATETHREADEX>(GetProcAddress(hNTDLL, "NtCreateThreadEx"));
         pProcs->lpNtResumeThread            = reinterpret_cast<LPPROC_NTRESUMETHREAD>(GetProcAddress(hNTDLL, "NtResumeThread"));
         pProcs->lpNtAllocateVirtualMemory   = reinterpret_cast<LPPROC_NTALLOCATEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtAllocateVirtualMemory"));
         pProcs->lpNtWriteVirtualMemory      = reinterpret_cast<LPPROC_NTWRITEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtWriteVirtualMemory"));
+        pProcs->lpNtProtectVirtualMemory    = reinterpret_cast<LPPROC_NTPROTECTVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtProtectVirtualMemory"));
         pProcs->lpNtFreeVirtualMemory       = reinterpret_cast<LPPROC_NTFREEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtFreeVirtualMemory"));
         pProcs->lpNtDuplicateObject         = reinterpret_cast<LPPROC_NTDUPLICATEOBJECT>(GetProcAddress(hNTDLL, "NtDuplicateObject"));
         pProcs->lpNtWaitForSingleObject     = reinterpret_cast<LPPROC_NTWAITFORSINGLEOBJECT>(GetProcAddress(hNTDLL, "NtWaitForSingleObject"));
@@ -30,6 +32,7 @@ namespace Procs
         pProcs->lpRtlStringCchCopyW         = reinterpret_cast<LPPROC_RTLSTRINGCCHCOPYW>(GetProcAddress(hNTDLL, "RtlStringCchCopyW"));
         pProcs->lpRtlStringCchLengthW       = reinterpret_cast<LPPROC_RTLSTRINGCCHLENGTHW>(GetProcAddress(hNTDLL, "RtlStringCchLengthW"));
         pProcs->lpRtlNtStatusToDosError     = reinterpret_cast<LPPROC_RTLNTSTATUSTODOSERROR>(GetProcAddress(hNTDLL, "RtlNtStatusToDosError"));
+        pProcs->lpRtlGetFullPathName_U      = reinterpret_cast<LPPROC_RTLGETFULLPATHNAME_U>(GetProcAddress(hNTDLL, "RtlGetFullPathName_U"));
 
         // WINAPIs
         pProcs->lpWinHttpOpen               = reinterpret_cast<LPPROC_WINHTTPOPEN>(GetProcAddress(hWinHTTPDLL, "WinHttpOpen"));
@@ -48,15 +51,22 @@ namespace Procs
         {
             pProcs->sysNtCreateProcess          = Syscalls::FindSyscall(hNTDLL, "NtCreateProcess");
             pProcs->sysNtOpenProcess            = Syscalls::FindSyscall(hNTDLL, "NtOpenProcess");
+            pProcs->sysNtOpenProcessToken       = Syscalls::FindSyscall(hNTDLL, "NtOpenProcessToken");
             pProcs->sysNtTerminateProcess       = Syscalls::FindSyscall(hNTDLL, "NtTerminateProcess");
             pProcs->sysNtCreateThreadEx         = Syscalls::FindSyscall(hNTDLL, "NtCreateThreadEx");
             pProcs->sysNtAllocateVirtualMemory  = Syscalls::FindSyscall(hNTDLL, "NtAllocateVirtualMemory");
             pProcs->sysNtWriteVirtualMemory     = Syscalls::FindSyscall(hNTDLL, "NtWriteVirtualMemory");
+            pProcs->sysNtProtectVirtualMemory   = Syscalls::FindSyscall(hNTDLL, "NtProtectVirtualMemory");
             pProcs->sysNtFreeVirtualMemory      = Syscalls::FindSyscall(hNTDLL, "NtFreeVirtualMemory");
             pProcs->sysNtWaitForSingleObject    = Syscalls::FindSyscall(hNTDLL, "NtWaitForSingleObject");
             pProcs->sysNtClose                  = Syscalls::FindSyscall(hNTDLL, "NtClose");
+            pProcs->sysNtCreateFile             = Syscalls::FindSyscall(hNTDLL, "NtCreateFile");
+            pProcs->sysNtReadFile               = Syscalls::FindSyscall(hNTDLL, "NtReadFile");
+            pProcs->sysNtWriteFile              = Syscalls::FindSyscall(hNTDLL, "NtWriteFile");
+            pProcs->sysNtQueryInformationFile   = Syscalls::FindSyscall(hNTDLL, "NtQueryInformationFile");
 
             pProcs->sysRtlInitUnicodeString     = Syscalls::FindSyscall(hNTDLL, "RtlInitUnicodeString");
+            pProcs->sysRtlGetFullPathName_U     = Syscalls::FindSyscall(hNTDLL, "RtlGetFullPathName_U");
         }
 
         return pProcs;

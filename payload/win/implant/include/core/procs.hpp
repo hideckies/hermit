@@ -16,6 +16,11 @@ namespace Procs
 {
     // **NATIVE APIs**
 
+    // LdrLoadDll
+    typedef NTSTATUS (NTAPI* LPPROC_LDRLOADDLL)(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID *DllHandle);
+
+    // NtFlushInstructionCache
+    typedef NTSTATUS (NTAPI* LPPROC_NTFLUSHINSTRUCTIONCACHE)(HANDLE ProcessHandle, PVOID BaseAddress, SIZE_T Length);
     // NtCreateProcess
     typedef NTSTATUS (NTAPI* LPPROC_NTCREATEPROCESS)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ParentProcess, BOOLEAN InheritObjectTable, HANDLE SectionHandle, HANDLE DebugPort, HANDLE TokenHandle);
     // NtOpenProcess
@@ -32,6 +37,8 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTRESUMETHREAD)(HANDLE ThreadHandle, PULONG PreviousSuspendCount);
     // NtAllocateVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTALLOCATEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
+    // NtProtectVirtualMemory
+    typedef NTSTATUS (NTAPI* LPPROC_NTPROTECTVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG NewProtect, PULONG OldProtect);
     // NtWriteVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTWRITEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten);
     // NtFreeVirtualMemory
@@ -100,6 +107,28 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_RTLGETFULLPATHNAME_U)(PCWSTR FileName, ULONG BufferLength, PWSTR Buffer, PWSTR *FilePart);
     
     // **WINAPIs**
+    // LoadLibraryA
+    typedef HMODULE (WINAPI* LPPROC_LOADLIBRARYA)(LPCSTR lpLibFileName);
+    // LoadLibraryW
+    typedef HMODULE (WINAPI* LPPROC_LOADLIBRARYW)(LPCWSTR lpLibFileName);
+    // GetProcAddress
+    typedef FARPROC (WINAPI* LPPROC_GETPROCADDRESS)(HMODULE hModule, LPCSTR lpProcName);
+    // QueryFullProcessImageNameW
+    typedef BOOL (WINAPI* LPPROC_QUERYFULLPROCESSIMAGENAMEW)(HANDLE hProcess, DWORD  dwFlags, LPWSTR lpExeName, PDWORD lpdwSize);
+    // RtlAddFunctionTable
+    typedef BOOL (WINAPI* LPPROC_RTLADDFUNCTIONTABLE)(PRUNTIME_FUNCTION FunctionTable, DWORD EntryCount, DWORD64 BaseAddress);
+    // DllMain
+    typedef BOOL (WINAPI* LPPROC_DLLMAIN)(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
+    // VirtualAlloc
+    typedef LPVOID (WINAPI* LPPROC_VIRTUALALLOC)(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);
+    // VirtualProtect
+    typedef BOOL (WINAPI* LPPROC_VIRTUALPROTECT)(LPVOID lpAddress, SIZE_T dwSize, DWORD flNewProtect, PDWORD lpflOldProtect);
+    // VirtualFree
+    typedef BOOL (WINAPI* LPPROC_VIRTUALFREE)(LPVOID lpAddress, SIZE_T dwSize, DWORD  dwFreeType);
+    // closeHandle
+    typedef BOOL (WINAPI* LPPROC_CLOSEHANDLE)(HANDLE hObject);
+    // MessageBoxA
+    typedef int (WINAPI* LPPROC_MESSAGEBOXA)(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
     // WinHttpOpen
     typedef HINTERNET (WINAPI* LPPROC_WINHTTPOPEN)(LPCWSTR pszAgentW, DWORD dwAccessType, LPCWSTR pszProxyW, LPCWSTR pszProxyBypassW, DWORD dwFlags);
     // WinHttpConnect
@@ -122,9 +151,6 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_WINHTTPREADDATA)(HINTERNET hRequest, LPVOID lpBuffer, DWORD dwNumberOfBytesLength, LPDWORD lpdwNumberOfBytesRead);
     // WinHttpCloseHandle
     typedef BOOL (WINAPI* LPPROC_WINHTTPCLOSEHANDLE)(HINTERNET hInternet);
-
-    // **KERNEL32**
-    typedef BOOL (WINAPI* LPPROC_QUERYFULLPROCESSIMAGENAMEW)(HANDLE hProcess, DWORD  dwFlags, LPWSTR lpExeName, PDWORD lpdwSize);
 
     struct PROCS
     {
@@ -173,6 +199,7 @@ namespace Procs
         LPPROC_RTLGETFULLPATHNAME_U         lpRtlGetFullPathName_U              = nullptr;
 
         // **WINAPIs**
+        LPPROC_QUERYFULLPROCESSIMAGENAMEW   lpQueryFullProcessImageNameW        = nullptr;
         LPPROC_WINHTTPOPEN                  lpWinHttpOpen                       = nullptr;
         LPPROC_WINHTTPCONNECT               lpWinHttpConnect                    = nullptr;
         LPPROC_WINHTTPOPENREQUEST           lpWinHttpOpenRequest                = nullptr;
@@ -184,9 +211,6 @@ namespace Procs
         LPPROC_WINHTTPQUERYDATAAVAILABLE    lpWinHttpQueryDataAvailable         = nullptr;
         LPPROC_WINHTTPREADDATA              lpWinHttpReadData                   = nullptr;
         LPPROC_WINHTTPCLOSEHANDLE           lpWinHttpCloseHandle                = nullptr;
-
-        // **Kernel32**
-        LPPROC_QUERYFULLPROCESSIMAGENAMEW   lpQueryFullProcessImageNameW        = nullptr;
 
         // **SYSCALLS**
         Syscalls::SYSCALL                   sysNtCreateProcess                  = {0};

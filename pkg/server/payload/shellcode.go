@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hideckies/hermit/pkg/common/meta"
@@ -98,7 +99,7 @@ func (s *Shellcode) Generate(serverState *state.ServerState) (data []byte, outFi
 
 		target := s.Arch
 
-		_, err = meta.ExecCommand(
+		outText, err := meta.ExecCommand(
 			"make",
 			fmt.Sprintf("PAYLOAD_NAME=%s", s.Name),
 			fmt.Sprintf("PAYLOAD_ARCH=%s", s.Arch),
@@ -116,7 +117,10 @@ func (s *Shellcode) Generate(serverState *state.ServerState) (data []byte, outFi
 			os.Chdir(serverState.CWD)
 			return nil, "", fmt.Errorf("build error: %v", err)
 		}
-
+		if strings.Contains(strings.ToLower(outText), "error:") {
+			os.Chdir(serverState.CWD)
+			return nil, "", fmt.Errorf("build error: %s", outText)
+		}
 	}
 
 	data, err = os.ReadFile(outFile)

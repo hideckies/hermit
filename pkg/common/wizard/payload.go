@@ -22,9 +22,9 @@ func WizardPayloadType() string {
 		"loader/shellcode",
 		"shellcode/exec",
 		// "shellcode/revshell",
-		// "shellcode/dll-loader",
-		// "shellcode/exec-loader",
-		// "shellcode/shellcode-loader",
+		// "shellcode/loader/dll",
+		// "shellcode/loader/exec",
+		// "shellcode/loader/shellcode",
 	}
 	for {
 		res, err := stdin.Select("What to generate?", items)
@@ -321,7 +321,6 @@ func WizardPayloadLoader(
 		items = []string{
 			"dll-injection",
 			"reflective-dll-injection",
-			// "indirect-syscalls",
 		}
 	} else if oType == "exec" {
 		// Exec Loader
@@ -350,7 +349,9 @@ func WizardPayloadLoader(
 
 	// Target process name to inject
 	var oProcessToInject string = ""
-	if oTechnique == "dll-injection" || oTechnique == "shellcode-injection" {
+	if oTechnique == "dll-injection" ||
+		oTechnique == "reflective-dll-injection" ||
+		oTechnique == "shellcode-injection" {
 		for {
 			res, err := stdin.ReadInput("Target Process to Inject", "notepad.exe")
 			if err != nil {

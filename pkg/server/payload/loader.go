@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hideckies/hermit/pkg/common/crypt"
@@ -129,7 +130,7 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		}
 
 		// Compile
-		_, err = meta.ExecCommand(
+		outText, err := meta.ExecCommand(
 			"cmake",
 			fmt.Sprintf("-DASM_OBJECT=%s", asmObj),
 			fmt.Sprintf("-DOUTPUT_DIRECTORY=%s", payloadsDir),
@@ -154,7 +155,13 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 			os.Remove(asmObj)
 			return nil, "", fmt.Errorf("create build directory error: %v", err)
 		}
-		_, err = meta.ExecCommand(
+		if strings.Contains(strings.ToLower(outText), "error:") {
+			os.Chdir(serverState.CWD)
+			os.Remove(asmObj)
+			return nil, "", fmt.Errorf("cmake error: %s", outText)
+		}
+
+		outText, err = meta.ExecCommand(
 			"cmake",
 			"--build", "build",
 			"--config", "Release",
@@ -164,6 +171,11 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 			os.Chdir(serverState.CWD)
 			os.Remove(asmObj)
 			return nil, "", fmt.Errorf("build error: %v", err)
+		}
+		if strings.Contains(strings.ToLower(outText), "error:") {
+			os.Chdir(serverState.CWD)
+			os.Remove(asmObj)
+			return nil, "", fmt.Errorf("cmake error: %s", outText)
 		}
 
 		os.Remove(asmObj)

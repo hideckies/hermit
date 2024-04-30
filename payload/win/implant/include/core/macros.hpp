@@ -2,7 +2,7 @@
 #define HERMIT_CORE_MACROS_HPP
 
 // DLL
-#define DLLEXPORT __declspec(dllexport)
+#define DLLEXPORT extern "C" __declspec(dllexport)
 
 // FUNCTIONS
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))

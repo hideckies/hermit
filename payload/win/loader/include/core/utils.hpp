@@ -16,6 +16,9 @@ namespace Utils::Convert
 
     // LPSTR -> wchar_t*
     wchar_t* LPSTRToWCHAR_T(LPSTR lpStr);
+
+    // String(PCHAR) -> Hash(DWORD)
+    DWORD StrToHashA(PCHAR pChar);
 }
 
 #endif // HERMIT_CORE_UTILS_HPP

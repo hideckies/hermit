@@ -1,14 +1,14 @@
 #ifndef HERMIT_CORE_STATE_HPP
 #define HERMIT_CORE_STATE_HPP
 
-#include "windows.h"
-#include "winhttp.h"
-#include <string>
-
 #include "core/crypt.hpp"
 #include "core/procs.hpp"
 #include "core/state.hpp"
 #include "core/system.hpp"
+
+#include <windows.h>
+#include <winhttp.h>
+#include <string>
 
 namespace State
 {

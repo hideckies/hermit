@@ -2,10 +2,26 @@
 #define HERMIT_CORE_NTDLL_H
 
 #include <windows.h>
+#include <subauth.h>
 
 #define NtCurrentProcess() (HANDLE)((HANDLE) - 1)
 #define NtCurrentProcessId() (NtCurrentTeb()->ClientId.UniqueProcess)
 #define NtCurrentProcessToken() ((HANDLE)(LONG_PTR)-4)
+
+#define GDI_HANDLE_BUFFER_SIZE32  34
+#define GDI_HANDLE_BUFFER_SIZE64  60
+
+#if !defined(_M_X64)
+#define GDI_HANDLE_BUFFER_SIZE      GDI_HANDLE_BUFFER_SIZE32
+#else
+#define GDI_HANDLE_BUFFER_SIZE      GDI_HANDLE_BUFFER_SIZE64
+#endif
+
+typedef PVOID* PPVOID;
+
+typedef ULONG GDI_HANDLE_BUFFER32[GDI_HANDLE_BUFFER_SIZE32];
+typedef ULONG GDI_HANDLE_BUFFER64[GDI_HANDLE_BUFFER_SIZE64];
+typedef ULONG GDI_HANDLE_BUFFER[GDI_HANDLE_BUFFER_SIZE];
 
 // **For NtSystemDebugControl**
 typedef enum _SYSDBG_COMMAND

@@ -1,16 +1,16 @@
 #ifndef HERMIT_CORE_SYSTEM_HPP
 #define HERMIT_CORE_SYSTEM_HPP
 
+#include "core/crypt.hpp"
+#include "core/procs.hpp"
+#include "core/stdout.hpp"
+#include "core/utils.hpp"
+
 #include <windows.h>
 #include <winhttp.h>
 #include <string>
 #include <tlhelp32.h>
 #include <vector>
-
-#include "core/crypt.hpp"
-#include "core/procs.hpp"
-#include "core/stdout.hpp"
-#include "core/utils.hpp"
 
 namespace System::Handle
 {
@@ -42,6 +42,11 @@ namespace System::Process
         DWORD           dwProcessID,
         DWORD           dwDesiredAccess
     );
+    HANDLE ProcessTokenOpen(
+        Procs::PPROCS   pProcs,
+        HANDLE          hProcess,
+        DWORD           dwDesiredAccess
+    );
     BOOL ProcessTerminate(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
@@ -50,24 +55,32 @@ namespace System::Process
     PVOID VirtualMemoryAllocate(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
-        DWORD           dwSize,
-        DWORD           dwAllocationType,   // e.g. MEM_COMMIT | MEM_RESERVE
-        DWORD           dwProtect           // e.g. PAGE_READWRITE
-    );
-    BOOL VirtualMemoryFree(
-        Procs::PPROCS   pProcs,
-        HANDLE 	        hProcess,
-		PVOID* 	        pBaseAddr,
-		SIZE_T 	        dwSize,
-		DWORD 	        dwFreeType
+        SIZE_T          dwSize,
+        DWORD           dwAllocationType,
+        DWORD           dwProtect
     );
     BOOL VirtualMemoryWrite(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
         PVOID           pBaseAddr,
         PVOID           pBuffer,
-		DWORD           dwBufferSize,
-        PDWORD 			lpNumberOfBytesWritten
+		SIZE_T          dwBufferSize,
+        PSIZE_T 		lpNumberOfBytesWritten
+    );
+    BOOL VirtualMemoryProtect(
+		Procs::PPROCS   pProcs,
+		HANDLE          hProcess,
+		PVOID*          pBaseAddr,
+		PSIZE_T         pdwSize,
+		DWORD           dwProtect,
+        PDWORD			pdwOldProtect
+	);
+    BOOL VirtualMemoryFree(
+        Procs::PPROCS   pProcs,
+        HANDLE 	        hProcess,
+		PVOID* 	        pBaseAddr,
+		PSIZE_T 	    pdwSize,
+		DWORD 	        dwFreeType
     );
     HANDLE RemoteThreadCreate(
         Procs::PPROCS           pProcs,
@@ -82,18 +95,29 @@ namespace System::Process
 
 namespace System::Fs
 {
-    std::wstring GetAbsolutePath(
+    std::wstring AbsolutePathGet(
+        Procs::PPROCS       pProcs,
         const std::wstring& wPath,
-        BOOL bExtendLength
+        BOOL                bExtendLength
     );
-    HANDLE CreateNewFile(
-        Procs::PPROCS pProcs,
+   HANDLE FileCreate(
+        Procs::PPROCS       pProcs,
+        const std::wstring& wFilePath,
+        DWORD               dwCreateDisposition,
+        DWORD               dwCreateOptions
+    );
+    std::vector<BYTE> FileRead(
+        Procs::PPROCS       pProcs,
         const std::wstring& wFilePath
     );
-    BOOL WriteBytesToFile(
+    BOOL FileWrite(
         Procs::PPROCS               pProcs,
         const std::wstring&         wFilePath,
         const std::vector<BYTE>&    bytes
+    );
+    DWORD FileGetSize(
+        Procs::PPROCS   pProcs,
+        HANDLE          hFile
     );
 }
 
