@@ -13,6 +13,9 @@
 #include "core/technique.hpp"
 #include "core/utils.hpp"
 
+extern "C" ULONG_PTR GetRIP(VOID);
+extern "C" ULONG_PTR Leave(VOID);
+
 namespace Hermit
 {
     State::PSTATE Init();

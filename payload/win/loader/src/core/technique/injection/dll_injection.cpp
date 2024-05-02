@@ -94,6 +94,19 @@ namespace Technique::Injection
         HANDLE hThread;
         LPVOID lpRemoteBuffer;
 
+        HANDLE hToken;
+        TOKEN_PRIVILEGES priv = {0};
+        if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+        {
+            priv.PrivilegeCount = 1;
+            priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+            if (LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
+                AdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+
+            CloseHandle(hToken);
+        }
+
         hProcess = System::Process::ProcessOpen(
             pProcs,
             dwPID,
@@ -109,7 +122,7 @@ namespace Technique::Injection
             hProcess,
             dwDllPathSize,
             MEM_COMMIT | MEM_RESERVE,
-            PAGE_EXECUTE_READWRITE
+            PAGE_READWRITE
         );
         if (!lpRemoteBuffer)
         {
@@ -132,6 +145,21 @@ namespace Technique::Injection
                 0,
                 MEM_RELEASE
             );
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        // Set PAGE_EXECUTE_READWRITE protection.
+        DWORD dwOldProtect = PAGE_READWRITE;
+        if (!System::Process::VirtualMemoryProtect(
+            pProcs,
+            hProcess,
+            &lpRemoteBuffer,
+            &dwDllPathSize,
+            PAGE_EXECUTE_READWRITE,
+            &dwOldProtect
+        )) {
+            System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
             System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
@@ -184,7 +212,7 @@ namespace Technique::Injection
         Procs::PPROCS   pProcs,
         DWORD           dwPID,
         LPCWSTR         lpDllPath
-    ) {
+    ) {        
         std::vector<BYTE> bytes = System::Fs::FileRead(pProcs, lpDllPath);
         LPVOID lpBuffer = bytes.data();
         SIZE_T dwLength = bytes.size();

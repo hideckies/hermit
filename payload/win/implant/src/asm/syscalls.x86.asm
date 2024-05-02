@@ -1,63 +1,19 @@
-section .data
+; Inspired:
+;   https://github.com/HavocFramework/Havoc/blob/ea3646e055eb1612dcc956130fd632029dbf0b86/payloads/Demon/src/asm/Syscall.x64.asm#L1
 
-extern NtOpenProcessSSN
-extern NtOpenProcessSyscall
-
-extern NtAllocateVirtualMemorySSN
-extern NtAllocateVirtualMemorySyscall
-
-extern NtWriteVirtualMemorySSN
-extern NtWriteVirtualMemorySyscall
-
-extern NtCreateThreadExSSN
-extern NtCreateThreadExSyscall
-
-extern NtWaitForSingleObjectSSN
-extern NtWaitForSingleObjectSyscall
-
-extern NtCloseSSN
-extern NtCloseSyscall
+global SysSet
+global SysInvoke
 
 section .text
 
-global NtOpenProcess
-NtOpenProcess:
-    mov r10, rcx
-    mov eax, [rel NtOpenProcessSSN]
-    jmp qword [rel NtOpenProcessSyscall]
-    ret
+    SysSet:
+        mov edx, [esp + 0x4]
+        ret
 
-global NtAllocateVirtualMemory
-NtAllocateVirtualMemory:
-    mov r10, rcx
-    mov eax, [rel NtAllocateVirtualMemorySSN]
-    jmp qword [rel NtAllocateVirtualMemorySyscall]
-    ret
-
-global NtWriteVirtualMemory
-NtWriteVirtualMemory:
-    mov r10, rcx
-    mov eax, [rel NtWriteVirtualMemorySSN]
-    jmp qword [rel NtWriteVirtualMemorySyscall]
-    ret
-
-global NtCreateThreadEx
-NtCreateThreadEx:
-    mov r10, rcx
-    mov eax, [rel NtCreateThreadExSSN]
-    jmp qword [rel NtCreateThreadExSyscall]
-    ret
-
-global NtWaitForSingleObject
-NtWaitForSingleObject:
-    mov r10, rcx
-    mov eax, [rel NtWaitForSingleObjectSSN]
-    jmp qword [rel NtWaitForSingleObjectSyscall]
-    ret
-
-global NtClose
-NtClose:
-    mov r10, rcx
-    mov eax, [rel NtCloseSSN]
-    jmp qword [rel NtCloseSyscall]
-    ret
+    SysInvoke:
+        mov ebx, [edx + 0x0]
+        mov eax, [edx + 0x4]
+        mov edx, esp
+        sub edx, 0x4
+        call DWORD ebx
+        ret      

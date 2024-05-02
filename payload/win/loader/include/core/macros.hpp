@@ -6,6 +6,10 @@
 // DLL
 #define DLLEXPORT __declspec(dllexport)
 
+// SHELLCODE
+#define SHELLCODE(x) (ULONG_PTR)(GetIp() - ((ULONG_PTR) & GetIp - (ULONG_PTR)x))
+#define SECTION(x) __attribute__((section(".text$" #x)))
+
 // COMMON
 #define WIDEN(x) WIDEN2(x)
 #define WIDEN2(x) L##x

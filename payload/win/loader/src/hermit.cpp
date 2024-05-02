@@ -57,7 +57,7 @@ namespace Hermit
     }
 
     VOID DLLLoader()
-    {
+    {        
         State::PSTATE pState = Init();
         if (!pState)
         {

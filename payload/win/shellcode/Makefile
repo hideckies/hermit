@@ -3,6 +3,6 @@ MACROS = -DLISTENER_HOST=\"$(LISTENER_HOST)\" -DLISTENER_PORT=$(LISTENER_PORT) -
 SCRIPT = script/shellcode_generator.py
 OUTFILE = ${OUTPUT}
 
-x64:
+amd64:
 	@ python3 ${SCRIPT} -t ${SHELLCODE_TYPE} -c ${SHELLCODE_TYPE_ARGS} -o ${OUTFILE}
 

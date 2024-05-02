@@ -47,16 +47,17 @@ func HandleAmLootClear(
 func HandleAmLootShow(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
+	filter string,
 ) error {
 	if serverState.Conf != nil {
-		allLoot, err := loot.GetAllLoot(serverState.AgentMode.Name)
+		allLoot, err := loot.GetAllLoot(serverState.AgentMode.Name, filter)
 		if err != nil {
 			return err
 		}
 		stdout.LogSuccess("\n")
 		fmt.Println(allLoot)
 	} else if clientState.Conf != nil {
-		allLoot, err := rpc.RequestLootGetAll(clientState)
+		allLoot, err := rpc.RequestLootGetAll(clientState, filter)
 		if err != nil {
 			return err
 		}

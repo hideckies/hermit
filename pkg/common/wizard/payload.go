@@ -14,17 +14,12 @@ import (
 )
 
 func WizardPayloadType() string {
+	var payloadType string
+
 	items := []string{
-		"implant/beacon",
-		// "implant/interactive",
-		"loader/dll",
-		"loader/exec",
-		"loader/shellcode",
-		"shellcode/exec",
-		// "shellcode/revshell",
-		// "shellcode/loader/dll",
-		// "shellcode/loader/exec",
-		// "shellcode/loader/shellcode",
+		"implant",
+		"loader",
+		"shellcode",
 	}
 	for {
 		res, err := stdin.Select("What to generate?", items)
@@ -32,14 +27,63 @@ func WizardPayloadType() string {
 			stdout.LogFailed(fmt.Sprint(err))
 			continue
 		}
-		return strings.ToLower(res)
+		payloadType = res
+		break
 	}
+
+	if payloadType == "implant" {
+		for {
+			res, err := stdin.Select("Implant type", []string{
+				"beacon",
+				// "session",
+			})
+			if err != nil {
+				stdout.LogFailed(fmt.Sprint(err))
+				continue
+			}
+			payloadType += "/" + res
+			break
+		}
+	} else if payloadType == "loader" {
+		for {
+			res, err := stdin.Select("Loader type", []string{
+				"dll-loader",
+				"pe-loader",
+				"shellcode-loader",
+			})
+			if err != nil {
+				stdout.LogFailed(fmt.Sprint(err))
+				continue
+			}
+			payloadType += "/" + res
+			break
+		}
+	} else if payloadType == "shellcode" {
+		for {
+			res, err := stdin.Select("Shellcode type", []string{
+				"exec",
+				// "dll-loader",
+				// "exec-loader",
+				// "shellcode-loader",
+			})
+			if err != nil {
+				stdout.LogFailed(fmt.Sprint(err))
+				continue
+			}
+			payloadType += "/" + res
+			break
+		}
+	}
+
+	stdout.LogInfo(fmt.Sprintf("payloadType: %s", payloadType))
+
+	return payloadType
 }
 
 func wizardPayloadBase(
 	host string,
 	listeners []*listener.Listener,
-	isShellcode bool,
+	payloadType string,
 ) (
 	oOs string,
 	oArch string,
@@ -51,14 +95,7 @@ func wizardPayloadBase(
 ) {
 	var items []string
 
-	if isShellcode {
-		items = []string{
-			// "linux/x64/bin",
-			// "linux/x86/bin",
-			"windows/x64/bin",
-			// "windows/x86/bin",
-		}
-	} else {
+	if strings.HasPrefix(payloadType, "implant") {
 		items = []string{
 			// "linux/amd64/elf",
 			// "linux/i686/elf",
@@ -67,7 +104,18 @@ func wizardPayloadBase(
 			// "windows/i686/dll",
 			// "windows/i686/exe",
 		}
+	} else if strings.HasPrefix(payloadType, "loader") {
+		items = []string{
+			"windows/amd64/bin",
+			"windows/amd64/dll",
+			"windows/amd64/exe",
+		}
+	} else if strings.HasPrefix(payloadType, "shellcode") {
+		items = []string{
+			"windows/amd64/bin",
+		}
 	}
+
 	for {
 		res, err := stdin.Select("OS/Arch/Format", items)
 		if err != nil {
@@ -185,7 +233,7 @@ func WizardPayloadImplant(
 	listeners []*listener.Listener,
 	payloadType string,
 ) (*payload.Implant, error) {
-	oOs, oArch, oFormat, oLprotocol, oLhost, oLport, err := wizardPayloadBase(host, listeners, false)
+	oOs, oArch, oFormat, oLprotocol, oLhost, oLport, err := wizardPayloadBase(host, listeners, payloadType)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +354,7 @@ func WizardPayloadLoader(
 	listeners []*listener.Listener,
 	payloadType string,
 ) (*payload.Loader, error) {
-	oOs, oArch, oFormat, oLprotocol, oLhost, oLport, err := wizardPayloadBase(host, listeners, false)
+	oOs, oArch, oFormat, oLprotocol, oLhost, oLport, err := wizardPayloadBase(host, listeners, payloadType)
 	if err != nil {
 		return nil, err
 	}
@@ -316,19 +364,19 @@ func WizardPayloadLoader(
 	// Technique
 	var oTechnique string
 	var items []string
-	if oType == "dll" {
+	if oType == "dll-loader" {
 		// DLL Loader
 		items = []string{
 			"dll-injection",
 			"reflective-dll-injection",
 		}
-	} else if oType == "exec" {
+	} else if oType == "pe-loader" {
 		// Exec Loader
 		items = []string{
 			"direct-execution",
 			// "process-doppeleganging",
 		}
-	} else if oType == "shellcode" {
+	} else if oType == "shellcode-loader" {
 		// Shellcode Loader
 		items = []string{
 			"shellcode-injection",
@@ -420,7 +468,7 @@ func WizardPayloadShellcode(
 	listeners []*listener.Listener,
 	payloadType string,
 ) (*payload.Shellcode, error) {
-	oOs, oArch, oFormat, oLprotocol, oLhost, oLport, err := wizardPayloadBase(host, listeners, true)
+	oOs, oArch, oFormat, oLprotocol, oLhost, oLport, err := wizardPayloadBase(host, listeners, payloadType)
 	if err != nil {
 		return nil, err
 	}

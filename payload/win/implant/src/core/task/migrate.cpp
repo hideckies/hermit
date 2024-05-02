@@ -31,6 +31,8 @@ namespace Task
 
         // Read the executable file data to write process memory.
         std::vector<BYTE> bytes = System::Fs::FileRead(pState->pProcs, std::wstring(execName));
+        LPVOID lpBuffer     = bytes.data();
+        SIZE_T dwBufferLen  = bytes.size();
 
         // Open the source process to duplicate.
         HANDLE hSrcProcess = System::Process::ProcessOpen(
@@ -64,7 +66,7 @@ namespace Task
         LPVOID pRemoteAddr = System::Process::VirtualMemoryAllocate(
             pState->pProcs,
             hDup,
-            bytes.size(),
+            dwBufferLen,
             MEM_COMMIT,
             PAGE_READWRITE
         );
@@ -74,9 +76,9 @@ namespace Task
             pState->pProcs,
             hDup,
             pRemoteAddr,
-            bytes.data(),
-            bytes.size(),
-            &dwWritten
+            lpBuffer,
+            dwBufferLen,
+            (PSIZE_T)&dwWritten
         ) || dwWritten != bytes.size()) {
             return L"Error: Failed to write target process memory.";
         }

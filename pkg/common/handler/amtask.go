@@ -41,6 +41,7 @@ func HandleAmTaskSet(
 	}
 
 	stdout.LogSuccess("Task set successfully.")
+	stdout.LogSuccess("After a while, check the result with the `loot show` command.")
 	return nil
 }
 

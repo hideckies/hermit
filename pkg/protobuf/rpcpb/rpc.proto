@@ -147,4 +147,5 @@ message Task {
 
 message Loot {
   string agentName = 1;
+  string filter = 2;
 }

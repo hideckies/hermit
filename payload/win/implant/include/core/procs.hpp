@@ -12,6 +12,24 @@
 #include <string>
 #include <strsafe.h>
 
+typedef struct _PS_ATTRIBUTE
+{
+    ULONG_PTR Attribute;
+    SIZE_T Size;
+    union
+    {
+        ULONG_PTR Value;
+        PVOID ValuePtr;
+    };
+    PSIZE_T ReturnLength;
+} PS_ATTRIBUTE, *PPS_ATTRIBUTE;
+
+typedef struct _PS_ATTRIBUTE_LIST
+{
+    SIZE_T TotalLength;
+    PS_ATTRIBUTE Attributes[1];
+} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
+
 namespace Procs
 {
     // **NATIVE APIs**
@@ -32,15 +50,15 @@ namespace Procs
     // NtSetInformationProcess
     typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength);
     // NtCreateThreadEx
-    typedef NTSTATUS (NTAPI* LPPROC_NTCREATETHREADEX)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, PVOID StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PVOID lpBytesBuffer);
+    typedef NTSTATUS (NTAPI* LPPROC_NTCREATETHREADEX)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList);
     // NtResumeThread
     typedef NTSTATUS (NTAPI* LPPROC_NTRESUMETHREAD)(HANDLE ThreadHandle, PULONG PreviousSuspendCount);
     // NtAllocateVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTALLOCATEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
-    // NtProtectVirtualMemory
-    typedef NTSTATUS (NTAPI* LPPROC_NTPROTECTVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG NewProtect, PULONG OldProtect);
     // NtWriteVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTWRITEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten);
+    // NtProtectVirtualMemory
+    typedef NTSTATUS (NTAPI* LPPROC_NTPROTECTVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG NewProtect, PULONG OldProtect);
     // NtFreeVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTFREEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, PSIZE_T RegionSize, ULONG FreeType);
     // NtDuplicateObject
@@ -164,6 +182,7 @@ namespace Procs
         LPPROC_NTRESUMETHREAD               lpNtResumeThread                    = nullptr;
         LPPROC_NTALLOCATEVIRTUALMEMORY      lpNtAllocateVirtualMemory           = nullptr;
         LPPROC_NTWRITEVIRTUALMEMORY         lpNtWriteVirtualMemory              = nullptr;
+        LPPROC_NTPROTECTVIRTUALMEMORY       lpNtProtectVirtualMemory            = nullptr;
         LPPROC_NTFREEVIRTUALMEMORY          lpNtFreeVirtualMemory               = nullptr;
         LPPROC_NTDUPLICATEOBJECT            lpNtDuplicateObject                 = nullptr;
         LPPROC_NTWAITFORSINGLEOBJECT        lpNtWaitForSingleObject             = nullptr;
@@ -222,6 +241,7 @@ namespace Procs
         Syscalls::SYSCALL                   sysNtResumeThread                   = {0};
         Syscalls::SYSCALL                   sysNtAllocateVirtualMemory          = {0};
         Syscalls::SYSCALL                   sysNtWriteVirtualMemory             = {0};
+        Syscalls::SYSCALL                   sysNtProtectVirtualMemory           = {0};
         Syscalls::SYSCALL                   sysNtFreeVirtualMemory              = {0};
         Syscalls::SYSCALL                   sysNtDuplicateObject                = {0};
         Syscalls::SYSCALL                   sysNtWaitForSingleObject            = {0};

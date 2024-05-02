@@ -33,8 +33,9 @@ namespace System::Process
     HANDLE ProcessCreate(
         Procs::PPROCS   pProcs,
         LPCWSTR         lpApplicationName,
-        DWORD           dwDesiredAccess, // e.g. PROCESS_ALL_ACCESS
-        HANDLE          hParentProcess
+        DWORD           dwDesiredAccess,
+        HANDLE          hParentProcess,
+        HANDLE          hToken
     );
     DWORD ProcessGetIdByName(LPCWSTR lpProcessName);
     HANDLE ProcessOpen(

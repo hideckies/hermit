@@ -380,10 +380,10 @@ func RequestTaskListByAgentName(clientState *state.ClientState) (string, error) 
 	return r.GetText(), nil
 }
 
-func RequestLootGetAll(clientState *state.ClientState) (string, error) {
+func RequestLootGetAll(clientState *state.ClientState, filter string) (string, error) {
 	r, err := clientState.RPCClient.LootGetAll(
 		clientState.Ctx,
-		&rpcpb.Loot{AgentName: clientState.AgentMode.Name},
+		&rpcpb.Loot{AgentName: clientState.AgentMode.Name, Filter: filter},
 	)
 	if err != nil {
 		return "", err

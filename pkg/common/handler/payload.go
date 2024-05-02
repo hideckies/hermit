@@ -71,7 +71,7 @@ func HandlePayloadGen(
 			}
 
 			spin.Stop()
-			stdout.LogSuccess(fmt.Sprintf("Stager saved at %s", color.HiGreenString(outFile)))
+			stdout.LogSuccess(fmt.Sprintf("Loader saved at %s", color.HiGreenString(outFile)))
 		} else if strings.HasPrefix(payloadType, "shellcode") {
 			shc, err := wizard.WizardPayloadShellcode(
 				meta.GetSpecificHost(serverState.Conf.Host),

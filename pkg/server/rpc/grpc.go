@@ -499,7 +499,7 @@ func (s *HermitRPCServer) LootGetAll(
 	ctx context.Context,
 	_loot *rpcpb.Loot,
 ) (*commonpb.Message, error) {
-	allLoot, err := loot.GetAllLoot(_loot.GetAgentName())
+	allLoot, err := loot.GetAllLoot(_loot.GetAgentName(), _loot.GetFilter())
 	if err != nil {
 		return nil, err
 	}

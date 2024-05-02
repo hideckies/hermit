@@ -15,6 +15,7 @@ namespace Procs
         pProcs->lpNtResumeThread                = reinterpret_cast<LPPROC_NTRESUMETHREAD>(GetProcAddress(hNTDLL, "NtResumeThread"));
         pProcs->lpNtAllocateVirtualMemory       = reinterpret_cast<LPPROC_NTALLOCATEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtAllocateVirtualMemory"));
         pProcs->lpNtWriteVirtualMemory          = reinterpret_cast<LPPROC_NTWRITEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtWriteVirtualMemory"));
+        pProcs->lpNtProtectVirtualMemory        = reinterpret_cast<LPPROC_NTPROTECTVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtProtectVirtualMemory"));
         pProcs->lpNtFreeVirtualMemory           = reinterpret_cast<LPPROC_NTFREEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtFreeVirtualMemory"));
         pProcs->lpNtDuplicateObject             = reinterpret_cast<LPPROC_NTDUPLICATEOBJECT>(GetProcAddress(hNTDLL, "NtDuplicateObject"));
         pProcs->lpNtWaitForSingleObject         = reinterpret_cast<LPPROC_NTWAITFORSINGLEOBJECT>(GetProcAddress(hNTDLL, "NtWaitForSingleObject"));
@@ -70,6 +71,7 @@ namespace Procs
             pProcs->sysNtCreateThreadEx             = Syscalls::FindSyscall(hNTDLL, "NtCreateThreadEx");
             pProcs->sysNtResumeThread               = Syscalls::FindSyscall(hNTDLL, "NtResumeThread");
             pProcs->sysNtAllocateVirtualMemory      = Syscalls::FindSyscall(hNTDLL, "NtAllocateVirtualMemory");
+            pProcs->sysNtProtectVirtualMemory       = Syscalls::FindSyscall(hNTDLL, "NtProtectVirtualMemory");
             pProcs->sysNtWriteVirtualMemory         = Syscalls::FindSyscall(hNTDLL, "NtWriteVirtualMemory");
             pProcs->sysNtFreeVirtualMemory          = Syscalls::FindSyscall(hNTDLL, "NtFreeVirtualMemory");
             pProcs->sysNtDuplicateObject            = Syscalls::FindSyscall(hNTDLL, "NtDuplicateObject");

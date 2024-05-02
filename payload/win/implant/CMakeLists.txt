@@ -45,6 +45,9 @@ add_compile_definitions(REQUEST_PATH_SOCKET_OPEN=${REQUEST_PATH_SOCKET_OPEN})
 add_compile_definitions(REQUEST_PATH_SOCKET_CLOSE=${REQUEST_PATH_SOCKET_CLOSE})
 add_compile_definitions(AES_KEY_BASE64=${AES_KEY_BASE64})
 add_compile_definitions(AES_IV_BASE64=${AES_IV_BASE64})
+if(${PAYLOAD_FORMAT} STREQUAL "dll")
+    add_compile_definitions(IS_DLL=1)
+endif()
 
 # SOURCES
 set(SOURCE_ASM
@@ -120,7 +123,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
         set(SOURCE_MAIN
                 src/hermit.cpp
                 src/main/beacon_dll.cpp
-                src/main/reflective.cpp
+                src/main/rfl.cpp
         )
     elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
         set(SOURCE_MAIN
@@ -143,7 +146,6 @@ if(${PAYLOAD_FORMAT} STREQUAL "dll")
             PREFIX ""
             SUFFIX ".dll"
     )
-    add_definitions(-DIS_DLL)
 elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
     add_executable(${PROJECT_NAME} ${SOURCE_ASM} ${SOURCE_CORE} ${SOURCE_MAIN})
     set_target_properties(${PROJECT_NAME}

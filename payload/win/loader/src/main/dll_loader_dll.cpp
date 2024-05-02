@@ -30,15 +30,10 @@ DLLEXPORT BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvRes
                 0,
                 NULL
             );
-            // WaitForSingleObject(hThread, INFINITE);
-            // CloseHandle(hThread);
             break;
         case DLL_THREAD_ATTACH:
-            // DisplayMessageBoxA("DLL_THREAD_ATTACH", "DllMain");
         case DLL_THREAD_DETACH:
-            // DisplayMessageBoxA("DLL_THREAD_DETACH", "DllMain");
         case DLL_PROCESS_DETACH:
-            // DisplayMessageBoxA("DLL_PROCESS_DETACH", "DllMain");
             if (lpvReserved != NULL)
             {
                 break;

@@ -35,14 +35,16 @@ func (c *amTaskListCmd) Run(
 	return nil
 }
 
-type amTaskResultsCmd struct{}
+type amTaskResultsCmd struct {
+	Filter string `short:"f" help:"Filter by strings."`
+}
 
 func (c *amTaskResultsCmd) Run(
 	ctx *kong.Context,
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
-	err := handler.HandleAmLootShow(serverState, clientState)
+	err := handler.HandleAmLootShow(serverState, clientState, c.Filter)
 	if err != nil {
 		return err
 	}

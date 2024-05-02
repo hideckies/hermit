@@ -142,72 +142,45 @@ namespace System::Process
 	}
 
 	PVOID VirtualMemoryAllocate(
-		Procs::PPROCS pProcs,
-		HANDLE hProcess,
-		DWORD dwSize,
-		DWORD dwAllocationType,
-		DWORD dwProtect
+		Procs::PPROCS 	pProcs,
+		HANDLE 			hProcess,
+		SIZE_T 			dwSize,
+		DWORD 			dwAllocationType,
+		DWORD 			dwProtect
 	) {
-        PVOID baseAddr;
+        PVOID pBaseAddr;
 
 		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtAllocateVirtualMemory,
 			pProcs->lpNtAllocateVirtualMemory,
 			hProcess,
-            &baseAddr,
+            &pBaseAddr,
             0,
-            (PSIZE_T)&dwSize,
+            &dwSize,
             dwAllocationType,
             dwProtect
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			baseAddr = VirtualAllocEx(
+			pBaseAddr = VirtualAllocEx(
                 hProcess,
                 nullptr,
-                (SIZE_T)dwSize,
+                dwSize,
                 dwAllocationType,
                 dwProtect
             );
 		}
 
-        return baseAddr;
+        return pBaseAddr;
     }
-
-	BOOL VirtualMemoryFree(
-		Procs::PPROCS 	pProcs,
-		HANDLE 			hProcess,
-		PVOID* 			pBaseAddr,
-		SIZE_T 			dwSize,
-		DWORD 			dwFreeType
-	) {
-		NTSTATUS status = CallSysInvoke(
-			&pProcs->sysNtFreeVirtualMemory,
-			pProcs->lpNtFreeVirtualMemory,
-			hProcess,
-			pBaseAddr,
-			&dwSize,
-			dwFreeType
-		);
-		if (status != STATUS_SUCCESS)
-		{
-			return VirtualFree(
-				pBaseAddr,
-				dwSize,
-				dwFreeType
-			);
-		}
-	
-		return TRUE;
-	}
 
 	BOOL VirtualMemoryWrite(
 		Procs::PPROCS 	pProcs,
 		HANDLE 			hProcess,
 		PVOID 			pBaseAddr,
 		PVOID 			pBuffer,
-		DWORD 			dwBufferSize,
-		PDWORD 			lpNumberOfBytesWritten
+		SIZE_T			dwBufferSize,
+		PSIZE_T 		lpNumberOfBytesWritten
 	) {
 		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtWriteVirtualMemory,
@@ -216,7 +189,7 @@ namespace System::Process
 			pBaseAddr,
 			pBuffer,
 			dwBufferSize,
-			(PSIZE_T)lpNumberOfBytesWritten
+			lpNumberOfBytesWritten
 		);
 		if (status != STATUS_SUCCESS)
 		{
@@ -225,11 +198,70 @@ namespace System::Process
 				pBaseAddr,
 				pBuffer,
 				dwBufferSize,
-				reinterpret_cast<SIZE_T*>(lpNumberOfBytesWritten)
+				lpNumberOfBytesWritten
 			)) {
 				return FALSE;
 			}
 		}
+		return TRUE;
+	}
+
+	BOOL VirtualMemoryProtect(
+		Procs::PPROCS 	pProcs,
+		HANDLE 			hProcess,
+		PVOID* 			pBaseAddr,
+		PSIZE_T 		pdwSize,
+		DWORD 			dwProtect,
+		PDWORD			pdwOldProtect
+	) {
+		NTSTATUS status = CallSysInvoke(
+			&pProcs->sysNtProtectVirtualMemory,
+			pProcs->lpNtProtectVirtualMemory,
+			hProcess,
+			pBaseAddr,
+			pdwSize,
+			dwProtect,
+			pdwOldProtect
+		);
+		if (status != STATUS_SUCCESS)
+		{
+			if (!VirtualProtectEx(
+				hProcess,
+				pBaseAddr,
+				*pdwSize,
+				dwProtect,
+				pdwOldProtect
+			)) {
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
+
+	BOOL VirtualMemoryFree(
+		Procs::PPROCS 	pProcs,
+		HANDLE 			hProcess,
+		PVOID* 			pBaseAddr,
+		PSIZE_T 		pdwSize,
+		DWORD 			dwFreeType
+	) {
+		NTSTATUS status = CallSysInvoke(
+			&pProcs->sysNtFreeVirtualMemory,
+			pProcs->lpNtFreeVirtualMemory,
+			hProcess,
+			pBaseAddr,
+			pdwSize,
+			(ULONG)dwFreeType
+		);
+		if (status != STATUS_SUCCESS)
+		{
+			return VirtualFree(
+				pBaseAddr,
+				*pdwSize,
+				dwFreeType
+			);
+		}
+	
 		return TRUE;
 	}
 
@@ -240,7 +272,6 @@ namespace System::Process
 		PVOID					pArgument
     ) {
 		HANDLE hThread;
-		static OBJECT_ATTRIBUTES oa = { sizeof(oa) };
             
 		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtCreateThreadEx,
@@ -249,7 +280,7 @@ namespace System::Process
 			THREAD_ALL_ACCESS,
 			nullptr,
 			hProcess,
-			(PVOID)lpThreadStartRoutineAddr,
+			lpThreadStartRoutineAddr,
 			pArgument,
 			0,
 			0,

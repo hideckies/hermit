@@ -73,7 +73,7 @@ namespace System::Process
     HANDLE ProcessCreate(
         Procs::PPROCS   pProcs,
         LPCWSTR         lpApplicationName,
-        DWORD           dwDesiredAccess, // e.g. PROCESS_ALL_ACCESS
+        DWORD           dwDesiredAccess,
         HANDLE          hParentProcess,
         HANDLE          hToken
     );
@@ -95,24 +95,32 @@ namespace System::Process
     PVOID VirtualMemoryAllocate(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
-        DWORD           dwSize,
-        DWORD           dwAllocationType,   // e.g. MEM_COMMIT | MEM_RESERVE
-        DWORD           dwProtect           // e.g. PAGE_READWRITE
-    );
-    BOOL VirtualMemoryFree(
-        Procs::PPROCS   pProcs,
-        HANDLE 	        hProcess,
-		PVOID* 	        pBaseAddr,
-		SIZE_T 	        dwSize,
-		DWORD 	        dwFreeType
+        SIZE_T          dwSize,
+        DWORD           dwAllocationType,
+        DWORD           dwProtect
     );
     BOOL VirtualMemoryWrite(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
-        PVOID          pBaseAddr,
-        PVOID          pBuffer,
-		DWORD           dwBufferSize,
-        PDWORD 			lpNumberOfBytesWritten
+        PVOID           pBaseAddr,
+        PVOID           pBuffer,
+		SIZE_T          dwBufferSize,
+        PSIZE_T 		lpNumberOfBytesWritten
+    );
+    BOOL VirtualMemoryProtect(
+		Procs::PPROCS   pProcs,
+		HANDLE          hProcess,
+		PVOID*          pBaseAddr,
+		PSIZE_T         pdwSize,
+		DWORD           dwProtect,
+        PDWORD			pdwOldProtect
+	);
+    BOOL VirtualMemoryFree(
+        Procs::PPROCS   pProcs,
+        HANDLE 	        hProcess,
+		PVOID* 	        pBaseAddr,
+		PSIZE_T 	    pdwSize,
+		DWORD 	        dwFreeType
     );
     HANDLE RemoteThreadCreate(
         Procs::PPROCS           pProcs,

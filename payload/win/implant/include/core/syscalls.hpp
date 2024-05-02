@@ -9,11 +9,8 @@
 #include <winternl.h>
 #include <windows.h>
 
-extern "C" DWORD 	SysSample(void*);
 extern "C" VOID 	SysSet(void*);
 extern "C" NTSTATUS SysInvoke(...);
-
-extern "C" DWORD SysNumber;
 
 template<typename FirstArg, typename SecondArg, typename... Args>
 NTSTATUS CallSysInvoke(FirstArg pSyscall, SecondArg lpProc, Args... args)

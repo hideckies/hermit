@@ -25,8 +25,8 @@ type Loader struct {
 	Lprotocol        string
 	Lhost            string
 	Lport            uint16
-	Type             string // "dll", "exec", "shellcode"
-	Technique        string // Evasion technique
+	Type             string
+	Technique        string
 	ProcessToInject  string
 	IndirectSyscalls bool
 }
@@ -41,7 +41,7 @@ func NewLoader(
 	lprotocol string,
 	lhost string,
 	lport uint16,
-	stgType string,
+	ldrType string,
 	technique string,
 	processToInject string,
 	indirectSyscalls bool,
@@ -50,7 +50,7 @@ func NewLoader(
 		_uuid = uuid.NewString()
 	}
 	if name == "" {
-		name = utils.GenerateRandomAnimalName(false, fmt.Sprintf("loader-%s", stgType))
+		name = utils.GenerateRandomAnimalName(false, ldrType)
 	}
 
 	return &Loader{
@@ -63,7 +63,7 @@ func NewLoader(
 		Lprotocol:        lprotocol,
 		Lhost:            lhost,
 		Lport:            lport,
-		Type:             stgType,
+		Type:             ldrType,
 		Technique:        technique,
 		ProcessToInject:  processToInject,
 		IndirectSyscalls: indirectSyscalls,
@@ -92,7 +92,12 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 	if err != nil {
 		return nil, "", err
 	}
-	outFile = fmt.Sprintf("%s/%s.%s.%s", payloadsDir, l.Name, l.Arch, l.Format)
+	if l.Format == "bin" {
+		// Temporality the '.exe' format
+		outFile = fmt.Sprintf("%s/%s.%s.exe", payloadsDir, l.Name, l.Arch)
+	} else {
+		outFile = fmt.Sprintf("%s/%s.%s.%s", payloadsDir, l.Name, l.Arch, l.Format)
+	}
 
 	// Get request path
 	requestPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/loader/download"])
@@ -116,14 +121,28 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		}
 
 		// Compile assembly and generate an object file.
-		asmSrc := "src/asm/syscalls."
+		asmSysObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
+		asmStartObj := fmt.Sprintf("/tmp/start-%s.o", uuid.NewString())
+		asmSysSrc := "src/asm/syscalls."
+		asmStartSrc := "src/asm/start."
+		asmFmt := "win"
+
 		if l.Arch == "amd64" {
-			asmSrc += "x64.asm"
+			asmSysSrc += "x64.asm"
+			asmStartSrc += "x64.asm"
+			asmFmt += "64"
 		} else {
-			asmSrc += "x86.asm"
+			asmSysSrc += "x86.asm"
+			asmStartSrc += "x86.asm"
+			asmFmt += "32"
 		}
-		asmObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
-		_, err = meta.ExecCommand("nasm", "-f", "win64", "-o", asmObj, asmSrc)
+
+		_, err = meta.ExecCommand("nasm", "-f", asmFmt, "-o", asmSysObj, asmSysSrc)
+		if err != nil {
+			os.Chdir(serverState.CWD)
+			return nil, "", fmt.Errorf("nasm error: %v", err)
+		}
+		_, err = meta.ExecCommand("nasm", "-f", asmFmt, "-o", asmStartObj, asmStartSrc)
 		if err != nil {
 			os.Chdir(serverState.CWD)
 			return nil, "", fmt.Errorf("nasm error: %v", err)
@@ -132,7 +151,8 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		// Compile
 		outText, err := meta.ExecCommand(
 			"cmake",
-			fmt.Sprintf("-DASM_OBJECT=%s", asmObj),
+			fmt.Sprintf("-DASM_OBJ_SYSCALLS=%s", asmSysObj),
+			fmt.Sprintf("-DASM_OBJ_START=%s", asmStartObj),
 			fmt.Sprintf("-DOUTPUT_DIRECTORY=%s", payloadsDir),
 			fmt.Sprintf("-DPAYLOAD_NAME=%s", l.Name),
 			fmt.Sprintf("-DPAYLOAD_ARCH=%s", l.Arch),
@@ -152,12 +172,14 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmObj)
+			os.Remove(asmSysObj)
+			os.Remove(asmStartObj)
 			return nil, "", fmt.Errorf("create build directory error: %v", err)
 		}
 		if strings.Contains(strings.ToLower(outText), "error:") {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmObj)
+			os.Remove(asmSysObj)
+			os.Remove(asmStartObj)
 			return nil, "", fmt.Errorf("cmake error: %s", outText)
 		}
 
@@ -169,22 +191,51 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmObj)
+			os.Remove(asmSysObj)
+			os.Remove(asmStartObj)
 			return nil, "", fmt.Errorf("build error: %v", err)
 		}
 		if strings.Contains(strings.ToLower(outText), "error:") {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmObj)
+			os.Remove(asmSysObj)
+			os.Remove(asmStartObj)
 			return nil, "", fmt.Errorf("cmake error: %s", outText)
 		}
 
-		os.Remove(asmObj)
+		os.Remove(asmSysObj)
+		os.Remove(asmStartObj)
 	}
 
 	data, err = os.ReadFile(outFile)
 	if err != nil {
 		os.Chdir(serverState.CWD)
 		return nil, "", err
+	}
+
+	// if the format is '.bin', extract shellcode from the PE file.
+	if l.Format == "bin" {
+		outRawFile := strings.Replace(outFile, ".exe", ".bin", -1)
+		outText, err := meta.ExecCommand(
+			"python3",
+			"script/extract_shellcode.py",
+			"-f",
+			outFile,
+			"-o",
+			outRawFile,
+		)
+		if err != nil {
+			os.Chdir(serverState.CWD)
+			return nil, "", err
+		}
+		if strings.Contains(strings.ToLower(outText), "error:") {
+			os.Chdir(serverState.CWD)
+			return nil, "", fmt.Errorf("python error: %s", outText)
+		}
+
+		// Remove the '.exe' file.
+		os.Remove(outFile)
+		// Updated to the '.bin' file path.
+		outFile = outRawFile
 	}
 
 	// Go back to the current directory

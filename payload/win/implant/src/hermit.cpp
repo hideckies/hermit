@@ -22,14 +22,6 @@ namespace Hermit
 		LPCWSTR 		lpKey,
 		LPCWSTR 		lpIV
 	) {
-		// TEST (I'll remove the following lines eventually) ----------------------
-		// Cord sysCord;
-		// sysCord.x = 10;
-		// sysCord.y = 20;
-		// DWORD c = SysSample(&sysCord);
-		// Stdout::DisplayMessageBoxA(std::to_string(c).c_str(), "SysSample3");
-		// ------------------------------------------------------------------------
-
 		HMODULE hKernel32DLL = LoadLibrary(L"kernel32.dll");
 		if (!hKernel32DLL)
 		{

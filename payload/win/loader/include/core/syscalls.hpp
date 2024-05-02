@@ -9,15 +9,8 @@
 #define UP   -32
 #define DOWN 32
 
-extern "C" DWORD 	SysSample(void*);
 extern "C" VOID 	SysSet(void*);
 extern "C" NTSTATUS SysInvoke(...);
-
-extern "C" DWORD SysNumber;
-
-//
-extern "C" VOID     SyscallPrepare(WORD);
-extern "C" NTSTATUS SyscallInvoke(...);
 
 template<typename FirstArg, typename SecondArg, typename... Args>
 NTSTATUS CallSysInvoke(FirstArg pSyscall, SecondArg lpProc, Args... args)

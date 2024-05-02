@@ -6,7 +6,8 @@ namespace System::Process
 		Procs::PPROCS 	pProcs,
 		LPCWSTR 		lpApplicationName,
 		DWORD 			dwDesiredAccess,
-		HANDLE 			hParentProcess
+		HANDLE 			hParentProcess,
+		HANDLE			hToken
 	) {
 		HANDLE hProcess;
 		OBJECT_ATTRIBUTES objAttr;
@@ -31,7 +32,7 @@ namespace System::Process
 			FALSE,
 			nullptr,
 			nullptr,
-			nullptr
+			hToken
 		);
 		if (status != STATUS_SUCCESS)
 		{
@@ -416,7 +417,8 @@ namespace System::Process
 			pProcs,
 			wFilePath.c_str(),
 			PROCESS_ALL_ACCESS,
-			NtCurrentProcess() // GetCurrentProcess()
+			NtCurrentProcess(),
+			nullptr
 		);
 		if (!hProcess)
 		{

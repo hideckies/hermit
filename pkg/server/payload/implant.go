@@ -134,21 +134,28 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		}
 
 		// Compile assembly and generate an object file.
-		asmSyscallsSrc := "src/asm/syscalls."
+		asmSysObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
+		asmRflObj := fmt.Sprintf("/tmp/rfl-%s.o", uuid.NewString())
+		asmSysSrc := "src/asm/syscalls."
+		asmRflSrc := "src/asm/rfl."
+		asmFmt := "win"
+
 		if i.Arch == "amd64" {
-			asmSyscallsSrc += "x64.asm"
+			asmSysSrc += "x64.asm"
+			asmRflSrc += "x64.asm"
+			asmFmt += "64"
 		} else {
-			asmSyscallsSrc += "x86.asm"
+			asmSysSrc += "x86.asm"
+			asmRflSrc += "x86.asm"
+			asmFmt += "32"
 		}
-		asmSyscallsObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
-		_, err = meta.ExecCommand("nasm", "-f", "win64", "-o", asmSyscallsObj, asmSyscallsSrc)
+
+		_, err = meta.ExecCommand("nasm", "-f", asmFmt, "-o", asmSysObj, asmSysSrc)
 		if err != nil {
 			os.Chdir(serverState.CWD)
 			return nil, "", fmt.Errorf("nasm error: %v", err)
 		}
-		asmReflectiveSrc := "src/asm/reflective.asm"
-		asmReflectiveObj := fmt.Sprintf("/tmp/reflective-%s.o", uuid.NewString())
-		_, err = meta.ExecCommand("nasm", "-f", "win64", "-o", asmReflectiveObj, asmReflectiveSrc)
+		_, err = meta.ExecCommand("nasm", "-f", asmFmt, "-o", asmRflObj, asmRflSrc)
 		if err != nil {
 			os.Chdir(serverState.CWD)
 			return nil, "", fmt.Errorf("nasm error: %v", err)
@@ -157,8 +164,8 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		// Compile
 		outText, err := meta.ExecCommand(
 			"cmake",
-			fmt.Sprintf("-DASM_OBJ_SYSCALLS=%s", asmSyscallsObj),
-			fmt.Sprintf("-DASM_OBJ_REFLECTIVE=%s", asmReflectiveObj),
+			fmt.Sprintf("-DASM_OBJ_SYSCALLS=%s", asmSysObj),
+			fmt.Sprintf("-DASM_OBJ_REFLECTIVE=%s", asmRflObj),
 			fmt.Sprintf("-DOUTPUT_DIRECTORY=%s", payloadsDir),
 			fmt.Sprintf("-DPAYLOAD_NAME=%s", i.Name),
 			fmt.Sprintf("-DPAYLOAD_ARCH=%s", i.Arch),
@@ -186,14 +193,14 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmSyscallsObj)
-			os.Remove(asmReflectiveObj)
+			os.Remove(asmSysObj)
+			os.Remove(asmRflObj)
 			return nil, "", fmt.Errorf("cmake error: %v", err)
 		}
 		if strings.Contains(strings.ToLower(outText), "error:") {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmSyscallsObj)
-			os.Remove(asmReflectiveObj)
+			os.Remove(asmSysObj)
+			os.Remove(asmRflObj)
 			return nil, "", fmt.Errorf("cmake error: %s", outText)
 		}
 
@@ -205,19 +212,19 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmSyscallsObj)
-			os.Remove(asmReflectiveObj)
+			os.Remove(asmSysObj)
+			os.Remove(asmRflObj)
 			return nil, "", fmt.Errorf("cmake error: %v", err)
 		}
 		if strings.Contains(strings.ToLower(outText), "error:") {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmSyscallsObj)
-			os.Remove(asmReflectiveObj)
+			os.Remove(asmSysObj)
+			os.Remove(asmRflObj)
 			return nil, "", fmt.Errorf("cmake error: %s", outText)
 		}
 
-		os.Remove(asmSyscallsObj)
-		os.Remove(asmReflectiveObj)
+		os.Remove(asmSysObj)
+		os.Remove(asmRflObj)
 	}
 
 	data, err = os.ReadFile(outFile)
