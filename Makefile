@@ -24,6 +24,7 @@ server:
 	@ echo "[*] Building the C2 server..."
 	@ chmod +x install.sh; ./install.sh server
 	$(MAKE) _compile_protobufs
+	@ echo "[*] Compiling the Go project..."
 	@ go build -ldflags="-s -w" -trimpath -o ./hermit pkg/server/main.go
 	@ sudo setcap 'cap_net_bind_service=+ep' ./hermit
 	@ echo "[+] Done."
@@ -35,6 +36,7 @@ client:
 	@ echo "[*] Building the C2 client..."
 	@ chmod +x install.sh; ./install.sh client
 	$(MAKE) _compile_protobufs
+	@ echo "[*] Compiling the Go project..."
 	@ go build -ldflags="-s -w" -trimpath -o ./hermit-client pkg/client/main.go
 	@ sudo setcap 'cap_net_bind_service=+ep' ./hermit-client
 	@ echo "[+] Done."

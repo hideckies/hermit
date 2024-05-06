@@ -14,6 +14,28 @@ import (
 	_task "github.com/hideckies/hermit/pkg/server/task"
 )
 
+// Assembly
+type amTaskAssemblyCmd struct {
+	Assembly string `arg:"" required:"" help:"Path to .NET assembly to be executed."`
+}
+
+func (c *amTaskAssemblyCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{"assembly": c.Assembly})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // CAT
 type amTaskCatCmd struct {
 	Path string `arg:"" required:"" help:"Path to read."`
@@ -47,6 +69,28 @@ func (c *amTaskCdCmd) Run(
 	clientState *cliState.ClientState,
 ) error {
 	task, err := _task.NewTask(ctx.Args[0], map[string]string{"path": c.Path})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// CMD
+type amTaskCmdCmd struct {
+	Cmd string `arg:"" required:"" help:"Command to execute."`
+}
+
+func (c *amTaskCmdCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{"cmd": c.Cmd})
 	if err != nil {
 		return err
 	}
@@ -216,17 +260,18 @@ type amTaskEnvCmd struct {
 	// Set amTaskEnvSetCmd `cmd:"" help:"Set environmant variable."`
 }
 
-// EXECUTE
-type amTaskExecuteCmd struct {
-	Cmd string `arg:"" required:"" help:"Command to execute."`
+// EXE
+type amTaskExeCmd struct {
+	Exe string `arg:"" required:"" type:"path" help:"Specify EXE path to be loaded and executed."`
+	// Inline bool   `short:"i" optional:"" help:"Enable inline execute."`
 }
 
-func (c *amTaskExecuteCmd) Run(
+func (c *amTaskExeCmd) Run(
 	ctx *kong.Context,
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
-	task, err := _task.NewTask(ctx.Args[0], map[string]string{"cmd": c.Cmd})
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{"exe": c.Exe})
 	if err != nil {
 		return err
 	}

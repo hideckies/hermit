@@ -3,13 +3,14 @@
 namespace System::Process
 {
     HANDLE ProcessCreate(
-		Procs::PPROCS 	pProcs,
-		LPCWSTR 		lpApplicationName,
+		Procs::PPROCS	pProcs,
+		LPCWSTR			lpApplicationName,
 		DWORD 			dwDesiredAccess,
+		BOOL			bInheritHandles,
+		DWORD           dwCreationFlags,
 		HANDLE 			hParentProcess,
 		HANDLE			hToken
 	) {
-		HANDLE hProcess;
 		OBJECT_ATTRIBUTES objAttr;
 		UNICODE_STRING uniAppName;
 
@@ -19,20 +20,28 @@ namespace System::Process
 			&uniAppName,
 			lpApplicationName
 		);
-		InitializeObjectAttributes(&objAttr, &uniAppName, 0, nullptr, nullptr);
+		ULONG uAttributes = OBJ_CASE_INSENSITIVE;
+		if (bInheritHandles)
+		{
+			uAttributes = OBJ_CASE_INSENSITIVE | OBJ_INHERIT;
+		}
+		InitializeObjectAttributes(&objAttr, &uniAppName, uAttributes, nullptr, nullptr);
+
+		HANDLE hProcess;
 
 		// Create a new process.
 		NTSTATUS status = CallSysInvoke(
-			&pProcs->sysNtCreateProcess,
-			pProcs->lpNtCreateProcess,
+			&pProcs->sysNtCreateProcessEx,
+			pProcs->lpNtCreateProcessEx,
 			&hProcess,
 			dwDesiredAccess,
 			&objAttr,
 			hParentProcess,
-			FALSE,
+			(ULONG)dwCreationFlags,
 			nullptr,
 			nullptr,
-			hToken
+			hToken,
+			0
 		);
 		if (status != STATUS_SUCCESS)
 		{
@@ -46,8 +55,8 @@ namespace System::Process
 				nullptr,
 				nullptr,
 				nullptr,
-				FALSE,
-				0,
+				bInheritHandles,
+				dwCreationFlags,
 				nullptr,
 				nullptr,
 				&si,
@@ -88,6 +97,55 @@ namespace System::Process
 
         return pid;
     }
+
+	DWORD ProcessGetMainThreadId(DWORD dwProcessId)
+	{
+		Stdout::DisplayMessageBoxW(
+			Utils::Convert::DWORDToWstring(dwProcessId).c_str(),
+			L"ProcessGetMainThreadId dwProcessId"
+		);
+		
+		DWORD dwMainThreadId = 0;
+		THREADENTRY32 te32;
+
+		HANDLE hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+		if (hThreadSnap == INVALID_HANDLE_VALUE)
+		{
+			return 0;
+		}
+
+		te32.dwSize = sizeof(THREADENTRY32);
+
+		if (!Thread32First(hThreadSnap, &te32))
+		{
+			CloseHandle(hThreadSnap);
+			return 0;
+		}
+
+		Stdout::DisplayMessageBoxA("Thread32First OK", "ProcessGetMainThreadId");
+
+		do
+		{
+			if (te32.th32OwnerProcessID > 1000)
+			{
+				Stdout::DisplayMessageBoxW(
+					Utils::Convert::DWORDToWstring(te32.th32OwnerProcessID).c_str(),
+					L"ProcessGetMainThreadId te32.th32OwnerProcessID"
+				);
+			}
+
+			if (te32.th32OwnerProcessID == dwProcessId)
+			{
+				dwMainThreadId = te32.th32ThreadID;
+				break;
+			}
+
+		} while (Thread32Next(hThreadSnap, &te32));
+
+		CloseHandle(hThreadSnap);
+		
+		return dwMainThreadId;
+	}
 
     HANDLE ProcessOpen(
 		Procs::PPROCS pProcs,
@@ -169,12 +227,11 @@ namespace System::Process
 	PVOID VirtualMemoryAllocate(
 		Procs::PPROCS pProcs,
 		HANDLE 	hProcess,
+		PVOID	pBaseAddr,
 		SIZE_T	dwSize,
 		DWORD 	dwAllocationType,
 		DWORD 	dwProtect
 	) {
-        PVOID pBaseAddr;
-
 		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtAllocateVirtualMemory,
 			pProcs->lpNtAllocateVirtualMemory,
@@ -187,9 +244,9 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			pBaseAddr = VirtualAllocEx(
+			return VirtualAllocEx(
                 hProcess,
-                nullptr,
+                pBaseAddr,
                 dwSize,
                 dwAllocationType,
                 dwProtect
@@ -198,6 +255,39 @@ namespace System::Process
 
         return pBaseAddr;
     }
+
+	BOOL VirtualMemoryRead(
+        Procs::PPROCS   pProcs,
+		HANDLE			hProcess,
+		PVOID			pBaseAddr,
+		PVOID			pBuffer,
+		SIZE_T			dwBufferSize,
+		PSIZE_T			lpNumberOfBytesRead
+    ) {
+		NTSTATUS status = CallSysInvoke(
+			&pProcs->sysNtReadVirtualMemory,
+			pProcs->lpNtReadVirtualMemory,
+			hProcess,
+			pBaseAddr,
+			pBuffer,
+			dwBufferSize,
+			lpNumberOfBytesRead
+		);
+		if (status != STATUS_SUCCESS)
+		{
+			if (!ReadProcessMemory(
+				hProcess,
+				(LPCVOID)pBaseAddr,
+				pBuffer,
+				dwBufferSize,
+				lpNumberOfBytesRead
+			)) {
+				return FALSE;
+			}
+		}
+
+		return TRUE;
+	}
 
     BOOL VirtualMemoryWrite(
 		Procs::PPROCS 	pProcs,
@@ -228,6 +318,7 @@ namespace System::Process
 				return FALSE;
 			}
 		}
+		
 		return TRUE;
 	}
 
@@ -330,6 +421,35 @@ namespace System::Process
 		return hThread;
 	}
 
+	HANDLE ThreadOpen(
+        Procs::PPROCS pProcs,
+		DWORD dwDesiredAccess,
+		BOOL bInheritHandle
+    ) {
+		HANDLE hThread;
+
+		// CLIENT_ID clientId;
+		// clientId.UniqueProcess = (HANDLE)pbi.
+
+		// NTSTATUS status = CallSysInvoke(
+		// 	&pProcs->sysNtOpenThread,
+		// 	pProcs->lpNtOpenThread,
+		// 	&hThread,
+		// 	dwDesiredAccess,
+
+		// );
+		// if (status != STATUS_SUCCESS)
+		// {
+		// 	hThread = OpenThread(
+		// 		dwDesiredAccess,
+		// 		bInheritHandle,
+		// 		dwThreadId
+		// 	);
+		// }
+
+		return hThread;
+	}
+
     std::wstring ExecuteCmd(Procs::PPROCS pProcs, const std::wstring& wCmd)
 	{
 		std::wstring result;
@@ -417,6 +537,8 @@ namespace System::Process
 			pProcs,
 			wFilePath.c_str(),
 			PROCESS_ALL_ACCESS,
+			FALSE,
+			0,
 			NtCurrentProcess(),
 			nullptr
 		);

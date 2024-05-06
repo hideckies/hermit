@@ -44,18 +44,33 @@ namespace Technique::Injection::Helper
 
 namespace Technique::Injection
 {
+    // DLL
     BOOL DLLInjection(
-        Procs::PPROCS   pProcs,
-        DWORD           dwPID,
-        LPVOID          lpDllPath,
-        size_t          dwDllPathSize
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        std::vector<BYTE> bytes
     );
     BOOL ReflectiveDLLInjection(
-        Procs::PPROCS   pProcs,
-        DWORD           dwPID,
-        LPCWSTR         lpDllPath
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        std::vector<BYTE> bytes
     );
 
+    // PE
+    BOOL DirectExecution(
+        Procs::PPROCS       pProcs,
+        std::vector<BYTE>   bytes
+    );
+    BOOL PEInjection(
+        Procs::PPROCS   pProcs
+    );
+    BOOL ProcessHollowing(
+        Procs::PPROCS       pProcs,
+        LPVOID              lpBuffer,
+        const std::wstring  &wTargetProcess
+    );
+
+    // Shellcode
     BOOL ShellcodeInjection(
         Procs::PPROCS               pProcs,
         DWORD                       dwPID,

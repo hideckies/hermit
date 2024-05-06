@@ -20,7 +20,7 @@ Once the C2 server started, we also need to start HTTPS listener:
 Hermit > listener new
 ```
 
-After starting, the listener folder is generated at `$HOME/.hermit/server/listeners/listener-<name>`.
+After starting, the listener folder is generated at `$HOME/.hermit/server/listeners/https-<name>`.
 
 ## 3. Generate DLL Implant
 
@@ -46,7 +46,7 @@ After that, we can see the generated payload with the `listener payloads <LISTEN
 This command lists all payloads hosted on the listener.  
 We can freely delete arbitrary payload by selecting a payload on this menu (of course, we shouldn't delete it now).  
 
-This payload is stored under `$HOME/.hermit/server/listeners/listener-<name>/payloads/`. The DLL loader that we will create later will find this DLL file in this directory and load it automatically, so don't move this payload.
+This payload is stored under `$HOME/.hermit/server/listeners/https-<name>/payloads/`. The DLL loader that we will create later will find this DLL file in this directory and load it automatically, so don't move this payload.
 
 ## 4. Generate DLL Loader
 
@@ -63,7 +63,7 @@ In the option wizard, choose the following options at least:
 - Technique                 -> `dll-injection`
 - Target Process to Inject  -> `notepad.exe`
 
-This stager is also generated under `$HOME/.hermit/server/listeners/listener-<name>/payloads/`. 
+This stager is also generated under `$HOME/.hermit/server/listeners/https-<name>/payloads/`. 
 
 ### Transfer the Loader
 

@@ -50,7 +50,6 @@ DLLEXPORT BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvRes
 
 DWORD WINAPI ThreadProc(LPVOID lpParam)
 {    
-    Hermit::ExecLoader();
-
+    Hermit::PELoader();
     return 0;
 }

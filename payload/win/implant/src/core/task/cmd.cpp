@@ -2,7 +2,7 @@
 
 namespace Task
 {
-	std::wstring Execute(State::PSTATE pState, const std::wstring& wCmd)
+    std::wstring Cmd(State::PSTATE pState, const std::wstring& wCmd)
 	{
 		std::wstring result;
 

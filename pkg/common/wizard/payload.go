@@ -371,10 +371,16 @@ func WizardPayloadLoader(
 			"reflective-dll-injection",
 		}
 	} else if oType == "pe-loader" {
-		// Exec Loader
+		// PE Loader
 		items = []string{
 			"direct-execution",
-			// "process-doppeleganging",
+			// "pe-injection",
+			"process-hollowing",
+			// "process-doppelganging",
+			// "apc-que-code-injection",
+			// "early-bird-apc-que-code-injection",
+			// "process-ghosting",
+			// "atom-bombing",
 		}
 	} else if oType == "shellcode-loader" {
 		// Shellcode Loader
@@ -398,6 +404,7 @@ func WizardPayloadLoader(
 	// Target process name to inject
 	var oProcessToInject string = ""
 	if oTechnique == "dll-injection" ||
+		oTechnique == "process-hollowing" ||
 		oTechnique == "reflective-dll-injection" ||
 		oTechnique == "shellcode-injection" {
 		for {

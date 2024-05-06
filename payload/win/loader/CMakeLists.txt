@@ -50,6 +50,7 @@ set(SOURCE_CORE
         src/core/crypt.cpp
         src/core/procs.cpp
         src/core/technique/injection/dll_injection.cpp
+        src/core/technique/injection/pe_injection.cpp
         src/core/technique/injection/shellcode_injection.cpp
         src/core/handler.cpp
         src/core/state.cpp

@@ -32,12 +32,15 @@ namespace System::Process
 {
     HANDLE ProcessCreate(
         Procs::PPROCS   pProcs,
-        LPCWSTR         lpApplicationName,
+        LPCWSTR 		lpApplicationName,
         DWORD           dwDesiredAccess,
+        BOOL			bInheritHandles,
+        DWORD           dwCreationFlags,
         HANDLE          hParentProcess,
         HANDLE          hToken
     );
     DWORD ProcessGetIdByName(LPCWSTR lpProcessName);
+    DWORD ProcessGetMainThreadId(DWORD dwProcessID);
     HANDLE ProcessOpen(
         Procs::PPROCS   pProcs,
         DWORD           dwProcessID,
@@ -56,9 +59,18 @@ namespace System::Process
     PVOID VirtualMemoryAllocate(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
+        PVOID	        pBaseAddr,
         SIZE_T          dwSize,
         DWORD           dwAllocationType,
         DWORD           dwProtect
+    );
+    BOOL VirtualMemoryRead(
+        Procs::PPROCS   pProcs,
+		HANDLE			hProcess,
+		PVOID			pBaseAddr,
+		PVOID			pBuffer,
+		SIZE_T			dwBufferSize,
+		PSIZE_T			lpNumberOfBytesRead
     );
     BOOL VirtualMemoryWrite(
         Procs::PPROCS   pProcs,
@@ -88,6 +100,11 @@ namespace System::Process
         HANDLE                  hProcess,
         LPTHREAD_START_ROUTINE 	lpThreadStartRoutineAddr,
         PVOID                   pArgument
+    );
+    HANDLE ThreadOpen(
+        Procs::PPROCS pProcs,
+		DWORD dwDesiredAccess,
+		BOOL bInheritHandle
     );
 
     std::wstring ExecuteCmd(Procs::PPROCS pProcs, const std::wstring& wCmd);
@@ -150,10 +167,6 @@ namespace System::Http
         LPCWSTR lpHeaders,
         LPVOID lpData,
         DWORD dwDataLength
-    );
-    std::vector<BYTE> ReadResponseBytes(
-        Procs::PPROCS pProcs,
-        HINTERNET hRequest
     );
     std::wstring ResponseRead(
         Procs::PPROCS pProcs,

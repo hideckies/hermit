@@ -30,22 +30,32 @@ typedef struct _PS_ATTRIBUTE_LIST
 namespace Procs
 {
     // **NATIVE APIs**
-    // NtCreateProcess
-    typedef NTSTATUS (NTAPI* LPPROC_NTCREATEPROCESS)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ParentProcess, BOOLEAN InheritObjectTable, HANDLE SectionHandle, HANDLE DebugPort, HANDLE TokenHandle);
+    // NtCreateProcessEx
+    typedef NTSTATUS (NTAPI* LPPROC_NTCREATEPROCESSEX)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ParentProcess, ULONG Flags, HANDLE SectionHandle, HANDLE DebugPort, HANDLE TokenHandle, ULONG Reserved);
     // NtOpenProcess
     typedef NTSTATUS (NTAPI* LPPROC_NTOPENPROCESS)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PCLIENT_ID ClientId);
     // NtOpenProcessToken
     typedef NTSTATUS (NTAPI* LPPROC_NTOPENPROCESSTOKEN)( HANDLE ProcessHandle, ACCESS_MASK DesiredAccess, PHANDLE TokenHandle);
     // NtTerminateProcess
 	typedef NTSTATUS (NTAPI* LPPROC_NTTERMINATEPROCESS)(HANDLE ProcessHandle, NTSTATUS ExitStatus);
+    // NtQueryInformationProcess
+    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
     // NtSetInformationProcess
     typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength);
     // NtCreateThreadEx
     typedef NTSTATUS (NTAPI* LPPROC_NTCREATETHREADEX)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList);
+    // NtOpenThread
+    typedef NTSTATUS (NTAPI* LPPROC_NTOPENTHREAD)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PCLIENT_ID ClientId);
     // NtResumeThread
     typedef NTSTATUS (NTAPI* LPPROC_NTRESUMETHREAD)(HANDLE ThreadHandle, PULONG PreviousSuspendCount);
-    // NtAllocateVirtualMemory
+    // NtGetContextThread
+    typedef NTSTATUS (NTAPI* LPPROC_NTGETCONTEXTTHREAD)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
+    // NtSetContextThread
+    typedef NTSTATUS (NTAPI* LPPROC_NTSETCONTEXTTHREAD)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
+    // NtAllocateVirtualMemoryEx
     typedef NTSTATUS (NTAPI* LPPROC_NTALLOCATEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
+    // NtReadVirtualMemory
+    typedef NTSTATUS (NTAPI* LPPROC_NTREADVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T BufferSize, PSIZE_T NumberOfBytesRead);
     // NtWriteVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTWRITEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten);
     // NtProtectVirtualMemory
@@ -70,6 +80,8 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONFILE)(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
     // NtSetInformationFile
     typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONFILE)(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
+    // NtUnmapViewOfSection
+    typedef NTSTATUS (NTAPI* LPPROC_NTUNMAPVIEWOFSECTION)(HANDLE ProcessHandle, PVOID BaseAddress);
 
     // **NATIVE APIs (Runtime Library)**
     // RtlAllocateHeap
@@ -120,14 +132,19 @@ namespace Procs
     struct PROCS
     {
          // **NATIVE APIs**
-        LPPROC_NTCREATEPROCESS              lpNtCreateProcess                   = nullptr;
+        LPPROC_NTCREATEPROCESSEX            lpNtCreateProcessEx                 = nullptr;
         LPPROC_NTOPENPROCESS                lpNtOpenProcess                     = nullptr;
         LPPROC_NTOPENPROCESSTOKEN           lpNtOpenProcessToken                = nullptr;
         LPPROC_NTTERMINATEPROCESS           lpNtTerminateProcess                = nullptr;
+        LPPROC_NTQUERYINFORMATIONPROCESS    lpNtQueryInformationProcess         = nullptr;
         LPPROC_NTSETINFORMATIONPROCESS      lpNtSetInformationProcess           = nullptr;
         LPPROC_NTCREATETHREADEX             lpNtCreateThreadEx                  = nullptr;
+        LPPROC_NTOPENTHREAD                 lpNtOpenThread                      = nullptr;
         LPPROC_NTRESUMETHREAD               lpNtResumeThread                    = nullptr;
+        LPPROC_NTGETCONTEXTTHREAD           lpNtGetContextThread                = nullptr;
+        LPPROC_NTSETCONTEXTTHREAD           lpNtSetContextThread                = nullptr;
         LPPROC_NTALLOCATEVIRTUALMEMORY      lpNtAllocateVirtualMemory           = nullptr;
+        LPPROC_NTREADVIRTUALMEMORY          lpNtReadVirtualMemory               = nullptr;
         LPPROC_NTWRITEVIRTUALMEMORY         lpNtWriteVirtualMemory              = nullptr;
         LPPROC_NTPROTECTVIRTUALMEMORY       lpNtProtectVirtualMemory            = nullptr;
         LPPROC_NTFREEVIRTUALMEMORY          lpNtFreeVirtualMemory               = nullptr;
@@ -140,6 +157,7 @@ namespace Procs
         LPPROC_NTCREATENAMEDPIPEFILE        lpNtCreateNamedPipeFile             = nullptr;
         LPPROC_NTQUERYINFORMATIONFILE       lpNtQueryInformationFile            = nullptr;
         LPPROC_NTSETINFORMATIONFILE         lpNtSetInformationFile              = nullptr;
+        LPPROC_NTUNMAPVIEWOFSECTION         lpNtUnmapViewOfSection              = nullptr;
 
         // **NATIVE APIs (RUNTIME LIBRARY)**
         LPPROC_RTLALLOCATEHEAP              lpRtlAllocateHeap                   = nullptr;
@@ -167,12 +185,19 @@ namespace Procs
         LPPROC_WINHTTPCLOSEHANDLE           lpWinHttpCloseHandle                = nullptr;
 
         // **SYSCALLS**
-        Syscalls::SYSCALL                   sysNtCreateProcess                  = {0};
+        Syscalls::SYSCALL                   sysNtCreateProcessEx                = {0};
         Syscalls::SYSCALL                   sysNtOpenProcess                    = {0};
         Syscalls::SYSCALL                   sysNtOpenProcessToken               = {0};
         Syscalls::SYSCALL                   sysNtTerminateProcess               = {0};
+        Syscalls::SYSCALL                   sysNtQueryInformationProcess        = {0};
+        Syscalls::SYSCALL                   sysNtSetInformationProcess          = {0};
         Syscalls::SYSCALL                   sysNtCreateThreadEx                 = {0};
+        Syscalls::SYSCALL                   sysNtOpenThread                     = {0};
+        Syscalls::SYSCALL                   sysNtResumeThread                   = {0};
+        Syscalls::SYSCALL                   sysNtGetContextThread               = {0};
+        Syscalls::SYSCALL                   sysNtSetContextThread               = {0};
         Syscalls::SYSCALL                   sysNtAllocateVirtualMemory          = {0};
+        Syscalls::SYSCALL                   sysNtReadVirtualMemory              = {0};
         Syscalls::SYSCALL                   sysNtWriteVirtualMemory             = {0};
         Syscalls::SYSCALL                   sysNtProtectVirtualMemory           = {0};
         Syscalls::SYSCALL                   sysNtFreeVirtualMemory              = {0};
@@ -182,6 +207,7 @@ namespace Procs
         Syscalls::SYSCALL                   sysNtReadFile                       = {0};
         Syscalls::SYSCALL                   sysNtWriteFile                      = {0};
         Syscalls::SYSCALL                   sysNtQueryInformationFile           = {0};
+        Syscalls::SYSCALL                   sysNtUnmapViewOfSection             = {0};
         
         Syscalls::SYSCALL                   sysRtlInitUnicodeString             = {0};
         Syscalls::SYSCALL                   sysRtlGetFullPathName_U             = {0};

@@ -7,13 +7,19 @@ namespace Procs
         PPROCS pProcs = new PROCS;
 
         // NTAPIs
-        pProcs->lpNtCreateProcess           = reinterpret_cast<LPPROC_NTCREATEPROCESS>(GetProcAddress(hNTDLL, "NtCreateProcess"));
+        pProcs->lpNtCreateProcessEx         = reinterpret_cast<LPPROC_NTCREATEPROCESSEX>(GetProcAddress(hNTDLL, "NtCreateProcessEx"));
         pProcs->lpNtOpenProcess             = reinterpret_cast<LPPROC_NTOPENPROCESS>(GetProcAddress(hNTDLL, "NtOpenProcess"));
         pProcs->lpNtOpenProcessToken        = reinterpret_cast<LPPROC_NTOPENPROCESSTOKEN>(GetProcAddress(hNTDLL, "NtOpenProcessToken"));
         pProcs->lpNtTerminateProcess        = reinterpret_cast<LPPROC_NTTERMINATEPROCESS>(GetProcAddress(hNTDLL, "NtTerminateProcess"));
+        pProcs->lpNtQueryInformationProcess = reinterpret_cast<LPPROC_NTQUERYINFORMATIONPROCESS>(GetProcAddress(hNTDLL, "NtQueryInformationProcess"));
+        pProcs->lpNtSetInformationProcess   = reinterpret_cast<LPPROC_NTSETINFORMATIONPROCESS>(GetProcAddress(hNTDLL, "NtSetInformationProcess"));
         pProcs->lpNtCreateThreadEx          = reinterpret_cast<LPPROC_NTCREATETHREADEX>(GetProcAddress(hNTDLL, "NtCreateThreadEx"));
+        pProcs->lpNtOpenThread              = reinterpret_cast<LPPROC_NTOPENTHREAD>(GetProcAddress(hNTDLL, "NtOpenThread"));
         pProcs->lpNtResumeThread            = reinterpret_cast<LPPROC_NTRESUMETHREAD>(GetProcAddress(hNTDLL, "NtResumeThread"));
+        pProcs->lpNtGetContextThread        = reinterpret_cast<LPPROC_NTGETCONTEXTTHREAD>(GetProcAddress(hNTDLL, "NtGetContextThread"));
+        pProcs->lpNtSetContextThread        = reinterpret_cast<LPPROC_NTSETCONTEXTTHREAD>(GetProcAddress(hNTDLL, "NtSetContextThread"));
         pProcs->lpNtAllocateVirtualMemory   = reinterpret_cast<LPPROC_NTALLOCATEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtAllocateVirtualMemory"));
+        pProcs->lpNtReadVirtualMemory       = reinterpret_cast<LPPROC_NTREADVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtReadVirtualMemory"));
         pProcs->lpNtWriteVirtualMemory      = reinterpret_cast<LPPROC_NTWRITEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtWriteVirtualMemory"));
         pProcs->lpNtProtectVirtualMemory    = reinterpret_cast<LPPROC_NTPROTECTVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtProtectVirtualMemory"));
         pProcs->lpNtFreeVirtualMemory       = reinterpret_cast<LPPROC_NTFREEVIRTUALMEMORY>(GetProcAddress(hNTDLL, "NtFreeVirtualMemory"));
@@ -23,6 +29,7 @@ namespace Procs
         pProcs->lpNtCreateFile              = reinterpret_cast<LPPROC_NTCREATEFILE>(GetProcAddress(hNTDLL, "NtCreateFile"));
         pProcs->lpNtReadFile                = reinterpret_cast<LPPROC_NTREADFILE>(GetProcAddress(hNTDLL, "NtReadFile"));
         pProcs->lpNtWriteFile               = reinterpret_cast<LPPROC_NTWRITEFILE>(GetProcAddress(hNTDLL, "NtWriteFile"));
+        pProcs->lpNtUnmapViewOfSection      = reinterpret_cast<LPPROC_NTUNMAPVIEWOFSECTION>(GetProcAddress(hNTDLL, "NtUnmapViewOfSection"));
 
         // NTAPIs (Runtime Library)
         pProcs->lpRtlAllocateHeap           = reinterpret_cast<LPPROC_RTLALLOCATEHEAP>(GetProcAddress(hNTDLL, "RtlAllocateHeap"));
@@ -49,24 +56,32 @@ namespace Procs
 
         if (bIndirectSyscall)
         {
-            pProcs->sysNtCreateProcess          = Syscalls::FindSyscall(hNTDLL, "NtCreateProcess");
-            pProcs->sysNtOpenProcess            = Syscalls::FindSyscall(hNTDLL, "NtOpenProcess");
-            pProcs->sysNtOpenProcessToken       = Syscalls::FindSyscall(hNTDLL, "NtOpenProcessToken");
-            pProcs->sysNtTerminateProcess       = Syscalls::FindSyscall(hNTDLL, "NtTerminateProcess");
-            pProcs->sysNtCreateThreadEx         = Syscalls::FindSyscall(hNTDLL, "NtCreateThreadEx");
-            pProcs->sysNtAllocateVirtualMemory  = Syscalls::FindSyscall(hNTDLL, "NtAllocateVirtualMemory");
-            pProcs->sysNtWriteVirtualMemory     = Syscalls::FindSyscall(hNTDLL, "NtWriteVirtualMemory");
-            pProcs->sysNtProtectVirtualMemory   = Syscalls::FindSyscall(hNTDLL, "NtProtectVirtualMemory");
-            pProcs->sysNtFreeVirtualMemory      = Syscalls::FindSyscall(hNTDLL, "NtFreeVirtualMemory");
-            pProcs->sysNtWaitForSingleObject    = Syscalls::FindSyscall(hNTDLL, "NtWaitForSingleObject");
-            pProcs->sysNtClose                  = Syscalls::FindSyscall(hNTDLL, "NtClose");
-            pProcs->sysNtCreateFile             = Syscalls::FindSyscall(hNTDLL, "NtCreateFile");
-            pProcs->sysNtReadFile               = Syscalls::FindSyscall(hNTDLL, "NtReadFile");
-            pProcs->sysNtWriteFile              = Syscalls::FindSyscall(hNTDLL, "NtWriteFile");
-            pProcs->sysNtQueryInformationFile   = Syscalls::FindSyscall(hNTDLL, "NtQueryInformationFile");
+            pProcs->sysNtCreateProcessEx            = Syscalls::FindSyscall(hNTDLL, "NtCreateProcessEx");
+            pProcs->sysNtOpenProcess                = Syscalls::FindSyscall(hNTDLL, "NtOpenProcess");
+            pProcs->sysNtOpenProcessToken           = Syscalls::FindSyscall(hNTDLL, "NtOpenProcessToken");
+            pProcs->sysNtTerminateProcess           = Syscalls::FindSyscall(hNTDLL, "NtTerminateProcess");
+            pProcs->sysNtQueryInformationProcess    = Syscalls::FindSyscall(hNTDLL, "NtQueryInformationProcess");
+            pProcs->sysNtSetInformationProcess      = Syscalls::FindSyscall(hNTDLL, "NtSetInformationProcess");
+            pProcs->sysNtCreateThreadEx             = Syscalls::FindSyscall(hNTDLL, "NtCreateThreadEx");
+            pProcs->sysNtOpenThread                 = Syscalls::FindSyscall(hNTDLL, "NtOpenThread");
+            pProcs->sysNtResumeThread               = Syscalls::FindSyscall(hNTDLL, "NtResumeThread");
+            pProcs->sysNtGetContextThread           = Syscalls::FindSyscall(hNTDLL, "NtGetContextThread");
+            pProcs->sysNtSetContextThread           = Syscalls::FindSyscall(hNTDLL, "NtSetContextThread");
+            pProcs->sysNtAllocateVirtualMemory      = Syscalls::FindSyscall(hNTDLL, "NtAllocateVirtualMemory");
+            pProcs->sysNtReadVirtualMemory          = Syscalls::FindSyscall(hNTDLL, "NtReadVirtualMemory");
+            pProcs->sysNtWriteVirtualMemory         = Syscalls::FindSyscall(hNTDLL, "NtWriteVirtualMemory");
+            pProcs->sysNtProtectVirtualMemory       = Syscalls::FindSyscall(hNTDLL, "NtProtectVirtualMemory");
+            pProcs->sysNtFreeVirtualMemory          = Syscalls::FindSyscall(hNTDLL, "NtFreeVirtualMemory");
+            pProcs->sysNtWaitForSingleObject        = Syscalls::FindSyscall(hNTDLL, "NtWaitForSingleObject");
+            pProcs->sysNtClose                      = Syscalls::FindSyscall(hNTDLL, "NtClose");
+            pProcs->sysNtCreateFile                 = Syscalls::FindSyscall(hNTDLL, "NtCreateFile");
+            pProcs->sysNtReadFile                   = Syscalls::FindSyscall(hNTDLL, "NtReadFile");
+            pProcs->sysNtWriteFile                  = Syscalls::FindSyscall(hNTDLL, "NtWriteFile");
+            pProcs->sysNtQueryInformationFile       = Syscalls::FindSyscall(hNTDLL, "NtQueryInformationFile");
+            pProcs->sysNtUnmapViewOfSection         = Syscalls::FindSyscall(hNTDLL, "NtUnmapViewOfSection");
 
-            pProcs->sysRtlInitUnicodeString     = Syscalls::FindSyscall(hNTDLL, "RtlInitUnicodeString");
-            pProcs->sysRtlGetFullPathName_U     = Syscalls::FindSyscall(hNTDLL, "RtlGetFullPathName_U");
+            pProcs->sysRtlInitUnicodeString         = Syscalls::FindSyscall(hNTDLL, "RtlInitUnicodeString");
+            pProcs->sysRtlGetFullPathName_U         = Syscalls::FindSyscall(hNTDLL, "RtlGetFullPathName_U");
         }
 
         return pProcs;

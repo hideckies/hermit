@@ -115,6 +115,14 @@ install_pkg() {
     fi
 }
 
+install_python_pkg() {
+    if [[ $target == "server" ]]; then
+        log "Installing Python packages..."
+        pip3 install pefile
+    fi
+    return 0
+}
+
 golang_exists() {
     log "Checking if the 'go' binary exists on the system..."
 
@@ -130,6 +138,11 @@ install_c2_server() {
 
     if ! install_pkg; then
         log_error "Installing packages failed."
+        exit 1
+    fi
+
+    if ! install_python_pkg; then
+        log_error "Installing Python packages failed."
         exit 1
     fi
 

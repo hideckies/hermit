@@ -36,7 +36,8 @@ The Wizard will start, so follow the instructions to complete the settings.
 
 ![payload gen](../assets/images/terminal/payload_gen_implant_beacon_win_amd64_exe.png)
 
-The implant is saved under `$HOME/.hermit/server/listeners/listener-<name>/payloads/` folder.  
+It will take some time for generation (about 3-10 minutes. It depends on your machine spec).
+After that, the implant is saved under `$HOME/.hermit/server/listeners/https-<name>/payloads/` folder.  
 
 ### Transfer the Implant
 
