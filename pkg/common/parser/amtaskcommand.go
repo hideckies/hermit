@@ -14,7 +14,7 @@ import (
 	_task "github.com/hideckies/hermit/pkg/server/task"
 )
 
-// Assembly
+// ASSEMBLY
 type amTaskAssemblyCmd struct {
 	Assembly string `arg:"" required:"" help:"Path to .NET assembly to be executed."`
 }
@@ -173,8 +173,8 @@ type amTaskCredsCmd struct {
 
 // DLL
 type amTaskDllCmd struct {
-	Pid uint   `short:"p" name:"pid" required:"" help:"Specify process ID to inject DLL."`
-	Dll string `short:"d" name:"dll" required:"" type:"path" help:"Specify DLL path to inject."`
+	File string `short:"f" name:"file" required:"" type:"path" help:"Specify the DLL file path to inject."`
+	Pid  uint   `short:"p" name:"pid" required:"" help:"Specify process ID to inject DLL."`
 }
 
 func (c *amTaskDllCmd) Run(
@@ -182,7 +182,20 @@ func (c *amTaskDllCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
-	task, err := _task.NewTask(ctx.Args[0], map[string]string{"pid": fmt.Sprint(c.Pid), "dll": c.Dll})
+	// Select technique
+	technique, err := stdin.Select("Technique", []string{
+		"dll-injection",
+		"reflective-dll-injection",
+	})
+	if err != nil {
+		return err
+	}
+
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{
+		"dll":       c.File,
+		"pid":       fmt.Sprint(c.Pid),
+		"technique": technique,
+	})
 	if err != nil {
 		return err
 	}
@@ -258,29 +271,6 @@ type amTaskEnvCmd struct {
 	Ls amTaskEnvLsCmd `cmd:"" help:"List environment variables."`
 	// Rm  amTaskEnvRmCmd  `cmd:"" help:"Remove a specified environment variables."`
 	// Set amTaskEnvSetCmd `cmd:"" help:"Set environmant variable."`
-}
-
-// EXE
-type amTaskExeCmd struct {
-	Exe string `arg:"" required:"" type:"path" help:"Specify EXE path to be loaded and executed."`
-	// Inline bool   `short:"i" optional:"" help:"Enable inline execute."`
-}
-
-func (c *amTaskExeCmd) Run(
-	ctx *kong.Context,
-	serverState *servState.ServerState,
-	clientState *cliState.ClientState,
-) error {
-	task, err := _task.NewTask(ctx.Args[0], map[string]string{"exe": c.Exe})
-	if err != nil {
-		return err
-	}
-
-	err = handler.HandleAmTaskSet(task, serverState, clientState)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // GROUP
@@ -537,6 +527,52 @@ func (c *amTaskNetCmd) Run(
 	clientState *cliState.ClientState,
 ) error {
 	task, err := _task.NewTask(ctx.Args[0], map[string]string{})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// PE
+type amTaskPeCmd struct {
+	Pe string `short:"f" name:"file" required:"" type:"path" help:"Specify the PE (Portable Executable) file path to be loaded and executed."`
+	// Pid uint   `short:"p" name:"pid" required:"" help:"Specify process ID to inject PE."`
+	// Inline bool   `short:"i" optional:"" help:"Enable inline execute."`
+}
+
+func (c *amTaskPeCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	// Select technique
+	technique, err := stdin.Select("Technique", []string{
+		"direct-execution",
+		"process-hollowing",
+	})
+	if err != nil {
+		return err
+	}
+	// Choose target process to be injected
+	// *This is used for 'process-hollowing'
+	var target_process = "notepad.exe"
+	if technique == "process-hollowing" {
+		target_process, err = stdin.ReadInput("Process to be Injected", target_process)
+		if err != nil {
+			return err
+		}
+	}
+
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{
+		"pe":             c.Pe,
+		"target_process": target_process,
+		"technique":      technique,
+	})
 	if err != nil {
 		return err
 	}
@@ -906,8 +942,8 @@ func (c *amTaskScreenshotCmd) Run(
 
 // SHELLCODE
 type amTaskShellcodeCmd struct {
-	Pid       uint   `short:"p" required:"" help:"Specify a process ID to inject shellcode."`
-	Shellcode string `short:"s" required:"" type:"path" help:"Specify shellcode path to inject."`
+	Pid  uint   `short:"p" name:"pid" required:"" help:"Specify a process ID to inject shellcode."`
+	File string `short:"f" name:"file" required:"" type:"path" help:"Specify the shellcode file path to inject."`
 }
 
 func (c *amTaskShellcodeCmd) Run(
@@ -915,9 +951,18 @@ func (c *amTaskShellcodeCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
+	// Select technique
+	technique, err := stdin.Select("Technique", []string{
+		"shellcode-injection",
+	})
+	if err != nil {
+		return err
+	}
+
 	task, err := _task.NewTask(ctx.Args[0], map[string]string{
 		"pid":       fmt.Sprint(c.Pid),
-		"shellcode": c.Shellcode,
+		"shellcode": c.File,
+		"technique": technique,
 	})
 	if err != nil {
 		return err

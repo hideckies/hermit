@@ -3,13 +3,14 @@
 namespace System::Process
 {
 	HANDLE ProcessCreate(
-		Procs::PPROCS 	pProcs,
-		LPCWSTR 		lpApplicationName,
+		Procs::PPROCS	pProcs,
+		LPCWSTR			lpApplicationName,
 		DWORD 			dwDesiredAccess,
+		BOOL			bInheritHandles,
+		DWORD           dwCreationFlags,
 		HANDLE 			hParentProcess,
 		HANDLE			hToken
 	) {
-		HANDLE hProcess;
 		OBJECT_ATTRIBUTES objAttr;
 		UNICODE_STRING uniAppName;
 
@@ -19,20 +20,28 @@ namespace System::Process
 			&uniAppName,
 			lpApplicationName
 		);
-		InitializeObjectAttributes(&objAttr, &uniAppName, 0, nullptr, nullptr);
+		ULONG uAttributes = OBJ_CASE_INSENSITIVE;
+		if (bInheritHandles)
+		{
+			uAttributes = OBJ_CASE_INSENSITIVE | OBJ_INHERIT;
+		}
+		InitializeObjectAttributes(&objAttr, &uniAppName, uAttributes, nullptr, nullptr);
+
+		HANDLE hProcess;
 
 		// Create a new process.
 		NTSTATUS status = CallSysInvoke(
-			&pProcs->sysNtCreateProcess,
-			pProcs->lpNtCreateProcess,
+			&pProcs->sysNtCreateProcessEx,
+			pProcs->lpNtCreateProcessEx,
 			&hProcess,
 			dwDesiredAccess,
 			&objAttr,
 			hParentProcess,
-			FALSE,
+			(ULONG)dwCreationFlags,
 			nullptr,
 			nullptr,
-			hToken
+			hToken,
+			0
 		);
 		if (status != STATUS_SUCCESS)
 		{
@@ -46,8 +55,8 @@ namespace System::Process
 				nullptr,
 				nullptr,
 				nullptr,
-				FALSE,
-				0,
+				bInheritHandles,
+				dwCreationFlags,
 				nullptr,
 				nullptr,
 				&si,
@@ -142,14 +151,13 @@ namespace System::Process
 	}
 
 	PVOID VirtualMemoryAllocate(
-		Procs::PPROCS 	pProcs,
-		HANDLE 			hProcess,
-		SIZE_T 			dwSize,
-		DWORD 			dwAllocationType,
-		DWORD 			dwProtect
+		Procs::PPROCS pProcs,
+		HANDLE 	hProcess,
+		PVOID	pBaseAddr,
+		SIZE_T	dwSize,
+		DWORD 	dwAllocationType,
+		DWORD 	dwProtect
 	) {
-        PVOID pBaseAddr;
-
 		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtAllocateVirtualMemory,
 			pProcs->lpNtAllocateVirtualMemory,
@@ -162,9 +170,9 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			pBaseAddr = VirtualAllocEx(
+			return VirtualAllocEx(
                 hProcess,
-                nullptr,
+                pBaseAddr,
                 dwSize,
                 dwAllocationType,
                 dwProtect
@@ -173,6 +181,39 @@ namespace System::Process
 
         return pBaseAddr;
     }
+
+	BOOL VirtualMemoryRead(
+        Procs::PPROCS   pProcs,
+		HANDLE			hProcess,
+		PVOID			pBaseAddr,
+		PVOID			pBuffer,
+		SIZE_T			dwBufferSize,
+		PSIZE_T			lpNumberOfBytesRead
+    ) {
+		NTSTATUS status = CallSysInvoke(
+			&pProcs->sysNtReadVirtualMemory,
+			pProcs->lpNtReadVirtualMemory,
+			hProcess,
+			pBaseAddr,
+			pBuffer,
+			dwBufferSize,
+			lpNumberOfBytesRead
+		);
+		if (status != STATUS_SUCCESS)
+		{
+			if (!ReadProcessMemory(
+				hProcess,
+				(LPCVOID)pBaseAddr,
+				pBuffer,
+				dwBufferSize,
+				lpNumberOfBytesRead
+			)) {
+				return FALSE;
+			}
+		}
+
+		return TRUE;
+	}
 
 	BOOL VirtualMemoryWrite(
 		Procs::PPROCS 	pProcs,
@@ -392,6 +433,8 @@ namespace System::Process
 			pProcs,
 			wFilePath.c_str(),
 			PROCESS_ALL_ACCESS,
+			FALSE,
+			0,
 			NtCurrentProcess(),
 			nullptr
 		);

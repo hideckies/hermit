@@ -18,19 +18,19 @@ const (
 	TASK_DLL          = 0x08
 	TASK_DOWNLOAD     = 0x09
 	TASK_ENV_LS       = 0x10
-	TASK_EXE          = 0x11
-	TASK_GROUP_LS     = 0x12
-	TASK_HISTORY      = 0x13
-	TASK_IP           = 0x14
-	TASK_JITTER       = 0x15
-	TASK_KEYLOG       = 0x16
-	TASK_KILL         = 0x17
-	TASK_KILLDATE     = 0x18
-	TASK_LS           = 0x19
-	TASK_MIGRATE      = 0x20
-	TASK_MKDIR        = 0x21
-	TASK_MV           = 0x22
-	TASK_NET          = 0x23
+	TASK_GROUP_LS     = 0x11
+	TASK_HISTORY      = 0x12
+	TASK_IP           = 0x13
+	TASK_JITTER       = 0x14
+	TASK_KEYLOG       = 0x15
+	TASK_KILL         = 0x16
+	TASK_KILLDATE     = 0x17
+	TASK_LS           = 0x18
+	TASK_MIGRATE      = 0x19
+	TASK_MKDIR        = 0x20
+	TASK_MV           = 0x21
+	TASK_NET          = 0x22
+	TASK_PE           = 0x23
 	TASK_PERSIST      = 0x24
 	TASK_PROCDUMP     = 0x25
 	TASK_PS_KILL      = 0x26
@@ -76,8 +76,6 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_DOWNLOAD, nil
 	case "env ls", "envs":
 		return TASK_ENV_LS, nil
-	case "exe":
-		return TASK_EXE, nil
 	case "group ls", "groups":
 		return TASK_GROUP_LS, nil
 	case "history":
@@ -102,6 +100,8 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_MV, nil
 	case "net":
 		return TASK_NET, nil
+	case "pe":
+		return TASK_PE, nil
 	case "persist":
 		return TASK_PERSIST, nil
 	case "procdump":

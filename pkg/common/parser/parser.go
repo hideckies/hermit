@@ -65,7 +65,6 @@ type GrammarAgentMode struct {
 	Download amTaskDownloadCmd `cmd:"" help:"Download a file." group:"TASK:"`
 	Env      amTaskEnvCmd      `cmd:"" help:"Manage environment variables." group:"TASK:"`
 	Envs     amTaskEnvLsCmd    `cmd:"" help:"alias for 'env ls'" group:"TASK:"`
-	Exe      amTaskExeCmd      `cmd:"" help:"Load and execute EXE file." group:"TASK:"`
 	// Find       amTaskFindCmd       `cmd:"" help:"Find files." group:"TASK:"`
 	Group    amTaskGroupCmd    `cmd:"" help:"Manage groups." group:"TASK:"`
 	Groups   amTaskGroupLsCmd  `cmd:"" help:"Alias for 'group ls'." group:"TASK:"`
@@ -81,6 +80,7 @@ type GrammarAgentMode struct {
 	Mv       amTaskMvCmd       `cmd:"" help:"Move a file to a destination location." group:"TASK:"`
 	Net      amTaskNetCmd      `cmd:"" help:"Get TCP connections." group:"TASK:"`
 	// Nslookup   amTaskNslookupCmd   `cmd:"" help:"Manage network." group:"TASK:"`
+	Pe      amTaskPeCmd      `cmd:"" help:"Load and execute PE (Portable Executable) file." group:"TASK:"`
 	Persist amTaskPersistCmd `cmd:"" help:"Establish persistence for implant." group:"TASK:"`
 	// Pivot amTaskPivotCmd `cmd:"" help:"Manage pivoting" group:"TASK:"`
 	// PowerShell amTaskPowerShellCmd `cmd:"" help:"Execute PowerShell command." group:"TASK:"`

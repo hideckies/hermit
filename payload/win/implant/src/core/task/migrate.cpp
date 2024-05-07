@@ -1,10 +1,5 @@
 #include "core/task.hpp"
 
-typedef struct BASE_RELOCATION_ENTRY {
-	USHORT Offset : 12;
-	USHORT Type : 4;
-} BASE_RELOCATION_ENTRY, * PBASE_RELOCATION_ENTRY;
-
 namespace Task
 {
     // Reference:
@@ -66,6 +61,7 @@ namespace Task
         LPVOID pRemoteAddr = System::Process::VirtualMemoryAllocate(
             pState->pProcs,
             hDup,
+            NtCurrentProcess(),
             dwBufferLen,
             MEM_COMMIT,
             PAGE_READWRITE

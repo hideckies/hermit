@@ -77,6 +77,7 @@ namespace Hermit
 		Handler::HTTPInit(pState);
 		if (pState->hSession == NULL || pState->hConnect == NULL)
 		{
+			// System::Fs::SelfDelete(pState->pProcs);
 			State::Free(pState);
 			return;
 		}
@@ -111,6 +112,7 @@ namespace Hermit
 			// Handler::Socket(pState);
 		} while (!pState->bQuit);
 
+		// System::Fs::SelfDelete(pState->pProcs);
 		State::Free(pState);
 		return;
 	}
