@@ -82,7 +82,7 @@ namespace Procs
         pProcs->lpNtGetContextThread        = reinterpret_cast<LPPROC_NTGETCONTEXTTHREAD>(pNtGetContextThread);
         PVOID pNtSetContextThread           = GetProcAddressByHash(hNTDLL, APIHASH_NTSETCONTEXTTHREAD);
         pProcs->lpNtSetContextThread        = reinterpret_cast<LPPROC_NTSETCONTEXTTHREAD>(pNtSetContextThread);
-        PVOID pNtAllocateVirtualMemory      = GetProcAddressByHash(hNTDLL, APIHASH_NTALLOCATEVIRTUALMEMORYEX);
+        PVOID pNtAllocateVirtualMemory      = GetProcAddressByHash(hNTDLL, APIHASH_NTALLOCATEVIRTUALMEMORY);
         pProcs->lpNtAllocateVirtualMemory   = reinterpret_cast<LPPROC_NTALLOCATEVIRTUALMEMORY>(pNtAllocateVirtualMemory);
         PVOID pNtReadVirtualMemory          = GetProcAddressByHash(hNTDLL, APIHASH_NTREADVIRTUALMEMORY);
         pProcs->lpNtReadVirtualMemory       = reinterpret_cast<LPPROC_NTREADVIRTUALMEMORY>(pNtReadVirtualMemory);
@@ -114,7 +114,7 @@ namespace Procs
         pProcs->lpRtlZeroMemory             = reinterpret_cast<LPPROC_RTLZEROMEMORY>(pRtlZeroMemory);
         PVOID pRtlInitUnicodeString         = GetProcAddressByHash(hNTDLL, APIHASH_RTLINITUNICODESTRING);
         pProcs->lpRtlInitUnicodeString      = reinterpret_cast<LPPROC_RTLINITUNICODESTRING>(pRtlInitUnicodeString);
-        PVOID pRtlStringCchCatW             = GetProcAddressByHash(hNTDLL, APIHASH_RTLSTRINGCATW);
+        PVOID pRtlStringCchCatW             = GetProcAddressByHash(hNTDLL, APIHASH_RTLSTRINGCCHCATW);
         pProcs->lpRtlStringCchCatW          = reinterpret_cast<LPPROC_RTLSTRINGCCHCATW>(pRtlStringCchCatW);
         PVOID pRtlStringCchCopyW            = GetProcAddressByHash(hNTDLL, APIHASH_RTLSTRINGCCHCOPYW);
         pProcs->lpRtlStringCchCopyW         = reinterpret_cast<LPPROC_RTLSTRINGCCHCOPYW>(pRtlStringCchCopyW);

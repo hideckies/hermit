@@ -22,7 +22,7 @@
 #define APIHASH_NTRESUMETHREAD              0x8bad8d92
 #define APIHASH_NTGETCONTEXTTHREAD          0x904d345e
 #define APIHASH_NTSETCONTEXTTHREAD          0x25df9cd2
-#define APIHASH_NTALLOCATEVIRTUALMEMORYEX   0x28af7fe7
+#define APIHASH_NTALLOCATEVIRTUALMEMORY     0xf8829394
 #define APIHASH_NTREADVIRTUALMEMORY         0x88bc3b5b
 #define APIHASH_NTWRITEVIRTUALMEMORY        0x7c61e008
 #define APIHASH_NTPROTECTVIRTUALMEMORY      0xa7df2bd8
@@ -40,7 +40,7 @@
 #define APIHASH_RTLALLOCATEHEAP             0xcc7755e
 #define APIHASH_RTLZEROMEMORY               0x899c0d1e
 #define APIHASH_RTLINITUNICODESTRING        0x4dc9caa9
-#define APIHASH_RTLSTRINGCATW               0x333f6b47
+#define APIHASH_RTLSTRINGCCHCATW            0x2deef223
 #define APIHASH_RTLSTRINGCCHCOPYW           0x32231e60
 #define APIHASH_RTLSTRINGCCHLENGTHW         0x28821d8f
 #define APIHASH_RTLQUERYSYSTEMINFORMATION   0xf6044a6a
@@ -106,7 +106,7 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTGETCONTEXTTHREAD)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
     // NtSetContextThread
     typedef NTSTATUS (NTAPI* LPPROC_NTSETCONTEXTTHREAD)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
-    // NtAllocateVirtualMemoryEx
+    // NtAllocateVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTALLOCATEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
     // NtReadVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTREADVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T BufferSize, PSIZE_T NumberOfBytesRead);
@@ -144,7 +144,7 @@ namespace Procs
     typedef VOID (NTAPI* LPPROC_RTLZEROMEMORY)(PVOID Destination, SIZE_T Length);
     // RtlInitUnicodeString
     typedef NTSTATUS (NTAPI* LPPROC_RTLINITUNICODESTRING)(PUNICODE_STRING DestinationString, PCWSTR SourceString);
-    // RtlStringCatW
+    // RtlStringCchCatW
     typedef NTSTATUS (NTAPI* LPPROC_RTLSTRINGCCHCATW)(LPWSTR pszDest, SIZE_T cchDest, LPCWSTR pszSrc);
     // RtlStringCchCopyW
     typedef NTSTATUS (NTAPI* LPPROC_RTLSTRINGCCHCOPYW)(LPWSTR pszDest, SIZE_T cchDest, LPCWSTR pszSrc);

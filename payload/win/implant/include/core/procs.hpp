@@ -12,6 +12,84 @@
 #include <string>
 #include <strsafe.h>
 
+#define APIHASH_LDRLOADDLL                  0x19cb5e59
+#define APIHASH_NTFLUSHINSTRUCTIONCACHE     0x3a43951d
+#define APIHASH_NTCREATEPROCESSEX           0xbd003d8b
+#define APIHASH_NTOPENPROCESS               0x64e24f6a
+#define APIHASH_NTOPENPROCESSTOKEN          0xcdd9f7af
+#define APIHASH_NTTERMINATEPROCESS          0xc58a7b49
+#define APIHASH_NTQUERYINFORMATIONPROCESS   0xa79c59b0
+#define APIHASH_NTSETINFORMATIONPROCESS     0xb5d02d0a
+#define APIHASH_NTCREATETHREADEX            0x2afc9934
+#define APIHASH_NTOPENTHREAD                0xa58f60af
+#define APIHASH_NTRESUMETHREAD              0x8bad8d92
+#define APIHASH_NTGETCONTEXTTHREAD          0x904d345e
+#define APIHASH_NTSETCONTEXTTHREAD          0x25df9cd2
+#define APIHASH_NTALLOCATEVIRTUALMEMORY     0xf8829394
+#define APIHASH_NTREADVIRTUALMEMORY         0x88bc3b5b
+#define APIHASH_NTWRITEVIRTUALMEMORY        0x7c61e008
+#define APIHASH_NTPROTECTVIRTUALMEMORY      0xa7df2bd8
+#define APIHASH_NTFREEVIRTUALMEMORY         0xb6eb4645
+#define APIHASH_NTDUPLICATEOBJECT           0xae23334f
+#define APIHASH_NTWAITFORSINGLEOBJECT       0x73c87a00
+#define APIHASH_NTCLOSE                     0x6f18e5dd
+#define APIHASH_NTCREATEFILE                0x2f4d94d3
+#define APIHASH_NTOPENFILE                  0x740aa9e1
+#define APIHASH_NTREADFILE                  0xc363b2ad
+#define APIHASH_NTWRITEFILE                 0x9339e2e0
+#define APIHASH_NTDELETEFILE                0xcd2f2302
+#define APIHASH_NTCREATENAMEDPIPEFILE       0x333974ac
+#define APIHASH_NTQUERYINFORMATIONFILE      0x6226c85b
+#define APIHASH_NTSETINFORMATIONFILE        0x52a8041
+#define APIHASH_NTQUERYINFORMATIONTOKEN     0x8a713c7a
+#define APIHASH_NTQUERYSYSTEMINFORMATION    0x1bfabb50
+#define APIHASH_NTSYSTEMDEBUGCONTROL        0x4def6394
+#define APIHASH_NTPRIVILEGECHECK            0x73129112
+#define APIHASH_NTADJUSTPRIVILEGESTOKEN     0x1b79f58d
+#define APIHASH_NTOPENKEYEX                 0x16b3e52d
+#define APIHASH_NTQUERYKEY                  0x43da72
+#define APIHASH_NTENUMERATEVALUEKEY         0xa153b717
+#define APIHASH_NTUNMAPVIEWOFSECTION        0x574e9fc1
+#define APIHASH_RTLALLOCATEHEAP             0xcc7755e
+#define APIHASH_RTLZEROMEMORY               0x899c0d1e
+#define APIHASH_RTLINITUNICODESTRING        0x4dc9caa9
+#define APIHASH_RTLSTRINGCCHCATW            0x2deef223
+#define APIHASH_RTLSTRINGCCHCOPYW           0x32231e60
+#define APIHASH_RTLSTRINGCCHLENGTHW         0x28821d8f
+#define APIHASH_RTLQUERYSYSTEMINFORMATION   0xf6044a6a
+#define APIHASH_RTLEXPANDENVIRONMENTSTRINGS 0xb73f443e
+#define APIHASH_RTLGETCURRENTDIRECTORY_U    0x4a121ccb
+#define APIHASH_RTLSETCURRENTDIRECTORY_U    0x4cd546d7
+#define APIHASH_RTLGETFULLPATHNAME_U        0x2116c216
+#define APIHASH_LOADLIBRARYA                0x7069f241
+#define APIHASH_LOADLIBRARYW                0x7069f257
+#define APIHASH_GETPROCADDRESS              0xafa3e09d
+#define APIHASH_CREATETHREADPOOLWAIT        0x7a8370ac
+#define APIHASH_SETTHREADPOOLWAIT           0x5f2a3808
+#define APIHASH_WINHTTPOPEN                 0x97451379
+#define APIHASH_QUERYFULLPROCESSIMAGENAMEW  0xa6e1683e
+#define APIHASH_RTLADDFUNCTIONTABLE         0xbe7f92ca
+#define APIHASH_DLLMAIN                     0xe2e2f348
+#define APIHASH_VIRTUALALLOC                0x5ae0dabf
+#define APIHASH_VIRTUALPROTECT              0x927857d9
+#define APIHASH_VIRTUALFREE                 0x640675a2
+#define APIHASH_CLOSEHANDLE                 0x47bdd9cb
+#define APIHASH_SETFILEINFORMATIONBYHANDLE  0xbfea4fe2
+#define APIHASH_MESSAGEBOXA                 0xcc4a1d08
+#define APIHASH_WINHTTPCONNECT              0xe18b30db
+#define APIHASH_WINHTTPOPENREQUEST          0xd6cffcd6
+#define APIHASH_WINHTTPSETOPTION            0x48ed79a8
+#define APIHASH_WINHTTPSENDREQUEST          0x79792358
+#define APIHASH_WINHTTPWRITEDATA            0xeed55fda
+#define APIHASH_WINHTTPRECEIVERESPONSE      0x66131eb5
+#define APIHASH_WINHTTPQUERYHEADERS         0xe17c65cd
+#define APIHASH_WINHTTPQUERYDATAAVAILABLE   0xff301fc6
+#define APIHASH_WINHTTPREADDATA             0x70389c8f
+#define APIHASH_WINHTTPCLOSEHANDLE          0x22081731
+
+#define HASH_IV     0x35
+#define RANDOM_ADDR 0xab10f29f
+
 typedef struct _PS_ATTRIBUTE
 {
     ULONG_PTR Attribute;
@@ -47,6 +125,8 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTOPENPROCESSTOKEN)(HANDLE ProcessHandle, ACCESS_MASK DesiredAccess, PHANDLE TokenHandle);
     // NtTerminateProcess
 	typedef NTSTATUS (NTAPI* LPPROC_NTTERMINATEPROCESS)(HANDLE ProcessHandle, NTSTATUS ExitStatus);
+    // NtQueryInformationProcess
+    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
     // NtSetInformationProcess
     typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength);
     // NtCreateThreadEx
@@ -85,8 +165,6 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTDELETEFILE)(POBJECT_ATTRIBUTES ObjectAttributes);
     // NtCreateNamedPipeFile
     typedef NTSTATUS (NTAPI* LPPROC_NTCREATENAMEDPIPEFILE)(PHANDLE FileHandle, ULONG DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions, ULONG NamedPipeType, ULONG ReadMode, ULONG CompletionMode, ULONG MaximumInstances, ULONG InboundQuota, ULONG OutboundQuota, PLARGE_INTEGER DefaultTimeout);
-    // NtQueryInformationProcess
-    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
     // NtQueryInformationFile
     typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONFILE)(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
     // NtSetInformationFile
@@ -113,9 +191,11 @@ namespace Procs
     // **NATIVE APIs (RUNTIME LIBRARY)**
     // RtlAllocateHeap
     typedef PVOID (NTAPI* LPPROC_RTLALLOCATEHEAP)(PVOID HeapHandle, ULONG Flags, SIZE_T Size);
+    // RtlZeroMemory
+    typedef VOID (NTAPI* LPPROC_RTLZEROMEMORY)(PVOID Destination, SIZE_T Length);
     // RtlInitUnicodeString
     typedef NTSTATUS (NTAPI* LPPROC_RTLINITUNICODESTRING)(PUNICODE_STRING DestinationString, PCWSTR SourceString);
-    // RtlStringCatW
+    // RtlStringCchCatW
     typedef NTSTATUS (NTAPI* LPPROC_RTLSTRINGCCHCATW)(LPWSTR pszDest, SIZE_T cchDest, LPCWSTR pszSrc);
     // RtlStringCchCopyW
     typedef NTSTATUS (NTAPI* LPPROC_RTLSTRINGCCHCOPYW)(LPWSTR pszDest, SIZE_T cchDest, LPCWSTR pszSrc);
@@ -151,7 +231,7 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_VIRTUALPROTECT)(LPVOID lpAddress, SIZE_T dwSize, DWORD flNewProtect, PDWORD lpflOldProtect);
     // VirtualFree
     typedef BOOL (WINAPI* LPPROC_VIRTUALFREE)(LPVOID lpAddress, SIZE_T dwSize, DWORD  dwFreeType);
-    // closeHandle
+    // CloseHandle
     typedef BOOL (WINAPI* LPPROC_CLOSEHANDLE)(HANDLE hObject);
     // SetFileInformationByHandle
     typedef BOOL (WINAPI* LPPROC_SETFILEINFORMATIONBYHANDLE)(HANDLE hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
@@ -221,6 +301,7 @@ namespace Procs
 
         // **RUNTIME LIBRARY APIs**
         LPPROC_RTLALLOCATEHEAP              lpRtlAllocateHeap                   = nullptr;
+        LPPROC_RTLZEROMEMORY                lpRtlZeroMemory                     = nullptr;
         LPPROC_RTLINITUNICODESTRING         lpRtlInitUnicodeString              = nullptr;
         LPPROC_RTLSTRINGCCHCATW             lpRtlStringCchCatW                  = nullptr;
         LPPROC_RTLSTRINGCCHCOPYW            lpRtlStringCchCopyW                 = nullptr;
@@ -285,9 +366,6 @@ namespace Procs
 
         Syscalls::SYSCALL                   sysRtlAllocateHeap                  = {0};
         Syscalls::SYSCALL                   sysRtlInitUnicodeString             = {0};
-        Syscalls::SYSCALL                   sysRtlStringCchCatW                 = {0};
-        Syscalls::SYSCALL                   sysRtlStringCchCopyW                = {0};
-        Syscalls::SYSCALL                   sysRtlStringCchLengthW              = {0};
         Syscalls::SYSCALL                   sysRtlQuerySystemInformation        = {0};
         Syscalls::SYSCALL                   sysRtlExpandEnvironmentStrings      = {0};
         Syscalls::SYSCALL                   sysRtlGetCurrentDirectory_U         = {0};
@@ -296,6 +374,11 @@ namespace Procs
     };
     typedef PROCS* PPROCS;
 
+    DWORD GetHashFromString(char* str);
+    PVOID GetProcAddressByHash(
+        HMODULE hModule,
+        DWORD   dwHash
+    );
     PPROCS FindProcs(
         HMODULE hNTDLL,
         HMODULE hKernel32DLL,

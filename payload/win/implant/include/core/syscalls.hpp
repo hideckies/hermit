@@ -39,7 +39,7 @@ namespace Syscalls
 	};
 	typedef SYSCALL* PSYSCALL;
 
-	SYSCALL FindSyscall(HMODULE hNTDLL, LPCSTR lpNtFunc);
+	SYSCALL FindSyscall(UINT_PTR pNtFuncAddr);
 }
 
 #endif // HERMIT_CORE_SYSCALLS_HPP

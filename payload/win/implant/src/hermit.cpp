@@ -94,8 +94,6 @@ namespace Hermit
 				break;
 		} while (1 == 1);
 
-
-
 		// Tasks
 		do
 		{
