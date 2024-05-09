@@ -20,6 +20,7 @@ namespace State
         );
 
         // Free loaded modules.
+        FreeLibrary(pState->hKernel32DLL);
         FreeLibrary(pState->hNTDLL);
         FreeLibrary(pState->hWinHTTPDLL);
 

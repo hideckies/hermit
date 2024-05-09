@@ -1,6 +1,7 @@
 #ifndef HERMIT_CORE_SYSCALLS_HPP
 #define HERMIT_CORE_SYSCALLS_HPP
 
+#include "core/stdout.hpp"
 #include "core/utils.hpp"
 
 #include <winternl.h>
@@ -39,7 +40,7 @@ namespace Syscalls
 	};
 	typedef SYSCALL* PSYSCALL;
 
-	SYSCALL FindSyscall(HMODULE hNTDLL, LPCSTR lpNtFunc);
+	SYSCALL FindSyscall(UINT_PTR pNtFuncAddr);
 	WORD FindSyscallFromImageBase(
         PVOID pModuleBase,
         PIMAGE_EXPORT_DIRECTORY pExportDir,

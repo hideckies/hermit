@@ -386,9 +386,13 @@ func WizardPayloadLoader(
 		// Shellcode Loader
 		items = []string{
 			"shellcode-injection",
-			"shellcode-execution-via-fibers",
-			"shellcode-execution-via-apc-and-nttestalert",
-			// "dll-hollowing",
+			"via-fibers",
+			"via-apc-and-nttestalert",
+			"early-bird-apc-queue-code-injection",
+			"via-create-threadpool-wait",
+			"thread-execution-hijacking",
+			"address-of-entry-point-injection",
+			"module-stomping",
 			// "process-mockingjay",
 		}
 	}
@@ -406,7 +410,11 @@ func WizardPayloadLoader(
 	if oTechnique == "dll-injection" ||
 		oTechnique == "process-hollowing" ||
 		oTechnique == "reflective-dll-injection" ||
-		oTechnique == "shellcode-injection" {
+		oTechnique == "shellcode-injection" ||
+		oTechnique == "early-bird-apc-queue-code-injection" ||
+		oTechnique == "thread-execution-hijacking" ||
+		oTechnique == "address-of-entry-point-injection" ||
+		oTechnique == "module-stomping" {
 		for {
 			res, err := stdin.ReadInput("Target Process to Inject", "notepad.exe")
 			if err != nil {

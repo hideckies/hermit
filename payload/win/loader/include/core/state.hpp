@@ -18,6 +18,7 @@ namespace State
         Crypt::PCRYPT       pCrypt;
 
         // Module handlers
+        HMODULE             hKernel32DLL;
         HMODULE             hNTDLL;
         HMODULE             hWinHTTPDLL;
 

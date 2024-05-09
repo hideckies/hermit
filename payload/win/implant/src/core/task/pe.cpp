@@ -41,8 +41,8 @@ namespace Task
         {
             if (!Technique::Injection::ProcessHollowing(
                 pState->pProcs,
-                (LPVOID)bytes.data(),
-                wTargetProcess
+                wTargetProcess,
+                bytes
             )) {
                 return L"Error: Failed to inject an executable.";
             }

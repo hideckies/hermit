@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <string>
 #include <cstring>
+#include <psapi.h>
 #include <vector>
 
 typedef ULONG_PTR (WINAPI * LPPROC_REFLECTIVEDLLLOADER)();
@@ -48,41 +49,62 @@ namespace Technique::Injection
     BOOL DLLInjection(
         Procs::PPROCS pProcs,
         DWORD dwPID,
-        std::vector<BYTE> bytes
+        const std::vector<BYTE>& bytes
     );
     BOOL ReflectiveDLLInjection(
         Procs::PPROCS pProcs,
         DWORD dwPID,
-        std::vector<BYTE> bytes
+        const std::vector<BYTE>& bytes
     );
 
     // PE
     BOOL DirectExecution(
-        Procs::PPROCS       pProcs,
-        std::vector<BYTE>   bytes
-    );
-    BOOL PEInjection(
-        Procs::PPROCS   pProcs
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
     );
     BOOL ProcessHollowing(
-        Procs::PPROCS       pProcs,
-        LPVOID              lpBuffer,
-        const std::wstring  &wTargetProcess
+        Procs::PPROCS pProcs,
+        const std::wstring &wTargetProcess,
+        const std::vector<BYTE>& bytes
     );
 
-    // Shellcode
+    // SHELLCODE
     BOOL ShellcodeInjection(
-        Procs::PPROCS               pProcs,
-        DWORD                       dwPID,
-        const std::vector<BYTE>&    shellcode
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
     );
     BOOL ShellcodeExecutionViaFibers(
-        Procs::PPROCS               pProcs,
-        const std::vector<BYTE>&    shellcode
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
     );
     BOOL ShellcodeExecutionViaAPCAndNtTestAlert(
-        Procs::PPROCS               pProcs,
-        const std::vector<BYTE>&    shellcode
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL EarlyBirdAPCQueueCodeInjection(
+        Procs::PPROCS pProcs,
+        const std::wstring& wTargetProcess,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL ShellcodeExecutionViaCreateThreadpoolWait(
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL ThreadExecutionHijacking(
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL AddressOfEntryPointInjection(
+        Procs::PPROCS pProcs,
+        const std::wstring& wTargetProcess,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL ModuleStomping(
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
     );
 }
 

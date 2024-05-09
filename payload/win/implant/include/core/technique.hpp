@@ -26,35 +26,32 @@ namespace Technique::Injection
 {
     // DLL
     BOOL DllInjection(
-        Procs::PPROCS       pProcs,
-        DWORD               dwPID,
-        std::vector<BYTE>   bytes
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
     );
     BOOL ReflectiveDLLInjection(
-        Procs::PPROCS       pProcs,
-        DWORD               dwPID,
-        std::vector<BYTE>   bytes
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
     );
 
     // PE
     BOOL DirectExecution(
-        Procs::PPROCS       pProcs,
-        std::vector<BYTE>   bytes
-    );
-    BOOL PEInjection(
-        Procs::PPROCS   pProcs
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
     );
     BOOL ProcessHollowing(
-        Procs::PPROCS       pProcs,
-        LPVOID              lpBuffer,
-        const std::wstring  &wTargetProcess
+        Procs::PPROCS pProcs,
+        const std::wstring& wTargetProcess,
+        const std::vector<BYTE>& bytes
     );
     
     // Shellcode
     BOOL ShellcodeInjection(
         Procs::PPROCS pProcs,
         DWORD dwPID,
-        const std::vector<BYTE>& shellcode
+        const std::vector<BYTE>& bytes
     );
 }
 

