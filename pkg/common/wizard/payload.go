@@ -391,13 +391,17 @@ func WizardPayloadLoader(
 			"early-bird-apc-queue-code-injection",
 			"via-create-threadpool-wait",
 			"thread-execution-hijacking",
+			"via-memory-sections",
+			"via-find-window",
+			"via-kernel-callback-table",
+			"rwx-hunting",
 			"address-of-entry-point-injection",
 			"module-stomping",
 			// "process-mockingjay",
 		}
 	}
 	for {
-		res, err := stdin.Select("Technique", items)
+		res, err := stdin.Select("Injection Technique", items)
 		if err != nil {
 			continue
 		}
@@ -413,10 +417,11 @@ func WizardPayloadLoader(
 		oTechnique == "shellcode-injection" ||
 		oTechnique == "early-bird-apc-queue-code-injection" ||
 		oTechnique == "thread-execution-hijacking" ||
+		oTechnique == "via-memory-sections" ||
 		oTechnique == "address-of-entry-point-injection" ||
 		oTechnique == "module-stomping" {
 		for {
-			res, err := stdin.ReadInput("Target Process to Inject", "notepad.exe")
+			res, err := stdin.ReadInput("Target Process to be Injected", "notepad.exe")
 			if err != nil {
 				continue
 			}
@@ -442,8 +447,8 @@ func WizardPayloadLoader(
 		stdout.NewSingleTableItem("Format", oFormat),
 		stdout.NewSingleTableItem("Listener", fmt.Sprintf("%s://%s:%d", strings.ToLower(oLprotocol), oLhost, oLport)),
 		stdout.NewSingleTableItem("Type", oType),
-		stdout.NewSingleTableItem("Technique", oTechnique),
-		stdout.NewSingleTableItem("Process To Inject", oProcessToInject),
+		stdout.NewSingleTableItem("Injection Technique", oTechnique),
+		stdout.NewSingleTableItem("Target Process", oProcessToInject),
 		stdout.NewSingleTableItem("Indirect Syscalls", fmt.Sprintf("%t", oIndirectSyscalls)),
 	}
 	stdout.PrintSingleTable("Loader Options", table)

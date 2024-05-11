@@ -4,7 +4,6 @@
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
 
-#include <winternl.h>
 #include <windows.h>
 
 #define UP   -32

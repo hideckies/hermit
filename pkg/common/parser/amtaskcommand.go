@@ -594,17 +594,18 @@ func (c *amTaskPersistCmd) Run(
 ) error {
 	// Select the technique
 	items := []string{
-		"registry/runkey",
+		"runkey",
+		"screensaver",
 		// "registry/netsh",
 		// "schedule",
 		// "service",
-		"cancel",
+		"(cancel)",
 	}
 	res, err := stdin.Select("Technique", items)
 	if err != nil {
 		return err
 	}
-	if res == "cancel" {
+	if res == "(cancel)" {
 		stdout.LogWarn("Canceled")
 		return nil
 	}

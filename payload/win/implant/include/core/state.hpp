@@ -9,7 +9,6 @@
 #include "core/system.hpp"
 
 // #include <winsock2.h>
-#include <winternl.h>
 #include <windows.h>
 #include <winhttp.h>
 

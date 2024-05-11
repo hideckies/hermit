@@ -6,7 +6,6 @@
 
 #include "core/utils.hpp"
 
-#include <winternl.h>
 #include <windows.h>
 
 extern "C" VOID 	SysSet(void*);

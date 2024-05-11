@@ -14,7 +14,6 @@
 #include <windows.h>
 #include <winhttp.h>
 #include <winreg.h>
-#include <winternl.h>
 #include <dbghelp.h>
 #include <gdiplus.h>
 #include <iphlpapi.h>

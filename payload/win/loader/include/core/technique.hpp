@@ -21,16 +21,6 @@ typedef BOOL (WINAPI * DLLMAIN)(HINSTANCE, DWORD, LPVOID);
 #define DEREF_16(name)*(WORD *)(name)
 #define DEREF_8(name)*(BYTE *)(name)
 
-typedef struct BASE_RELOCATION_BLOCK {
-	DWORD PageAddress;
-	DWORD BlockSize;
-} BASE_RELOCATION_BLOCK, *PBASE_RELOCATION_BLOCK;
-
-typedef struct BASE_RELOCATION_ENTRY {
-	USHORT Offset : 12;
-	USHORT Type : 4;
-} BASE_RELOCATION_ENTRY, *PBASE_RELOCATION_ENTRY;
-
 namespace Technique::Injection::Helper
 {
     DWORD Rva2Offset(
@@ -94,6 +84,23 @@ namespace Technique::Injection
     BOOL ThreadExecutionHijacking(
         Procs::PPROCS pProcs,
         DWORD dwPID,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL ShellcodeExecutionViaMemorySections(
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL ShellcodeExecutionViaFindWindow(
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL ShellcodeExecutionViaKernelContextTable(
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
+    );
+    BOOL RWXHunting(
+        Procs::PPROCS pProcs,
         const std::vector<BYTE>& bytes
     );
     BOOL AddressOfEntryPointInjection(

