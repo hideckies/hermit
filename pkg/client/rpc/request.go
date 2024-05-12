@@ -212,6 +212,7 @@ func RequestPayloadImplantGenerate(clientState *state.ClientState, imp *payload.
 		Jitter:           int64(imp.Jitter),
 		KillDate:         int64(imp.KillDate),
 		IndirectSyscalls: imp.IndirectSyscalls,
+		AntiDebug:        imp.AntiDebug,
 	})
 	if err != nil {
 		return []byte{}, err
@@ -230,6 +231,7 @@ func RequestPayloadLoaderGenerate(clientState *state.ClientState, ldr *payload.L
 		Technique:        ldr.Technique,
 		ProcessToInject:  ldr.ProcessToInject,
 		IndirectSyscalls: ldr.IndirectSyscalls,
+		AntiDebug:        ldr.AntiDebug,
 	})
 	if err != nil {
 		return []byte{}, err

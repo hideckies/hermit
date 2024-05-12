@@ -11,6 +11,11 @@ INT WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		#else
 		FALSE,
 		#endif
+		#ifdef PAYLOAD_ANTI_DEBUG
+        TRUE,
+        #else
+        FALSE,
+        #endif
 		LISTENER_PROTOCOL_W,
 		LISTENER_HOST_W,
 		(INTERNET_PORT)LISTENER_PORT,

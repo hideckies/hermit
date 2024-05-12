@@ -595,10 +595,14 @@ func (c *amTaskPersistCmd) Run(
 	// Select the technique
 	items := []string{
 		"runkey",
+		"user-init-mpr-logon-script",
 		"screensaver",
-		// "registry/netsh",
+		"default-file-extension-hijacking",
+		"ifeo",
+		// "netsh",
 		// "schedule",
 		// "service",
+		"winlogon",
 		"(cancel)",
 	}
 	res, err := stdin.Select("Technique", items)

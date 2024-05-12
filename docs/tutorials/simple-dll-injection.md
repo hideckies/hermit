@@ -1,8 +1,10 @@
 # Simple DLL Injection
 
-In this tutorial, we generate **DLL Implant** and **Loader** which loads the DLL into memory on Windows victim machine. Then make the C2 agent to communicate with our C2 server.   
+In this tutorial, we generate **DLL Implant** and **Loader** which loads the DLL into memory on Windows victim machine. Then make the C2 agent to communicate with our C2 server. 
 
 Assume that you've completed [the Simple Implant Beacon tutorial](./simple-implant-beacon.md).  
+
+> IMPORTANT: It's heavily recommended to use **a virtual machine** for Windows victim machine because If we modify the registry etc., the system might not work properly.
 
 ## 1. Start C2 Server
 

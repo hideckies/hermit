@@ -60,10 +60,12 @@
 #define APIHASH_RTLSTRINGCCHCOPYW           0x32231e60
 #define APIHASH_RTLSTRINGCCHLENGTHW         0x28821d8f
 #define APIHASH_RTLZEROMEMORY               0x899c0d1e
+#define APIHASH_CHECKREMOTEDEBUGGERPRESENT  0x478dd921
 #define APIHASH_CLOSEHANDLE                 0x47bdd9cb
 #define APIHASH_CREATETHREADPOOLWAIT        0x7a8370ac
 #define APIHASH_DLLMAIN                     0xe2e2f348
 #define APIHASH_GETPROCADDRESS              0xafa3e09d
+#define APIHASH_ISDEBUGGERPRESENT           0xef4ed1b
 #define APIHASH_LOADLIBRARYA                0x7069f241
 #define APIHASH_LOADLIBRARYW                0x7069f257
 #define APIHASH_MESSAGEBOXA                 0xcc4a1d08
@@ -210,12 +212,16 @@ namespace Procs
     
     // **WINAPIs**
 
-    // DllMain
-    typedef BOOL (WINAPI* LPPROC_DLLMAIN)(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
+    // CheckRemoteDebuggerPresent
+    typedef BOOL (WINAPI* LPPROC_CHECKREMOTEDEBUGGERPRESENT)(HANDLE hProcess, PBOOL pbDebuggerPresent);
     // CloseHandle
     typedef BOOL (WINAPI* LPPROC_CLOSEHANDLE)(HANDLE hObject);
+    // DllMain
+    typedef BOOL (WINAPI* LPPROC_DLLMAIN)(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
     // GetProcAddress
     typedef FARPROC (WINAPI* LPPROC_GETPROCADDRESS)(HMODULE hModule, LPCSTR lpProcName);
+    // IsDebuggerPresent
+    typedef BOOL (WINAPI* LPPROC_ISDEBUGGERPRESENT)();
     // LoadLibraryA
     typedef HMODULE (WINAPI* LPPROC_LOADLIBRARYA)(LPCSTR lpLibFileName);
     // LoadLibraryW
@@ -259,7 +265,7 @@ namespace Procs
 
     struct PROCS
     {
-        // **NATIVE APIs**
+        // **NTAPI**
         LPPROC_NTADJUSTPRIVILEGESTOKEN      lpNtAdjustPrivilegesToken           = nullptr;
         LPPROC_NTALLOCATEVIRTUALMEMORY      lpNtAllocateVirtualMemory           = nullptr;
         LPPROC_NTCLOSE                      lpNtClose                           = nullptr;
@@ -307,7 +313,9 @@ namespace Procs
         LPPROC_RTLSTRINGCCHLENGTHW          lpRtlStringCchLengthW               = nullptr;
         LPPROC_RTLZEROMEMORY                lpRtlZeroMemory                     = nullptr;
 
-        // **WINAPIs**
+        // **WINAPI**
+        LPPROC_CHECKREMOTEDEBUGGERPRESENT   lpCheckRemoteDebuggerPresent        = nullptr;
+        LPPROC_ISDEBUGGERPRESENT            lpIsDebuggerPresent                 = nullptr;
         LPPROC_QUERYFULLPROCESSIMAGENAMEW   lpQueryFullProcessImageNameW        = nullptr;
         LPPROC_SETFILEINFORMATIONBYHANDLE   lpSetFileInformationByHandle        = nullptr;
         LPPROC_WINHTTPCLOSEHANDLE           lpWinHttpCloseHandle                = nullptr;

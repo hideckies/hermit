@@ -49,7 +49,9 @@
 #define APIHASH_RTLSTRINGCCHCOPYW           0x32231e60
 #define APIHASH_RTLSTRINGCCHLENGTHW         0x28821d8f
 #define APIHASH_RTLZEROMEMORY               0x899c0d1e
+#define APIHASH_CHECKREMOTEDEBUGGERPRESENT  0x478dd921
 #define APIHASH_CREATETHREADPOOLWAIT        0x7a8370ac
+#define APIHASH_ISDEBUGGERPRESENT           0xef4ed1b
 #define APIHASH_SETTHREADPOOLWAIT           0x5f2a3808
 #define APIHASH_WINHTTPCLOSEHANDLE          0x22081731
 #define APIHASH_WINHTTPCONNECT              0xe18b30db
@@ -151,8 +153,12 @@ namespace Procs
     typedef VOID (NTAPI* LPPROC_RTLZEROMEMORY)(PVOID Destination, SIZE_T Length);
 
     // **WINAPIs**
+    // CheckRemoteDebuggerPresent
+    typedef BOOL        (WINAPI* LPPROC_CHECKREMOTEDEBUGGERPRESENT)(HANDLE hProcess, PBOOL pbDebuggerPresent);
     // CreateThreadpoolWait
     typedef PTP_WAIT    (WINAPI* LPPROC_CREATETHREADPOOLWAIT)(PTP_WAIT_CALLBACK pfnwa, PVOID pv, PTP_CALLBACK_ENVIRON pcbe);
+    // IsDebuggerPresent
+    typedef BOOL        (WINAPI* LPPROC_ISDEBUGGERPRESENT)();
     // SetThreadpoolWait
     typedef VOID        (WINAPI* LPPROC_SETTHREADPOOLWAIT)(PTP_WAIT pwa, HANDLE h, PFILETIME pftTimeout);
     // WinHttpCloseHandle
@@ -222,7 +228,9 @@ namespace Procs
         LPPROC_RTLZEROMEMORY                lpRtlZeroMemory                     = nullptr;
 
         // **WINAPI**
+        LPPROC_CHECKREMOTEDEBUGGERPRESENT   lpCheckRemoteDebuggerPresent        = nullptr;
         LPPROC_CREATETHREADPOOLWAIT         lpCreateThreadpoolWait              = nullptr;
+        LPPROC_ISDEBUGGERPRESENT            lpIsDebuggerPresent                 = nullptr;
         LPPROC_SETTHREADPOOLWAIT            lpSetThreadpoolWait                 = nullptr;
         LPPROC_WINHTTPCLOSEHANDLE           lpWinHttpCloseHandle                = nullptr;
         LPPROC_WINHTTPCONNECT               lpWinHttpConnect                    = nullptr;

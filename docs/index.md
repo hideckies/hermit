@@ -12,8 +12,12 @@ Hermit is a command and control framework written in Go.
 - gRPC server/client for operations.
 - TLS for secure communication between the C2 server, client and agents.
 - HTTPS listener.
-- Multi staged payloads.
-- SQLite for the data persistence.
+- Multi-Staged Payload
+- Data Encryption.
+- Common Evasion Techniques
+- Common Persistence Techniques
+- Anti-Debug
+- SQLite for saving data
 
 ![diagram](assets/diagram.png)
 

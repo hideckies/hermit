@@ -307,6 +307,17 @@ func WizardPayloadImplant(
 		break
 	}
 
+	var oAntiDebug bool = false
+	for {
+		yes, err := stdin.Confirm("Enable Anti-Debug?")
+		if err != nil {
+			stdout.LogFailed(fmt.Sprint(err))
+			continue
+		}
+		oAntiDebug = yes
+		break
+	}
+
 	table := []stdout.SingleTableItem{
 		stdout.NewSingleTableItem("Type", oType),
 		stdout.NewSingleTableItem("Target OS", oOs),
@@ -317,6 +328,7 @@ func WizardPayloadImplant(
 		stdout.NewSingleTableItem("Jitter", fmt.Sprint(oJitter)),
 		stdout.NewSingleTableItem("KillDate (UTC)", oKillDateStr),
 		stdout.NewSingleTableItem("Indirect Syscalls", fmt.Sprintf("%t", oIndirectSyscalls)),
+		stdout.NewSingleTableItem("Anti-Debug", fmt.Sprintf("%t", oAntiDebug)),
 	}
 	stdout.PrintSingleTable("Implant Options", table)
 
@@ -346,6 +358,7 @@ func WizardPayloadImplant(
 		oJitter,
 		oKillDate,
 		oIndirectSyscalls,
+		oAntiDebug,
 	), nil
 }
 
@@ -441,6 +454,17 @@ func WizardPayloadLoader(
 		break
 	}
 
+	var oAntiDebug bool = false
+	for {
+		yes, err := stdin.Confirm("Enable Anti-Debug?")
+		if err != nil {
+			stdout.LogFailed(fmt.Sprint(err))
+			continue
+		}
+		oAntiDebug = yes
+		break
+	}
+
 	table := []stdout.SingleTableItem{
 		stdout.NewSingleTableItem("Target OS", oOs),
 		stdout.NewSingleTableItem("Target Arch", oArch),
@@ -450,6 +474,7 @@ func WizardPayloadLoader(
 		stdout.NewSingleTableItem("Injection Technique", oTechnique),
 		stdout.NewSingleTableItem("Target Process", oProcessToInject),
 		stdout.NewSingleTableItem("Indirect Syscalls", fmt.Sprintf("%t", oIndirectSyscalls)),
+		stdout.NewSingleTableItem("Anti-Debug", fmt.Sprintf("%t", oAntiDebug)),
 	}
 	stdout.PrintSingleTable("Loader Options", table)
 
@@ -480,6 +505,7 @@ func WizardPayloadLoader(
 		oTechnique,
 		oProcessToInject,
 		oIndirectSyscalls,
+		oAntiDebug,
 	), nil
 }
 

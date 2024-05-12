@@ -21,6 +21,17 @@ typedef BOOL (WINAPI * DLLMAIN)(HINSTANCE, DWORD, LPVOID);
 #define DEREF_16(name)*(WORD *)(name)
 #define DEREF_8(name)*(BYTE *)(name)
 
+// Used for Anti-Debug
+#define FLG_HEAP_ENABLE_TAIL_CHECK   0x10
+#define FLG_HEAP_ENABLE_FREE_CHECK   0x20
+#define FLG_HEAP_VALIDATE_PARAMETERS 0x40
+#define NT_GLOBAL_FLAG_DEBUGGED (FLG_HEAP_ENABLE_TAIL_CHECK | FLG_HEAP_ENABLE_FREE_CHECK | FLG_HEAP_VALIDATE_PARAMETERS)
+
+namespace Technique::AntiDebug
+{
+    VOID StopIfDebug(Procs::PPROCS pProcs);
+}
+
 namespace Technique::Injection::Helper
 {
     DWORD Rva2Offset(

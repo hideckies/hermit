@@ -310,6 +310,7 @@ func (s *HermitRPCServer) PayloadImplantGenerate(
 		uint(imp.Jitter),
 		uint(imp.KillDate),
 		imp.IndirectSyscalls,
+		imp.AntiDebug,
 	)
 	data, _, err := newImp.Generate(s.serverState)
 	if err != nil {
@@ -336,6 +337,7 @@ func (s *HermitRPCServer) PayloadLoaderGenerate(
 		ldr.Technique,
 		ldr.ProcessToInject,
 		ldr.IndirectSyscalls,
+		ldr.AntiDebug,
 	)
 	data, _, err := newStg.Generate(s.serverState)
 	if err != nil {

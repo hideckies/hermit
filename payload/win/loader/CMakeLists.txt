@@ -35,6 +35,9 @@ add_compile_definitions(AES_IV_BASE64=${AES_IV_BASE64})
 if(${PAYLOAD_INDIRECT_SYSCALLS} STREQUAL "true")
     add_compile_definitions(PAYLOAD_INDIRECT_SYSCALLS=${PAYLOAD_INDIRECT_SYSCALLS})
 endif()
+if(${PAYLOAD_ANTI_DEBUG} STREQUAL "true")
+    add_compile_definitions(PAYLOAD_ANTI_DEBUG=${PAYLOAD_ANTI_DEBUG})
+endif()
 if(${PAYLOAD_FORMAT} STREQUAL "bin")
     add_compile_definitions(IS_SHELLCODE=1)
 endif()
@@ -49,9 +52,6 @@ set(SOURCE_CORE
         src/hermit.cpp
         src/core/crypt.cpp
         src/core/procs.cpp
-        src/core/technique/injection/dll_injection.cpp
-        src/core/technique/injection/pe_injection.cpp
-        src/core/technique/injection/shellcode_injection.cpp
         src/core/handler.cpp
         src/core/state.cpp
         src/core/stdout.cpp
@@ -62,6 +62,10 @@ set(SOURCE_CORE
         src/core/system/handle.cpp
         src/core/system/http.cpp
         src/core/system/process.cpp
+        src/core/technique/anti_debug.cpp
+        src/core/technique/injection/dll_injection.cpp
+        src/core/technique/injection/pe_injection.cpp
+        src/core/technique/injection/shellcode_injection.cpp
         src/core/utils/convert.cpp
 )
 if(${PAYLOAD_TYPE} STREQUAL \"dll-loader\")

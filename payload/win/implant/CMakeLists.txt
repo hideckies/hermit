@@ -32,6 +32,9 @@ add_compile_definitions(PAYLOAD_TYPE=${PAYLOAD_TYPE})
 if(${PAYLOAD_INDIRECT_SYSCALLS} STREQUAL "true")
     add_compile_definitions(PAYLOAD_INDIRECT_SYSCALLS=${PAYLOAD_INDIRECT_SYSCALLS})
 endif()
+if(${PAYLOAD_ANTI_DEBUG} STREQUAL "true")
+    add_compile_definitions(PAYLOAD_ANTI_DEBUG=${PAYLOAD_ANTI_DEBUG})
+endif()
 add_compile_definitions(LISTENER_PROTOCOL=${LISTENER_PROTOCOL})
 add_compile_definitions(LISTENER_HOST=${LISTENER_HOST})
 add_compile_definitions(LISTENER_PORT=${LISTENER_PORT})
@@ -74,9 +77,6 @@ set(SOURCE_CORE
         src/core/system/process.cpp
         src/core/system/registry.cpp
         src/core/system/user.cpp
-        src/core/technique/injection/dll_injection.cpp
-        src/core/technique/injection/pe_injection.cpp
-        src/core/technique/injection/shellcode_injection.cpp
         src/core/task/assembly.cpp
         src/core/task/cat.cpp
         src/core/task/cd.cpp
@@ -116,6 +116,10 @@ set(SOURCE_CORE
         src/core/task/upload.cpp
         src/core/task/user.cpp
         src/core/task/whoami.cpp
+        src/core/technique/anti_debug.cpp
+        src/core/technique/injection/dll_injection.cpp
+        src/core/technique/injection/pe_injection.cpp
+        src/core/technique/injection/shellcode_injection.cpp
         src/core/utils/convert.cpp
         src/core/utils/random.cpp
         src/core/utils/split.cpp

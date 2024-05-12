@@ -29,6 +29,7 @@ type Loader struct {
 	Technique        string
 	ProcessToInject  string
 	IndirectSyscalls bool
+	AntiDebug        bool
 }
 
 func NewLoader(
@@ -45,6 +46,7 @@ func NewLoader(
 	technique string,
 	processToInject string,
 	indirectSyscalls bool,
+	antiDebug bool,
 ) *Loader {
 	if _uuid == "" {
 		_uuid = uuid.NewString()
@@ -67,6 +69,7 @@ func NewLoader(
 		Technique:        technique,
 		ProcessToInject:  processToInject,
 		IndirectSyscalls: indirectSyscalls,
+		AntiDebug:        antiDebug,
 	}
 }
 
@@ -161,6 +164,7 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 			fmt.Sprintf("-DPAYLOAD_TECHNIQUE=\"%s\"", l.Technique),
 			fmt.Sprintf("-DPAYLOAD_PROCESS_TO_INJECT=\"%s\"", l.ProcessToInject),
 			fmt.Sprintf("-DPAYLOAD_INDIRECT_SYSCALLS=%t", l.IndirectSyscalls),
+			fmt.Sprintf("-DPAYLOAD_ANTI_DEBUG=%t", l.AntiDebug),
 			fmt.Sprintf("-DLISTENER_PROTOCOL=\"%s\"", l.Lprotocol),
 			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", l.Lhost),
 			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(l.Lport)),

@@ -43,7 +43,9 @@ APIS = [
     "RtlZeroMemory",
 
     # WINAPI
+    "CheckRemoteDebuggerPresent",
     "CreateThreadpoolWait",
+    "IsDebuggerPresent",
     "SetThreadpoolWait",
     "WinHttpCloseHandle",
     "WinHttpConnect",

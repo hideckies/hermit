@@ -5,6 +5,8 @@ This page introduces the basic usage of execute the implant beacon on Windows vi
 Assume that you've already installed Hermit.  
 If not yet, see [the Installation page](../installation.md) and try [Getting Started](../getting-started.md).
 
+> IMPORTANT: It's heavily recommended to use **a virtual machine** for Windows victim machine because If we modify the registry etc., the system might not work properly.
+
 ## 1. Start C2 Server
 
 Go to the Hermit project directory then run `./hermit` command.
@@ -73,18 +75,19 @@ Currently, the following tasks are available:
 
 ```txt title="Hermit C2 Server Console [Agent Mode]"
 TASK:
+  assembly        Load and execute .NET assembly.
   cat             Read contents of a file.
   cd              Change the working directory.
+  cmd             Execute arbitrary system command.
   connect         Change listener URL to connect.
   cp              Copy a file.
   creds steal     Steal credentials from various resources on the target computer
-  dll             Load DLL and inject modules into the specified process
+  dll             Load DLL and inject modules into the specified process.
   download        Download a file.
   env ls          List environment variables.
   envs            alias for 'env ls'
-  execute         Execute system command.
   group ls        List local groups.
-  groups          Alias for 'group ls'
+  groups          Alias for 'group ls'.
   history         Retrieve information from history files of applications
   ip              Print the network interface information on target computer
   jitter          Set jitter time (seconds) between requests from beacon
@@ -96,12 +99,13 @@ TASK:
   mkdir           Create a new directory.
   mv              Move a file to a destination location.
   net             Get TCP connections.
+  pe              Load and execute PE (Portable Executable) file.
+  persist         Establish persistence for implant.
   procdump        Dump process memory to a specified output file.
   ps kill         Terminate a process.
   ps ls           List processes.
   pwd             Print the current working directory.
-  reg subkeys     Enumerate subkeys for the specified open registry key.
-  reg values      Enumerate the specified registry values.
+  reg query       Enumerate subkeys for the specified path.
   rm              Remove a file.
   rmdir           Remove a directory.
   rportfwd add    Add settings to reverse port forwarding.
@@ -109,13 +113,13 @@ TASK:
   rportfwd rm     Stop and remove listener for reverse port forwarding.
   runas           Execute a program as another user.
   screenshot      Take a screenshot on target computer.
-  shellcode       Inject shellcode into the specified process
-  sleep           Set sleep time (seconds) between requests from beacon
+  shellcode       Inject shellcode into the specified process.
+  sleep           Set sleep time (seconds) between requests from beacon.
   token revert    Revert back to the original process token.
   token steal     Steal token from the specified process and impersonate process.
   upload          Upload a file to the target computer.
   user ls         List users.
-  users           List all local users.
+  users           Alias for 'user ls'.
   whoami          Print the current user information.
 ```
 

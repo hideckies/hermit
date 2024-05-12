@@ -90,6 +90,7 @@ message PayloadImplant {
   int64 jitter = 12;
   int64 killDate = 13;
   bool indirectSyscalls = 14;
+  bool antiDebug = 15;
 }
 
 message PayloadLoader {
@@ -106,6 +107,7 @@ message PayloadLoader {
   string technique = 11;
   string processToInject = 12;
   bool indirectSyscalls = 13;
+  bool antiDebug = 14;
 }
 
 message PayloadShellcode {
