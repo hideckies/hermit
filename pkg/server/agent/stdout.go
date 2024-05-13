@@ -22,6 +22,7 @@ func PrintAgents(ags []*Agent) {
 		"ListenerURL",
 		"ImplantType",
 		"CheckIn",
+		"SessionID",
 	}
 	tRows := [][]string{}
 	for _, ag := range ags {
@@ -34,6 +35,7 @@ func PrintAgents(ags []*Agent) {
 			ag.ListenerURL,
 			ag.ImplantType,
 			ag.CheckInDate,
+			ag.SessionId,
 		})
 	}
 
@@ -58,6 +60,7 @@ func PrintAgentDetails(ag *Agent) {
 		stdout.NewSingleTableItem("KillDate", meta.GetDateTimeFromTimestamp(int(ag.KillDate))),
 		stdout.NewSingleTableItem("AES Key", ag.AES.Key.Base64),
 		stdout.NewSingleTableItem("AES IV", ag.AES.IV.Base64),
+		stdout.NewSingleTableItem("SessionID", ag.SessionId),
 	}
 
 	stdout.LogSuccess("")

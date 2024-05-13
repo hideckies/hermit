@@ -14,10 +14,10 @@ const (
 	TASK_CMD          = 0x04
 	TASK_CONNECT      = 0x05
 	TASK_CP           = 0x06
-	TASK_CREDS_STEAL  = 0x07
-	TASK_DLL          = 0x08
-	TASK_DOWNLOAD     = 0x09
-	TASK_ENV_LS       = 0x10
+	TASK_DLL          = 0x07
+	TASK_DOWNLOAD     = 0x08
+	TASK_ENV_LS       = 0x09
+	TASK_FIND         = 0x10
 	TASK_GROUP_LS     = 0x11
 	TASK_HISTORY      = 0x12
 	TASK_IP           = 0x13
@@ -48,10 +48,11 @@ const (
 	TASK_SLEEP        = 0x38
 	TASK_TOKEN_REVERT = 0x39
 	TASK_TOKEN_STEAL  = 0x40
-	TASK_UPLOAD       = 0x41
-	TASK_USER_LS      = 0x42
-	TASK_WHOAMI       = 0x43
-	TASK_WHOAMI_PRIV  = 0x44
+	TASK_UAC          = 0x41
+	TASK_UPLOAD       = 0x42
+	TASK_USER_LS      = 0x43
+	TASK_WHOAMI       = 0x44
+	TASK_WHOAMI_PRIV  = 0x45
 )
 
 func GetTaskCode(task string) (int, error) {
@@ -68,14 +69,14 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_CONNECT, nil
 	case "cp":
 		return TASK_CP, nil
-	case "creds steal":
-		return TASK_CREDS_STEAL, nil
 	case "dll":
 		return TASK_DLL, nil
 	case "download":
 		return TASK_DOWNLOAD, nil
 	case "env ls", "envs":
 		return TASK_ENV_LS, nil
+	case "find":
+		return TASK_FIND, nil
 	case "group ls", "groups":
 		return TASK_GROUP_LS, nil
 	case "history":
@@ -136,6 +137,8 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_TOKEN_REVERT, nil
 	case "token steal":
 		return TASK_TOKEN_STEAL, nil
+	case "uac":
+		return TASK_UAC, nil
 	case "upload":
 		return TASK_UPLOAD, nil
 	case "user ls", "users":

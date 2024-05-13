@@ -65,7 +65,7 @@ type GrammarAgentMode struct {
 	Download amTaskDownloadCmd `cmd:"" help:"Download a file." group:"TASK:"`
 	Env      amTaskEnvCmd      `cmd:"" help:"Manage environment variables." group:"TASK:"`
 	Envs     amTaskEnvLsCmd    `cmd:"" help:"alias for 'env ls'" group:"TASK:"`
-	// Find       amTaskFindCmd       `cmd:"" help:"Find files." group:"TASK:"`
+	Find     amTaskFindCmd     `cmd:"" help:"Find files." group:"TASK:"`
 	Group    amTaskGroupCmd    `cmd:"" help:"Manage groups." group:"TASK:"`
 	Groups   amTaskGroupLsCmd  `cmd:"" help:"Alias for 'group ls'." group:"TASK:"`
 	History  amTaskHistoryCmd  `cmd:"" help:"Retrieve information from history files of applications" group:"TASK:"`
@@ -99,6 +99,7 @@ type GrammarAgentMode struct {
 	// Socks      amTaskSocksCmd      `cmd:"" help:"" group:"TASK:"`
 	// Sysinfo amTaskSysinfoCmd `cmd:"" help:"Print system information." group:"TASK:"`
 	Token  amTaskTokenCmd  `cmd:"" help:"Manage tokens." group:"TASK:"`
+	Uac    amTaskUacCmd    `cmd:"" help:"Bypass UAC and start another session." group:"TASK:"`
 	Upload amTaskUploadCmd `cmd:"" help:"Upload a file to the target computer." group:"TASK:"`
 	User   amTaskUserCmd   `cmd:"" help:"Manage users." group:"TASK:"`
 	Users  amTaskUserLsCmd `cmd:"" help:"Alias for 'user ls'." group:"TASK:"`

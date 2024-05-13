@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+const alphanum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
 var animalNames = []string{
 	"aardvark", "alphabeetle", "aquafox", "ayeaye",
 	"betafox", "blazewolf",
@@ -76,6 +78,14 @@ var roleNames = []string{
 
 func GenerateRandomInt(min int, max int) int {
 	return rand.Intn(max-min) + min
+}
+
+func GenerateRandomAlphaNum(length int) string {
+	randStr := make([]byte, length)
+	for i := range randStr {
+		randStr[i] = alphanum[rand.Intn(len(alphanum))]
+	}
+	return string(randStr)
 }
 
 func GenerateRandomPort() uint16 {

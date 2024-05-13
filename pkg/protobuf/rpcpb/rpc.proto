@@ -140,6 +140,7 @@ message Agent {
   int64 killDate = 13;
   string aesKey = 14;
   string aesIV = 15;
+  string sessionId = 16;
 }
 
 message Task {

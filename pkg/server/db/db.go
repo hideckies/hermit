@@ -84,7 +84,8 @@ func (d *Database) init() error {
 		jitter 		INTEGER,
 		killdate 	INTEGER,
 		aesKey 		TEXT,
-		aesIV 		TEXT
+		aesIV 		TEXT,
+		sessionId	TEXT
 	)`)
 	if err != nil {
 		return err

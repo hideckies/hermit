@@ -18,6 +18,7 @@ TASK:
   download        Download a file.
   env ls          List environment variables.
   envs            alias for 'env ls'
+  find            Find files.
   group ls        List local groups.
   groups          Alias for 'group ls'.
   history         Retrieve information from history files of applications
@@ -49,6 +50,7 @@ TASK:
   sleep           Set sleep time (seconds) between requests from beacon.
   token revert    Revert back to the original process token.
   token steal     Steal token from the specified process and impersonate process.
+  uac             Bypass UAC and start another session.
   upload          Upload a file to the target computer.
   user ls         List users.
   users           Alias for 'user ls'.
@@ -132,6 +134,15 @@ Hermit [agent-abcd] > download C:/Users/John/Desktop/example.txt /tmp/example.tx
 ### `env ls`, `envs`
 
 Lists environment variables in victim machine.
+
+## `find`
+
+Find files or directories that contain the specified strings.
+
+```sh
+# -n: Specified strings
+Hermit [agent-abcd] > find -n "creds.txt" ./
+```
 
 ## `group`
 

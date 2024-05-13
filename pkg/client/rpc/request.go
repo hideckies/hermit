@@ -290,6 +290,7 @@ func RequestAgentGetById(clientState *state.ClientState, agentId uint) (*agent.A
 		uint(r.GetJitter()),
 		uint(r.GetKillDate()),
 		newAES,
+		r.SessionId,
 	)
 	if err != nil {
 		return nil, err
@@ -335,6 +336,7 @@ func RequestAgentGetAll(clientState *state.ClientState) ([]*agent.Agent, error) 
 			uint(ag.Jitter),
 			uint(ag.KillDate),
 			newAES,
+			ag.SessionId,
 		)
 		if err != nil {
 			return nil, err

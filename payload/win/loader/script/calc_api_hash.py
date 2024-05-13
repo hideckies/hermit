@@ -32,6 +32,7 @@ APIS = [
     "NtWaitForSingleObject",
     "NtWriteFile",
     "RtlAllocateHeap",
+    "RtlCreateProcessReflection",
     "RtlCreateUserThread",
     "RtlExpandEnvironmentStrings",
     "RtlGetFullPathName_U",

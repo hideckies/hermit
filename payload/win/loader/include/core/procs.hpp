@@ -40,6 +40,7 @@
 #define APIHASH_NTWAITFORSINGLEOBJECT       0x73c87a00
 #define APIHASH_NTWRITEFILE                 0x9339e2e0
 #define APIHASH_RTLALLOCATEHEAP             0xcc7755e
+#define APIHASH_RTLCREATEPROCESSREFLECTION  0x6fa72a9
 #define APIHASH_RTLCREATEUSERTHREAD         0x43322de6
 #define APIHASH_RTLEXPANDENVIRONMENTSTRINGS 0xb73f443e
 #define APIHASH_RTLGETFULLPATHNAME_U        0x2116c216
@@ -131,6 +132,8 @@ namespace Procs
     typedef NTSTATUS (NTAPI* LPPROC_NTWRITEFILE)(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext, PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, ULONG Length, PLARGE_INTEGER ByteOffset, PULONG Key);
     // RtlAllocateHeap
     typedef PVOID (NTAPI* LPPROC_RTLALLOCATEHEAP)(PVOID HeapHandle, ULONG Flags, SIZE_T Size);
+    // RtlCreateProcessReflection
+    typedef NTSTATUS (NTAPI* LPPROC_RTLCREATEPROCESSREFLECTION)(HANDLE ProcessHandle, ULONG Flags, PVOID StartRoutine, PVOID StartContext, HANDLE EventHandle, PRTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION ReflectionInformation);
     // RtlCreateUserThread
     typedef NTSTATUS (NTAPI* LPPROC_RTLCREATEUSERTHREAD)(HANDLE ProcessHandle, PSECURITY_DESCRIPTOR ThreadSecurityDescriptor, BOOLEAN CreateSuspended, ULONG ZeroBits, SIZE_T MaximumStackSize, SIZE_T CommittedStackSize, PUSER_THREAD_START_ROUTINE StartAddress, PVOID Parameter, PHANDLE ThreadHandle, PCLIENT_ID ClientId);
     // RtlExpandEnvironmentStrings
@@ -217,6 +220,7 @@ namespace Procs
         LPPROC_NTWRITEFILE                  lpNtWriteFile                       = nullptr;
         LPPROC_NTWRITEVIRTUALMEMORY         lpNtWriteVirtualMemory              = nullptr;
         LPPROC_RTLALLOCATEHEAP              lpRtlAllocateHeap                   = nullptr;
+        LPPROC_RTLCREATEPROCESSREFLECTION   lpRtlCreateProcessReflection        = nullptr;
         LPPROC_RTLCREATEUSERTHREAD          lpRtlCreateUserThread               = nullptr;
         LPPROC_RTLEXPANDENVIRONMENTSTRINGS  lpRtlExpandEnvironmentStrings       = nullptr;
         LPPROC_RTLGETFULLPATHNAME_U         lpRtlGetFullPathName_U              = nullptr;
@@ -271,6 +275,7 @@ namespace Procs
         Syscalls::SYSCALL                   sysNtWaitForSingleObject            = {0};
         Syscalls::SYSCALL                   sysNtWriteFile                      = {0};
         Syscalls::SYSCALL                   sysNtWriteVirtualMemory             = {0};
+        Syscalls::SYSCALL                   sysRtlCreateProcessReflection       = {0};
         Syscalls::SYSCALL                   sysRtlCreateUserThread              = {0};
         Syscalls::SYSCALL                   sysRtlGetFullPathName_U             = {0};
         Syscalls::SYSCALL                   sysRtlInitUnicodeString             = {0};

@@ -86,6 +86,7 @@ TASK:
   download        Download a file.
   env ls          List environment variables.
   envs            alias for 'env ls'
+  find            Find files.
   group ls        List local groups.
   groups          Alias for 'group ls'.
   history         Retrieve information from history files of applications
@@ -117,6 +118,7 @@ TASK:
   sleep           Set sleep time (seconds) between requests from beacon.
   token revert    Revert back to the original process token.
   token steal     Steal token from the specified process and impersonate process.
+  uac             Bypass UAC and start another session.
   upload          Upload a file to the target computer.
   user ls         List users.
   users           Alias for 'user ls'.
@@ -170,3 +172,7 @@ Hermit > listener delete 1
 ```
 
 `1` is the listener ID that can be seen by `listeners` command.
+
+## Attack Further...
+
+If you'd like to escalate privilege, please try [the Tutorial: Privilege Escalation with Implant Beacon](./privilege-escalation-with-implant-beacon.md).

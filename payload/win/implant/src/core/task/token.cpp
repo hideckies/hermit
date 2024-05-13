@@ -46,8 +46,6 @@ namespace Task::Helper::Token
     }
 }
 
-
-
 namespace Task
 {
     std::wstring TokenRevert()
@@ -60,7 +58,7 @@ namespace Task
         return L"Success: Reverted impersonation successfully.";
     }
 
-    // NTAPIs not working, so use WINAPIs
+    // NTAPI not working, so use WINAPIs
     std::wstring TokenSteal(
         State::PSTATE pState,
         const std::wstring& wPid,

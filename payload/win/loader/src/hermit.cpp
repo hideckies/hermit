@@ -283,6 +283,14 @@ namespace Hermit
                 bytes
             );
         }
+        else if (wcscmp(pState->lpPayloadTechnique, L"dirty-vanity") == 0)
+        {
+            Technique::Injection::DirtyVanity(
+                pState->pProcs,
+                dwTargetPID,
+                bytes
+            );
+        }
 
         State::Free(pState);
         return;

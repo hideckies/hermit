@@ -273,6 +273,32 @@ type amTaskEnvCmd struct {
 	// Set amTaskEnvSetCmd `cmd:"" help:"Set environmant variable."`
 }
 
+// FIND
+type amTaskFindCmd struct {
+	Name string `short:"n" optional:"" help:"Specify the name of files/directories to find."`
+	Path string `arg:"" default:"." help:"Specify the path to start finding."`
+}
+
+func (c *amTaskFindCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask("find", map[string]string{
+		"name": c.Name,
+		"path": c.Path,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GROUP
 type amTaskGroupLsCmd struct{}
 
@@ -1064,6 +1090,41 @@ func (c *amTaskTokenCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
+	return nil
+}
+
+// UAC
+type amTaskUacCmd struct{}
+
+func (c *amTaskUacCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	// Select technique
+	technique, err := stdin.Select("Technique", []string{
+		"fodhelper",
+		"(cancel)",
+	})
+	if err != nil {
+		return err
+	}
+	if technique == "(cancel)" {
+		stdout.LogWarn("Canceled")
+		return nil
+	}
+
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{
+		"technique": technique,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

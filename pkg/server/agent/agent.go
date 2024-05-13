@@ -20,6 +20,7 @@ type Agent struct {
 	Jitter      uint
 	KillDate    uint
 	AES         *crypt.AES
+	SessionId   string // it's used for HTTPS request of implant
 }
 
 func NewAgent(
@@ -37,6 +38,7 @@ func NewAgent(
 	jitter uint,
 	killDate uint,
 	aes *crypt.AES,
+	sessionId string,
 ) (*Agent, error) {
 	if name == "" {
 		name = utils.GenerateRandomHumanName(false, "agent")
@@ -65,5 +67,6 @@ func NewAgent(
 		Jitter:      jitter,
 		KillDate:    killDate,
 		AES:         aes,
+		SessionId:   sessionId,
 	}, nil
 }

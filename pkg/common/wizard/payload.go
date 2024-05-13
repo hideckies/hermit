@@ -411,6 +411,7 @@ func WizardPayloadLoader(
 			"address-of-entry-point-injection",
 			"module-stomping",
 			// "process-mockingjay",
+			"dirty-vanity",
 		}
 	}
 	for {
@@ -432,7 +433,8 @@ func WizardPayloadLoader(
 		oTechnique == "thread-execution-hijacking" ||
 		oTechnique == "via-memory-sections" ||
 		oTechnique == "address-of-entry-point-injection" ||
-		oTechnique == "module-stomping" {
+		oTechnique == "module-stomping" ||
+		oTechnique == "dirty-vanity" {
 		for {
 			res, err := stdin.ReadInput("Target Process to be Injected", "notepad.exe")
 			if err != nil {

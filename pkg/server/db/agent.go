@@ -36,9 +36,10 @@ func (d *Database) AgentAdd(ag *agent.Agent) error {
 		jitter,
 		killdate,
 		aesKey,
-		aesIV
+		aesIV,
+		sessionId
 	) VALUES (
-		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 	)
 	`)
 	if err != nil {
@@ -61,6 +62,7 @@ func (d *Database) AgentAdd(ag *agent.Agent) error {
 		int(ag.KillDate),
 		ag.AES.Key.Base64,
 		ag.AES.IV.Base64,
+		ag.SessionId,
 	)
 	if err != nil {
 		return err
@@ -122,7 +124,8 @@ func (d *Database) AgentUpdate(ag *agent.Agent) error {
 		jitter 		= ?,
 		killdate 	= ?,
 		aesKey		= ?,
-		aesIV 		= ?
+		aesIV 		= ?,
+		sessionId	= ?
 	WHERE
 		uuid = ?
 	`)
@@ -145,6 +148,7 @@ func (d *Database) AgentUpdate(ag *agent.Agent) error {
 		int(ag.KillDate),
 		ag.AES.Key.Base64,
 		ag.AES.IV.Base64,
+		ag.SessionId,
 		ag.Uuid,
 	)
 	if err != nil {
@@ -231,7 +235,8 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		jitter,
 		killdate,
 		aesKey,
-		aesIV
+		aesIV,
+		sessionId
 	FROM
 		agent
 	WHERE
@@ -258,6 +263,7 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		killDate    int
 		aesKey      string
 		aesIV       string
+		sessionId   string
 	)
 	err = stmt.QueryRow(agentId).Scan(
 		&id,
@@ -275,6 +281,7 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		&killDate,
 		&aesKey,
 		&aesIV,
+		&sessionId,
 	)
 	if err != nil {
 		return nil, err
@@ -300,6 +307,7 @@ func (d *Database) AgentGetById(agentId uint) (*agent.Agent, error) {
 		uint(jitter),
 		uint(killDate),
 		newAES,
+		sessionId,
 	)
 	if err != nil {
 		return nil, err
@@ -325,7 +333,8 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		jitter,
 		killdate,
 		aesKey,
-		aesIV
+		aesIV,
+		sessionId
 	FROM
 		agent
 	WHERE
@@ -352,6 +361,7 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		killDate    int
 		aesKey      string
 		aesIV       string
+		sessionId   string
 	)
 	err = stmt.QueryRow(agentUuid).Scan(
 		&id,
@@ -369,6 +379,7 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		&killDate,
 		&aesKey,
 		&aesIV,
+		&sessionId,
 	)
 	if err != nil {
 		return nil, err
@@ -394,6 +405,7 @@ func (d *Database) AgentGetByUuid(agentUuid string) (*agent.Agent, error) {
 		uint(jitter),
 		uint(killDate),
 		newAES,
+		sessionId,
 	)
 	if err != nil {
 		return nil, err
@@ -419,7 +431,8 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 		jitter,
 		killdate,
 		aesKey,
-		aesIV
+		aesIV,
+		sessionId
 	FROM
 		agent
 	`)
@@ -447,6 +460,7 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 			killDate    int
 			aesKey      string
 			aesIV       string
+			sessionId   string
 		)
 		err = rows.Scan(
 			&id,
@@ -464,6 +478,7 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 			&killDate,
 			&aesKey,
 			&aesIV,
+			&sessionId,
 		)
 		if err != nil {
 			return nil, err
@@ -489,6 +504,7 @@ func (d *Database) AgentGetAll() ([]*agent.Agent, error) {
 			uint(jitter),
 			uint(killDate),
 			newAES,
+			sessionId,
 		)
 		if err != nil {
 			return nil, err

@@ -290,7 +290,6 @@ namespace Task
 
             std::wstring wExecutables = L"explorer.exe," + std::wstring(wSelfPath);
             LPCWSTR lpExecutables = wExecutables.c_str();
-            Stdout::DisplayMessageBoxW(lpExecutables, L"lpExecutables");
            
             result = RegSetValueExW(
                 hKey,

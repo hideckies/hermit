@@ -124,6 +124,11 @@ namespace Technique::Injection
         DWORD dwPID,
         const std::vector<BYTE>& bytes
     );
+    BOOL DirtyVanity(
+        Procs::PPROCS pProcs,
+        DWORD dwPID,
+        const std::vector<BYTE>& bytes
+    );
 }
 
 #endif // HERMIT_CORE_TECHNIQUE_HPP
