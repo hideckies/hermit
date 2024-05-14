@@ -118,7 +118,7 @@ install_pkg() {
 install_python_pkg() {
     if [[ $target == "server" ]]; then
         log "Installing Python packages..."
-        pip3 install pefile
+        pip3 install impacket pefile
     fi
     return 0
 }

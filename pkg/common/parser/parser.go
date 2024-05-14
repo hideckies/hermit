@@ -68,6 +68,7 @@ type GrammarAgentMode struct {
 	Find     amTaskFindCmd     `cmd:"" help:"Find files." group:"TASK:"`
 	Group    amTaskGroupCmd    `cmd:"" help:"Manage groups." group:"TASK:"`
 	Groups   amTaskGroupLsCmd  `cmd:"" help:"Alias for 'group ls'." group:"TASK:"`
+	Hashdump amTaskHashdumpCmd `cmd:"" help:"Dump hashes from registry hives." group:"TASK:"`
 	History  amTaskHistoryCmd  `cmd:"" help:"Retrieve information from history files of applications" group:"TASK:"`
 	Ip       amTaskIpCmd       `cmd:"" help:"Print the network interface information on target computer" group:"TASK:"`
 	Jitter   amTaskJitterCmd   `cmd:"" help:"Set jitter time (seconds) between requests from beacon" group:"TASK:"`
@@ -79,11 +80,9 @@ type GrammarAgentMode struct {
 	Mkdir    amTaskMkdirCmd    `cmd:"" help:"Create a new directory." group:"TASK:"`
 	Mv       amTaskMvCmd       `cmd:"" help:"Move a file to a destination location." group:"TASK:"`
 	Net      amTaskNetCmd      `cmd:"" help:"Get TCP connections." group:"TASK:"`
-	// Nslookup   amTaskNslookupCmd   `cmd:"" help:"Manage network." group:"TASK:"`
-	Pe      amTaskPeCmd      `cmd:"" help:"Load and execute PE (Portable Executable) file." group:"TASK:"`
-	Persist amTaskPersistCmd `cmd:"" help:"Establish persistence for implant." group:"TASK:"`
+	Pe       amTaskPeCmd       `cmd:"" help:"Load and execute PE (Portable Executable) file." group:"TASK:"`
+	Persist  amTaskPersistCmd  `cmd:"" help:"Establish persistence for implant." group:"TASK:"`
 	// Pivot amTaskPivotCmd `cmd:"" help:"Manage pivoting" group:"TASK:"`
-	// PowerShell amTaskPowerShellCmd `cmd:"" help:"Execute PowerShell command." group:"TASK:"`
 	Procdump amTaskProcdumpCmd `cmd:"" help:"Dump process memory to a specified output file." group:"TASK:"`
 	Ps       amTaskPsCmd       `cmd:"" help:"Manage processes." group:"TASK:"`
 	// PsExec     amTaskPsExecCmd     `cmd:"Manage processes with psexec." help:"" group:"TASK:"`

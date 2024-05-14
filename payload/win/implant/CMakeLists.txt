@@ -88,6 +88,7 @@ set(SOURCE_CORE
         src/core/task/env.cpp
         src/core/task/find.cpp
         src/core/task/group.cpp
+        src/core/task/hashdump.cpp
         src/core/task/history.cpp
         src/core/task/ip.cpp
         src/core/task/jitter.cpp

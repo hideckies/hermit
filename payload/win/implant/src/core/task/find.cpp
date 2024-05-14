@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    namespace Helper
+    namespace Helper::Find
     {
         std::wstring FindFiles(
             State::PSTATE pState,
@@ -46,7 +46,7 @@ namespace Task
                     }
 
                     // Find recursively
-                    wResult += Helper::FindFiles(pState, wPath + L"\\" + std::wstring(ffd.cFileName), wName);
+                    wResult += Helper::Find::FindFiles(pState, wPath + L"\\" + std::wstring(ffd.cFileName), wName);
                 }
                 else
                 {
@@ -74,6 +74,6 @@ namespace Task
         const std::wstring& wPath,
         const std::wstring& wName
     ) {
-        return Helper::FindFiles(pState, wPath, wName);
+        return Helper::Find::FindFiles(pState, wPath, wName);
     }
 }

