@@ -1,53 +1,79 @@
 from typing import Mapping
 
-APIS = [
-    # NTAPI
+MODULES = [
+    "kernel32.dll",
+    "ntdll.dll",
+]
+
+FUNCS = [
+    # NATIVE APIS
+    "LdrLoadDll",
+    "NtAdjustPrivilegesToken",
     "NtAllocateVirtualMemory",
     "NtClose",
     "NtCreateFile",
     "NtCreateNamedPipeFile",
     "NtCreateProcessEx",
-    "NtCreateSection",
     "NtCreateThreadEx",
+    "NtDeleteFile",
     "NtDuplicateObject",
+    "NtEnumerateValueKey",
+    "NtFlushInstructionCache",
     "NtFreeVirtualMemory",
     "NtGetContextThread",
-    "NtMapViewOfSection",
+    "NtOpenFile",
+    "NtOpenKeyEx",
     "NtOpenProcess",
     "NtOpenProcessToken",
     "NtOpenThread",
+    "NtPrivilegeCheck",
     "NtProtectVirtualMemory",
     "NtQueryInformationFile",
     "NtQueryInformationProcess",
-    "NtQueryVirtualMemory",
+    "NtQueryInformationToken",
+    "NtQueryKey",
+    "NtQuerySystemInformation",
     "NtReadFile",
     "NtReadVirtualMemory",
     "NtResumeThread",
     "NtSetContextThread",
     "NtSetInformationFile",
     "NtSetInformationProcess",
+    "NtSystemDebugControl",
     "NtTerminateProcess",
     "NtUnmapViewOfSection",
-    "NtWriteVirtualMemory",
     "NtWaitForSingleObject",
     "NtWriteFile",
+    "NtWriteVirtualMemory",
     "RtlAllocateHeap",
-    "RtlCreateProcessReflection",
-    "RtlCreateUserThread",
     "RtlExpandEnvironmentStrings",
+    "RtlGetCurrentDirectory_U",
     "RtlGetFullPathName_U",
     "RtlInitUnicodeString",
     "RtlQuerySystemInformation",
+    "RtlSetCurrentDirectory_U",
     "RtlStringCchCatW",
     "RtlStringCchCopyW",
     "RtlStringCchLengthW",
     "RtlZeroMemory",
 
-    # WINAPI
+    # WINAPIS
     "CheckRemoteDebuggerPresent",
+    "CloseHandle",
     "CreateThreadpoolWait",
+    "DllMain",
+    "GetProcAddress",
     "IsDebuggerPresent",
+    "LoadLibraryA",
+    "LoadLibraryW",
+    "MessageBoxA",
+    "QueryFullProcessImageNameW",
+    "RtlAddFunctionTable",
+    "SetFileInformationByHandle",
     "SetThreadpoolWait",
+    "VirtualAlloc",
+    "VirtualProtect",
+    "VirtualFree",
     "WinHttpCloseHandle",
     "WinHttpConnect",
     "WinHttpOpen",
@@ -65,7 +91,6 @@ HASH_IV = 0x35
 RANDOM_ADDR = 0xab10f29f
 
 def calc_hash(string: str) -> int:
-    str_length = len(string)
     hash = HASH_IV
 
     for s in string:
@@ -84,16 +109,24 @@ def is_dupl(hashes: Mapping[str, str], hash: str) -> bool:
 
 def main():
     hashes = {}
-    for api in APIS:
-        hash_value = calc_hash(api)
-        hash_fmt = f"{'0x{0:x}'.format(hash_value)}"
 
+    for mod in MODULES:
+        hash_value = calc_hash(mod)
+        hash_fmt = f"{'0x{0:x}'.format(hash_value)}"
         # Check if the hash is duplicate
         if is_dupl(hashes, hash_fmt) is True:
             print("The calculated hash is duplicate. Please try again.")
             return
-    
-        hashes[f"#define APIHASH_{api.upper()}"] = hash_fmt
+        hashes[f"#define HASH_MODULE_{mod.upper().replace('.DLL', '')}"] = hash_fmt
+
+    for func in FUNCS:
+        hash_value = calc_hash(func)
+        hash_fmt = f"{'0x{0:x}'.format(hash_value)}"
+        # Check if the hash is duplicate
+        if is_dupl(hashes, hash_fmt) is True:
+            print("The calculated hash is duplicate. Please try again.")
+            return
+        hashes[f"#define HASH_FUNC_{func.upper()}"] = hash_fmt
 
     max_length = max(len(api_name) for api_name in hashes.keys())
 

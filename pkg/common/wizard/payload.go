@@ -62,6 +62,7 @@ func WizardPayloadType() string {
 		for {
 			res, err := stdin.Select("Shellcode type", []string{
 				"exec",
+				"msgbox", // for testing purpose.
 				// "dll-loader",
 				// "exec-loader",
 				// "shellcode-loader",

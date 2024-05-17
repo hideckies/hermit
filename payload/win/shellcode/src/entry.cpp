@@ -1,12 +1,33 @@
-#include "rfl.hpp"
-
-HINSTANCE hAppInstance = nullptr;
+#include "entry.hpp"
 
 using DLLEntry = BOOL(WINAPI *)(HINSTANCE dll, DWORD reason, LPVOID reserved);
 
-// This function is invoked by DLL Loader with Reflective DLL Injection technique.
-DLLEXPORT BOOL ReflectiveDllLoader(LPVOID lpParameter)
-{   
+// For 64 bit shellcodes we will set this as the entrypoint
+void AlignRSP()
+{
+    // AT&T syntax
+    // asm("push %rsi\n"
+    //     "mov % rsp, % rsi\n"
+    //     "and $0x0FFFFFFFFFFFFFFF0, % rsp\n"
+    //     "sub $0x020, % rsp\n"
+    //     "call Entry\n"
+    //     "mov % rsi, % rsp\n"
+    //     "pop % rsi\n"
+    //     "ret\n");
+
+    // Intel syntax
+    asm("push rsi\n"
+        "mov rsi, rsp\n"
+        "and rsp, 0x0FFFFFFFFFFFFFFF0\n"
+        "sub rsp, 0x020\n"
+        "call Entry\n"
+        "mov rsp, rsi\n"
+        "pop rsi\n"
+        "ret\n");
+}
+
+int Entry()
+{
     // Brute force DLL base address
     ULONG_PTR uLibAddr = (ULONG_PTR)ReflectiveCaller();
     // ULONG_PTR uLibAddr = (ULONG_PTR)ReflectiveDllLoader;
@@ -76,7 +97,6 @@ DLLEXPORT BOOL ReflectiveDllLoader(LPVOID lpParameter)
 
         // Compare the hash with the that of kernel32.dll
         if ((DWORD)uValueC == HASH_KERNEL32DLL)
-		// if (Procs::GetHashFromStringPtr((PVOID)uValueB, uCounter) == HASH_MODULE_KERNEL32)
         {
             // get this modules base address
 			uBaseAddr = (ULONG_PTR)((PLDR_DATA_TABLE_ENTRY_R)uValueA)->DllBase;
