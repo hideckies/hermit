@@ -27,7 +27,7 @@ namespace Technique::AntiDebug
         PPEB pPeb = (PPEB)__readgsqword(0x60);
         DWORD dwNtGlobalFlag = *(PDWORD)((PBYTE)pPeb + 0xBC);
         #else
-        PPEB pPeb = (PPEB)__readgsqword(0x30);
+        PPEB pPeb = (PPEB)__readfsqword(0x30);
         DWORD dwNtGlobalFlag = *(PDWORD)((PBYTE)pPeb + 0x68);
         #endif
 

@@ -11,7 +11,7 @@ namespace Modules
             pPeb = (PPEB)__readfsqword(0x30);
         #endif
 
-        // Get the Ldr
+        // Get the Ldr pointer
         PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)(pPeb->Ldr);
 
         // Get the first entry

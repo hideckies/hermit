@@ -1,8 +1,8 @@
 from typing import Mapping
 
 MODULES = [
-    "kernel32.dll",
-    "ntdll.dll",
+    "KERNEL32.DLL",
+    "NTDLL.DLL",
 ]
 
 FUNCS = [

@@ -17,7 +17,7 @@ namespace Procs
 
     DWORD GetHashFromStringPtr(PVOID pStr, SIZE_T dwStrLen)
     {
-        ULONG   dwHash  = HASH_IV;
+        DWORD   dwHash  = HASH_IV;
         PUCHAR  puStr   = static_cast<PUCHAR>(pStr);
 
         do
@@ -30,10 +30,11 @@ namespace Procs
             }
             else
             {
-                if ((ULONG) (puStr - (PUCHAR)pStr) >= dwStrLen) break;
+                if ((ULONG)(puStr - static_cast<PUCHAR>(pStr)) >= dwStrLen) break;
                 if (!*puStr) ++puStr;
             }
 
+            // if a character is lowercase, convert it to uppercase.
             if (c >= 'a')
             {
                 c -= 0x20;
@@ -45,6 +46,21 @@ namespace Procs
 
         return dwHash & 0xFFFFFFFF;
     }
+
+    // PVOID GetModuleByHash(DWORD dwHash)
+    // {
+    //     PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)pPeb->Ldr;
+    //     // Get the first entry
+    //     PLDR_DATA_TABLE_ENTRY pDte = (PLDR_DATA_TABLE_ENTRY)pLdr->InMemoryOrderModuleList.Flink;
+
+    //     while (pDte)
+    //     {
+
+
+    //         // Get the next entry
+	// 	    pDte = *(PLDR_DATA_TABLE_ENTRY*)(pDte);
+    //     }
+    // }
 
     PVOID GetProcAddressByHash(
         HMODULE hModule,

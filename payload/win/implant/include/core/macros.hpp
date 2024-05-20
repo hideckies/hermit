@@ -5,15 +5,24 @@
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
 // FUNCTIONS
+#define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
 
-#define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
-
-#define WIDEN(x) WIDEN2(x)
-#define WIDEN2(x) L##x
+#define DEREF(name)*(UINT_PTR *)(name)
+#define DEREF_64(name)*(DWORD64 *)(name)
+#define DEREF_32(name)*(DWORD *)(name)
+#define DEREF_16(name)*(WORD *)(name)
+#define DEREF_8(name)*(BYTE *)(name)
 
 #define HTONS16( x ) __builtin_bswap16( x )
 #define HTONS32( x ) __builtin_bswap32( x )
+
+#ifndef TO_LOWERCASE
+#define TO_LOWERCASE(c1, out) (out = (c1 <= 'Z' && c1 >= 'A') ? c1 = (c1 - 'A') + 'a': c1)
+#endif
+
+#define WIDEN(x) WIDEN2(x)
+#define WIDEN2(x) L##x
 
 // PAYLOAD FLAGS
 #ifdef PAYLOAD_TYPE
