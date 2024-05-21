@@ -11,6 +11,17 @@
 #include <string>
 #include <strsafe.h>
 
+// test -----------------------------------
+#define HASH_KEY 13
+
+#pragma intrinsic( _rotr )
+
+__forceinline DWORD rotate(DWORD d)
+{
+	return _rotr(d, HASH_KEY);
+}
+// -----------------------------------------
+
 #define HASH_IV     0x35
 #define RANDOM_ADDR 0xab10f29f
 
@@ -362,8 +373,12 @@ namespace Procs
     typedef PROCS* PPROCS;
 
     DWORD GetHashFromString(char* str);
-    DWORD GetHashFromStringPtr(PVOID pStr, SIZE_T dwStrLen);
-    // PVOID GetModuleByHash(DWORD dwHash);
+    ULONG GetHashFromStringPtr(
+        PVOID   pStr,
+        SIZE_T  dwStrLen,
+        BOOL    bUpper
+    );
+    PVOID GetModuleByHash(DWORD dwHash);
     PVOID GetProcAddressByHash(
         HMODULE hModule,
         DWORD   dwHash

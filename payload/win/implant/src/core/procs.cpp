@@ -15,10 +15,18 @@ namespace Procs
         return dwHash & 0xFFFFFFFF;
     }
 
-    DWORD GetHashFromStringPtr(PVOID pStr, SIZE_T dwStrLen)
-    {
-        DWORD   dwHash  = HASH_IV;
+    ULONG GetHashFromStringPtr(
+        PVOID   pStr,
+        SIZE_T  dwStrLen,
+        BOOL    bUpper
+    ) {
+        ULONG   dwHash  = HASH_IV;
         PUCHAR  puStr   = static_cast<PUCHAR>(pStr);
+
+        if (!pStr)
+        {
+            return 0;
+        }
 
         do
         {
@@ -26,16 +34,25 @@ namespace Procs
 
             if (!dwStrLen)
             {
-                if (!*puStr) break;
+                if (!*puStr)
+                {
+                    break;
+                }
             }
             else
             {
-                if ((ULONG)(puStr - static_cast<PUCHAR>(pStr)) >= dwStrLen) break;
-                if (!*puStr) ++puStr;
+                if ((ULONG)(puStr - static_cast<PUCHAR>(pStr)) >= dwStrLen)
+                {
+                    break;
+                }
+                if (!*puStr)
+                {
+                    ++puStr;
+                }
             }
 
             // if a character is lowercase, convert it to uppercase.
-            if (c >= 'a')
+            if (bUpper && c >= 'a')
             {
                 c -= 0x20;
             }
@@ -47,20 +64,48 @@ namespace Procs
         return dwHash & 0xFFFFFFFF;
     }
 
-    // PVOID GetModuleByHash(DWORD dwHash)
-    // {
-    //     PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)pPeb->Ldr;
-    //     // Get the first entry
-    //     PLDR_DATA_TABLE_ENTRY pDte = (PLDR_DATA_TABLE_ENTRY)pLdr->InMemoryOrderModuleList.Flink;
+    PVOID GetModuleByHash(DWORD dwHash)
+    {
+        // Get pointer to PEB
+        PPEB pPeb = nullptr;
+        #ifdef _WIN64
+            pPeb =(PPEB) __readgsqword(0x60);
+        #else
+            pPeb = (PPEB)__readfsqword(0x30);
+        #endif
 
-    //     while (pDte)
-    //     {
+        PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)pPeb->Ldr;
+        // Get the first entry
+        PLDR_DATA_TABLE_ENTRY pDte = (PLDR_DATA_TABLE_ENTRY)pLdr->InLoadOrderModuleList.Flink;
 
+        while (pDte)
+        {
+            ULONG_PTR uCurrModuleName = (ULONG_PTR)pDte->BaseDllName.Buffer;
+            USHORT uCurrModuleNameLen = pDte->BaseDllName.Length;
+            DWORD dwCurrHash = 0;
 
-    //         // Get the next entry
-	// 	    pDte = *(PLDR_DATA_TABLE_ENTRY*)(pDte);
-    //     }
-    // }
+            do
+            {
+                dwCurrHash = rotate(dwCurrHash);
+                // if a character is lowercase, convert to uppercase.
+                if (*((BYTE*)uCurrModuleName) >= 'a')
+                    dwCurrHash += *((BYTE*)uCurrModuleName) - 0x20;
+                else
+                    dwCurrHash += *((BYTE*)uCurrModuleName);
+                uCurrModuleName++;
+            } while (--uCurrModuleNameLen);
+
+            if (dwCurrHash == dwHash)
+            {
+                return pDte->DllBase;
+            }
+
+            // Get the next entry
+            pDte = *(PLDR_DATA_TABLE_ENTRY*)(pDte);
+        }
+
+        return nullptr;
+    }
 
     PVOID GetProcAddressByHash(
         HMODULE hModule,
