@@ -24,11 +24,9 @@ namespace Technique::AntiDebug
 
         // 3. Check with NtGlobalFlag
         #ifdef _WIN64
-        PPEB pPeb = (PPEB)__readgsqword(0x60);
-        DWORD dwNtGlobalFlag = *(PDWORD)((PBYTE)pPeb + 0xBC);
+        DWORD dwNtGlobalFlag = *(PDWORD)((PBYTE)PPEB_PTR + 0xBC);
         #else
-        PPEB pPeb = (PPEB)__readfsqword(0x30);
-        DWORD dwNtGlobalFlag = *(PDWORD)((PBYTE)pPeb + 0x68);
+        DWORD dwNtGlobalFlag = *(PDWORD)((PBYTE)PPEB_PTR + 0x68);
         #endif
 
         if (dwNtGlobalFlag & NT_GLOBAL_FLAG_DEBUGGED)

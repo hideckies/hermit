@@ -1,6 +1,7 @@
 #ifndef HERMIT_CORE_SYSTEM_HPP
 #define HERMIT_CORE_SYSTEM_HPP
 
+#include "core/macros.hpp"
 #include "core/state.hpp"
 #include "core/procs.hpp"
 #include "core/stdout.hpp"

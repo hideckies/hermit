@@ -2,7 +2,43 @@
 
 namespace Procs
 {
-    DWORD GetHashFromString(char* str)
+    // It's used to calculate hash for modules.
+    ULONG StringToHashModule(WCHAR* wStr, SIZE_T dwStrLen)
+    {
+        ULONG  dwHash   = HASH_IV;
+        WCHAR* pwStr    = wStr;
+        SIZE_T dwCnt    = 0;
+
+        do
+        {
+            WCHAR c = *pwStr;
+
+            if (!c)
+            {
+                break;
+            }
+
+            // If a character is uppercase, convert it to lowercase.
+            if (c >= L'A' && c <= L'Z')
+            {
+                c += L'a' - L'A';
+            }
+
+            dwHash = dwHash * RANDOM_ADDR + c;
+            ++pwStr;
+            dwCnt++;
+
+            if (dwStrLen > 0 && dwCnt >= dwStrLen)
+            {
+                break;
+            }
+        } while (TRUE);
+
+        return dwHash & 0xFFFFFFFF;
+    }
+
+    // It's used to calculate hash for functions.
+    DWORD StringToHashFunc(char* str)
     {
         int c;
         DWORD dwHash = HASH_IV;
@@ -15,87 +51,17 @@ namespace Procs
         return dwHash & 0xFFFFFFFF;
     }
 
-    ULONG GetHashFromStringPtr(
-        PVOID   pStr,
-        SIZE_T  dwStrLen,
-        BOOL    bUpper
-    ) {
-        ULONG   dwHash  = HASH_IV;
-        PUCHAR  puStr   = static_cast<PUCHAR>(pStr);
-
-        if (!pStr)
-        {
-            return 0;
-        }
-
-        do
-        {
-            UCHAR c = *puStr;
-
-            if (!dwStrLen)
-            {
-                if (!*puStr)
-                {
-                    break;
-                }
-            }
-            else
-            {
-                if ((ULONG)(puStr - static_cast<PUCHAR>(pStr)) >= dwStrLen)
-                {
-                    break;
-                }
-                if (!*puStr)
-                {
-                    ++puStr;
-                }
-            }
-
-            // if a character is lowercase, convert it to uppercase.
-            if (bUpper && c >= 'a')
-            {
-                c -= 0x20;
-            }
-
-            dwHash = dwHash * RANDOM_ADDR + c;
-            ++puStr;
-        } while (TRUE);
-
-        return dwHash & 0xFFFFFFFF;
-    }
-
     PVOID GetModuleByHash(DWORD dwHash)
     {
-        // Get pointer to PEB
-        PPEB pPeb = nullptr;
-        #ifdef _WIN64
-            pPeb =(PPEB) __readgsqword(0x60);
-        #else
-            pPeb = (PPEB)__readfsqword(0x30);
-        #endif
-
+        PPEB pPeb = (PPEB)PPEB_PTR;
         PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)pPeb->Ldr;
+
         // Get the first entry
         PLDR_DATA_TABLE_ENTRY pDte = (PLDR_DATA_TABLE_ENTRY)pLdr->InLoadOrderModuleList.Flink;
 
         while (pDte)
-        {
-            ULONG_PTR uCurrModuleName = (ULONG_PTR)pDte->BaseDllName.Buffer;
-            USHORT uCurrModuleNameLen = pDte->BaseDllName.Length;
-            DWORD dwCurrHash = 0;
-
-            do
-            {
-                dwCurrHash = rotate(dwCurrHash);
-                // if a character is lowercase, convert to uppercase.
-                if (*((BYTE*)uCurrModuleName) >= 'a')
-                    dwCurrHash += *((BYTE*)uCurrModuleName) - 0x20;
-                else
-                    dwCurrHash += *((BYTE*)uCurrModuleName);
-                uCurrModuleName++;
-            } while (--uCurrModuleNameLen);
-
-            if (dwCurrHash == dwHash)
+        {   
+            if (StringToHashModule(pDte->BaseDllName.Buffer, pDte->BaseDllName.Length) == dwHash)
             {
                 return pDte->DllBase;
             }
@@ -116,22 +82,22 @@ namespace Procs
         PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)hModule;
         PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)((DWORD_PTR)hModule + pDosHeader->e_lfanew);
 
-        DWORD_PTR dwpExportDirRVA = pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+        PIMAGE_EXPORT_DIRECTORY pExportDirRVA = (PIMAGE_EXPORT_DIRECTORY)(
+            (DWORD_PTR)hModule + pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress
+        );
 
-        PIMAGE_EXPORT_DIRECTORY pExportDir = (PIMAGE_EXPORT_DIRECTORY)((DWORD_PTR)hModule + dwpExportDirRVA);
+        PDWORD pdwAddrOfFuncsRVA = (PDWORD)((DWORD_PTR)hModule + pExportDirRVA->AddressOfFunctions);
+        PDWORD pdwAddrOfNamesRVA = (PDWORD)((DWORD_PTR)hModule + pExportDirRVA->AddressOfNames);
+        PWORD pdwAddrOfNameOrdinalsRVA = (PWORD)((DWORD_PTR)hModule + pExportDirRVA->AddressOfNameOrdinals);
 
-        PDWORD pdwAddrOfFuncsRVA = (PDWORD)((DWORD_PTR)hModule + pExportDir->AddressOfFunctions);
-        PDWORD pdwAddrOfNamesRVA = (PDWORD)((DWORD_PTR)hModule + pExportDir->AddressOfNames);
-        PWORD pdwAddrOfNameOrdinalsRVA = (PWORD)((DWORD_PTR)hModule + pExportDir->AddressOfNameOrdinals);
-
-        for (DWORD i = 0; i < pExportDir->NumberOfFunctions; i++)
+        for (DWORD i = 0; i < pExportDirRVA->NumberOfFunctions; i++)
         {
             DWORD dwFuncNameRVA = pdwAddrOfNamesRVA[i];
             DWORD_PTR dwpFuncNameRVA = (DWORD_PTR)hModule + dwFuncNameRVA;
             char* sFuncName = (char*)dwpFuncNameRVA;
             DWORD_PTR dwpFuncAddrRVA = 0;
 
-            DWORD dwFuncNameHash = GetHashFromString(sFuncName);
+            DWORD dwFuncNameHash = StringToHashFunc(sFuncName);
             if (dwFuncNameHash == dwHash)
             {
                 dwpFuncAddrRVA = pdwAddrOfFuncsRVA[pdwAddrOfNameOrdinalsRVA[i]];

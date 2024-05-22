@@ -1,6 +1,7 @@
 #ifndef HERMIT_CORE_TECHNIQUE_HPP
 #define HERMIT_CORE_TECHNIQUE_HPP
 
+#include "core/macros.hpp"
 #include "core/procs.hpp"
 #include "core/system.hpp"
 
@@ -9,12 +10,6 @@
 
 typedef ULONG_PTR (WINAPI * LPPROC_REFLECTIVEDLLLOADER)();
 typedef BOOL (WINAPI * DLLMAIN)(HINSTANCE, DWORD, LPVOID);
-
-#define DEREF(name)*(UINT_PTR *)(name)
-#define DEREF_64(name)*(DWORD64 *)(name)
-#define DEREF_32(name)*(DWORD *)(name)
-#define DEREF_16(name)*(WORD *)(name)
-#define DEREF_8(name)*(BYTE *)(name)
 
 // Used for Anti-Debug
 #define FLG_HEAP_ENABLE_TAIL_CHECK   0x10

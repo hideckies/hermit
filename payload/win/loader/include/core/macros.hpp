@@ -10,11 +10,27 @@
 #define SHELLCODE(x) (ULONG_PTR)(GetIp() - ((ULONG_PTR) & GetIp - (ULONG_PTR)x))
 #define SECTION(x) __attribute__((section(".text$" #x)))
 
-// COMMON
+// PEB
+#ifdef _WIN64
+#define PPEB_PTR __readgsqword(0x60)
+#else
+#define PPEB_PTR __readfsqword(0x30)
+#endif
+
+// VALUES
+#define INFO_BUFFER_SIZE 32767
+
+// FUNCTIONS
+#define DEREF(name)     *(UINT_PTR*)(name)
+#define DEREF_64(name)  *(DWORD64*)(name)
+#define DEREF_32(name)  *(DWORD*)(name)
+#define DEREF_16(name)  *(WORD*)(name)
+#define DEREF_8(name)   *(BYTE*)(name)
+
+#define SLEEP(n) Sleep(n * 1000)
+
 #define WIDEN(x) WIDEN2(x)
 #define WIDEN2(x) L##x
-#define SLEEP(n) Sleep(n * 1000)
-#define INFO_BUFFER_SIZE 32767
 
 // PAYLOAD FLAGS
 #ifdef PAYLOAD_TYPE

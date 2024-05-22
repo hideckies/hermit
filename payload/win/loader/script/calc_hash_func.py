@@ -1,79 +1,60 @@
 from typing import Mapping
 
-MODULES = [
-    "KERNEL32.DLL",
-    "NTDLL.DLL",
-]
-
 FUNCS = [
-    # NATIVE APIS
-    "LdrLoadDll",
-    "NtAdjustPrivilegesToken",
+    # NTAPI
     "NtAllocateVirtualMemory",
     "NtClose",
     "NtCreateFile",
     "NtCreateNamedPipeFile",
     "NtCreateProcessEx",
+    "NtCreateSection",
     "NtCreateThreadEx",
-    "NtDeleteFile",
     "NtDuplicateObject",
-    "NtEnumerateValueKey",
-    "NtFlushInstructionCache",
     "NtFreeVirtualMemory",
     "NtGetContextThread",
-    "NtOpenFile",
-    "NtOpenKeyEx",
+    "NtMapViewOfSection",
     "NtOpenProcess",
     "NtOpenProcessToken",
     "NtOpenThread",
-    "NtPrivilegeCheck",
     "NtProtectVirtualMemory",
     "NtQueryInformationFile",
     "NtQueryInformationProcess",
-    "NtQueryInformationToken",
-    "NtQueryKey",
-    "NtQuerySystemInformation",
+    "NtQueryVirtualMemory",
     "NtReadFile",
     "NtReadVirtualMemory",
     "NtResumeThread",
     "NtSetContextThread",
     "NtSetInformationFile",
     "NtSetInformationProcess",
-    "NtSystemDebugControl",
     "NtTerminateProcess",
     "NtUnmapViewOfSection",
+    "NtWriteVirtualMemory",
     "NtWaitForSingleObject",
     "NtWriteFile",
-    "NtWriteVirtualMemory",
     "RtlAllocateHeap",
+    "RtlCreateProcessReflection",
+    "RtlCreateUserThread",
     "RtlExpandEnvironmentStrings",
-    "RtlGetCurrentDirectory_U",
     "RtlGetFullPathName_U",
     "RtlInitUnicodeString",
     "RtlQuerySystemInformation",
-    "RtlSetCurrentDirectory_U",
     "RtlStringCchCatW",
     "RtlStringCchCopyW",
     "RtlStringCchLengthW",
     "RtlZeroMemory",
 
-    # WINAPIS
+    # WINAPI
     "CheckRemoteDebuggerPresent",
-    "CloseHandle",
     "CreateThreadpoolWait",
-    "DllMain",
     "GetProcAddress",
     "IsDebuggerPresent",
     "LoadLibraryA",
     "LoadLibraryW",
     "MessageBoxA",
-    "QueryFullProcessImageNameW",
-    "RtlAddFunctionTable",
-    "SetFileInformationByHandle",
+    "MessageBoxW",
     "SetThreadpoolWait",
     "VirtualAlloc",
     "VirtualProtect",
-    "VirtualFree",
     "WinHttpCloseHandle",
     "WinHttpConnect",
     "WinHttpOpen",
@@ -91,6 +72,7 @@ HASH_IV = 0x35
 RANDOM_ADDR = 0xab10f29f
 
 def calc_hash(string: str) -> int:
+    str_length = len(string)
     hash = HASH_IV
 
     for s in string:
@@ -109,15 +91,6 @@ def is_dupl(hashes: Mapping[str, str], hash: str) -> bool:
 
 def main():
     hashes = {}
-
-    for mod in MODULES:
-        hash_value = calc_hash(mod)
-        hash_fmt = f"{'0x{0:x}'.format(hash_value)}"
-        # Check if the hash is duplicate
-        if is_dupl(hashes, hash_fmt) is True:
-            print("The calculated hash is duplicate. Please try again.")
-            return
-        hashes[f"#define HASH_MODULE_{mod.upper().replace('.DLL', '')}"] = hash_fmt
 
     for func in FUNCS:
         hash_value = calc_hash(func)
