@@ -645,10 +645,10 @@ func (c *amTaskPersistCmd) Run(
 		"screensaver",
 		"default-file-extension-hijacking",
 		"ifeo",
-		// "netsh",
-		// "schedule",
-		// "service",
+		// "scheduled-task",
 		"winlogon",
+		// "netsh",
+		// "service",
 		"(cancel)",
 	}
 	res, err := stdin.Select("Technique", items)

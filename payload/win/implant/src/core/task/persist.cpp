@@ -270,6 +270,10 @@ namespace Task
             RegCloseKey(hKey);
             return L"Success: The entry has been set to HKLM\\" + std::wstring(wImg) + L" and HKLM\\" + std::wstring(wSilent) + L".";
         }
+        else if (wcscmp(wTechnique.c_str(), L"scheduled-task") == 0)
+        {
+            return L"Error: Not implemented yet.";
+        }
         else if (wcscmp(wTechnique.c_str(), L"winlogon") == 0)
         {
             HKEY hKey;
