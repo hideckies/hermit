@@ -10,7 +10,7 @@ namespace System::Priv
 		LUID luid;
 
 		// Check if the privilege name exists.
-		if (!LookupPrivilegeValue(
+		if (!pProcs->lpLookupPrivilegeValueW(
 			NULL,
 			lpszPrivilege,
 			&luid
@@ -28,7 +28,7 @@ namespace System::Priv
 		ps.Privilege[0].Luid = luid;
 
 		// NtPrivilegeCheck is not working, so use WINAPI.
-		::PrivilegeCheck(hToken, &ps, &bResult);
+		pProcs->lpPrivilegeCheck(hToken, &ps, &bResult);
 
 		return bResult;
 	}
@@ -42,7 +42,7 @@ namespace System::Priv
 		TOKEN_PRIVILEGES tp;
 		LUID luid;
 
-		if (!LookupPrivilegeValue(
+		if (!pProcs->lpLookupPrivilegeValueW(
 			NULL,
 			lpszPrivilege,
 			&luid
@@ -63,7 +63,7 @@ namespace System::Priv
 		}
 
 		// Enable the privilege or disable all privileges.
-		if (!AdjustTokenPrivileges(
+		if (!pProcs->lpAdjustTokenPrivileges(
 			hToken,
 			FALSE,
 			&tp,
@@ -74,7 +74,7 @@ namespace System::Priv
 			return FALSE;
 		}
 
-		if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+		if (pProcs->lpGetLastError() == ERROR_NOT_ALL_ASSIGNED)
 		{
 			return FALSE;
 		}

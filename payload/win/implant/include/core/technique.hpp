@@ -8,7 +8,6 @@
 #include <windows.h>
 #include <vector>
 
-typedef ULONG_PTR (WINAPI * LPPROC_REFLECTIVEDLLLOADER)();
 typedef BOOL (WINAPI * DLLMAIN)(HINSTANCE, DWORD, LPVOID);
 
 // Used for Anti-Debug

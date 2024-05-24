@@ -5,7 +5,6 @@
 
 #include <windows.h>
 
-typedef ULONG_PTR (WINAPI * REFLECTIVEDLLLOADER)();
 typedef BOOL (WINAPI * DLLMAIN)(HINSTANCE, DWORD, LPVOID);
 
 extern "C" LPVOID  ReflectiveCaller();

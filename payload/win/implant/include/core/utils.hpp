@@ -46,4 +46,10 @@ namespace Utils::Split
     std::vector<std::wstring> Split(std::wstring text, wchar_t delimiter);
 }
 
+namespace Utils::Strings
+{
+    SIZE_T StrLenA(LPCSTR str);
+    SIZE_T StrLenW(LPCWSTR str);
+}
+
 #endif // HERMIT_CORE_UTILS_HPP

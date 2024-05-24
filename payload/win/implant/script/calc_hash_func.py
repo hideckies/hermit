@@ -1,7 +1,7 @@
 from typing import Mapping
 
 FUNCS = [
-    # NATIVE APIS
+    # NTAPI
     "LdrLoadDll",
     "NtAdjustPrivilegesToken",
     "NtAllocateVirtualMemory",
@@ -52,23 +52,69 @@ FUNCS = [
     "RtlStringCchLengthW",
     "RtlZeroMemory",
 
-    # WINAPIS
+    # WINAPI
+    "AdjustTokenPrivileges",
+    "BCryptCloseAlgorithmProvider",
+    "BCryptDecrypt",
+    "BCryptDestroyKey",
+    "BCryptEncrypt",
+    "BCryptGenerateSymmetricKey",
+    "BCryptGetProperty",
+    "BCryptOpenAlgorithmProvider",
+    "BCryptSetProperty",
     "CheckRemoteDebuggerPresent",
     "CloseHandle",
+    "CreateFileW",
+    "CreatePipe",
+    "CreateProcessW",
+    "CreateRemoteThreadEx",
     "CreateThreadpoolWait",
+    "CryptBinaryToStringW",
+    "CryptStringToBinaryW",
     "DllMain",
+    "ExpandEnvironmentStringsW",
+    "FindFirstFileW",
+    "FindNextFileW",
+    "FreeEnvironmentStringsW",
+    "GetComputerNameW",
+    "GetEnvironmentStringsW",
+    "GetLastError",
+    "GetModuleFileNameW",
     "GetProcAddress",
+    "GetProcessHeap",
+    "GetSystemDirectoryW",
+    "GetUserNameW",
+    "HeapAlloc",
+    "HeapFree",
     "IsDebuggerPresent",
     "LoadLibraryA",
     "LoadLibraryW",
+    "LookupPrivilegeValueW",
     "MessageBoxA",
     "MessageBoxW",
+    "NetApiBufferFree",
+    "NetLocalGroupEnum",
+    "NetUserEnum",
+    "OpenProcess",
+    "OpenProcessToken",
+    "PrivilegeCheck",
     "QueryFullProcessImageNameW",
+    "ReadFile",
+    "ReadProcessMemory",
+    "RegCloseKey",
+    "RegEnumKeyExW",
+    "RegOpenKeyExW",
+    "RegQueryInfoKeyW",
     "RtlAddFunctionTable",
+    "RtlCopyMemory",
     "SetFileInformationByHandle",
+    "SetHandleInformation",
     "SetThreadpoolWait",
+    "TerminateProcess",
     "VirtualAlloc",
+    "VirtualAllocEx",
     "VirtualProtect",
+    "VirtualProtectEx",
     "VirtualFree",
     "WinHttpCloseHandle",
     "WinHttpConnect",
@@ -81,6 +127,7 @@ FUNCS = [
     "WinHttpSendRequest",
     "WinHttpSetOption",
     "WinHttpWriteData",
+    "WriteProcessMemory",
 ]
 
 HASH_IV = 0x35
@@ -111,7 +158,7 @@ def main():
         hash_fmt = f"{'0x{0:x}'.format(hash_value)}"
         # Check if the hash is duplicate
         if is_dupl(hashes, hash_fmt) is True:
-            print("The calculated hash is duplicate. Please try again.")
+            print("The calculated hash is duplicate. Please update algorithm.")
             return
         hashes[f"#define HASH_FUNC_{func.upper()}"] = hash_fmt
 

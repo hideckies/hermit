@@ -6,7 +6,7 @@ namespace System::Env
 	{
 		wchar_t envStrings[INFO_BUFFER_SIZE];
 
-		DWORD envStringsLen = ExpandEnvironmentStringsW(
+		DWORD envStringsLen = pProcs->lpExpandEnvironmentStringsW(
 			envVar.c_str(),
 			envStrings,
 			INFO_BUFFER_SIZE
@@ -27,7 +27,7 @@ namespace System::Env
 		NTSTATUS status;
 
 		// Get all environment variables.
-		LPWCH pwStrings = GetEnvironmentStringsW();
+		LPWCH pwStrings = pProcs->lpGetEnvironmentStringsW();
 		PCWSTR pwEnv = (PCWSTR)pwStrings;
 
 		while (*pwEnv != '\0')
@@ -65,7 +65,7 @@ namespace System::Env
 
 		}
 
-		FreeEnvironmentStringsW(pwStrings);
+		pProcs->lpFreeEnvironmentStringsW(pwStrings);
 
 		return result;
 	}

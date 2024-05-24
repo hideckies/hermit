@@ -25,7 +25,11 @@ namespace State
         PTEB                pTeb;
 
         // Module handlers
+        HMODULE             hAdvapi32DLL;
+        HMODULE             hBcryptDLL;
+        HMODULE             hCrypt32DLL;
         HMODULE             hKernel32DLL;
+        HMODULE             hNetapi32DLL;
         HMODULE             hNTDLL;
         HMODULE             hWinHTTPDLL;
 

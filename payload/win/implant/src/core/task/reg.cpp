@@ -18,6 +18,7 @@ namespace Task
         }
 
         std::vector<std::wstring> vNewSubKeys = System::Registry::RegEnumSubKeys(
+            pState->pProcs,
             hRootKey,
             wSubKey,
             KEY_READ,

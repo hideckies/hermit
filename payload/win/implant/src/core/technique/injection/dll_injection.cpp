@@ -233,8 +233,8 @@ namespace Technique::Injection
         if (!hProcess)
             return FALSE;
 
-        // Get offset of the ReflectiveDllLoader function in the DLL.
-        DWORD dwRefLoaderOffset = Technique::Injection::Helper::GetFuncOffset(lpBuffer, "ReflectiveDllLoader");
+        // Get offset of the ReflectiveLoader function in the DLL.
+        DWORD dwRefLoaderOffset = Technique::Injection::Helper::GetFuncOffset(lpBuffer, "ReflectiveLoader");
         if (dwRefLoaderOffset == 0)
         {
             System::Handle::HandleClose(pProcs, hProcess);
@@ -302,5 +302,7 @@ namespace Technique::Injection
         System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
         System::Handle::HandleClose(pProcs, hProcess);
         System::Handle::HandleClose(pProcs, hThread);
+
+        return TRUE;
     }
 }

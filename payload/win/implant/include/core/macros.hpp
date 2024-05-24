@@ -93,5 +93,4 @@
 #define AES_IV_BASE64_W WIDEN(AES_IV_BASE64)
 #endif
 
-
 #endif // HERMIT_CORE_MACROS_HPP

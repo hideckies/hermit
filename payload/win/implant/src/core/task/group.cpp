@@ -2,11 +2,11 @@
 
 namespace Task
 {
-    std::wstring GroupLs()
+    std::wstring GroupLs(State::PSTATE pState)
     {
         std::wstring result = L"";
 
-        std::vector<std::wstring> groups = System::Group::AllGroupsGet();
+        std::vector<std::wstring> groups = System::Group::AllGroupsGet(pState->pProcs);
         if (groups.size() == 0)
         {
             return L"Error: Groups not found.";

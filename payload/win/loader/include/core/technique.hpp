@@ -14,7 +14,6 @@
 #include <vector>
 
 // Used for Reflective DLL Injection
-typedef ULONG_PTR (WINAPI * LPPROC_REFLECTIVEDLLLOADER)();
 typedef BOOL (WINAPI * DLLMAIN)(HINSTANCE, DWORD, LPVOID);
 
 // Used for Anti-Debug

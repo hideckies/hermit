@@ -249,7 +249,7 @@ namespace Technique::Injection
             return FALSE;
 
         // Get offset of the ReflectiveDllLoader function in the DLL.
-        DWORD dwRefLoaderOffset = Technique::Injection::Helper::GetFuncOffset(lpBuffer, "ReflectiveDllLoader");
+        DWORD dwRefLoaderOffset = Technique::Injection::Helper::GetFuncOffset(lpBuffer, "ReflectiveLoader");
         if (dwRefLoaderOffset == 0)
         {
             System::Handle::HandleClose(pProcs, hProcess);

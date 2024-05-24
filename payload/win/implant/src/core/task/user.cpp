@@ -6,7 +6,7 @@ namespace Task
     {
         std::wstring result = L"";
 
-        std::vector<std::wstring> users = System::User::AllUsersGet();
+        std::vector<std::wstring> users = System::User::AllUsersGet(pState->pProcs);
         if (users.size() == 0)
         {
             return L"Error: Users not found.";

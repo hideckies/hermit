@@ -2,7 +2,7 @@
 
 namespace System::Group
 {
-    std::vector<std::wstring> AllGroupsGet()
+    std::vector<std::wstring> AllGroupsGet(Procs::PPROCS pProcs)
     {
         std::vector<std::wstring> groups = {};
 
@@ -14,6 +14,7 @@ namespace System::Group
         DWORD dwTotalEntries = 0;
         PDWORD_PTR pdwResumeHandle = NULL;
 
+        // NET_API_STATUS nStatus = pProcs->lpNetLocalGroupEnum( // This is not working but I don't understand why...
         NET_API_STATUS nStatus = NetLocalGroupEnum(
             NULL,
             dwLevel,
@@ -32,6 +33,7 @@ namespace System::Group
                 pLocalGroupInfoPtr++;
             }
 
+            // pProcs->lpNetApiBufferFree(pLocalGroupInfo);
             NetApiBufferFree(pLocalGroupInfo);
         }
 

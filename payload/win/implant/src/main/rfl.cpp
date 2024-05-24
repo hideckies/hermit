@@ -95,7 +95,7 @@ VOID ReallocateSections(
 }
 
 // This function is invoked by DLL Loader with Reflective DLL Injection technique.
-DLLEXPORT BOOL ReflectiveDllLoader(LPVOID lpParameter)
+DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
 {
 	// Get this base address.
 	LPVOID lpRflLdr = ReflectiveCaller();

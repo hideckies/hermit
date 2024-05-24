@@ -8,7 +8,7 @@
 #include "core/utils.hpp"
 
 #include <windows.h>
-#include <winhttp.h>
+// #include <winhttp.h>
 #include <winreg.h>
 #include <fstream>
 #include <lm.h>
@@ -44,14 +44,14 @@ namespace System::Env
 
 namespace System::Group
 {
-    std::vector<std::wstring> AllGroupsGet();
+    std::vector<std::wstring> AllGroupsGet(Procs::PPROCS pProcs);
 }
 
 namespace System::User
 {
     std::wstring ComputerNameGet(Procs::PPROCS pProcs);
     std::wstring UserNameGet(Procs::PPROCS pProcs);
-    std::vector<std::wstring> AllUsersGet();
+    std::vector<std::wstring> AllUsersGet(Procs::PPROCS pProcs);
 }
 
 namespace System::Priv
@@ -287,6 +287,7 @@ namespace System::Registry
         const std::wstring& wRootKey
     );
     std::vector<std::wstring> RegEnumSubKeys(
+        Procs::PPROCS       pProcs,
         HKEY                hRootKey,
         const std::wstring& wSubKey,
         DWORD               dwOptions,

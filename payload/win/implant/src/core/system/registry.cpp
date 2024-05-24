@@ -31,6 +31,7 @@ namespace System::Registry
     }
 
     std::vector<std::wstring> RegEnumSubKeys(
+        Procs::PPROCS pProcs,
         HKEY hRootKey,
         const std::wstring& wSubKey,
         DWORD dwOptions,
@@ -41,7 +42,7 @@ namespace System::Registry
         LONG lStatus;
         HKEY hKey = NULL;
 
-        lStatus = ::RegOpenKeyExW(
+        lStatus = pProcs->lpRegOpenKeyExW(
             hRootKey,
             wSubKey.c_str(),
             0,
@@ -56,7 +57,7 @@ namespace System::Registry
         DWORD dwSubKeys;
         DWORD dwMaxSubKeyLen;
 
-        lStatus = ::RegQueryInfoKeyW(
+        lStatus = pProcs->lpRegQueryInfoKeyW(
             hKey,
             NULL,
             NULL,
@@ -72,7 +73,7 @@ namespace System::Registry
         );
         if (lStatus != ERROR_SUCCESS)
         {
-            ::RegCloseKey(hKey);
+            pProcs->lpRegCloseKey(hKey);
             return vSubKeys;
         }
 
@@ -84,7 +85,7 @@ namespace System::Registry
         {
             dwNameLen = dwMaxSubKeyLen;
 
-            lStatus = ::RegEnumKeyExW(
+            lStatus = pProcs->lpRegEnumKeyExW(
                 hKey,
                 i,
                 (LPWSTR)&name,
@@ -107,6 +108,7 @@ namespace System::Registry
                 if (bRecursive)
                 {
                     std::vector<std::wstring> vSubKeys2 = System::Registry::RegEnumSubKeys(
+                        pProcs,
                         hRootKey,
                         wNewSubKey,
                         dwOptions,
@@ -117,7 +119,7 @@ namespace System::Registry
             }
         }
 
-        ::RegCloseKey(hKey);
+        pProcs->lpRegCloseKey(hKey);
 
         return vSubKeys;
     }

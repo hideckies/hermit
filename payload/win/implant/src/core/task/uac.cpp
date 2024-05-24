@@ -81,5 +81,7 @@ namespace Task
 
             return L"Success: The fodhelper.exe and another process started successfully.";
         }
+
+        return L"Error: Invalid technique.";
     }
 }
