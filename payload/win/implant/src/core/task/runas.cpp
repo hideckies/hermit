@@ -15,7 +15,7 @@ namespace Task
         si.cb = sizeof(si);
 
         // 'RtlCreateUserProcess' might be used instead
-        if (!CreateProcessWithLogonW(
+        if (!pState->pProcs->lpCreateProcessWithLogonW(
             wUser.c_str(),
             NULL,
             wPassword.c_str(),

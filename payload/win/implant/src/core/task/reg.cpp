@@ -33,7 +33,7 @@ namespace Task
         {
             result += wRootKey + L"\\" + weSubKey + L"\n";
 
-            lStatus = RegOpenKeyExW(
+            lStatus = pState->pProcs->lpRegOpenKeyExW(
                 hRootKey,
                 weSubKey.c_str(),
                 0,
@@ -53,7 +53,7 @@ namespace Task
             DWORD dwType;
 
             do {
-                lStatus = RegEnumValueW(
+                lStatus = pState->pProcs->lpRegEnumValueW(
                     hKey,
                     dwIndex,
                     valueName,
@@ -98,7 +98,7 @@ namespace Task
                 dwIndex++;
             } while (1);
 
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
         }
 
         if (result == L"")
@@ -106,7 +106,7 @@ namespace Task
             result = L"Key values not found.";
         }
 
-        RegCloseKey(hKey);
+        pState->pProcs->lpRegCloseKey(hKey);
 
         return result;
     }

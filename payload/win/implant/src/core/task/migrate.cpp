@@ -14,7 +14,7 @@ namespace Task
         // Get the current process executable file name to migrate.
         WCHAR execName[MAX_PATH*4];
 
-        DWORD dwFileLen = GetProcessImageFileNameW(
+        DWORD dwFileLen = pState->pProcs->lpGetProcessImageFileNameW(
             hCurrProcess,
             const_cast<LPWSTR>(execName),
             MAX_PATH*4

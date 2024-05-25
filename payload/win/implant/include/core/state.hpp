@@ -28,9 +28,13 @@ namespace State
         HMODULE             hAdvapi32DLL;
         HMODULE             hBcryptDLL;
         HMODULE             hCrypt32DLL;
+        HMODULE             hDbghelpDLL;
+        HMODULE             hIphlpapiDLL;
         HMODULE             hKernel32DLL;
         HMODULE             hNetapi32DLL;
         HMODULE             hNTDLL;
+        HMODULE             hShell32DLL;
+        HMODULE             hUser32DLL;
         HMODULE             hWinHTTPDLL;
 
         // Procedures loaded dynamatically (including syscalls)

@@ -40,9 +40,11 @@ int main()
 {
     std::map<std::string, unsigned long> myMap;
 
-    char modules[7][30] = {
+    char modules[9][30] = {
         "bcrypt.dll",
         "crypt32.dll",
+        "dbghelp.dll",
+        "iphlpapi.dll",
         "kernel32.dll",
         "netapi32.dll",
         "ntdll.dll",
@@ -50,7 +52,7 @@ int main()
         "winhttp.dll",
     };
 
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 9; i++)
     {
         char* moduleUpper = toUpper(modules[i]);
 

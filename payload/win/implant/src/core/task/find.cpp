@@ -29,7 +29,7 @@ namespace Task
 
             // Find the first file in the directory.
             WIN32_FIND_DATAW ffd;
-            HANDLE hFind = FindFirstFileW(wDirAbsPathExtended.c_str(), &ffd);
+            HANDLE hFind = pState->pProcs->lpFindFirstFileW(wDirAbsPathExtended.c_str(), &ffd);
             if (hFind == INVALID_HANDLE_VALUE)
             {
                 return L"";
@@ -62,9 +62,9 @@ namespace Task
                     wResult += wPath + L"\\" + std::wstring(ffd.cFileName);
                     wResult += std::wstring(L"\n");
                 }
-            } while (FindNextFileW(hFind, &ffd) != 0);
+            } while (pState->pProcs->lpFindNextFileW(hFind, &ffd) != 0);
 
-            FindClose(hFind);
+            pState->pProcs->lpFindClose(hFind);
             return wResult;
         }
     }

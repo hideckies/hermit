@@ -24,7 +24,7 @@ namespace Task
         wDirAbsPathExtended += L"\\*";
 
         // Find the first file in the directory.
-        hFind = FindFirstFileW(wDirAbsPathExtended.c_str(), &ffd);
+        hFind = pState->pProcs->lpFindFirstFileW(wDirAbsPathExtended.c_str(), &ffd);
         if (hFind == INVALID_HANDLE_VALUE)
         {
             return L"Error: Could not find the first file in the directory.";
@@ -55,9 +55,9 @@ namespace Task
                 result += wFilesize;
                 result += std::wstring(L" bytes\n");
             }
-        } while (FindNextFileW(hFind, &ffd) != 0);
+        } while (pState->pProcs->lpFindNextFileW(hFind, &ffd) != 0);
 
-        FindClose(hFind);
+        pState->pProcs->lpFindClose(hFind);
         return result;
     }
 }

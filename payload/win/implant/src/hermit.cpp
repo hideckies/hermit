@@ -80,6 +80,22 @@ namespace Hermit
 		}
 		pState->hCrypt32DLL = hCrypt32;
 
+		WCHAR wDbghelpDLL[] = L"dbghelp.dll";
+		HMODULE hDbghelp = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wDbghelpDLL);
+		if (!hDbghelp)
+		{
+			return;
+		}
+		pState->hDbghelpDLL = hDbghelp;
+
+		WCHAR wIphlpapiDLL[] = L"iphlpapi.dll";
+		HMODULE hIphlpapi = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wIphlpapiDLL);
+		if (!hIphlpapi)
+		{
+			return;
+		}
+		pState->hIphlpapiDLL = hIphlpapi;
+
 		WCHAR wNetapi32DLL[] = L"netapi32.dll";
 		HMODULE hNetapi32 = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wNetapi32DLL);
 		if (!hNetapi32)
@@ -87,6 +103,22 @@ namespace Hermit
 			return;
 		}
 		pState->hNetapi32DLL = hNetapi32;
+
+		WCHAR wShell32DLL[] = L"shell32.dll";
+		HMODULE hShell32 = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wShell32DLL);
+		if (!hShell32)
+		{
+			return;
+		}
+		pState->hShell32DLL = hShell32;
+
+		WCHAR wUser32DLL[] = L"user32.dll";
+		HMODULE hUser32 = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wUser32DLL);
+		if (!hUser32)
+		{
+			return;
+		}
+		pState->hUser32DLL = hUser32;
 
 		WCHAR wWinHttpDll[] = L"winhttp.dll";
 		HMODULE hWinHttp = (HMODULE)Procs::LoadModule(pState->pProcs, (LPWSTR)wWinHttpDll);
@@ -102,7 +134,11 @@ namespace Hermit
 			hAdvapi32,
 			hBcrypt,
 			hCrypt32,
+			hDbghelp,
+			hIphlpapi,
 			hNetapi32,
+			hShell32,
+			hUser32,
 			hWinHttp
 		);
 

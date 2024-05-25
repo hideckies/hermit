@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Ip()
+    std::wstring Ip(State::PSTATE pState)
     {
         std::wstring result;
         
@@ -38,7 +38,13 @@ namespace Task
                 return L"Error: Could not allocate memory for addresses";
             }
 
-            dwRetVal = GetAdaptersAddresses(family, flags, NULL, (PIP_ADAPTER_ADDRESSES)pAddresses, &outBufLen);
+            dwRetVal = pState->pProcs->lpGetAdaptersAddresses(
+                family,
+                flags,
+                NULL,
+                (PIP_ADAPTER_ADDRESSES)pAddresses,
+                &outBufLen
+            );
             if (dwRetVal == ERROR_BUFFER_OVERFLOW)
             {
                 FREE(pAddresses);
@@ -207,7 +213,7 @@ namespace Task
             }
             else
             {
-                if (FormatMessage(
+                if (pState->pProcs->lpFormatMessage(
                     FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                     NULL,
                     dwRetVal,
@@ -221,7 +227,7 @@ namespace Task
                     result += L"Error: ";
                     result += wlpMsgBuf;
                     result += L"\n";
-                    LocalFree(lpMsgBuf);
+                    pState->pProcs->lpLocalFree(lpMsgBuf);
                     if (pAddresses)
                     {
                         FREE(pAddresses);

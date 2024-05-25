@@ -6,9 +6,9 @@
 #include "core/procs.hpp"
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
+#include "core/win32.hpp"
 
 #include <windows.h>
-// #include <winhttp.h>
 #include <winreg.h>
 #include <fstream>
 #include <lm.h>

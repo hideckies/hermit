@@ -2,7 +2,7 @@
 
 namespace Task
 {
-    std::wstring Net()
+    std::wstring Net(State::PSTATE pState)
     {
         std::wstring result = L"";
 
@@ -26,7 +26,7 @@ namespace Task
         ulSize = sizeof(MIB_TCPTABLE);
 
         // Make an initial call to GetTcpTable to get the necessary size into the ulSize variable.
-        if ((dwRetVal = GetTcpTable(pTcpTable, &ulSize, TRUE)) == ERROR_INSUFFICIENT_BUFFER)
+        if ((dwRetVal = pState->pProcs->lpGetTcpTable(pTcpTable, &ulSize, TRUE)) == ERROR_INSUFFICIENT_BUFFER)
         {
             FREE(pTcpTable);
             pTcpTable = (MIB_TCPTABLE*)MALLOC(ulSize);
@@ -36,7 +36,7 @@ namespace Task
             }
         }
 
-        if ((dwRetVal = GetTcpTable(pTcpTable, &ulSize, TRUE)) == NO_ERROR)
+        if ((dwRetVal = pState->pProcs->lpGetTcpTable(pTcpTable, &ulSize, TRUE)) == NO_ERROR)
         {
             std::wstring labelLocalAddr = L"LocalAddress";
             std::wstring labelLocalPort = L"LocalPort";

