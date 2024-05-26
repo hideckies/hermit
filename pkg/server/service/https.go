@@ -76,69 +76,12 @@ func handleImplantCheckIn(serverState *state.ServerState) gin.HandlerFunc {
 		// Get check-in date
 		checkInDate := meta.GetCurrentDateTime()
 
-		// Check if the agent already exists on the database.
-		// ags, err := serverState.DB.AgentGetAll()
-		// if err != nil {
-		// 	ctx.String(http.StatusBadRequest, "")
-		// 	return
-		// }
-		// var targetAgent *agent.Agent = nil
-		// for _, ag := range ags {
-		// 	if ag.Ip == clientIP && ag.OS == checkInData.OS &&
-		// 		ag.Arch == checkInData.Arch && ag.Hostname == checkInData.Hostname {
-		// 		targetAgent = ag
-		// 		break
-		// 	}
-		// }
-
 		// Get AES key/iv
 		newAES, err := crypt.NewAESFromBase64Pairs(checkInData.AESKeyBase64, checkInData.AESIVBase64)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "")
 			return
 		}
-
-		// if targetAgent == nil {
-		// 	// Generate a new session.
-		// 	newSessionId := utils.GenerateRandomAlphaNum(32)
-
-		// 	// Add new agent to the database
-		// 	targetAgent, err = agent.NewAgent(
-		// 		0,
-		// 		uuid.NewString(),
-		// 		"",
-		// 		clientIP,
-		// 		checkInData.OS,
-		// 		checkInData.Arch,
-		// 		checkInData.Hostname,
-		// 		checkInData.ListenerURL,
-		// 		checkInData.ImplantType,
-		// 		checkInDate,
-		// 		checkInData.Sleep,
-		// 		checkInData.Jitter,
-		// 		checkInData.KillDate,
-		// 		newAES,
-		// 		newSessionId,
-		// 	)
-		// 	if err != nil {
-		// 		ctx.String(http.StatusBadRequest, "Failed to initialize target agent.")
-		// 		return
-		// 	}
-
-		// 	if err := serverState.DB.AgentAdd(targetAgent); err != nil {
-		// 		ctx.String(http.StatusBadRequest, "Failed to add target agent on database.")
-		// 		return
-		// 	}
-		// } else {
-		// 	// Update the agent info
-		// 	targetAgent.Hostname = checkInData.Hostname
-		// 	targetAgent.CheckInDate = checkInDate
-		// 	targetAgent.AES = newAES
-		// 	if err := serverState.DB.AgentUpdate(targetAgent); err != nil {
-		// 		ctx.String(http.StatusBadRequest, "Failed to update agent info.")
-		// 		return
-		// 	}
-		// }
 
 		// Generate a new session and save it.
 		newSessionId := utils.GenerateRandomAlphaNum(32)

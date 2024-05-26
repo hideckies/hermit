@@ -61,6 +61,7 @@ set(SOURCE_ASM
 set(SOURCE_CORE
         src/core/crypt.cpp
         src/core/handler.cpp
+        src/core/modules.cpp
         src/core/parser.cpp
         src/core/procs.cpp
         # src/core/socket.cpp

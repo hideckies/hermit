@@ -14,7 +14,7 @@ namespace Handler
         pState->hConnect = handlers.hConnect;
     }
 
-    VOID GetInitialInfoJSON(State::PSTATE pState)
+    std::wstring GetInitialInfoJSON(State::PSTATE pState)
     {
         std::wstring wOS = L"windows";
         std::wstring wArch = L"";
@@ -35,6 +35,8 @@ namespace Handler
             gethostname(szHostname, 256);
             std::string sHostname(szHostname);
             wHostname = Utils::Convert::UTF8Decode(sHostname);
+
+            WSACleanup();
         }
 
         std::wstring wJSON = L"{";
@@ -51,6 +53,6 @@ namespace Handler
         wJSON += L"\"aesIV\":\"" + wAesIV + L"\"";
         wJSON += L"}";
 
-        pState->lpInfoJSON = wJSON.c_str();
+        return wJSON;
     }
 }

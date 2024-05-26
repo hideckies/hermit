@@ -2,6 +2,7 @@ from typing import Mapping
 
 FUNCS = [
     # NTAPI
+    "LdrLoadDll",
     "NtAllocateVirtualMemory",
     "NtClose",
     "NtCreateFile",
@@ -44,17 +45,65 @@ FUNCS = [
     "RtlZeroMemory",
 
     # WINAPI
+    "AdjustTokenPrivileges",
+    "BCryptCloseAlgorithmProvider",
+    "BCryptDecrypt",
+    "BCryptDestroyKey",
+    "BCryptEncrypt",
+    "BCryptGenerateSymmetricKey",
+    "BCryptGetProperty",
+    "BCryptOpenAlgorithmProvider",
+    "BCryptSetProperty",
     "CheckRemoteDebuggerPresent",
+    "CloseHandle",
+    "ConvertThreadToFiber",
+    "CreateEventW",
+    "CreateFiber",
+    "CreatePipe",
+    "CreateProcessW",
+    "CreateRemoteThreadEx",
     "CreateThreadpoolWait",
+    "CreateToolhelp32Snapshot",
+    "CryptBinaryToStringW",
+    "CryptStringToBinaryW",
+    "EnumProcessModules",
+    "ExpandEnvironmentStringsW",
+    "FindWindowW",
+    "GetModuleBaseNameA",
+    "GetModuleHandleA",
     "GetProcAddress",
+    "GetSystemDirectoryW",
+    "GetThreadContext",
+    "GetWindowThreadProcessId",
     "IsDebuggerPresent",
     "LoadLibraryA",
     "LoadLibraryW",
+    "LookupPrivilegeValueW",
     "MessageBoxA",
     "MessageBoxW",
+    "OpenProcess",
+    "OpenProcessToken",
+    "OpenThread",
+    "Process32FirstW",
+    "Process32NextW",
+    "QueueUserAPC",
+    "ReadFile",
+    "ReadProcessMemory",
+    "ResumeThread",
+    "SetHandleInformation",
+    "SetThreadContext",
     "SetThreadpoolWait",
+    "SuspendThread",
+    "SwitchToFiber",
+    "TerminateProcess",
+    "Thread32First",
+    "Thread32Next",
     "VirtualAlloc",
+    "VirtualAllocEx",
+    "VirtualFree",
     "VirtualProtect",
+    "VirtualProtectEx",
+    "VirtualQueryEx",
     "WinHttpCloseHandle",
     "WinHttpConnect",
     "WinHttpOpen",
@@ -66,6 +115,7 @@ FUNCS = [
     "WinHttpSendRequest",
     "WinHttpSetOption",
     "WinHttpWriteData",
+    "WriteProcessMemory",
 ]
 
 HASH_IV = 0x35
@@ -97,7 +147,7 @@ def main():
         hash_fmt = f"{'0x{0:x}'.format(hash_value)}"
         # Check if the hash is duplicate
         if is_dupl(hashes, hash_fmt) is True:
-            print("The calculated hash is duplicate. Please try again.")
+            print("The calculated hash is duplicate. Please try another algorithm.")
             return
         hashes[f"#define HASH_FUNC_{func.upper()}"] = hash_fmt
 

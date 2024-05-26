@@ -12,7 +12,7 @@
 namespace Handler
 {
     VOID HTTPInit(State::PSTATE pState);
-    VOID GetInitialInfoJSON(State::PSTATE pState);
+    std::wstring GetInitialInfoJSON(State::PSTATE pState);
 }
 
 #endif // HERMIT_CORE_HANDLER_HPP

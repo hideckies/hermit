@@ -15,8 +15,16 @@
 
 namespace System::Handle
 {
-    BOOL HandleClose(Procs::PPROCS pProcs, HANDLE handle);
-    BOOL HandleWait(Procs::PPROCS pProcs, HANDLE handle, BOOL bAlertable, PLARGE_INTEGER pTimeout);
+    BOOL HandleClose(
+        Procs::PPROCS pProcs,
+        HANDLE handle
+    );
+    BOOL HandleWait(
+        Procs::PPROCS pProcs,
+        HANDLE handle,
+        BOOL bAlertable,
+        PLARGE_INTEGER pTimeout
+    );
 }
 
 namespace System::Arch
@@ -26,7 +34,10 @@ namespace System::Arch
 
 namespace System::Env
 {
-    std::wstring GetStrings(const std::wstring& envVar);
+    std::wstring GetStrings(
+        Procs::PPROCS pProcs,
+        const std::wstring& envVar
+    );
 }
 
 namespace System::Process
@@ -40,8 +51,14 @@ namespace System::Process
         HANDLE          hParentProcess,
         HANDLE          hToken
     );
-    DWORD ProcessGetIdByName(LPCWSTR lpProcessName);
-    DWORD ProcessGetMainThreadId(DWORD dwProcessID);
+    DWORD ProcessGetIdByName(
+        Procs::PPROCS pProcs,
+        LPCWSTR lpProcessName
+    );
+    DWORD ProcessGetMainThreadId(
+        Procs::PPROCS pProcs,
+        DWORD dwProcessID
+    );
     HANDLE ProcessOpen(
         Procs::PPROCS   pProcs,
         DWORD           dwProcessID,

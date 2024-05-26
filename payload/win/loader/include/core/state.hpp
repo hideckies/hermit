@@ -2,6 +2,7 @@
 #define HERMIT_CORE_STATE_HPP
 
 #include "core/crypt.hpp"
+#include "core/modules.hpp"
 #include "core/procs.hpp"
 #include "core/state.hpp"
 #include "core/system.hpp"
@@ -14,13 +15,14 @@ namespace State
 {
     struct STATE
     {
+        // TEB
+        PTEB                pTeb;
+        
         // Crypto
         Crypt::PCRYPT       pCrypt;
 
         // Module handlers
-        HMODULE             hKernel32DLL;
-        HMODULE             hNTDLL;
-        HMODULE             hWinHTTPDLL;
+        Modules::PMODULES   pModules;
 
         // Procedures loaded dynamatically
         Procs::PPROCS       pProcs;
@@ -45,9 +47,6 @@ namespace State
         HINTERNET           hSession;
         HINTERNET           hConnect;
         HINTERNET           hRequest;
-
-        // Initial information (JSON)
-        LPCWSTR             lpInfoJSON;
     };
 
     typedef STATE* PSTATE;

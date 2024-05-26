@@ -56,6 +56,8 @@ namespace Handler
             gethostname(szHostname, 256);
             std::string sHostname(szHostname);
             wHostname = Utils::Convert::UTF8Decode(sHostname);
+
+            WSACleanup();
         }
 
         std::wstring wJson = L"{";

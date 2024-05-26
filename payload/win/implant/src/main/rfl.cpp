@@ -106,12 +106,12 @@ DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
 	// Get modules and functions
 	// -----------------------------------------------------------------------------
 	
-	HMODULE hNtdll = (HMODULE)Procs::GetModuleByHash(HASH_MODULE_NTDLL);
+	HMODULE hNtdll = (HMODULE)Modules::GetModuleByHash(HASH_MODULE_NTDLL);
 	if (!hNtdll)
 	{
 		return FALSE;
 	}
-	HMODULE hKernel32 = (HMODULE)Procs::GetModuleByHash(HASH_MODULE_KERNEL32);
+	HMODULE hKernel32 = (HMODULE)Modules::GetModuleByHash(HASH_MODULE_KERNEL32);
 	if (!hKernel32)
 	{
 		return FALSE;

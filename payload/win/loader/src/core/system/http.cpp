@@ -202,7 +202,12 @@ namespace System::Http
 		}
 
 		// Decrypt data
-		std::vector<BYTE> decBytes = Crypt::Decrypt(wEnc, pCrypt->pAES->hKey, pCrypt->pAES->iv);
+		std::vector<BYTE> decBytes = Crypt::Decrypt(
+			pProcs,
+			wEnc,
+			pCrypt->pAES->hKey,
+			pCrypt->pAES->iv
+		);
 		
 		// Write data to file
 		if (!System::Fs::FileWrite(

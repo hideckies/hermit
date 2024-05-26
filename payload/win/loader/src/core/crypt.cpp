@@ -2,11 +2,11 @@
 
 namespace Crypt
 {
-    std::wstring Base64Encode(const std::vector<BYTE>& data)
+    std::wstring Base64Encode(Procs::PPROCS pProcs, const std::vector<BYTE>& data)
     {
         // Get correct size.
         DWORD dw64Len = 0;
-        if (!CryptBinaryToStringW(
+        if (!pProcs->lpCryptBinaryToStringW(
             data.data(),
             static_cast<DWORD>(data.size()),
             CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF,
@@ -18,7 +18,7 @@ namespace Crypt
 
         // Encode
         std::vector<wchar_t> w64(dw64Len);
-        if (!CryptBinaryToStringW(
+        if (!pProcs->lpCryptBinaryToStringW(
             data.data(),
             static_cast<DWORD>(data.size()),
             CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF,
@@ -37,11 +37,11 @@ namespace Crypt
         return std::wstring(w64.begin(), w64.end());
     }
 
-    std::vector<BYTE> Base64Decode(const std::wstring& w64)
+    std::vector<BYTE> Base64Decode(Procs::PPROCS pProcs, const std::wstring& w64)
     {
         // Get correct size.
         DWORD cbBinary = 0;
-        if (!CryptStringToBinaryW(
+        if (!pProcs->lpCryptStringToBinaryW(
             w64.c_str(),
             w64.length(),
             CRYPT_STRING_BASE64,
@@ -55,7 +55,7 @@ namespace Crypt
 
         // Decode.
         std::vector<BYTE> bytes(cbBinary);
-        if (!CryptStringToBinaryW(
+        if (!pProcs->lpCryptStringToBinaryW(
             w64.c_str(),
             w64.length(),
             CRYPT_STRING_BASE64,
@@ -89,7 +89,7 @@ namespace Crypt
         return std::vector<BYTE>(data.begin() + dwPadLen, data.end());
     }
 
-    PCRYPT InitCrypt(const std::wstring& wKey64, const std::wstring& wIV64)
+    PCRYPT InitCrypt(Procs::PPROCS pProcs, const std::wstring& wKey64, const std::wstring& wIV64)
     {
         BCRYPT_ALG_HANDLE hAlg;
         BCRYPT_KEY_HANDLE hKey;
@@ -101,11 +101,11 @@ namespace Crypt
         DWORD cbData = 0;
 
         // Decode Base64 key/iv
-        std::vector<BYTE> key = Base64Decode(wKey64);
-        std::vector<BYTE> iv = Base64Decode(wIV64);
+        std::vector<BYTE> key = Base64Decode(pProcs, wKey64);
+        std::vector<BYTE> iv = Base64Decode(pProcs, wIV64);
 
         // Open algorithm provider.
-        if (BCryptOpenAlgorithmProvider(
+        if (pProcs->lpBCryptOpenAlgorithmProvider(
             &hAlg,
             BCRYPT_AES_ALGORITHM,
             NULL,
@@ -115,7 +115,7 @@ namespace Crypt
         }
 
         // Calculate the size of the buffer to hold the key object.
-        if (BCryptGetProperty(
+        if (pProcs->lpBCryptGetProperty(
             hAlg,
             BCRYPT_OBJECT_LENGTH,
             (PBYTE)&cbKeyObj,
@@ -134,7 +134,7 @@ namespace Crypt
         }
 
         // Calculate the block length.
-        if (BCryptGetProperty(
+        if (pProcs->lpBCryptGetProperty(
             hAlg,
             BCRYPT_BLOCK_LENGTH,
             (PBYTE)&cbBlockLen,
@@ -150,7 +150,7 @@ namespace Crypt
             return nullptr;
         }
 
-        if (BCryptSetProperty(
+        if (pProcs->lpBCryptSetProperty(
             hAlg,
             BCRYPT_CHAINING_MODE,
             (PBYTE)BCRYPT_CHAIN_MODE_CBC,
@@ -161,7 +161,7 @@ namespace Crypt
         }
 
         // Generate key object.
-        if (BCryptGenerateSymmetricKey(
+        if (pProcs->lpBCryptGenerateSymmetricKey(
             hAlg,
             &hKey,
             pbKeyObj,
@@ -190,6 +190,7 @@ namespace Crypt
     }
 
     std::wstring Encrypt(
+        Procs::PPROCS pProcs,
         const std::vector<BYTE> plaindata,
         BCRYPT_KEY_HANDLE hKey,
         std::vector<BYTE> iv
@@ -197,7 +198,7 @@ namespace Crypt
         DWORD cbData = 0;
         
         // Get the output buffer size.
-        if(BCryptEncrypt(
+        if(pProcs->lpBCryptEncrypt(
             hKey,
             (PBYTE)plaindata.data(),
             plaindata.size(),
@@ -216,7 +217,7 @@ namespace Crypt
 
         // Use the key to encrypt the plaintext buffer.
         // For block sized messages, block padding will add an extra block.
-        if(BCryptEncrypt(
+        if(pProcs->lpBCryptEncrypt(
             hKey,
             (PBYTE)plaindata.data(),
             plaindata.size(),
@@ -231,11 +232,11 @@ namespace Crypt
             return L"";
         }
 
-        // Base64 encode
-        return Base64Encode(cipherdata);
+        return Base64Encode(pProcs, cipherdata);
     }
 
     std::vector<BYTE> Decrypt(
+        Procs::PPROCS pProcs,
         const std::wstring& ciphertext,
         BCRYPT_KEY_HANDLE hKey,
         std::vector<BYTE> iv
@@ -243,11 +244,9 @@ namespace Crypt
         DWORD cbPlaindata = 0;
         NTSTATUS ntStatus;
 
-        // Decode Base64
-        std::vector<BYTE> cipherdata = Base64Decode(ciphertext);
+        std::vector<BYTE> cipherdata = Base64Decode(pProcs, ciphertext);
         
-        // Get the output buffer size.
-        ntStatus = BCryptDecrypt(
+        ntStatus = pProcs->lpBCryptDecrypt(
             hKey, 
             cipherdata.data(),
             cipherdata.size(),
@@ -266,7 +265,7 @@ namespace Crypt
 
         std::vector<BYTE> plaindata(cbPlaindata);
   
-        ntStatus = BCryptDecrypt(
+        ntStatus = pProcs->lpBCryptDecrypt(
             hKey, 
             cipherdata.data(),
             cipherdata.size(),
@@ -290,18 +289,19 @@ namespace Crypt
     }
 
     VOID Cleanup(
+        Procs::PPROCS pProcs,
         BCRYPT_ALG_HANDLE hAlg,
         BCRYPT_KEY_HANDLE hKey,
         PBYTE pbKeyObj
     ) {
         if(hAlg)
         {
-            BCryptCloseAlgorithmProvider(hAlg,0);
+            pProcs->lpBCryptCloseAlgorithmProvider(hAlg,0);
         }
 
         if (hKey)    
         {
-            BCryptDestroyKey(hKey);
+            pProcs->lpBCryptDestroyKey(hKey);
         }
 
         if(pbKeyObj)

@@ -2,11 +2,11 @@
 
 namespace System::Env
 {
-    std::wstring GetStrings(const std::wstring& envVar)
+    std::wstring GetStrings(Procs::PPROCS pProcs, const std::wstring& envVar)
     {
         wchar_t envStrings[INFO_BUFFER_SIZE];
 
-        DWORD envStringsLen = ExpandEnvironmentStringsW(
+        DWORD envStringsLen = pProcs->lpExpandEnvironmentStringsW(
             envVar.c_str(),
             envStrings,
             INFO_BUFFER_SIZE

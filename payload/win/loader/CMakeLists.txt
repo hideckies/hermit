@@ -53,6 +53,7 @@ set(SOURCE_CORE
         src/core/crypt.cpp
         src/core/procs.cpp
         src/core/handler.cpp
+        src/core/modules.cpp
         src/core/state.cpp
         src/core/stdout.cpp
         src/core/syscalls.cpp

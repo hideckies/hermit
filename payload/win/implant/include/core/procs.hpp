@@ -721,27 +721,28 @@ namespace Procs
     };
     typedef PROCS* PPROCS;
 
-    ULONG StringToHashModule(WCHAR* wStr, SIZE_T dwStrLen);
     DWORD StringToHashFunc(char* str);
-    PVOID GetModuleByHash(DWORD dwHash);
-    PVOID LoadModule(PPROCS pProcs, LPWSTR lpDllName);
-    PVOID GetProcAddressByHash(HMODULE hModule, DWORD dwHash);
-    PPROCS FindProcs(
-        HMODULE hNTDLL,
-        HMODULE hKernel32DLL,
+    PVOID GetProcAddressByHash(
+        HMODULE hModule,
+        DWORD dwHash
+    );
+    VOID FindProcs(
+        Procs::PPROCS pProcs,
+        HMODULE hNtdll,
+        HMODULE hKernel32,
         BOOL bIndirectSyscalls
     );
     VOID FindProcsMisc(
         Procs::PPROCS pProcs,
-        HMODULE hAdvapi32DLL,
-        HMODULE hBcryptDLL,
-        HMODULE hCrypt32DLL,
-        HMODULE hDbghelpDLL,
-        HMODULE hIphlpapiDLL,
-        HMODULE hNetapi32DLL,
-        HMODULE hShell32DLL,
-        HMODULE hUser32DLL,
-        HMODULE hWinHTTPDLL
+        HMODULE hAdvapi32,
+        HMODULE hBcrypt,
+        HMODULE hCrypt32,
+        HMODULE hDbghelp,
+        HMODULE hIphlpapi,
+        HMODULE hNetapi32,
+        HMODULE hShell32,
+        HMODULE hUser32,
+        HMODULE hWinHttp
     );
 }
 

