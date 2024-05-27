@@ -145,21 +145,21 @@ namespace Procs
     // **NTAPI**
 
     // LdrLoadDll
-    typedef NTSTATUS (NTAPI* LPPROC_LDRLOADDLL)( PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID *DllHandle);
+    typedef NTSTATUS (NTAPI* LPPROC_LDRLOADDLL)(PWSTR DllPath, PULONG DllCharacteristics, Nt::PUNICODE_STRING DllName, PVOID *DllHandle);
     // NtAllocateVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTALLOCATEVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
     // NtClose
 	typedef NTSTATUS (NTAPI* LPPROC_NTCLOSE)(HANDLE Handle);
     // NtCreateFile
-    typedef NTSTATUS (NTAPI* LPPROC_NTCREATEFILE)(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions, PVOID EaBuffer, ULONG EaLength);
+    typedef NTSTATUS (NTAPI* LPPROC_NTCREATEFILE)(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, Nt::POBJECT_ATTRIBUTES ObjectAttributes, Nt::PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions, PVOID EaBuffer, ULONG EaLength);
     // NtCreateNamedPipeFile
-    typedef NTSTATUS (NTAPI* LPPROC_NTCREATENAMEDPIPEFILE)(PHANDLE FileHandle, ULONG DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions, ULONG NamedPipeType, ULONG ReadMode, ULONG CompletionMode, ULONG MaximumInstances, ULONG InboundQuota, ULONG OutboundQuota, PLARGE_INTEGER DefaultTimeout);
+    typedef NTSTATUS (NTAPI* LPPROC_NTCREATENAMEDPIPEFILE)(PHANDLE FileHandle, ULONG DesiredAccess, Nt::POBJECT_ATTRIBUTES ObjectAttributes, Nt::PIO_STATUS_BLOCK IoStatusBlock, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions, ULONG NamedPipeType, ULONG ReadMode, ULONG CompletionMode, ULONG MaximumInstances, ULONG InboundQuota, ULONG OutboundQuota, PLARGE_INTEGER DefaultTimeout);
     // NtCreateProcessEx
-    typedef NTSTATUS (NTAPI* LPPROC_NTCREATEPROCESSEX)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ParentProcess, ULONG Flags, HANDLE SectionHandle, HANDLE DebugPort, HANDLE TokenHandle, ULONG Reserved);
+    typedef NTSTATUS (NTAPI* LPPROC_NTCREATEPROCESSEX)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, Nt::POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ParentProcess, ULONG Flags, HANDLE SectionHandle, HANDLE DebugPort, HANDLE TokenHandle, ULONG Reserved);
     // NtCreateSection
-    typedef NTSTATUS (NTAPI* LPPROC_NTCREATESECTION)(PHANDLE SectionHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PLARGE_INTEGER MaximumSize, ULONG SectionPageProtection, ULONG AllocationAttributes, HANDLE FileHandle);
+    typedef NTSTATUS (NTAPI* LPPROC_NTCREATESECTION)(PHANDLE SectionHandle, ACCESS_MASK DesiredAccess, Nt::POBJECT_ATTRIBUTES ObjectAttributes, PLARGE_INTEGER MaximumSize, ULONG SectionPageProtection, ULONG AllocationAttributes, HANDLE FileHandle);
     // NtCreateThreadEx
-    typedef NTSTATUS (NTAPI* LPPROC_NTCREATETHREADEX)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList);
+    typedef NTSTATUS (NTAPI* LPPROC_NTCREATETHREADEX)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, Nt::POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, Nt::PPS_ATTRIBUTE_LIST AttributeList);
     // NtDuplicateObject
     typedef NTSTATUS (NTAPI* LPPROC_NTDUPLICATEOBJECT)(HANDLE SourceProcessHandle, PHANDLE SourceHandle, HANDLE TargetProcessHandle, PHANDLE TargetHandle, ACCESS_MASK DesiredAccess, BOOLEAN InheritHandle, ULONG Options);
     // NtFreeVirtualMemory
@@ -167,33 +167,33 @@ namespace Procs
     // NtGetContextThread
     typedef NTSTATUS (NTAPI* LPPROC_NTGETCONTEXTTHREAD)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
     // NtMapViewOfSection
-    typedef NTSTATUS (NTAPI* LPPROC_NTMAPVIEWOFSECTION)(HANDLE SectionHandle, HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, SIZE_T CommitSize, PLARGE_INTEGER SectionOffset, PSIZE_T ViewSize, SECTION_INHERIT InheritDisposition, ULONG AllocationType, ULONG Win32Protect);
+    typedef NTSTATUS (NTAPI* LPPROC_NTMAPVIEWOFSECTION)(HANDLE SectionHandle, HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, SIZE_T CommitSize, PLARGE_INTEGER SectionOffset, PSIZE_T ViewSize, Nt::SECTION_INHERIT InheritDisposition, ULONG AllocationType, ULONG Win32Protect);
     // NtOpenProcess
-    typedef NTSTATUS (NTAPI* LPPROC_NTOPENPROCESS)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PCLIENT_ID ClientId);
+    typedef NTSTATUS (NTAPI* LPPROC_NTOPENPROCESS)(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, Nt::POBJECT_ATTRIBUTES ObjectAttributes, Nt::PCLIENT_ID ClientId);
     // NtOpenProcessToken
     typedef NTSTATUS (NTAPI* LPPROC_NTOPENPROCESSTOKEN)( HANDLE ProcessHandle, ACCESS_MASK DesiredAccess, PHANDLE TokenHandle);
     // NtOpenThread
-    typedef NTSTATUS (NTAPI* LPPROC_NTOPENTHREAD)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PCLIENT_ID ClientId);
+    typedef NTSTATUS (NTAPI* LPPROC_NTOPENTHREAD)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, Nt::POBJECT_ATTRIBUTES ObjectAttributes, Nt::PCLIENT_ID ClientId);
     // NtProtectVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTPROTECTVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID* BaseAddress, PSIZE_T RegionSize, ULONG NewProtect, PULONG OldProtect);
     // NtReadFile
-    typedef NTSTATUS (NTAPI* LPPROC_NTREADFILE)(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext, PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, ULONG Length, PLARGE_INTEGER ByteOffset, PULONG Key);
+    typedef NTSTATUS (NTAPI* LPPROC_NTREADFILE)(HANDLE FileHandle, HANDLE Event, Nt::PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext, Nt::PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, ULONG Length, PLARGE_INTEGER ByteOffset, PULONG Key);
     // NtReadVirtualMemory
     typedef NTSTATUS (NTAPI* LPPROC_NTREADVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T BufferSize, PSIZE_T NumberOfBytesRead);
     // NtQueryInformationFile
-    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONFILE)(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
+    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONFILE)(HANDLE FileHandle, Nt::PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, Nt::FILE_INFORMATION_CLASS FileInformationClass);
     // NtQueryInformationProcess
-    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
+    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYINFORMATIONPROCESS)(HANDLE ProcessHandle, Nt::PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
     // NtQueryVirtualMemory
-    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, MEMORY_INFORMATION_CLASS MemoryInformationClass, PVOID MemoryInformation, SIZE_T MemoryInformationLength, PSIZE_T ReturnLength);
+    typedef NTSTATUS (NTAPI* LPPROC_NTQUERYVIRTUALMEMORY)(HANDLE ProcessHandle, PVOID BaseAddress, Nt::MEMORY_INFORMATION_CLASS MemoryInformationClass, PVOID MemoryInformation, SIZE_T MemoryInformationLength, PSIZE_T ReturnLength);
     // NtResumeThread
     typedef NTSTATUS (NTAPI* LPPROC_NTRESUMETHREAD)(HANDLE ThreadHandle, PULONG PreviousSuspendCount);
     // NtSetContextThread
     typedef NTSTATUS (NTAPI* LPPROC_NTSETCONTEXTTHREAD)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
     // NtSetInformationFile
-    typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONFILE)(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
+    typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONFILE)(HANDLE FileHandle, Nt::PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, Nt::FILE_INFORMATION_CLASS FileInformationClass);
     // NtSetInformationProcess
-    typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONPROCESS)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength);
+    typedef NTSTATUS (NTAPI* LPPROC_NTSETINFORMATIONPROCESS)(HANDLE ProcessHandle, Nt::PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength);
     // NtTerminateProcess
 	typedef NTSTATUS (NTAPI* LPPROC_NTTERMINATEPROCESS)(HANDLE ProcessHandle, NTSTATUS ExitStatus);
     // NtUnmapViewOfSection
@@ -203,24 +203,24 @@ namespace Procs
     // NtWaitForSingleObject
     typedef NTSTATUS (NTAPI* LPPROC_NTWAITFORSINGLEOBJECT)(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout);
     // NtWriteFile
-    typedef NTSTATUS (NTAPI* LPPROC_NTWRITEFILE)(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext, PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, ULONG Length, PLARGE_INTEGER ByteOffset, PULONG Key);
+    typedef NTSTATUS (NTAPI* LPPROC_NTWRITEFILE)(HANDLE FileHandle, HANDLE Event, Nt::PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext, Nt::PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, ULONG Length, PLARGE_INTEGER ByteOffset, PULONG Key);
     
     // RtlAllocateHeap
     typedef PVOID (NTAPI* LPPROC_RTLALLOCATEHEAP)(PVOID HeapHandle, ULONG Flags, SIZE_T Size);
     // RtlCreateProcessReflection
-    typedef NTSTATUS (NTAPI* LPPROC_RTLCREATEPROCESSREFLECTION)(HANDLE ProcessHandle, ULONG Flags, PVOID StartRoutine, PVOID StartContext, HANDLE EventHandle, PRTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION ReflectionInformation);
+    typedef NTSTATUS (NTAPI* LPPROC_RTLCREATEPROCESSREFLECTION)(HANDLE ProcessHandle, ULONG Flags, PVOID StartRoutine, PVOID StartContext, HANDLE EventHandle, Nt::PRTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION ReflectionInformation);
     // RtlCreateUserThread
-    typedef NTSTATUS (NTAPI* LPPROC_RTLCREATEUSERTHREAD)(HANDLE ProcessHandle, PSECURITY_DESCRIPTOR ThreadSecurityDescriptor, BOOLEAN CreateSuspended, ULONG ZeroBits, SIZE_T MaximumStackSize, SIZE_T CommittedStackSize, PUSER_THREAD_START_ROUTINE StartAddress, PVOID Parameter, PHANDLE ThreadHandle, PCLIENT_ID ClientId);
+    typedef NTSTATUS (NTAPI* LPPROC_RTLCREATEUSERTHREAD)(HANDLE ProcessHandle, PSECURITY_DESCRIPTOR ThreadSecurityDescriptor, BOOLEAN CreateSuspended, ULONG ZeroBits, SIZE_T MaximumStackSize, SIZE_T CommittedStackSize, Nt::PUSER_THREAD_START_ROUTINE StartAddress, PVOID Parameter, PHANDLE ThreadHandle, Nt::PCLIENT_ID ClientId);
     // RtlExpandEnvironmentStrings
     typedef NTSTATUS (NTAPI* LPPROC_RTLEXPANDENVIRONMENTSTRINGS)(PVOID Environment, PCWSTR Source, SIZE_T SourceLength, PWSTR Destination, SIZE_T DestinationLength, PSIZE_T ReturnLength);
     // RtlGetFullPathName_U
     typedef NTSTATUS (NTAPI* LPPROC_RTLGETFULLPATHNAME_U)(PCWSTR FileName, ULONG BufferLength, PWSTR Buffer, PWSTR *FilePart);
     // RtlInitUnicodeString
-    typedef NTSTATUS (NTAPI* LPPROC_RTLINITUNICODESTRING)(PUNICODE_STRING DestinationString, PCWSTR SourceString);
+    typedef NTSTATUS (NTAPI* LPPROC_RTLINITUNICODESTRING)(Nt::PUNICODE_STRING DestinationString, PCWSTR SourceString);
     // RtlNtStatusToDosError
     typedef DWORD (NTAPI* LPPROC_RTLNTSTATUSTODOSERROR)(NTSTATUS Status);
     // RtlQuerySystemInformation
-    typedef NTSTATUS (NTAPI* LPPROC_RTLQUERYSYSTEMINFORMATION)(SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
+    typedef NTSTATUS (NTAPI* LPPROC_RTLQUERYSYSTEMINFORMATION)(Nt::SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
     // RtlStringCchCatW
     typedef NTSTATUS (NTAPI* LPPROC_RTLSTRINGCCHCATW)(LPWSTR pszDest, SIZE_T cchDest, LPCWSTR pszSrc);
     // RtlStringCchCopyW

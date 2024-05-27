@@ -41,9 +41,9 @@ namespace System::Fs
         HANDLE hFile;
 
         // Open file
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES objAttr;
-        UNICODE_STRING uniFilePath;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES objAttr;
+        Nt::UNICODE_STRING uniFilePath;
 
         std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
         CallSysInvoke(
@@ -52,7 +52,7 @@ namespace System::Fs
             &uniFilePath,
             wFileAbsPath.c_str()
         );
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        MyInitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = pProcs->lpNtCreateFile(
             &hFile,
@@ -83,9 +83,9 @@ namespace System::Fs
         HANDLE hFile;
 
         // Open file
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES objAttr;
-        UNICODE_STRING uniFilePath;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES objAttr;
+        Nt::UNICODE_STRING uniFilePath;
         
         std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
         CallSysInvoke(
@@ -94,7 +94,7 @@ namespace System::Fs
             &uniFilePath,
             wFileAbsPath.c_str()
         );
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        MyInitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = CallSysInvoke(
             &pProcs->sysNtCreateFile,
@@ -117,7 +117,7 @@ namespace System::Fs
         }
 
         // Get file size
-        FILE_STANDARD_INFORMATION fileInfo;
+        Nt::FILE_STANDARD_INFORMATION fileInfo;
         status = CallSysInvoke(
             &pProcs->sysNtQueryInformationFile,
             pProcs->lpNtQueryInformationFile,
@@ -125,7 +125,7 @@ namespace System::Fs
             &ioStatusBlock,
             &fileInfo,
             sizeof(fileInfo),
-            FileStandardInformation
+            Nt::FileStandardInformation
         );
         if (status != STATUS_SUCCESS)
         {
@@ -189,9 +189,9 @@ namespace System::Fs
         HANDLE hFile;
 
         // Open file
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES objAttr;
-        UNICODE_STRING uniFilePath;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES objAttr;
+        Nt::UNICODE_STRING uniFilePath;
 
         std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
         status = CallSysInvoke(
@@ -200,7 +200,7 @@ namespace System::Fs
             &uniFilePath,
             wFileAbsPath.c_str()
         );
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        MyInitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = CallSysInvoke(
             &pProcs->sysNtCreateFile,
@@ -272,8 +272,8 @@ namespace System::Fs
         DWORD dwFileSize;
 
         NTSTATUS status;
-        IO_STATUS_BLOCK ioStatusBlock;
-        FILE_STANDARD_INFORMATION fileInfo;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::FILE_STANDARD_INFORMATION fileInfo;
 
         status = CallSysInvoke(
             &pProcs->sysNtQueryInformationFile,
@@ -282,7 +282,7 @@ namespace System::Fs
             &ioStatusBlock,
             &fileInfo,
             sizeof(fileInfo),
-            FileStandardInformation
+            Nt::FileStandardInformation
         );
         if (status != STATUS_SUCCESS)
         {

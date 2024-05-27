@@ -6,7 +6,7 @@ namespace Hermit
     {
         State::PSTATE pState = new State::STATE;
 
-        pState->pTeb = NtCurrentTeb();
+        pState->pTeb = (Nt::PTEB)NtCurrentTeb();
 
         #ifdef PAYLOAD_INDIRECT_SYSCALLS
 		pState->bIndirectSyscalls = TRUE;

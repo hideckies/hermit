@@ -89,27 +89,27 @@ VOID ReallocateSections(
 		ULONG_PTR uRelocEntry = (ULONG_PTR)lpBaseRelocDir + sizeof(IMAGE_BASE_RELOCATION);
 
 		// Number of entries in this relocation block
-		DWORD dwNumOfEntries = (((PIMAGE_BASE_RELOCATION)lpBaseRelocDir)->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(IMAGE_RELOC);
+		DWORD dwNumOfEntries = (((PIMAGE_BASE_RELOCATION)lpBaseRelocDir)->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(Nt::IMAGE_RELOC);
 		while(dwNumOfEntries--)
 		{
-			if(((PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_DIR64)
+			if(((Nt::PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_DIR64)
 			{
-				*(ULONG_PTR*)(uBaseRelocRVA + ((PIMAGE_RELOC)uRelocEntry)->offset) += uOffset;
+				*(ULONG_PTR*)(uBaseRelocRVA + ((Nt::PIMAGE_RELOC)uRelocEntry)->offset) += uOffset;
 			}
-			else if(((PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_HIGHLOW)
+			else if(((Nt::PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_HIGHLOW)
 			{
-				*(DWORD *)(uBaseRelocRVA + ((PIMAGE_RELOC)uRelocEntry)->offset) += (DWORD)uOffset;
+				*(DWORD *)(uBaseRelocRVA + ((Nt::PIMAGE_RELOC)uRelocEntry)->offset) += (DWORD)uOffset;
 			}
-			else if(((PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_HIGH)
+			else if(((Nt::PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_HIGH)
 			{
-				*(WORD *)(uBaseRelocRVA + ((PIMAGE_RELOC)uRelocEntry)->offset) += HIWORD(uOffset);
+				*(WORD *)(uBaseRelocRVA + ((Nt::PIMAGE_RELOC)uRelocEntry)->offset) += HIWORD(uOffset);
 			}
-			else if( ((PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_LOW)
+			else if( ((Nt::PIMAGE_RELOC)uRelocEntry)->type == IMAGE_REL_BASED_LOW)
 			{
-				*(WORD *)(uBaseRelocRVA + ((PIMAGE_RELOC)uRelocEntry)->offset) += LOWORD(uOffset);
+				*(WORD *)(uBaseRelocRVA + ((Nt::PIMAGE_RELOC)uRelocEntry)->offset) += LOWORD(uOffset);
 			}
 
-			uRelocEntry += sizeof(IMAGE_RELOC);
+			uRelocEntry += sizeof(Nt::IMAGE_RELOC);
 		}
 
 		lpBaseRelocDir = lpBaseRelocDir + ((PIMAGE_BASE_RELOCATION)lpBaseRelocDir)->SizeOfBlock;
@@ -123,7 +123,7 @@ SEC(text, B) VOID Entry()
 	// LPVOID lpBaseAddr = ReflectiveCaller();
 	ULONG_PTR uBaseAddr = 0x00;
 
-	PPEB pPeb = (PPEB)PPEB_PTR;
+	Nt::PPEB pPeb = (Nt::PPEB)PPEB_PTR;
 
 	// -----------------------------------------------------------------------------
 	// Get modules and functions

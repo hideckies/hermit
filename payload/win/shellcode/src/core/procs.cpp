@@ -53,11 +53,11 @@ namespace Procs
 
     SEC(text, B) PVOID GetModuleByHash(DWORD dwHash)
     {
-        PPEB pPeb = (PPEB)PPEB_PTR;
-        PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)pPeb->Ldr;
+        Nt::PPEB pPeb = (Nt::PPEB)PPEB_PTR;
+        Nt::PPEB_LDR_DATA pLdr = (Nt::PPEB_LDR_DATA)pPeb->Ldr;
 
         // Get the first entry
-        PLDR_DATA_TABLE_ENTRY pDte = (PLDR_DATA_TABLE_ENTRY)pLdr->InLoadOrderModuleList.Flink;
+        Nt::PLDR_DATA_TABLE_ENTRY pDte = (Nt::PLDR_DATA_TABLE_ENTRY)pLdr->InLoadOrderModuleList.Flink;
 
         while (pDte)
         {   
@@ -67,7 +67,7 @@ namespace Procs
             }
 
             // Get the next entry
-            pDte = *(PLDR_DATA_TABLE_ENTRY*)(pDte);
+            pDte = *(Nt::PLDR_DATA_TABLE_ENTRY*)(pDte);
         }
 
         return nullptr;

@@ -4,7 +4,6 @@
 #define HERMIT_CORE_NTDLL_H
 
 #include <windows.h>
-#include <subauth.h>
 
 // Forward Declaration -----------------------
 typedef struct _ACTIVATION_CONTEXT ACTIVATION_CONTEXT;
@@ -652,6 +651,18 @@ typedef enum _LDR_DDAG_STATE
     LdrModulesInitializing = 8,
     LdrModulesReadyToRun = 9
 } LDR_DDAG_STATE;
+
+typedef struct _STRING {
+  USHORT Length;
+  USHORT MaximumLength;
+  PCHAR  Buffer;
+} STRING;
+
+typedef struct _UNICODE_STRING {
+  USHORT Length;
+  USHORT MaximumLength;
+  PWSTR  Buffer;
+} UNICODE_STRING, *PUNICODE_STRING;
 
 typedef struct
 {

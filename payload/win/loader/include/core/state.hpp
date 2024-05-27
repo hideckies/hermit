@@ -16,7 +16,7 @@ namespace State
     struct STATE
     {
         // TEB
-        PTEB                pTeb;
+        Nt::PTEB            pTeb;
         
         // Crypto
         Crypt::PCRYPT       pCrypt;

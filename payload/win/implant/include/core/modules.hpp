@@ -5,6 +5,7 @@
 #include "core/procs.hpp"
 
 #include <windows.h>
+#include <ntstatus.h>
 
 namespace Modules
 {

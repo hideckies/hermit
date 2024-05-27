@@ -188,15 +188,15 @@ namespace Technique::Injection
 
             while (dwRelocOffset < relocTable.Size)
             {
-                PBASE_RELOCATION_BLOCK pRelocBlock = (PBASE_RELOCATION_BLOCK)&lpbBuffer[dwRelocAddr + dwRelocOffset];
-                dwRelocOffset += sizeof(BASE_RELOCATION_BLOCK);
+                Nt::PBASE_RELOCATION_BLOCK pRelocBlock = (Nt::PBASE_RELOCATION_BLOCK)&lpbBuffer[dwRelocAddr + dwRelocOffset];
+                dwRelocOffset += sizeof(Nt::BASE_RELOCATION_BLOCK);
 
-                DWORD dwRelocEntryCount = (pRelocBlock->BlockSize - sizeof(BASE_RELOCATION_BLOCK)) / sizeof(BASE_RELOCATION_ENTRY);
-                PBASE_RELOCATION_ENTRY pRelocEntries = (PBASE_RELOCATION_ENTRY)&lpbBuffer[dwRelocAddr + dwRelocOffset];
+                DWORD dwRelocEntryCount = (pRelocBlock->BlockSize - sizeof(Nt::BASE_RELOCATION_BLOCK)) / sizeof(Nt::BASE_RELOCATION_ENTRY);
+                Nt::PBASE_RELOCATION_ENTRY pRelocEntries = (Nt::PBASE_RELOCATION_ENTRY)&lpbBuffer[dwRelocAddr + dwRelocOffset];
 
                 for (int y = 0; y < dwRelocEntryCount; y++)
                 {
-                    dwRelocOffset += sizeof(BASE_RELOCATION_ENTRY);
+                    dwRelocOffset += sizeof(Nt::BASE_RELOCATION_ENTRY);
                     
                     if (pRelocEntries[y].Type == 0)
                     {

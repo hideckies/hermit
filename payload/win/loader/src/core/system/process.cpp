@@ -11,8 +11,8 @@ namespace System::Process
 		HANDLE 			hParentProcess,
 		HANDLE			hToken
 	) {
-		OBJECT_ATTRIBUTES objAttr;
-		UNICODE_STRING uniAppName;
+		Nt::OBJECT_ATTRIBUTES objAttr;
+		Nt::UNICODE_STRING uniAppName;
 
 		CallSysInvoke(
 			&pProcs->sysRtlInitUnicodeString,
@@ -25,7 +25,7 @@ namespace System::Process
 		{
 			uAttributes = OBJ_CASE_INSENSITIVE | OBJ_INHERIT;
 		}
-		InitializeObjectAttributes(&objAttr, &uniAppName, uAttributes, nullptr, nullptr);
+		MyInitializeObjectAttributes(&objAttr, &uniAppName, uAttributes, nullptr, nullptr);
 
 		HANDLE hProcess;
 
@@ -150,10 +150,10 @@ namespace System::Process
 		DWORD dwDesiredAccess
 	) {
 		HANDLE hProcess;
-		CLIENT_ID clientId;
+		Nt::CLIENT_ID clientId;
 		clientId.UniqueProcess = reinterpret_cast<HANDLE>(dwProcessID);
 		clientId.UniqueThread = nullptr;
-		static OBJECT_ATTRIBUTES oa = { sizeof(oa) };
+		static Nt::OBJECT_ATTRIBUTES oa = { sizeof(oa) };
 		
 		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtOpenProcess,

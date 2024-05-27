@@ -39,13 +39,13 @@ namespace Modules
 
     PVOID GetModuleByHash(DWORD dwHash)
     {
-        PTEB pTeb = NtCurrentTeb();
+        Nt::PTEB pTeb = (Nt::PTEB)NtCurrentTeb();
         // PPEB pPeb = (PPEB)PPEB_PTR;
-        PPEB pPeb = pTeb->ProcessEnvironmentBlock;
-        PPEB_LDR_DATA pLdr = (PPEB_LDR_DATA)pPeb->Ldr;
+        Nt::PPEB pPeb = pTeb->ProcessEnvironmentBlock;
+        Nt::PPEB_LDR_DATA pLdr = (Nt::PPEB_LDR_DATA)pPeb->Ldr;
 
         // Get the first entry
-        PLDR_DATA_TABLE_ENTRY pDte = (PLDR_DATA_TABLE_ENTRY)pLdr->InLoadOrderModuleList.Flink;
+        Nt::PLDR_DATA_TABLE_ENTRY pDte = (Nt::PLDR_DATA_TABLE_ENTRY)pLdr->InLoadOrderModuleList.Flink;
 
         while (pDte)
         {
@@ -55,7 +55,7 @@ namespace Modules
             }
 
             // Get the next entry
-            pDte = *(PLDR_DATA_TABLE_ENTRY*)(pDte);
+            pDte = *(Nt::PLDR_DATA_TABLE_ENTRY*)(pDte);
         }
 
         return nullptr;
@@ -72,7 +72,7 @@ namespace Modules
         for (wStr2 = lpcDllName; *wStr2; ++wStr2);
 		USHORT uDllNameLen = (wStr2 - lpcDllName) * sizeof(WCHAR);
 
-		UNICODE_STRING usDllName = {0};
+		Nt::UNICODE_STRING usDllName = {0};
 		usDllName.Buffer = lpDllName;
 		usDllName.Length = uDllNameLen;
         usDllName.MaximumLength = uDllNameLen + sizeof(WCHAR);
