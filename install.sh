@@ -62,7 +62,7 @@ install_pkg_with_apk() {
     log_success
     sudo apk -y update
     if [[ $target == "server" ]]; then
-        sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler openssl
+        sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler openssl python3-impacket python3-pefile
     elif [[ $target == "client" ]]; then
         sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler
     fi
@@ -71,7 +71,7 @@ install_pkg_with_apk() {
 install_pkg_with_apt() {
     sudo apt -y update
     if [[ $target == "server" ]]; then
-        sudo apt -y install git build-essential cmake nasm g++-mingw-w64 protobuf-compiler openssl
+        sudo apt -y install git build-essential cmake nasm g++-mingw-w64 protobuf-compiler openssl python3-impacket python3-pefile
     elif [[ $target == "client" ]]; then
         sudo apt -y install git build-essential cmake nasm g++-mingw-w64 protobuf-compiler
     fi
@@ -81,7 +81,7 @@ install_pkg_with_dnf() {
     sudo dnf -y check-update
     if [[ $target == "server" ]]; then
         sudo dnf -y groupinstall "Development Tools" "Development Libraries"
-        sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler openssl
+        sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler openssl python3-impacket python3-pefile
     elif [[ $target == "client" ]]; then
         sudo dnf -y groupinstall "Development Tools" "Development Libraries"
         sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler
@@ -115,14 +115,6 @@ install_pkg() {
     fi
 }
 
-install_python_pkg() {
-    if [[ $target == "server" ]]; then
-        log "Installing Python packages..."
-        pip3 install impacket pefile
-    fi
-    return 0
-}
-
 golang_exists() {
     log "Checking if the 'go' binary exists on the system..."
 
@@ -138,11 +130,6 @@ install_c2_server() {
 
     if ! install_pkg; then
         log_error "Installing packages failed."
-        exit 1
-    fi
-
-    if ! install_python_pkg; then
-        log_error "Installing Python packages failed."
         exit 1
     fi
 
