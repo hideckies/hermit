@@ -27,6 +27,8 @@
 #define DEREF_16(name)  *(WORD*)(name)
 #define DEREF_8(name)   *(BYTE*)(name)
 
+#define MEMCPY __builtin_memcpy
+
 #define SLEEP(n) Sleep(n * 1000)
 
 #define WIDEN(x) WIDEN2(x)

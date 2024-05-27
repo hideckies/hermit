@@ -93,19 +93,20 @@ namespace Modules
         return pModule;
     }
 
-    VOID Free(PMODULES pModules)
+    VOID Free(PMODULES pModules, Procs::PPROCS pProcs)
     {
-        FreeLibrary(pModules->hAdvapi32);
-        FreeLibrary(pModules->hBcrypt);
-        FreeLibrary(pModules->hCrypt32);
-        FreeLibrary(pModules->hDbghelp);
-        FreeLibrary(pModules->hIphlpapi);
-        FreeLibrary(pModules->hKernel32);
-        FreeLibrary(pModules->hNetapi32);
-        FreeLibrary(pModules->hNtdll);
-        FreeLibrary(pModules->hShell32);
-        FreeLibrary(pModules->hUser32);
-        FreeLibrary(pModules->hWinHttp);
+        pProcs->lpFreeLibrary(pModules->hAdvapi32);
+        pProcs->lpFreeLibrary(pModules->hBcrypt);
+        pProcs->lpFreeLibrary(pModules->hCrypt32);
+        pProcs->lpFreeLibrary(pModules->hDbghelp);
+        pProcs->lpFreeLibrary(pModules->hIphlpapi);
+        pProcs->lpFreeLibrary(pModules->hNetapi32);
+        pProcs->lpFreeLibrary(pModules->hNtdll);
+        pProcs->lpFreeLibrary(pModules->hShell32);
+        pProcs->lpFreeLibrary(pModules->hUser32);
+        pProcs->lpFreeLibrary(pModules->hWinHttp);
+        pProcs->lpFreeLibrary(pModules->hWs2_32);
+        pProcs->lpFreeLibrary(pModules->hKernel32);
 
         delete pModules;
     }

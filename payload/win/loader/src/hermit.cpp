@@ -99,6 +99,16 @@ namespace Hermit
         }
         pModules->hWinHttp = hWinHttp;
 
+        WCHAR wWs2_32[] = L"ws2_32.dll";
+        HMODULE hWs2_32 = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wWs2_32);
+        if (!hWs2_32)
+        {
+			FreeLibrary(hNtdll);
+			FreeLibrary(hKernel32);
+            return nullptr;
+        }
+        pModules->hWs2_32 = hWs2_32;
+
         // Get functions
         Procs::FindProcsMisc(
             pProcs,
@@ -106,7 +116,8 @@ namespace Hermit
             hBcrypt,
             hCrypt32,
             hUser32,
-            hWinHttp
+            hWinHttp,
+            hWs2_32
         );
 
         // --------------------------------------------------------------------------

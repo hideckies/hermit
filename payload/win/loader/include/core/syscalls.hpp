@@ -1,6 +1,7 @@
 #ifndef HERMIT_CORE_SYSCALLS_HPP
 #define HERMIT_CORE_SYSCALLS_HPP
 
+#include "core/macros.hpp"
 #include "core/stdout.hpp"
 #include "core/utils.hpp"
 

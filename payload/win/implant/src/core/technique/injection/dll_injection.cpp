@@ -106,15 +106,17 @@ namespace Technique::Injection
 
         HANDLE hToken;
         TOKEN_PRIVILEGES priv = {0};
-        if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+        if (pProcs->lpOpenProcessToken(NtCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
         {
             priv.PrivilegeCount = 1;
             priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-            if (LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
-                AdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+            if (pProcs->lpLookupPrivilegeValueW(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
+            {
+                pProcs->lpAdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+            }
 
-            CloseHandle(hToken);
+            pProcs->lpCloseHandle(hToken);
         }
 
         hProcess = System::Process::ProcessOpen(
@@ -161,7 +163,7 @@ namespace Technique::Injection
         }
 
         PTHREAD_START_ROUTINE threadStartRoutineAddr = (PTHREAD_START_ROUTINE)GetProcAddress(
-            GetModuleHandle(TEXT("kernel32")),
+            GetModuleHandleA("kernel32"),
             "LoadLibraryW"
         );
         if (!threadStartRoutineAddr)
@@ -214,15 +216,17 @@ namespace Technique::Injection
 
         HANDLE hToken;
         TOKEN_PRIVILEGES priv = {0};
-        if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+        if (pProcs->lpOpenProcessToken(NtCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
         {
             priv.PrivilegeCount = 1;
             priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-            if (LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
-                AdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+            if (pProcs->lpLookupPrivilegeValueW(nullptr, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
+            {
+                pProcs->lpAdjustTokenPrivileges(hToken, FALSE, &priv, 0, nullptr, nullptr);
+            }
 
-            CloseHandle(hToken);
+            pProcs->lpCloseHandle(hToken);
         }
 
         HANDLE hProcess = System::Process::ProcessOpen(

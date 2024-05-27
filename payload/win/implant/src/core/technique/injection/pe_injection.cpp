@@ -36,7 +36,7 @@ namespace Technique::Injection
         LPSTARTUPINFOW lpStartupInfo = new STARTUPINFOW();
         PROCESS_INFORMATION pi;
 
-        if (!CreateProcessW(
+        if (!pProcs->lpCreateProcessW(
             nullptr,
             const_cast<LPWSTR>(wTargetProcess.c_str()),
             nullptr,
@@ -306,7 +306,7 @@ namespace Technique::Injection
         //     delete lpCtx;
         //     return FALSE;
         // }
-        if (!SetThreadContext(hDestThread, lpCtx))
+        if (!pProcs->lpSetThreadContext(hDestThread, lpCtx))
         {
             delete lpCtx;
             return FALSE;

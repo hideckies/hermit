@@ -21,7 +21,7 @@ namespace State
         );
 
         // Free loaded module handlers.
-        Modules::Free(pState->pModules);
+        Modules::Free(pState->pModules, pState->pProcs);
 
         delete pState->pCrypt->pAES;
         delete pState->pCrypt;

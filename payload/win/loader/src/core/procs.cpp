@@ -158,6 +158,8 @@ namespace Procs
         pProcs->lpEnumProcessModules            = reinterpret_cast<LPPROC_ENUMPROCESSMODULES>(pEnumProcessModules);
         PVOID pExpandEnvironmentStringsW        = GetProcAddressByHash(hKernel32, HASH_FUNC_EXPANDENVIRONMENTSTRINGSW);
         pProcs->lpExpandEnvironmentStringsW     = reinterpret_cast<LPPROC_EXPANDENVIRONMENTSTRINGSW>(pExpandEnvironmentStringsW);
+        PVOID pFreeLibrary                      = GetProcAddressByHash(hKernel32, HASH_FUNC_FREELIBRARY);
+        pProcs->lpFreeLibrary                   = reinterpret_cast<LPPROC_FREELIBRARY>(pFreeLibrary);
         PVOID pGetModuleBaseNameA               = GetProcAddressByHash(hKernel32, HASH_FUNC_GETMODULEBASENAMEA);
         pProcs->lpGetModuleBaseNameA            = reinterpret_cast<LPPROC_GETMODULEBASENAMEA>(pGetModuleBaseNameA);
         PVOID pGetModuleHandleA                 = GetProcAddressByHash(hKernel32, HASH_FUNC_GETMODULEHANDLEA);
@@ -166,6 +168,8 @@ namespace Procs
         pProcs->lpGetProcAddress                = reinterpret_cast<LPPROC_GETPROCADDRESS>(pGetProcAddress);
         PVOID pGetSystemDirectoryW              = GetProcAddressByHash(hKernel32, HASH_FUNC_GETSYSTEMDIRECTORYW);
         pProcs->lpGetSystemDirectoryW           = reinterpret_cast<LPPROC_GETSYSTEMDIRECTORYW>(pGetSystemDirectoryW);
+        PVOID pGetSystemInfo                    = GetProcAddressByHash(hKernel32, HASH_FUNC_GETSYSTEMINFO);
+        pProcs->lpGetSystemInfo                 = reinterpret_cast<LPPROC_GETSYSTEMINFO>(pGetSystemInfo);
         PVOID pGetThreadContext                 = GetProcAddressByHash(hKernel32, HASH_FUNC_GETTHREADCONTEXT);
         pProcs->lpGetThreadContext              = reinterpret_cast<LPPROC_GETTHREADCONTEXT>(pGetThreadContext);
         PVOID pIsDebuggerPresent                = GetProcAddressByHash(hKernel32, HASH_FUNC_ISDEBUGGERPRESENT);
@@ -267,7 +271,8 @@ namespace Procs
         HMODULE hBcrypt,
         HMODULE hCrypt32,
         HMODULE hUser32,
-        HMODULE hWinHttp
+        HMODULE hWinHttp,
+        HMODULE hWs2_32
     ) {
         // Advapi32
         PVOID pAdjustTokenPrivileges            = GetProcAddressByHash(hAdvapi32, HASH_FUNC_ADJUSTTOKENPRIVILEGES);
@@ -330,5 +335,11 @@ namespace Procs
         pProcs->lpWinHttpSetOption              = reinterpret_cast<LPPROC_WINHTTPSETOPTION>(pWinHttpSetOption);
         PVOID pWinHttpWriteData                 = GetProcAddressByHash(hWinHttp, HASH_FUNC_WINHTTPWRITEDATA);
         pProcs->lpWinHttpWriteData              = reinterpret_cast<LPPROC_WINHTTPWRITEDATA>(pWinHttpWriteData);
+
+        // Ws2_32
+        PVOID pWSACleanup                       = GetProcAddressByHash(hWs2_32, HASH_FUNC_WSACLEANUP);
+        pProcs->lpWSACleanup                    = reinterpret_cast<LPPROC_WSACLEANUP>(pWSACleanup);
+        PVOID pWSAStartup                       = GetProcAddressByHash(hWs2_32, HASH_FUNC_WSASTARTUP);
+        pProcs->lpWSAStartup                    = reinterpret_cast<LPPROC_WSASTARTUP>(pWSAStartup);          
     }
 }

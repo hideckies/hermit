@@ -112,6 +112,7 @@
 #define HASH_FUNC_FINDNEXTFILEW                 0x9a714aba
 #define HASH_FUNC_FORMATMESSAGE                 0x73e1db
 #define HASH_FUNC_FREEENVIRONMENTSTRINGSW       0xebf072c7
+#define HASH_FUNC_FREELIBRARY                   0x26174ba
 #define HASH_FUNC_GETADAPTERSADDRESSES          0xc7179a9d
 #define HASH_FUNC_GETCOMPUTERNAMEW              0x75f9dd70
 #define HASH_FUNC_GETENVIRONMENTSTRINGSW        0x6f39aea7
@@ -119,11 +120,14 @@
 #define HASH_FUNC_GETLASTERROR                  0xf03e69b1
 #define HASH_FUNC_GETMESSAGE                    0xb704bce6
 #define HASH_FUNC_GETMODULEFILENAMEW            0x9896e0e3
+#define HASH_FUNC_GETMODULEHANDLEA              0xbf3b40ac
 #define HASH_FUNC_GETPROCADDRESS                0xafa3e09d
 #define HASH_FUNC_GETPROCESSHEAP                0xf3b49f5a
 #define HASH_FUNC_GETPROCESSIMAGEFILENAMEW      0x92662ae3
 #define HASH_FUNC_GETSYSTEMDIRECTORYW           0x7115fb1a
+#define HASH_FUNC_GETSYSTEMINFO                 0x109fc03e
 #define HASH_FUNC_GETSYSTEMMETRICS              0xc45b24b3
+#define HASH_FUNC_GETSYSTEMTIME                 0x3498cb5d
 #define HASH_FUNC_GETTCPTABLE                   0x7f7271ee
 #define HASH_FUNC_GETTOKENINFORMATION           0x98171074
 #define HASH_FUNC_GETUSERNAMEW                  0x6f996540
@@ -169,9 +173,11 @@
 #define HASH_FUNC_RTLCOPYMEMORY                 0xfd82b9ab
 #define HASH_FUNC_SETFILEINFORMATIONBYHANDLE    0xbfea4fe2
 #define HASH_FUNC_SETHANDLEINFORMATION          0x59694f77
+#define HASH_FUNC_SETTHREADCONTEXT              0xa2f98d8
 #define HASH_FUNC_SETTHREADPOOLWAIT             0x5f2a3808
 #define HASH_FUNC_SHELLEXECUTEEXW               0x6c42582a
 #define HASH_FUNC_SHOWWINDOW                    0x6f98b62
+#define HASH_FUNC_SYSTEMTIMETOFILETIME          0xef278e15
 #define HASH_FUNC_TERMINATEPROCESS              0x74f7cca3
 #define HASH_FUNC_TRANSLATEACCELERATORW         0xecb91305
 #define HASH_FUNC_TRANSLATEMESSAGE              0xf1acceae
@@ -193,6 +199,8 @@
 #define HASH_FUNC_WINHTTPSETOPTION              0x48ed79a8
 #define HASH_FUNC_WINHTTPWRITEDATA              0xeed55fda
 #define HASH_FUNC_WRITEPROCESSMEMORY            0x9ea48f46
+#define HASH_FUNC_WSACLEANUP                    0xd1b44ef4
+#define HASH_FUNC_WSASTARTUP                    0xa548e84d
 
 namespace Procs
 {
@@ -357,6 +365,8 @@ namespace Procs
     typedef DWORD (WINAPI* LPPROC_FORMATMESSAGE)(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPTSTR lpBuffer, DWORD nSize, va_list *Arguments);
     // FreeEnvironmentStringsW
     typedef BOOL (WINAPI* LPPROC_FREEENVIRONMENTSTRINGSW)(LPWCH penv);
+    // FreeLibrary
+    typedef BOOL (WINAPI* LPPROC_FREELIBRARY)(HMODULE hLibModule);
     // GetAdaptersAddresses
     typedef ULONG (WINAPI* LPPROC_GETADAPTERSADDRESSES)(ULONG Family, ULONG Flags, PVOID Reserved, PIP_ADAPTER_ADDRESSES AdapterAddresses, PULONG SizePointer);
     // GetComputerNameW
@@ -371,6 +381,8 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_GETMESSAGE)(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
     // GetModuleFileNameW
     typedef DWORD (WINAPI* LPPROC_GETMODULEFILENAMEW)(HMODULE hModule, LPWSTR lpFilename, DWORD nSize);
+    // GetModuleHandleA
+    typedef HMODULE (WINAPI* LPPROC_GETMODULEHANDLEA)(LPCSTR lpModuleName);
     // GetProcAddress
     typedef FARPROC (WINAPI* LPPROC_GETPROCADDRESS)(HMODULE hModule, LPCSTR lpProcName);
     // GetProcessHeap
@@ -379,8 +391,12 @@ namespace Procs
     typedef DWORD (WINAPI* LPPROC_GETPROCESSIMAGEFILENAMEW)(HANDLE hProcess, LPWSTR lpImageFileName, DWORD nSize);
     // GetSystemDirectoryW
     typedef UINT (WINAPI* LPPROC_GETSYSTEMDIRECTORYW)(LPWSTR lpBuffer, UINT uSize);
+    // GetSystemInfo
+    typedef VOID (WINAPI* LPPROC_GETSYSTEMINFO)(LPSYSTEM_INFO lpSystemInfo);
     // GetSystemMetrics
     typedef int (WINAPI* LPPROC_GETSYSTEMMETRICS)(int nIndex);
+    // GetSystemTime
+    typedef VOID (WINAPI* LPPROC_GETSYSTEMTIME)(LPSYSTEMTIME lpSystemTime);
     // GetTcpTable
     typedef ULONG (WINAPI* LPPROC_GETTCPTABLE)(PMIB_TCPTABLE TcpTable, PULONG SizePointer, BOOL Order);
     // GetTokenInformation
@@ -471,10 +487,14 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_SETFILEINFORMATIONBYHANDLE)(HANDLE hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
     // SetHandleInformation
     typedef BOOL (WINAPI* LPPROC_SETHANDLEINFORMATION)(HANDLE hObject, DWORD dwMask, DWORD dwFlags);
+    // SetThreadContext
+    typedef BOOL (WINAPI* LPPROC_SETTHREADCONTEXT)(HANDLE hThread, const CONTEXT *lpContext);
     // ShellExecuteExW
     typedef BOOL (WINAPI* LPPROC_SHELLEXECUTEEXW)(SHELLEXECUTEINFOW *pExecInfo);
     // ShowWindow
     typedef BOOL (WINAPI* LPPROC_SHOWWINDOW)(HWND hWnd, int nCmdShow);
+    // SystemTimeToFileTime
+    typedef BOOL (WINAPI* LPPROC_SYSTEMTIMETOFILETIME)(const SYSTEMTIME *lpSystemTime, LPFILETIME lpFileTime);
     // TerminateProcess
     typedef BOOL (WINAPI* LPPROC_TERMINATEPROCESS)(HANDLE hProcess, UINT uExitCode);
     // TranslateAcceleratorW
@@ -517,6 +537,10 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_WINHTTPWRITEDATA)(HINTERNET hRequest, LPCVOID lpBuffer, DWORD dwNumberOfBytesToWrite, LPDWORD lpdwNumberOfBytesWritten);
     // WriteProcessMemory
     typedef BOOL (WINAPI* LPPROC_WRITEPROCESSMEMORY)(HANDLE  hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten);
+    // WSACleanup
+    typedef int (WINAPI* LPPROC_WSACLEANUP)();
+    // WSAStartup
+    typedef int (WINAPI* LPPROC_WSASTARTUP)(WORD wVersionRequired, LPWSADATA lpWSAData);
 
     struct PROCS
     {
@@ -599,6 +623,7 @@ namespace Procs
         LPPROC_FINDNEXTFILEW                lpFindNextFileW                     = nullptr;
         LPPROC_FORMATMESSAGE                lpFormatMessage                     = nullptr;
         LPPROC_FREEENVIRONMENTSTRINGSW      lpFreeEnvironmentStringsW           = nullptr;
+        LPPROC_FREELIBRARY                  lpFreeLibrary                       = nullptr;
         LPPROC_GETADAPTERSADDRESSES         lpGetAdaptersAddresses              = nullptr;
         LPPROC_GETCOMPUTERNAMEW             lpGetComputerNameW                  = nullptr;
         LPPROC_GETENVIRONMENTSTRINGSW       lpGetEnvironmentStringsW            = nullptr;
@@ -606,10 +631,14 @@ namespace Procs
         LPPROC_GETLASTERROR                 lpGetLastError                      = nullptr;
         LPPROC_GETMESSAGE                   lpGetMessage                        = nullptr;
         LPPROC_GETMODULEFILENAMEW           lpGetModuleFileNameW                = nullptr;
+        LPPROC_GETMODULEHANDLEA             lpGetModuleHandleA                  = nullptr;
+        LPPROC_GETPROCADDRESS               lpGetProcAddress                    = nullptr;
         LPPROC_GETPROCESSHEAP               lpGetProcessHeap                    = nullptr;
         LPPROC_GETPROCESSIMAGEFILENAMEW     lpGetProcessImageFileNameW          = nullptr;
         LPPROC_GETSYSTEMDIRECTORYW          lpGetSystemDirectoryW               = nullptr;
+        LPPROC_GETSYSTEMINFO                lpGetSystemInfo                     = nullptr;
         LPPROC_GETSYSTEMMETRICS             lpGetSystemMetrics                  = nullptr;
+        LPPROC_GETSYSTEMTIME                lpGetSystemTime                     = nullptr;
         LPPROC_GETTCPTABLE                  lpGetTcpTable                       = nullptr;
         LPPROC_GETTOKENINFORMATION          lpGetTokenInformation               = nullptr;
         LPPROC_GETUSERNAMEW                 lpGetUserNameW                      = nullptr;
@@ -652,8 +681,10 @@ namespace Procs
         LPPROC_RTLCOPYMEMORY                lpRtlCopyMemory                     = nullptr;
         LPPROC_SETFILEINFORMATIONBYHANDLE   lpSetFileInformationByHandle        = nullptr;
         LPPROC_SETHANDLEINFORMATION         lpSetHandleInformation              = nullptr;
+        LPPROC_SETTHREADCONTEXT             lpSetThreadContext                  = nullptr;
         LPPROC_SHELLEXECUTEEXW              lpShellExecuteExW                   = nullptr;
         LPPROC_SHOWWINDOW                   lpShowWindow                        = nullptr;
+        LPPROC_SYSTEMTIMETOFILETIME         lpSystemTimeToFileTime              = nullptr;
         LPPROC_TERMINATEPROCESS             lpTerminateProcess                  = nullptr;
         LPPROC_TRANSLATEACCELERATORW        lpTranslateAcceleratorW             = nullptr;
         LPPROC_TRANSLATEMESSAGE             lpTranslateMessage                  = nullptr;
@@ -673,6 +704,8 @@ namespace Procs
         LPPROC_WINHTTPSETOPTION             lpWinHttpSetOption                  = nullptr;
         LPPROC_WINHTTPWRITEDATA             lpWinHttpWriteData                  = nullptr;
         LPPROC_WRITEPROCESSMEMORY           lpWriteProcessMemory                = nullptr;
+        LPPROC_WSACLEANUP                   lpWSACleanup                        = nullptr;
+        LPPROC_WSASTARTUP                   lpWSAStartup                        = nullptr;
 
         // **SYSCALLS**
         Syscalls::SYSCALL                   sysLdrLoadDll                       = {0};
@@ -742,7 +775,8 @@ namespace Procs
         HMODULE hNetapi32,
         HMODULE hShell32,
         HMODULE hUser32,
-        HMODULE hWinHttp
+        HMODULE hWinHttp,
+        HMODULE hWs2_32
     );
 }
 

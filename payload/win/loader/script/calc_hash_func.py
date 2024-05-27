@@ -69,10 +69,12 @@ FUNCS = [
     "EnumProcessModules",
     "ExpandEnvironmentStringsW",
     "FindWindowW",
+    "FreeLibrary",
     "GetModuleBaseNameA",
     "GetModuleHandleA",
     "GetProcAddress",
     "GetSystemDirectoryW",
+    "GetSystemInfo",
     "GetThreadContext",
     "GetWindowThreadProcessId",
     "IsDebuggerPresent",
@@ -116,6 +118,8 @@ FUNCS = [
     "WinHttpSetOption",
     "WinHttpWriteData",
     "WriteProcessMemory",
+    "WSACleanup",
+    "WSAStartup"
 ]
 
 HASH_IV = 0x35

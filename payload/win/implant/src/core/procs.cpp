@@ -177,6 +177,8 @@ namespace Procs
         pProcs->lpFindNextFileW                 = reinterpret_cast<LPPROC_FINDNEXTFILEW>(pFindNextFileW);
         PVOID pFormatMessage                    = GetProcAddressByHash(hKernel32, HASH_FUNC_FORMATMESSAGE);
         pProcs->lpFormatMessage                 = reinterpret_cast<LPPROC_FORMATMESSAGE>(pFormatMessage);
+        PVOID pFreeLibrary                      = GetProcAddressByHash(hKernel32, HASH_FUNC_FREELIBRARY);
+        pProcs->lpFreeLibrary                   = reinterpret_cast<LPPROC_FREELIBRARY>(pFreeLibrary);
         PVOID pGetComputerNameW                 = GetProcAddressByHash(hKernel32, HASH_FUNC_GETCOMPUTERNAMEW);
         pProcs->lpGetComputerNameW              = reinterpret_cast<LPPROC_GETCOMPUTERNAMEW>(pGetComputerNameW);
         PVOID pGetEnvironmentStringsW           = GetProcAddressByHash(hKernel32, HASH_FUNC_GETENVIRONMENTSTRINGSW);
@@ -185,12 +187,20 @@ namespace Procs
         pProcs->lpGetLastError                  = reinterpret_cast<LPPROC_GETLASTERROR>(pGetLastError);
         PVOID pGetModuleFileNameW               = GetProcAddressByHash(hKernel32, HASH_FUNC_GETMODULEFILENAMEW);
         pProcs->lpGetModuleFileNameW            = reinterpret_cast<LPPROC_GETMODULEFILENAMEW>(pGetModuleFileNameW);
+        PVOID pGetModuleHandleA                 = GetProcAddressByHash(hKernel32, HASH_FUNC_GETMODULEHANDLEA);
+        pProcs->lpGetModuleHandleA              = reinterpret_cast<LPPROC_GETMODULEHANDLEA>(pGetModuleHandleA);
+        PVOID pGetProcAddress                   = GetProcAddressByHash(hKernel32, HASH_FUNC_GETPROCADDRESS);
+        pProcs->lpGetProcAddress                = reinterpret_cast<LPPROC_GETPROCADDRESS>(pGetProcAddress);
         PVOID pGetProcessHeap                   = GetProcAddressByHash(hKernel32, HASH_FUNC_GETPROCESSHEAP);
         pProcs->lpGetProcessHeap                = reinterpret_cast<LPPROC_GETPROCESSHEAP>(pGetProcessHeap);
         PVOID pGetProcessImageFileNameW         = GetProcAddressByHash(hKernel32, HASH_FUNC_GETPROCESSIMAGEFILENAMEW);
-        pProcs->lpGetProcessImageFileNameW       = reinterpret_cast<LPPROC_GETPROCESSIMAGEFILENAMEW>(pGetProcessImageFileNameW);
+        pProcs->lpGetProcessImageFileNameW      = reinterpret_cast<LPPROC_GETPROCESSIMAGEFILENAMEW>(pGetProcessImageFileNameW);
         PVOID pGetSystemDirectoryW              = GetProcAddressByHash(hKernel32, HASH_FUNC_GETSYSTEMDIRECTORYW);
         pProcs->lpGetSystemDirectoryW           = reinterpret_cast<LPPROC_GETSYSTEMDIRECTORYW>(pGetSystemDirectoryW);
+        PVOID pGetSystemInfo                    = GetProcAddressByHash(hKernel32, HASH_FUNC_GETSYSTEMINFO);
+        pProcs->lpGetSystemInfo                 = reinterpret_cast<LPPROC_GETSYSTEMINFO>(pGetSystemInfo);
+        PVOID pGetSystemTime                    = GetProcAddressByHash(hKernel32, HASH_FUNC_GETSYSTEMTIME);
+        pProcs->lpGetSystemTime                 = reinterpret_cast<LPPROC_GETSYSTEMTIME>(pGetSystemTime);
         PVOID pGlobalAlloc                      = GetProcAddressByHash(hKernel32, HASH_FUNC_GLOBALALLOC);
         pProcs->lpGlobalAlloc                   = reinterpret_cast<LPPROC_GLOBALALLOC>(pGlobalAlloc);
         PVOID pGlobalFree                       = GetProcAddressByHash(hKernel32, HASH_FUNC_GLOBALFREE);
@@ -225,6 +235,10 @@ namespace Procs
         pProcs->lpSetFileInformationByHandle    = reinterpret_cast<LPPROC_SETFILEINFORMATIONBYHANDLE>(pSetFileInformationByHandle);
         PVOID pSetHandleInformation             = GetProcAddressByHash(hKernel32, HASH_FUNC_SETHANDLEINFORMATION);
         pProcs->lpSetHandleInformation          = reinterpret_cast<LPPROC_SETHANDLEINFORMATION>(pSetHandleInformation);
+        PVOID pSetThreadContext                 = GetProcAddressByHash(hKernel32, HASH_FUNC_SETTHREADCONTEXT);
+        pProcs->lpSetThreadContext              = reinterpret_cast<LPPROC_SETTHREADCONTEXT>(pSetThreadContext);
+        PVOID pSystemTimeToFileTime             = GetProcAddressByHash(hKernel32, HASH_FUNC_SYSTEMTIMETOFILETIME);
+        pProcs->lpSystemTimeToFileTime          = reinterpret_cast<LPPROC_SYSTEMTIMETOFILETIME>(pSystemTimeToFileTime);
         PVOID pTerminateProcess                 = GetProcAddressByHash(hKernel32, HASH_FUNC_TERMINATEPROCESS);
         pProcs->lpTerminateProcess              = reinterpret_cast<LPPROC_TERMINATEPROCESS>(pTerminateProcess);
         PVOID pVirtualAllocEx                   = GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALALLOCEX);
@@ -291,7 +305,8 @@ namespace Procs
         HMODULE hNetapi32,
         HMODULE hShell32,
         HMODULE hUser32,
-        HMODULE hWinHttp
+        HMODULE hWinHttp,
+        HMODULE hWs2_32
     ) {
         // Advapi32
         PVOID pAdjustTokenPrivileges            = GetProcAddressByHash(hAdvapi32, HASH_FUNC_ADJUSTTOKENPRIVILEGES);
@@ -429,6 +444,12 @@ namespace Procs
         PVOID pWinHttpSetOption                 = GetProcAddressByHash(hWinHttp, HASH_FUNC_WINHTTPSETOPTION);
         pProcs->lpWinHttpSetOption              = reinterpret_cast<LPPROC_WINHTTPSETOPTION>(pWinHttpSetOption);
         PVOID pWinHttpWriteData                 = GetProcAddressByHash(hWinHttp, HASH_FUNC_WINHTTPWRITEDATA);
-        pProcs->lpWinHttpWriteData              = reinterpret_cast<LPPROC_WINHTTPWRITEDATA>(pWinHttpWriteData);    
+        pProcs->lpWinHttpWriteData              = reinterpret_cast<LPPROC_WINHTTPWRITEDATA>(pWinHttpWriteData);
+
+        // Ws2_32
+        PVOID pWSACleanup                       = GetProcAddressByHash(hWs2_32, HASH_FUNC_WSACLEANUP);
+        pProcs->lpWSACleanup                    = reinterpret_cast<LPPROC_WSACLEANUP>(pWSACleanup);
+        PVOID pWSAStartup                       = GetProcAddressByHash(hWs2_32, HASH_FUNC_WSASTARTUP);
+        pProcs->lpWSAStartup                    = reinterpret_cast<LPPROC_WSASTARTUP>(pWSAStartup);
     }
 }

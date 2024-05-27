@@ -21,6 +21,7 @@ namespace Modules
         HMODULE hShell32;
         HMODULE hUser32;
         HMODULE hWinHttp;
+        HMODULE hWs2_32;
     };
 
     typedef MODULES *PMODULES;
@@ -28,7 +29,7 @@ namespace Modules
     ULONG StringToHashModule(WCHAR* wStr, SIZE_T dwStrLen);
     PVOID GetModuleByHash(DWORD dwHash);
     PVOID LoadModule(Procs::PPROCS pProcs, LPWSTR lpDllName);
-    VOID Free(PMODULES pModules);
+    VOID Free(PMODULES pModules, Procs::PPROCS pProcs);
 }
 
 #endif // HERMIT_CORE_MODULES_HPP
