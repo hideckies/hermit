@@ -38,7 +38,7 @@ namespace Task
         status = CallSysInvoke(
             &pState->pProcs->sysNtQuerySystemInformation,
             pState->pProcs->lpNtQuerySystemInformation,
-            SystemProcessInformation,
+            Nt::SystemProcessInformation,
             nullptr,
             0,
             &bufferSize
@@ -57,7 +57,7 @@ namespace Task
         status = CallSysInvoke(
             &pState->pProcs->sysNtQuerySystemInformation,
             pState->pProcs->lpNtQuerySystemInformation,
-            SystemProcessInformation,
+            Nt::SystemProcessInformation,
             buffer,
             bufferSize,
             nullptr
@@ -68,7 +68,7 @@ namespace Task
         }
 
         // Parse process information
-        PSYSTEM_PROCESS_INFORMATION pProcessInfo = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(buffer);
+        Nt::PSYSTEM_PROCESS_INFORMATION pProcessInfo = reinterpret_cast<Nt::PSYSTEM_PROCESS_INFORMATION>(buffer);
         std::wstring wProcesses = L"";
         std::wstring wPID = L"";
         std::wstring wProcessName = L"";
@@ -114,7 +114,7 @@ namespace Task
             {
                 break;
             }
-            pProcessInfo = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(reinterpret_cast<BYTE*>(pProcessInfo) + pProcessInfo->NextEntryOffset);
+            pProcessInfo = reinterpret_cast<Nt::PSYSTEM_PROCESS_INFORMATION>(reinterpret_cast<BYTE*>(pProcessInfo) + pProcessInfo->NextEntryOffset);
         }
 
         free(buffer);

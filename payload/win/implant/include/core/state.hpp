@@ -19,11 +19,11 @@ namespace State
 {
     struct STATE
     {
+        // Thread environment block
+        Nt::PTEB            pTeb;
+
         // Crypto
         Crypt::PCRYPT       pCrypt;
-
-        // Thread environment block
-        PTEB                pTeb;
 
         // Module handlers
         Modules::PMODULES   pModules;

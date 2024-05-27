@@ -51,9 +51,9 @@ namespace System::Fs
         NTSTATUS status;
         HANDLE hDir;
 
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES objAttr;
-        UNICODE_STRING uniDirPath;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES objAttr;
+        Nt::UNICODE_STRING uniDirPath;
 
         status = CallSysInvoke(
             &pProcs->sysRtlInitUnicodeString,
@@ -61,7 +61,7 @@ namespace System::Fs
             &uniDirPath,
             wDirAbsPath.c_str()
         );
-        InitializeObjectAttributes(&objAttr, &uniDirPath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        MyInitializeObjectAttributes(&objAttr, &uniDirPath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = pProcs->lpNtCreateFile(
             &hDir,
@@ -151,7 +151,7 @@ namespace System::Fs
         Procs::PPROCS pProcs,
         const std::wstring& wDestPath
     ) {
-        UNICODE_STRING uniDestPath;
+        Nt::UNICODE_STRING uniDestPath;
         NTSTATUS status;
 
         std::wstring wDestAbsPath = System::Fs::AbsolutePathGet(pProcs, wDestPath, FALSE);
@@ -185,9 +185,9 @@ namespace System::Fs
         HANDLE hFile;
 
         // Open file
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES objAttr;
-        UNICODE_STRING uniFilePath;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES objAttr;
+        Nt::UNICODE_STRING uniFilePath;
 
         std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
         CallSysInvoke(
@@ -196,7 +196,7 @@ namespace System::Fs
             &uniFilePath,
             wFileAbsPath.c_str()
         );
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        MyInitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = pProcs->lpNtCreateFile(
             &hFile,
@@ -227,9 +227,9 @@ namespace System::Fs
         HANDLE hFile;
 
         // Open file
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES objAttr;
-        UNICODE_STRING uniFilePath;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES objAttr;
+        Nt::UNICODE_STRING uniFilePath;
         
         std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
         CallSysInvoke(
@@ -238,7 +238,7 @@ namespace System::Fs
             &uniFilePath,
             wFileAbsPath.c_str()
         );
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        MyInitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = CallSysInvoke(
             &pProcs->sysNtCreateFile,
@@ -261,7 +261,7 @@ namespace System::Fs
         }
 
         // Get file size
-        FILE_STANDARD_INFORMATION fileInfo;
+        Nt::FILE_STANDARD_INFORMATION fileInfo;
         status = CallSysInvoke(
             &pProcs->sysNtQueryInformationFile,
             pProcs->lpNtQueryInformationFile,
@@ -269,7 +269,7 @@ namespace System::Fs
             &ioStatusBlock,
             &fileInfo,
             sizeof(fileInfo),
-            FileStandardInformation
+            Nt::FileStandardInformation
         );
         if (status != STATUS_SUCCESS)
         {
@@ -333,9 +333,9 @@ namespace System::Fs
         HANDLE hFile;
 
         // Open file
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES objAttr;
-        UNICODE_STRING uniFilePath;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES objAttr;
+        Nt::UNICODE_STRING uniFilePath;
 
         std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
         status = CallSysInvoke(
@@ -344,7 +344,7 @@ namespace System::Fs
             &uniFilePath,
             wFileAbsPath.c_str()
         );
-        InitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        MyInitializeObjectAttributes(&objAttr, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = CallSysInvoke(
             &pProcs->sysNtCreateFile,
@@ -419,8 +419,8 @@ namespace System::Fs
         std::wstring wSrcAbs = System::Fs::AbsolutePathGet(pProcs, wSrc, TRUE);
         std::wstring wDestAbs = System::Fs::AbsolutePathGet(pProcs, wDest, TRUE);
 
-        UNICODE_STRING uniSrc;
-        UNICODE_STRING uniDest;
+        Nt::UNICODE_STRING uniSrc;
+        Nt::UNICODE_STRING uniDest;
 
         status = CallSysInvoke(
             &pProcs->sysRtlInitUnicodeString,
@@ -437,9 +437,9 @@ namespace System::Fs
 
         // Open source handle
         HANDLE hSrc;
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES oa;
-        InitializeObjectAttributes(&oa, &uniSrc, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES oa;
+        MyInitializeObjectAttributes(&oa, &uniSrc, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = CallSysInvoke(
             &pProcs->sysNtCreateFile,
@@ -464,7 +464,7 @@ namespace System::Fs
         // Change file information
         // ULONG uSizeNeeded = sizeof(FILE_RENAME_INFORMATION) + uniDest.Length;
 
-        FILE_RENAME_INFORMATION renameInfo;
+        Nt::FILE_RENAME_INFORMATION renameInfo;
         renameInfo.ReplaceIfExists = TRUE;
         renameInfo.RootDirectory = nullptr;
         renameInfo.FileNameLength = uniDest.Length;
@@ -478,7 +478,7 @@ namespace System::Fs
             &ioStatusBlock,
             &renameInfo,
             sizeof(renameInfo) + uniDest.Length,
-            FileRenameInformation
+            Nt::FileRenameInformation
         );
         if (status != STATUS_SUCCESS)
         {
@@ -499,7 +499,7 @@ namespace System::Fs
 
         std::wstring wFileAbsPath = System::Fs::AbsolutePathGet(pProcs, wFilePath, TRUE);
 
-        UNICODE_STRING uniFilePath;
+        Nt::UNICODE_STRING uniFilePath;
 
         status = CallSysInvoke(
             &pProcs->sysRtlInitUnicodeString,
@@ -509,9 +509,9 @@ namespace System::Fs
         );
 
         // Open source handle
-        IO_STATUS_BLOCK ioStatusBlock;
-        OBJECT_ATTRIBUTES oa;
-        InitializeObjectAttributes(&oa, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::OBJECT_ATTRIBUTES oa;
+        MyInitializeObjectAttributes(&oa, &uniFilePath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
         status = CallSysInvoke(
             &pProcs->sysNtDeleteFile,
@@ -533,8 +533,8 @@ namespace System::Fs
         DWORD dwFileSize;
 
         NTSTATUS status;
-        IO_STATUS_BLOCK ioStatusBlock;
-        FILE_STANDARD_INFORMATION fileInfo;
+        Nt::IO_STATUS_BLOCK ioStatusBlock;
+        Nt::FILE_STANDARD_INFORMATION fileInfo;
 
         status = CallSysInvoke(
             &pProcs->sysNtQueryInformationFile,
@@ -543,7 +543,7 @@ namespace System::Fs
             &ioStatusBlock,
             &fileInfo,
             sizeof(fileInfo),
-            FileStandardInformation
+            Nt::FileStandardInformation
         );
         if (status != STATUS_SUCCESS)
         {
@@ -560,9 +560,9 @@ namespace System::Fs
     {
         LPCWSTR lpNewStream = L":null";
         SIZE_T dwStreamLength = wcslen(lpNewStream) * sizeof(wchar_t);
-        SIZE_T dwRename = sizeof(FILE_RENAME_INFO) + dwStreamLength;
+        SIZE_T dwRename = sizeof(Nt::FILE_RENAME_INFO) + dwStreamLength;
 
-        PFILE_RENAME_INFO pRename = (PFILE_RENAME_INFO)pProcs->lpHeapAlloc(
+        Nt::PFILE_RENAME_INFO pRename = (Nt::PFILE_RENAME_INFO)pProcs->lpHeapAlloc(
             pProcs->lpGetProcessHeap(),
             HEAP_ZERO_MEMORY,
             dwRename
@@ -573,10 +573,10 @@ namespace System::Fs
         }
 
         WCHAR wPath[MAX_PATH * 2] = {0};
-        FILE_DISPOSITION_INFO fdi = {0};
+        Nt::FILE_DISPOSITION_INFO fdi = {0};
 
         RtlZeroMemory(wPath, sizeof(wPath));
-        RtlZeroMemory(&fdi, sizeof(FILE_DISPOSITION_INFO));
+        RtlZeroMemory(&fdi, sizeof(Nt::FILE_DISPOSITION_INFO));
 
         fdi.DeleteFile = TRUE;
 
@@ -606,7 +606,7 @@ namespace System::Fs
         }
 
         // Rename the data stream
-        if (!pProcs->lpSetFileInformationByHandle(hFile, FileRenameInfo, pRename, dwRename))
+        if (!pProcs->lpSetFileInformationByHandle(hFile, Nt::FileRenameInfo, pRename, dwRename))
         {
             return FALSE;
         }
@@ -628,7 +628,7 @@ namespace System::Fs
             return FALSE;
         }
 
-        if (!pProcs->lpSetFileInformationByHandle(hFile, FileDispositionInfo, &fdi, sizeof(fdi)))
+        if (!pProcs->lpSetFileInformationByHandle(hFile, Nt::FileDispositionInfo, &fdi, sizeof(fdi)))
         {
             return FALSE;
         }

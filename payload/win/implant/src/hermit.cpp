@@ -25,7 +25,7 @@ namespace Hermit
 	) {
 		State::PSTATE pState = new State::STATE;
 
-		pState->pTeb = NtCurrentTeb();
+		pState->pTeb = (Nt::PTEB)NtCurrentTeb();
 
 		Procs::PPROCS pProcs = new Procs::PROCS;
 
