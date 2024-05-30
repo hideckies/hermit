@@ -5,7 +5,7 @@ This page introduces the basic usage of execute the implant beacon on Windows vi
 Assume that you've already installed Hermit.  
 If not yet, see [the Installation page](../installation.md) and try [Getting Started](../getting-started.md).
 
-> IMPORTANT: It's heavily recommended to use **a virtual machine** for Windows victim machine because If we modify the registry etc., the system might not work properly.
+> IMPORTANT: It's heavily recommended to use **a virtual machine** for Windows victim machine because If we modify the registry etc., the system might not work properly. Also we recommend temporarily turning off real-time protection of **Windows Defender** as it is likely to be detected by Windows Defender.
 
 ## 1. Start C2 Server
 
@@ -36,7 +36,7 @@ To list all listeners available, run `listeners` command.
 `payload gen` command generates a new payload such as **implant**, **loader**, **shellcode**.  
 The Wizard will start, so follow the instructions to complete the settings.
 
-![payload gen](../assets/images/terminal/payload_gen_implant_beacon_win_amd64_exe.png)
+![payload gen](../assets/images/terminal/payload_gen_implant_beacon_win_amd64_exe.png)  
 
 It will take some time for generation (about 3-10 minutes. It depends on your machine spec).
 After that, the implant is saved under `$HOME/.hermit/server/listeners/https-<name>/payloads/` folder.  
@@ -45,7 +45,11 @@ After that, the implant is saved under `$HOME/.hermit/server/listeners/https-<na
 
 Transfer the implant (`.exe`) to the Windows target computer.  
 At that time, it's recommended to rename the filename because the word "implant" in the file name is too dignified.  
-For example, rename it with "chrome.exe", "svchost.exe", etc.
+For example, rename it with "chrome.exe", "svchost.exe", etc.  
+
+### Custom Domain Setting (Optional)
+
+If we choose the domain for the listener URL such as `https://example.evil:12345` instead of the ip address such as `https://172.12.34.56:12345`, we need to add the domain to the `C:\Windows\System32\drivers\etc\hosts` on the Windows victim machine for connecting back to our C2 server.
 
 ## 4. Execute Implant
 

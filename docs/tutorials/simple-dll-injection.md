@@ -4,7 +4,7 @@ In this tutorial, we generate **DLL Implant** and **Loader** which loads the DLL
 
 Assume that you've completed [the Simple Implant Beacon tutorial](./simple-implant-beacon.md).  
 
-> IMPORTANT: It's heavily recommended to use **a virtual machine** for Windows victim machine because If we modify the registry etc., the system might not work properly.
+> IMPORTANT: It's heavily recommended to use **a virtual machine** for Windows victim machine because If we modify the registry etc., the system might not work properly. Also we recommend temporarily turning off real-time protection of **Windows Defender** as it is likely to be detected by Windows Defender.
 
 ## 1. Start C2 Server
 
