@@ -132,7 +132,7 @@ This task retrieves the username on the victim machine.
 
 To see the tasks waiting for results, run the `tasks` command.  
 
-After a few seconds, if the task is successful, we can see the task results with the `task result` or `loot show` command:
+After a few seconds, if the task is successful, we can see the task results with the `task results` or `loot show` command:
 
 ```sh title="Hermit C2 Server Console [Agent Mode]"
 Hermit [agent-abcd] > task results

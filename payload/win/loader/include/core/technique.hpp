@@ -15,6 +15,10 @@
 
 // Used for Reflective DLL Injection
 typedef BOOL (WINAPI * DLLMAIN)(HINSTANCE, DWORD, LPVOID);
+// Used for Shellcode Reflective DLL Injection
+#define RVA(type, base, rva) (type)((ULONG_PTR) base + rva)
+typedef UINT_PTR(WINAPI * RDI)();
+typedef VOID(WINAPI * Function)();
 
 // Used for Anti-Debug
 #define FLG_HEAP_ENABLE_TAIL_CHECK   0x10
@@ -36,6 +40,11 @@ namespace Technique::Injection::Helper
     DWORD GetFuncOffset(
         LPVOID lpBuffer,
         LPCSTR lpFuncName
+    );
+    // It's used for Shellcode Reflective DLL Injection
+    FARPROC GetProcAddressR(
+        HMODULE hModule,
+        LPCSTR lpProcName
     );
 }
 

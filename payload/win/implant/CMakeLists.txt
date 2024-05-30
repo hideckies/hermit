@@ -48,8 +48,11 @@ add_compile_definitions(REQUEST_PATH_SOCKET_OPEN=${REQUEST_PATH_SOCKET_OPEN})
 add_compile_definitions(REQUEST_PATH_SOCKET_CLOSE=${REQUEST_PATH_SOCKET_CLOSE})
 add_compile_definitions(AES_KEY_BASE64=${AES_KEY_BASE64})
 add_compile_definitions(AES_IV_BASE64=${AES_IV_BASE64})
-if(${PAYLOAD_FORMAT} STREQUAL "dll")
+if(${PAYLOAD_FORMAT} STREQUAL "dll" OR ${PAYLOAD_FORMAT} STREQUAL "bin")
     add_compile_definitions(IS_DLL=1)
+endif()
+if(${PAYLOAD_FORMAT} STREQUAL "bin")
+    add_compile_definitions(IS_SHELLCODE=1)
 endif()
 
 # SOURCES
@@ -130,7 +133,7 @@ set(SOURCE_CORE
 )
 
 if(${PAYLOAD_TYPE} STREQUAL \"beacon\")
-    if(${PAYLOAD_FORMAT} STREQUAL "dll")
+    if(${PAYLOAD_FORMAT} STREQUAL "dll" OR ${PAYLOAD_FORMAT} STREQUAL "bin")
         set(SOURCE_MAIN
                 src/hermit.cpp
                 src/main/beacon_dll.cpp
@@ -149,7 +152,7 @@ endif()
 link_libraries(dbghelp gdi32 gdiplus iphlpapi netapi32 psapi wsock32 ws2_32)
 
 # ADD
-if(${PAYLOAD_FORMAT} STREQUAL "dll")
+if(${PAYLOAD_FORMAT} STREQUAL "dll" OR ${PAYLOAD_FORMAT} STREQUAL "bin")
     add_library(${PROJECT_NAME} SHARED ${SOURCE_ASM} ${SOURCE_CORE} ${SOURCE_MAIN})
     set_target_properties(${PROJECT_NAME}
         PROPERTIES

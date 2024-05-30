@@ -6,6 +6,9 @@
 
 #define DLL_QUERY_HMODULE 6
 
+// This is used for a DLL beacon.
+DWORD WINAPI RunWrapper(LPVOID lpParam);
+
 namespace Hermit
 {
 	VOID Run(

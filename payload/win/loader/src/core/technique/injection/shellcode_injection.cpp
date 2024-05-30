@@ -1,5 +1,42 @@
 #include "core/technique.hpp"
 
+namespace Technique::Injection::Helper
+{
+    FARPROC GetProcAddressR(HMODULE hModule, LPCSTR lpProcName)
+    {
+        if (hModule == NULL || lpProcName == NULL)
+            return NULL;
+
+        PIMAGE_NT_HEADERS ntHeaders = RVA(PIMAGE_NT_HEADERS, hModule, ((PIMAGE_DOS_HEADER)hModule)->e_lfanew);
+        PIMAGE_DATA_DIRECTORY dataDir = &ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+        if (!dataDir->Size)
+            return NULL;
+
+        PIMAGE_EXPORT_DIRECTORY exportDir = RVA(PIMAGE_EXPORT_DIRECTORY, hModule, dataDir->VirtualAddress);
+        if (!exportDir->NumberOfNames || !exportDir->NumberOfFunctions)
+            return NULL;
+
+        PDWORD expName = RVA(PDWORD, hModule, exportDir->AddressOfNames);
+        PWORD expOrdinal = RVA(PWORD, hModule, exportDir->AddressOfNameOrdinals);
+        LPCSTR expNameStr;
+
+        for (DWORD i = 0; i < exportDir->NumberOfNames; i++, expName++, expOrdinal++) {
+
+            expNameStr = RVA(LPCSTR, hModule, *expName);
+
+            if (!expNameStr)
+                break;
+
+            if (!_stricmp(lpProcName, expNameStr)) {
+                DWORD funcRva = *RVA(PDWORD, hModule, exportDir->AddressOfFunctions + (*expOrdinal * 4));
+                return RVA(FARPROC, hModule, funcRva);
+            }
+        }
+
+        return NULL;
+    }
+}
+
 namespace Technique::Injection
 {
     BOOL ShellcodeInjection(

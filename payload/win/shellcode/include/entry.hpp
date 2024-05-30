@@ -3,6 +3,7 @@
 
 #include "core/macros.hpp"
 #include "core/nt.hpp"
+#include "core/modules.hpp"
 #include "core/procs.hpp"
 
 #include <windows.h>

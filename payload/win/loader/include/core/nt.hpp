@@ -1505,5 +1505,4 @@ namespace Nt
     (p)->SecurityQualityOfService = NULL; \
 }
 
-
 #endif // HERMIT_CORE_NTDLL_H

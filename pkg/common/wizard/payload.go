@@ -62,10 +62,7 @@ func WizardPayloadType() string {
 		for {
 			res, err := stdin.Select("Shellcode type", []string{
 				"exec",
-				"msgbox", // for testing purpose.
-				// "dll-loader",
-				// "exec-loader",
-				// "shellcode-loader",
+				"dll-loader",
 			})
 			if err != nil {
 				stdout.LogFailed(fmt.Sprint(err))
@@ -100,6 +97,7 @@ func wizardPayloadBase(
 		items = []string{
 			// "linux/amd64/elf",
 			// "linux/i686/elf",
+			"windows/amd64/bin",
 			"windows/amd64/dll",
 			"windows/amd64/exe",
 			// "windows/i686/dll",
@@ -107,7 +105,7 @@ func wizardPayloadBase(
 		}
 	} else if strings.HasPrefix(payloadType, "loader") {
 		items = []string{
-			"windows/amd64/bin",
+			// "windows/amd64/bin",
 			"windows/amd64/dll",
 			"windows/amd64/exe",
 		}

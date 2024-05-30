@@ -88,7 +88,7 @@ func (s *Shellcode) Generate(serverState *state.ServerState) (data []byte, outFi
 	outFile = fmt.Sprintf("%s/%s.%s.%s", payloadsDir, s.Name, s.Arch, s.Format)
 
 	// Get request path
-	// requestPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/stager/download"])
+	reqPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/loader/download"])
 
 	// Change to the paylaod directory
 	if s.Os == "linux" {
@@ -104,9 +104,10 @@ func (s *Shellcode) Generate(serverState *state.ServerState) (data []byte, outFi
 			fmt.Sprintf("PAYLOAD_NAME=%s", s.Name),
 			fmt.Sprintf("PAYLOAD_ARCH=%s", s.Arch),
 			fmt.Sprintf("PAYLOAD_FORMAT=%s", s.Format),
+			fmt.Sprintf("LISTENER_PROTOCOL=\"%s\"", s.Lprotocol),
 			fmt.Sprintf("LISTENER_HOST=\"%s\"", s.Lhost),
 			fmt.Sprintf("LISTENER_PORT=%s", fmt.Sprint(s.Lport)),
-			// fmt.Sprintf("REQUEST_PATH_DOWNLOAD=\"%s\"", requestPathDownload),
+			fmt.Sprintf("REQUEST_PATH_DOWNLOAD=\"%s\"", reqPathDownload),
 			fmt.Sprintf("SHELLCODE_TYPE=%s", s.Type),
 			fmt.Sprintf("SHELLCODE_TYPE_ARGS=\"%s\"", s.TypeArgs),
 			fmt.Sprintf("OUTPUT=\"%s\"", outFile),

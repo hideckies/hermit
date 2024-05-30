@@ -231,7 +231,7 @@ namespace Hermit
 			{
 				break;
 			}
-		} while (1 == 1);
+		} while (!pState->bQuit);
 
 		// --------------------------------------------------------------------------
 		// Process tasks

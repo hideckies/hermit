@@ -2,6 +2,7 @@ from typing import Mapping
 
 FUNCS = [
     # NTAPI
+    "LdrLoadDll",
     "NtFlushInstructionCache",
     
     # WINAPI
@@ -43,7 +44,7 @@ def main():
         hash_fmt = f"{'0x{0:x}'.format(hash_value)}"
         # Check if the hash is duplicate
         if is_dupl(hashes, hash_fmt) is True:
-            print("The calculated hash is duplicate. Please try again.")
+            print("The calculated hash is duplicate. Try aother algorithm.")
             return
         hashes[f"#define HASH_FUNC_{func.upper()}"] = hash_fmt
 
