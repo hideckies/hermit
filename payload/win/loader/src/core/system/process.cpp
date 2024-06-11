@@ -385,7 +385,7 @@ namespace System::Process
 		PVOID					pArgument
     ) {
 		HANDLE hThread;
-            
+
 		NTSTATUS status = CallSysInvoke(
 			&pProcs->sysNtCreateThreadEx,
 			pProcs->lpNtCreateThreadEx,

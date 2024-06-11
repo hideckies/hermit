@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hideckies/hermit/pkg/common/meta"
+	metafs "github.com/hideckies/hermit/pkg/common/meta/fs"
 	"github.com/hideckies/hermit/pkg/common/stdin"
 	"github.com/hideckies/hermit/pkg/common/stdout"
 	"github.com/hideckies/hermit/pkg/server/listener"
@@ -373,6 +374,44 @@ func WizardPayloadLoader(
 
 	oType := strings.Replace(payloadType, "loader/", "", -1)
 
+	var targetPayloadExt string
+	if oType == "dll-loader" {
+		targetPayloadExt = ".dll"
+	} else if oType == "pe-loader" {
+		targetPayloadExt = ".exe"
+	} else if oType == "shellcode-loader" {
+		targetPayloadExt = ".bin"
+	}
+
+	// Get a target listener and specify a payload to be loaded
+	var targetLis listener.Listener
+	for i := 0; i < len(listeners); i++ {
+		lis := listeners[i]
+		if lis.Port == oLport {
+			targetLis = *lis
+		}
+	}
+	payloads, err := metafs.GetListenerPayloadPaths(targetLis.Name, false, true)
+	if err != nil {
+		return nil, err
+	}
+	// Extract corresponding payloads
+	var corrPayloads []string
+	for i := 0; i < len(payloads); i++ {
+		if strings.Contains(payloads[i], targetPayloadExt) {
+			corrPayloads = append(corrPayloads, payloads[i])
+		}
+	}
+	corrPayloads = append(corrPayloads, "Not specified (auto detection)")
+
+	oPayloadToLoad, err := stdin.Select("Payload to be loaded by this loader", corrPayloads)
+	if err != nil {
+		return nil, err
+	}
+	if oPayloadToLoad == "Not specified (auto detection)" {
+		oPayloadToLoad = ""
+	}
+
 	// Technique
 	var oTechnique string
 	var items []string
@@ -409,8 +448,8 @@ func WizardPayloadLoader(
 			"rwx-hunting",
 			"address-of-entry-point-injection",
 			"module-stomping",
-			// "process-mockingjay",
 			"dirty-vanity",
+			"process-mockingjay",
 		}
 	}
 	for {
@@ -472,6 +511,7 @@ func WizardPayloadLoader(
 		stdout.NewSingleTableItem("Format", oFormat),
 		stdout.NewSingleTableItem("Listener", fmt.Sprintf("%s://%s:%d", strings.ToLower(oLprotocol), oLhost, oLport)),
 		stdout.NewSingleTableItem("Type", oType),
+		stdout.NewSingleTableItem("Payload to be Loaded", oPayloadToLoad),
 		stdout.NewSingleTableItem("Injection Technique", oTechnique),
 		stdout.NewSingleTableItem("Target Process", oProcessToInject),
 		stdout.NewSingleTableItem("Indirect Syscalls", fmt.Sprintf("%t", oIndirectSyscalls)),
@@ -503,6 +543,7 @@ func WizardPayloadLoader(
 		oLhost,
 		oLport,
 		oType,
+		oPayloadToLoad,
 		oTechnique,
 		oProcessToInject,
 		oIndirectSyscalls,

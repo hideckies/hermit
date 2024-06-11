@@ -39,9 +39,9 @@ namespace Nt
 
     #define RTL_MAX_DRIVE_LETTERS 32
 
-    typedef PVOID* PPVOID;
-
     typedef LONG KPRIORITY, *PKPRIORITY;
+    typedef PVOID* PPVOID;
+    typedef ULONGLONG REGHANDLE, *PREGHANDLE;
 
     typedef enum _SYSTEM_INFORMATION_CLASS
     {
@@ -750,6 +750,21 @@ namespace Nt
         // SYSTEM_EXTENDED_THREAD_INFORMATION Threads[1]; // SystemExtendedProcessinformation
         // SYSTEM_EXTENDED_THREAD_INFORMATION + SYSTEM_PROCESS_INFORMATION_EXTENSION // SystemFullProcessInformation
     } SYSTEM_PROCESS_INFORMATION, *PSYSTEM_PROCESS_INFORMATION;
+
+    typedef struct _EVENT_DESCRIPTOR
+    {
+        USHORT Id;
+        UCHAR Version;
+        UCHAR Channel;
+        UCHAR Level;
+        UCHAR Opcode;
+        USHORT Task;
+        ULONGLONG Keyword;
+    } EVENT_DESCRIPTOR, *PEVENT_DESCRIPTOR;
+
+    typedef struct _EVENT_DATA_DESCRIPTOR EVENT_DATA_DESCRIPTOR, *PEVENT_DATA_DESCRIPTOR;
+
+    typedef const EVENT_DESCRIPTOR* PCEVENT_DESCRIPTOR;
 
     typedef struct _PROCESSOR_NUMBER {
     WORD Group;

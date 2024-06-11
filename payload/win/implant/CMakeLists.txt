@@ -122,7 +122,9 @@ set(SOURCE_CORE
         src/core/task/upload.cpp
         src/core/task/user.cpp
         src/core/task/whoami.cpp
+        src/core/technique/amsi_bypass.cpp
         src/core/technique/anti_debug.cpp
+        src/core/technique/etw_bypass.cpp
         src/core/technique/injection/dll_injection.cpp
         src/core/technique/injection/pe_injection.cpp
         src/core/technique/injection/shellcode_injection.cpp

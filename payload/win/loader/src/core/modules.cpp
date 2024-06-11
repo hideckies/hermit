@@ -96,8 +96,10 @@ namespace Modules
     VOID Free(PMODULES pModules, Procs::PPROCS pProcs)
     {
         pProcs->lpFreeLibrary(pModules->hAdvapi32);
+        pProcs->lpFreeLibrary(pModules->hAmsi);
         pProcs->lpFreeLibrary(pModules->hBcrypt);
         pProcs->lpFreeLibrary(pModules->hCrypt32);
+        pProcs->lpFreeLibrary(pModules->hDbghelp);
         pProcs->lpFreeLibrary(pModules->hNtdll);
         pProcs->lpFreeLibrary(pModules->hUser32);
         pProcs->lpFreeLibrary(pModules->hWinHttp);

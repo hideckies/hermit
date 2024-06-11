@@ -228,6 +228,7 @@ func RequestPayloadLoaderGenerate(clientState *state.ClientState, ldr *payload.L
 		Lhost:            ldr.Lhost,
 		Lport:            int32(ldr.Lport),
 		Type:             ldr.Type,
+		PayloadToLoad:    ldr.PayloadToLoad,
 		Technique:        ldr.Technique,
 		ProcessToInject:  ldr.ProcessToInject,
 		IndirectSyscalls: ldr.IndirectSyscalls,

@@ -6,6 +6,21 @@
 #define MAX_DHCPV6_DUID_LENGTH          130
 
 // ------------------------------------------------------------------
+// amsi.h
+// ------------------------------------------------------------------
+
+typedef HANDLE HAMSICONTEXT;
+typedef HANDLE HAMSISESSION;
+
+typedef enum {
+  AMSI_RESULT_CLEAN,
+  AMSI_RESULT_NOT_DETECTED,
+  AMSI_RESULT_BLOCKED_BY_ADMIN_START,
+  AMSI_RESULT_BLOCKED_BY_ADMIN_END,
+  AMSI_RESULT_DETECTED
+} AMSI_RESULT;
+
+// ------------------------------------------------------------------
 // ifdef.h
 // ------------------------------------------------------------------
 

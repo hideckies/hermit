@@ -43,6 +43,8 @@ namespace Nt
 
     typedef ULONG   GDI_HANDLE_BUFFER[GDI_HANDLE_BUFFER_SIZE];
     typedef LONG    KPRIORITY, *PKPRIORITY;
+    typedef ULONGLONG REGHANDLE, *PREGHANDLE;
+    typedef struct _EVENT_DATA_DESCRIPTOR EVENT_DATA_DESCRIPTOR, *PEVENT_DATA_DESCRIPTOR;
 
     typedef enum _NT_PRODUCT_TYPE
     {
@@ -560,6 +562,19 @@ namespace Nt
         LdrModulesInitializing = 8,
         LdrModulesReadyToRun = 9
     } LDR_DDAG_STATE;
+
+    typedef struct _EVENT_DESCRIPTOR
+    {
+        USHORT Id;
+        UCHAR Version;
+        UCHAR Channel;
+        UCHAR Level;
+        UCHAR Opcode;
+        USHORT Task;
+        ULONGLONG Keyword;
+    } EVENT_DESCRIPTOR, *PEVENT_DESCRIPTOR;
+
+    typedef const EVENT_DESCRIPTOR* PCEVENT_DESCRIPTOR;
 
     typedef struct _ACTIVATION_CONTEXT_DATA
     {

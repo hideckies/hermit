@@ -2,6 +2,7 @@ from typing import Mapping
 
 FUNCS = [
     # NTAPI
+    "EtwEventWrite",
     "LdrLoadDll",
     "NtAdjustPrivilegesToken",
     "NtAllocateVirtualMemory",
@@ -36,6 +37,7 @@ FUNCS = [
     "NtSetInformationProcess",
     "NtSystemDebugControl",
     "NtTerminateProcess",
+    "NtTraceEvent",
     "NtUnmapViewOfSection",
     "NtWaitForSingleObject",
     "NtWriteFile",
@@ -54,6 +56,7 @@ FUNCS = [
 
     # WINAPI
     "AdjustTokenPrivileges",
+    "AmsiScanBuffer",
     "BCryptCloseAlgorithmProvider",
     "BCryptDecrypt",
     "BCryptDestroyKey",

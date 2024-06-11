@@ -323,7 +323,7 @@ func (s *HermitRPCServer) PayloadLoaderGenerate(
 	ctx context.Context,
 	ldr *rpcpb.PayloadLoader,
 ) (*commonpb.Binary, error) {
-	newStg := payload.NewLoader(
+	newLdr := payload.NewLoader(
 		uint(ldr.Id),
 		ldr.Uuid,
 		ldr.Name,
@@ -334,12 +334,13 @@ func (s *HermitRPCServer) PayloadLoaderGenerate(
 		ldr.Lhost,
 		uint16(ldr.Lport),
 		ldr.Type,
+		ldr.PayloadToLoad,
 		ldr.Technique,
 		ldr.ProcessToInject,
 		ldr.IndirectSyscalls,
 		ldr.AntiDebug,
 	)
-	data, _, err := newStg.Generate(s.serverState)
+	data, _, err := newLdr.Generate(s.serverState)
 	if err != nil {
 		return nil, err
 	}

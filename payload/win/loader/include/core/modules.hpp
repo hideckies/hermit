@@ -15,8 +15,10 @@ namespace Modules
     struct MODULES
     {
         HMODULE hAdvapi32;
+        HMODULE hAmsi;
         HMODULE hBcrypt;
         HMODULE hCrypt32;
+        HMODULE hDbghelp;
         HMODULE hKernel32;
         HMODULE hNtdll;
         HMODULE hUser32;

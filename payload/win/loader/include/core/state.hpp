@@ -29,6 +29,7 @@ namespace State
 
         // Payload options
         LPCWSTR             lpPayloadType;
+        LPCWSTR             lpPayloadToLoad;
         LPCWSTR             lpPayloadTechnique;
         LPCWSTR             lpPayloadProcessToInject;
 

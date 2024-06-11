@@ -48,6 +48,8 @@ namespace Handler
         wJSON += L",";
         wJSON += L"\"loaderType\":\"" + std::wstring(pState->lpPayloadType) + L"\"";
         wJSON += L",";
+        wJSON += L"\"targetPayload\":\"" + std::wstring(pState->lpPayloadToLoad) + L"\"";
+        wJSON += L",";
         wJSON += L"\"aesKey\":\"" + wAesKey + L"\"";
         wJSON += L",";
         wJSON += L"\"aesIV\":\"" + wAesIV + L"\"";

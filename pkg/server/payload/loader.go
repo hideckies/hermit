@@ -26,6 +26,7 @@ type Loader struct {
 	Lhost            string
 	Lport            uint16
 	Type             string
+	PayloadToLoad    string
 	Technique        string
 	ProcessToInject  string
 	IndirectSyscalls bool
@@ -43,6 +44,7 @@ func NewLoader(
 	lhost string,
 	lport uint16,
 	ldrType string,
+	payloadToLoad string,
 	technique string,
 	processToInject string,
 	indirectSyscalls bool,
@@ -66,6 +68,7 @@ func NewLoader(
 		Lhost:            lhost,
 		Lport:            lport,
 		Type:             ldrType,
+		PayloadToLoad:    payloadToLoad,
 		Technique:        technique,
 		ProcessToInject:  processToInject,
 		IndirectSyscalls: indirectSyscalls,
@@ -161,6 +164,7 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 			fmt.Sprintf("-DPAYLOAD_ARCH=%s", l.Arch),
 			fmt.Sprintf("-DPAYLOAD_FORMAT=%s", l.Format),
 			fmt.Sprintf("-DPAYLOAD_TYPE=\"%s\"", l.Type),
+			fmt.Sprintf("-DPAYLOAD_TO_LOAD=\"%s\"", l.PayloadToLoad),
 			fmt.Sprintf("-DPAYLOAD_TECHNIQUE=\"%s\"", l.Technique),
 			fmt.Sprintf("-DPAYLOAD_PROCESS_TO_INJECT=\"%s\"", l.ProcessToInject),
 			fmt.Sprintf("-DPAYLOAD_INDIRECT_SYSCALLS=%t", l.IndirectSyscalls),
