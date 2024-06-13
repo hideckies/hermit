@@ -232,36 +232,10 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		os.Remove(asmSysObj)
 		os.Remove(asmRflObj)
 
-		// TEST ------------------------------------------------------------------------------
+		// sRDI ------------------------------------------------------------------------------
 		// If the format is '.bin', convert DLL to shellcode
 		if strings.HasSuffix(outFile, ".bin") {
 			dllFile := strings.Replace(outFile, ".bin", ".dll", -1)
-
-			// outText, err = meta.ExecCommand(
-			// 	"python3",
-			// 	"script/dll_to_shellcode.py",
-			// 	"-f",
-			// 	"ReflectiveLoader",
-			// 	strings.Replace(outFile, ".bin", ".dll", -1),
-			// )
-			// if err != nil {
-			// 	os.Chdir(serverState.CWD)
-			// 	// Remove .dll file
-			// 	removeErr := os.Remove(strings.Replace(outFile, ".bin", ".dll", -1))
-			// 	if removeErr != nil {
-			// 		stdout.LogFailed(fmt.Sprintf("Error: %s", removeErr))
-			// 	}
-			// 	return nil, "", fmt.Errorf("dll_to_shellcode error: %v", err)
-			// }
-			// if strings.Contains(strings.ToLower(outText), "exception:") || strings.Contains(strings.ToLower(outText), "error") {
-			// 	os.Chdir(serverState.CWD)
-			// 	// Remove .dll file
-			// 	removeErr := os.Remove(strings.Replace(outFile, ".bin", ".dll", -1))
-			// 	if removeErr != nil {
-			// 		stdout.LogFailed(fmt.Sprintf("Error: %s", removeErr))
-			// 	}
-			// 	return nil, "", fmt.Errorf("dll_to_shellcode error: %v", outText)
-			// }
 
 			_, err := utilsSRDI.GenerateSRDIShellcode(dllFile, "Start")
 			if err != nil {
@@ -280,6 +254,8 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 			}
 		}
 		// ---------------------------------------------------------------------------------------
+	} else {
+		return nil, "", fmt.Errorf("target is not recognized")
 	}
 
 	data, err = os.ReadFile(outFile)

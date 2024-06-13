@@ -240,15 +240,14 @@ func RequestPayloadLoaderGenerate(clientState *state.ClientState, ldr *payload.L
 	return r.GetData(), nil
 }
 
-func RequestPayloadShellcodeGenerate(clientState *state.ClientState, shc *payload.Shellcode) ([]byte, error) {
-	r, err := clientState.RPCClient.PayloadShellcodeGenerate(clientState.Ctx, &rpcpb.PayloadShellcode{
-		Os:       shc.Os,
-		Arch:     shc.Arch,
-		Format:   shc.Format,
-		Lhost:    shc.Lhost,
-		Lport:    int32(shc.Lport),
-		Type:     shc.Type,
-		TypeArgs: shc.TypeArgs,
+func RequestPayloadModuleGenerate(clientState *state.ClientState, mod *payload.Module) ([]byte, error) {
+	r, err := clientState.RPCClient.PayloadModuleGenerate(clientState.Ctx, &rpcpb.PayloadModule{
+		Os:     mod.Os,
+		Arch:   mod.Arch,
+		Format: mod.Format,
+		Lhost:  mod.Lhost,
+		Lport:  int32(mod.Lport),
+		Type:   mod.Type,
 	})
 	if err != nil {
 		return []byte{}, err

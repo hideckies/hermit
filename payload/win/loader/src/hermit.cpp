@@ -229,7 +229,7 @@ namespace Hermit
         return bytes;
     }
 
-    VOID DLLLoader()
+    VOID DllLoader()
     {
         State::PSTATE pState = Init();
         if (!pState)
@@ -265,7 +265,7 @@ namespace Hermit
         return;
     }
 
-    VOID PELoader()
+    VOID PeLoader()
     {
         State::PSTATE pState = Init();
         if (!pState)

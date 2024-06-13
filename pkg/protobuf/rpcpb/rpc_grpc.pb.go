@@ -43,7 +43,7 @@ type HermitRPCClient interface {
 	// PAYLOAD
 	PayloadImplantGenerate(ctx context.Context, in *PayloadImplant, opts ...grpc.CallOption) (*commonpb.Binary, error)
 	PayloadLoaderGenerate(ctx context.Context, in *PayloadLoader, opts ...grpc.CallOption) (*commonpb.Binary, error)
-	PayloadShellcodeGenerate(ctx context.Context, in *PayloadShellcode, opts ...grpc.CallOption) (*commonpb.Binary, error)
+	PayloadModuleGenerate(ctx context.Context, in *PayloadModule, opts ...grpc.CallOption) (*commonpb.Binary, error)
 	// AGENT
 	AgentDeleteById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*commonpb.Message, error)
 	AgentGetById(ctx context.Context, in *commonpb.Id, opts ...grpc.CallOption) (*Agent, error)
@@ -256,9 +256,9 @@ func (c *hermitRPCClient) PayloadLoaderGenerate(ctx context.Context, in *Payload
 	return out, nil
 }
 
-func (c *hermitRPCClient) PayloadShellcodeGenerate(ctx context.Context, in *PayloadShellcode, opts ...grpc.CallOption) (*commonpb.Binary, error) {
+func (c *hermitRPCClient) PayloadModuleGenerate(ctx context.Context, in *PayloadModule, opts ...grpc.CallOption) (*commonpb.Binary, error) {
 	out := new(commonpb.Binary)
-	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/PayloadShellcodeGenerate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/rpcpb.HermitRPC/PayloadModuleGenerate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +393,7 @@ type HermitRPCServer interface {
 	// PAYLOAD
 	PayloadImplantGenerate(context.Context, *PayloadImplant) (*commonpb.Binary, error)
 	PayloadLoaderGenerate(context.Context, *PayloadLoader) (*commonpb.Binary, error)
-	PayloadShellcodeGenerate(context.Context, *PayloadShellcode) (*commonpb.Binary, error)
+	PayloadModuleGenerate(context.Context, *PayloadModule) (*commonpb.Binary, error)
 	// AGENT
 	AgentDeleteById(context.Context, *commonpb.Id) (*commonpb.Message, error)
 	AgentGetById(context.Context, *commonpb.Id) (*Agent, error)
@@ -461,8 +461,8 @@ func (UnimplementedHermitRPCServer) PayloadImplantGenerate(context.Context, *Pay
 func (UnimplementedHermitRPCServer) PayloadLoaderGenerate(context.Context, *PayloadLoader) (*commonpb.Binary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PayloadLoaderGenerate not implemented")
 }
-func (UnimplementedHermitRPCServer) PayloadShellcodeGenerate(context.Context, *PayloadShellcode) (*commonpb.Binary, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PayloadShellcodeGenerate not implemented")
+func (UnimplementedHermitRPCServer) PayloadModuleGenerate(context.Context, *PayloadModule) (*commonpb.Binary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PayloadModuleGenerate not implemented")
 }
 func (UnimplementedHermitRPCServer) AgentDeleteById(context.Context, *commonpb.Id) (*commonpb.Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AgentDeleteById not implemented")
@@ -798,20 +798,20 @@ func _HermitRPC_PayloadLoaderGenerate_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HermitRPC_PayloadShellcodeGenerate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PayloadShellcode)
+func _HermitRPC_PayloadModuleGenerate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PayloadModule)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HermitRPCServer).PayloadShellcodeGenerate(ctx, in)
+		return srv.(HermitRPCServer).PayloadModuleGenerate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rpcpb.HermitRPC/PayloadShellcodeGenerate",
+		FullMethod: "/rpcpb.HermitRPC/PayloadModuleGenerate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermitRPCServer).PayloadShellcodeGenerate(ctx, req.(*PayloadShellcode))
+		return srv.(HermitRPCServer).PayloadModuleGenerate(ctx, req.(*PayloadModule))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1045,8 +1045,8 @@ var HermitRPC_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HermitRPC_PayloadLoaderGenerate_Handler,
 		},
 		{
-			MethodName: "PayloadShellcodeGenerate",
-			Handler:    _HermitRPC_PayloadShellcodeGenerate_Handler,
+			MethodName: "PayloadModuleGenerate",
+			Handler:    _HermitRPC_PayloadModuleGenerate_Handler,
 		},
 		{
 			MethodName: "AgentDeleteById",

@@ -1,11 +1,8 @@
 #include "hermit.hpp"
 
-#define MAX_THREADS 3
-
 DWORD WINAPI RunWrapper(LPVOID lpParam)
 {
-    Hermit::ShellcodeLoader();
-
+    Hermit::Run();
     return 0;
 }
 
@@ -50,4 +47,5 @@ DLLEXPORT BOOL Start(LPVOID lpArg, DWORD dwArgLen)
     // MessageBoxA(NULL, "Start", "Start", MB_OK);
     return TRUE;
 }
+
 #endif // IS_SHELLCODE

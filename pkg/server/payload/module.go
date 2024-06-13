@@ -17,25 +17,36 @@ import (
 	"github.com/hideckies/hermit/pkg/server/state"
 )
 
-type Loader struct {
-	Id               uint
-	Uuid             string
-	Name             string
-	Os               string
-	Arch             string
-	Format           string
-	Lprotocol        string
-	Lhost            string
-	Lport            uint16
-	Type             string
-	PayloadToLoad    string
-	Technique        string
-	ProcessToInject  string
-	IndirectSyscalls bool
-	AntiDebug        bool
+const (
+	MODULE_TYPE_CALC       = 1
+	MODULE_TYPE_MESSAGEBOX = 2
+)
+
+func getModuleTypeId(modType string) (uint, error) {
+	switch modType {
+	case "Calc":
+		return MODULE_TYPE_CALC, nil
+	case "MessageBox":
+		return MODULE_TYPE_MESSAGEBOX, nil
+	default:
+		return 0, fmt.Errorf("Invalid module type")
+	}
 }
 
-func NewLoader(
+type Module struct {
+	Id        uint
+	Uuid      string
+	Name      string
+	Os        string
+	Arch      string
+	Format    string
+	Lprotocol string
+	Lhost     string
+	Lport     uint16
+	Type      string
+}
+
+func NewModule(
 	id uint,
 	_uuid string,
 	name string,
@@ -45,54 +56,44 @@ func NewLoader(
 	lprotocol string,
 	lhost string,
 	lport uint16,
-	ldrType string,
-	payloadToLoad string,
-	technique string,
-	processToInject string,
-	indirectSyscalls bool,
-	antiDebug bool,
-) *Loader {
+	_type string,
+) *Module {
 	if _uuid == "" {
 		_uuid = uuid.NewString()
 	}
 	if name == "" {
-		name = utils.GenerateRandomAnimalName(false, ldrType)
+		name = utils.GenerateRandomAnimalName(false, "module")
 	}
 
-	return &Loader{
-		Id:               id,
-		Uuid:             _uuid,
-		Name:             name,
-		Os:               os,
-		Arch:             arch,
-		Format:           format,
-		Lprotocol:        lprotocol,
-		Lhost:            lhost,
-		Lport:            lport,
-		Type:             ldrType,
-		PayloadToLoad:    payloadToLoad,
-		Technique:        technique,
-		ProcessToInject:  processToInject,
-		IndirectSyscalls: indirectSyscalls,
-		AntiDebug:        antiDebug,
+	return &Module{
+		Id:        id,
+		Uuid:      _uuid,
+		Name:      name,
+		Os:        os,
+		Arch:      arch,
+		Format:    format,
+		Lprotocol: lprotocol,
+		Lhost:     lhost,
+		Lport:     lport,
+		Type:      _type,
 	}
 }
 
-func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile string, err error) {
-	// Get the correspoiding listener
+func (m *Module) Generate(serverState *state.ServerState) (data []byte, outFile string, err error) {
+	// Get a corresponding listener
 	liss, err := serverState.DB.ListenerGetAll()
 	if err != nil {
 		return nil, "", err
 	}
 	var lis *listener.Listener = nil
 	for _, _lis := range liss {
-		if _lis.Protocol == l.Lprotocol && (_lis.Addr == l.Lhost || slices.Contains(_lis.Domains, l.Lhost)) && _lis.Port == l.Lport {
+		if _lis.Protocol == m.Lprotocol && (_lis.Addr == m.Lhost || slices.Contains(_lis.Domains, m.Lhost)) && _lis.Port == m.Lport {
 			lis = _lis
 			break
 		}
 	}
 	if lis == nil {
-		return nil, "", fmt.Errorf("the corresponding listener not found")
+		return nil, "", fmt.Errorf("a corresponding listener not found")
 	}
 
 	// Get output path
@@ -100,10 +101,10 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 	if err != nil {
 		return nil, "", err
 	}
-	outFile = fmt.Sprintf("%s/%s.%s.%s", payloadsDir, l.Name, l.Arch, l.Format)
+	outFile = fmt.Sprintf("%s/%s.%s.%s", payloadsDir, m.Name, m.Arch, m.Format)
 
-	// Get request path
-	requestPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/loader/download"])
+	// Get request paths
+	reqPathDownload := utils.GetRandomElemString(serverState.Conf.Listener.FakeRoutes["/loader/download"])
 
 	// Generate random AES key and IV
 	newAES, err := crypt.NewAES()
@@ -111,12 +112,17 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		return nil, "", err
 	}
 
-	// Change to the paylaod directory
-	if l.Os == "linux" {
+	// Get module type id
+	modTypeId, err := getModuleTypeId(m.Type)
+	if err != nil {
+		return nil, "", fmt.Errorf("")
+	}
+
+	if m.Os == "linux" {
 		return nil, "", fmt.Errorf("linux target is not implemented yet")
-	} else if l.Os == "windows" {
-		// Change directory
-		os.Chdir("./payload/win/loader")
+	} else if m.Os == "windows" {
+		// Change to the payload directory
+		os.Chdir("./payload/win/module")
 		_, err = meta.ExecCommand("rm", "-rf", "build")
 		if err != nil {
 			os.Chdir(serverState.CWD)
@@ -124,27 +130,18 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		}
 
 		// Compile assembly and generate an object file.
-		asmSysObj := fmt.Sprintf("/tmp/syscalls-%s.o", uuid.NewString())
 		asmRflObj := fmt.Sprintf("/tmp/rfl-%s.o", uuid.NewString())
-		asmSysSrc := "src/asm/syscalls."
 		asmRflSrc := "src/asm/rfl."
 		asmFmt := "win"
 
-		if l.Arch == "amd64" {
-			asmSysSrc += "x64.asm"
+		if m.Arch == "amd64" {
 			asmRflSrc += "x64.asm"
 			asmFmt += "64"
 		} else {
-			asmSysSrc += "x86.asm"
 			asmRflSrc += "x86.asm"
 			asmFmt += "32"
 		}
 
-		_, err = meta.ExecCommand("nasm", "-f", asmFmt, "-o", asmSysObj, asmSysSrc)
-		if err != nil {
-			os.Chdir(serverState.CWD)
-			return nil, "", fmt.Errorf("nasm error: %v", err)
-		}
 		_, err = meta.ExecCommand("nasm", "-f", asmFmt, "-o", asmRflObj, asmRflSrc)
 		if err != nil {
 			os.Chdir(serverState.CWD)
@@ -154,22 +151,15 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		// Compile
 		outText, err := meta.ExecCommand(
 			"cmake",
-			fmt.Sprintf("-DASM_OBJ_SYSCALLS=%s", asmSysObj),
 			fmt.Sprintf("-DASM_OBJ_REFLECTIVE=%s", asmRflObj),
 			fmt.Sprintf("-DOUTPUT_DIRECTORY=%s", payloadsDir),
-			fmt.Sprintf("-DPAYLOAD_NAME=%s", l.Name),
-			fmt.Sprintf("-DPAYLOAD_ARCH=%s", l.Arch),
-			fmt.Sprintf("-DPAYLOAD_FORMAT=%s", l.Format),
-			fmt.Sprintf("-DPAYLOAD_TYPE=\"%s\"", l.Type),
-			fmt.Sprintf("-DPAYLOAD_TO_LOAD=\"%s\"", l.PayloadToLoad),
-			fmt.Sprintf("-DPAYLOAD_TECHNIQUE=\"%s\"", l.Technique),
-			fmt.Sprintf("-DPAYLOAD_PROCESS_TO_INJECT=\"%s\"", l.ProcessToInject),
-			fmt.Sprintf("-DPAYLOAD_INDIRECT_SYSCALLS=%t", l.IndirectSyscalls),
-			fmt.Sprintf("-DPAYLOAD_ANTI_DEBUG=%t", l.AntiDebug),
-			fmt.Sprintf("-DLISTENER_PROTOCOL=\"%s\"", l.Lprotocol),
-			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", l.Lhost),
-			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(l.Lport)),
-			fmt.Sprintf("-DREQUEST_PATH_DOWNLOAD=\"%s\"", requestPathDownload),
+			fmt.Sprintf("-DPAYLOAD_NAME=%s", m.Name),
+			fmt.Sprintf("-DPAYLOAD_ARCH=%s", m.Arch),
+			fmt.Sprintf("-DPAYLOAD_FORMAT=%s", m.Format),
+			fmt.Sprintf("-DMODULE_TYPE=%d", modTypeId),
+			fmt.Sprintf("-DLISTENER_HOST=\"%s\"", m.Lhost),
+			fmt.Sprintf("-DLISTENER_PORT=%s", fmt.Sprint(m.Lport)),
+			fmt.Sprintf("-DREQUEST_PATH_DOWNLOAD=\"%s\"", reqPathDownload),
 			fmt.Sprintf("-DAES_KEY_BASE64=\"%s\"", newAES.Key.Base64),
 			fmt.Sprintf("-DAES_IV_BASE64=\"%s\"", newAES.IV.Base64),
 			"-S.",
@@ -177,13 +167,11 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmSysObj)
 			os.Remove(asmRflObj)
-			return nil, "", fmt.Errorf("create build directory error: %v", err)
+			return nil, "", fmt.Errorf("cmake error: %v", err)
 		}
 		if strings.Contains(strings.ToLower(outText), "error:") {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmSysObj)
 			os.Remove(asmRflObj)
 			return nil, "", fmt.Errorf("cmake error: %s", outText)
 		}
@@ -196,18 +184,15 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		)
 		if err != nil {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmSysObj)
 			os.Remove(asmRflObj)
-			return nil, "", fmt.Errorf("build error: %v", err)
+			return nil, "", fmt.Errorf("cmake error: %v", err)
 		}
 		if strings.Contains(strings.ToLower(outText), "error:") {
 			os.Chdir(serverState.CWD)
-			os.Remove(asmSysObj)
 			os.Remove(asmRflObj)
 			return nil, "", fmt.Errorf("cmake error: %s", outText)
 		}
 
-		os.Remove(asmSysObj)
 		os.Remove(asmRflObj)
 
 		// sRDI ------------------------------------------------------------------------------

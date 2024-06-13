@@ -34,7 +34,7 @@ service HermitRPC {
   // PAYLOAD
   rpc PayloadImplantGenerate (PayloadImplant) returns (commonpb.Binary) {}
   rpc PayloadLoaderGenerate (PayloadLoader) returns (commonpb.Binary) {}
-  rpc PayloadShellcodeGenerate (PayloadShellcode) returns (commonpb.Binary) {}
+  rpc PayloadModuleGenerate (PayloadModule) returns (commonpb.Binary) {}
 
   // AGENT
   rpc AgentDeleteById (commonpb.Id) returns (commonpb.Message) {}
@@ -111,7 +111,7 @@ message PayloadLoader {
   bool antiDebug = 15;
 }
 
-message PayloadShellcode {
+message PayloadModule {
   int64 id = 1;
   string uuid = 2;
   string name = 3;
@@ -122,7 +122,6 @@ message PayloadShellcode {
   string lhost = 8;
   int32 lport = 9;
   string type = 10;
-  string typeArgs = 11;
 }
 
 message Agent {

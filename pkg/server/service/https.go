@@ -597,7 +597,7 @@ func handleImplantWebSocket(ctx *gin.Context) {
 	}
 }
 
-func handleLoaderDownload(lis *listener.Listener, serverState *state.ServerState) gin.HandlerFunc {
+func handleLoaderDownload(lis *listener.Listener) gin.HandlerFunc {
 	fn := func(ctx *gin.Context) {
 		w := ctx.Writer
 		header := w.Header()
@@ -772,7 +772,7 @@ func httpsRoutes(
 		router.GET(r, handleImplantWebSocket)
 	}
 	for _, r := range fakeRoutes["/loader/download"] {
-		router.POST(r, handleLoaderDownload(lis, serverState))
+		router.POST(r, handleLoaderDownload(lis))
 	}
 	for _, r := range fakeRoutes["/socket/open"] {
 		router.POST(r, handleSocketOpen(serverState))

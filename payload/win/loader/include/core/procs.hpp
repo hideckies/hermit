@@ -281,6 +281,8 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_CRYPTBINARYTOSTRINGW)(const BYTE *pbBinary, DWORD cbBinary, DWORD dwFlags, LPWSTR pszString, DWORD *pcchString);
     // CryptStringToBinaryW
     typedef BOOL (WINAPI* LPPROC_CRYPTSTRINGTOBINARYW)(LPCWSTR pszString, DWORD cchString, DWORD dwFlags, BYTE *pbBinary, DWORD *pcbBinary, DWORD *pdwSkip, DWORD *pdwFlags);
+     // DllMain
+    typedef BOOL (WINAPI* LPPROC_DLLMAIN)(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
     // EnumProcessModules
     typedef BOOL (WINAPI* LPPROC_ENUMPROCESSMODULES)(HANDLE hProcess, HMODULE *lphModule, DWORD cb, LPDWORD lpcbNeeded);
     // ExpandEnvironmentStringsW

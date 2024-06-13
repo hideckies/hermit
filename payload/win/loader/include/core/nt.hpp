@@ -609,6 +609,12 @@ namespace Nt
         _Field_size_bytes_part_opt_(MaximumLength, Length) PWCH Buffer;
     } UNICODE_STRING, *PUNICODE_STRING;
 
+    typedef struct
+    {
+        WORD	offset:12;
+        WORD	type:4;
+    } IMAGE_RELOC, *PIMAGE_RELOC;
+
     typedef struct _OBJECT_ATTRIBUTES
     {
         ULONG Length;

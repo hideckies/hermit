@@ -17,13 +17,12 @@ import (
 func WizardPayloadType() string {
 	var payloadType string
 
-	items := []string{
-		"implant",
-		"loader",
-		"shellcode",
-	}
 	for {
-		res, err := stdin.Select("What to generate?", items)
+		res, err := stdin.Select("What to generate?", []string{
+			"implant",
+			"loader",
+			"module",
+		})
 		if err != nil {
 			stdout.LogFailed(fmt.Sprint(err))
 			continue
@@ -59,11 +58,12 @@ func WizardPayloadType() string {
 			payloadType += "/" + res
 			break
 		}
-	} else if payloadType == "shellcode" {
+	} else if payloadType == "module" {
 		for {
-			res, err := stdin.Select("Shellcode type", []string{
-				"exec",
-				"dll-loader",
+			res, err := stdin.Select("Module type", []string{
+				// "CredentialStealing",
+				"Calc",
+				"MessageBox",
 			})
 			if err != nil {
 				stdout.LogFailed(fmt.Sprint(err))
@@ -73,8 +73,6 @@ func WizardPayloadType() string {
 			break
 		}
 	}
-
-	stdout.LogInfo(fmt.Sprintf("payloadType: %s", payloadType))
 
 	return payloadType
 }
@@ -106,13 +104,15 @@ func wizardPayloadBase(
 		}
 	} else if strings.HasPrefix(payloadType, "loader") {
 		items = []string{
-			// "windows/amd64/bin",
+			"windows/amd64/bin",
 			"windows/amd64/dll",
 			"windows/amd64/exe",
 		}
-	} else if strings.HasPrefix(payloadType, "shellcode") {
+	} else if strings.HasPrefix(payloadType, "module") {
 		items = []string{
 			"windows/amd64/bin",
+			"windows/amd64/dll",
+			"windows/amd64/exe",
 		}
 	}
 
@@ -551,29 +551,17 @@ func WizardPayloadLoader(
 	), nil
 }
 
-func WizardPayloadShellcode(
+func WizardPayloadModule(
 	host string,
 	listeners []*listener.Listener,
 	payloadType string,
-) (*payload.Shellcode, error) {
+) (*payload.Module, error) {
 	oOs, oArch, oFormat, oLprotocol, oLhost, oLport, err := wizardPayloadBase(host, listeners, payloadType)
 	if err != nil {
 		return nil, err
 	}
 
-	oType := strings.Replace(payloadType, "shellcode/", "", -1)
-	oTypeArgs := ""
-	if oType == "exec" {
-		for {
-			res, err := stdin.ReadInput("Command to execute", "calc.exe")
-			if err != nil {
-				stdout.LogFailed(fmt.Sprint(err))
-				continue
-			}
-			oTypeArgs = res
-			break
-		}
-	}
+	oType := strings.Replace(payloadType, "module/", "", -1)
 
 	table := []stdout.SingleTableItem{
 		stdout.NewSingleTableItem("Target OS", oOs),
@@ -581,9 +569,8 @@ func WizardPayloadShellcode(
 		stdout.NewSingleTableItem("Format", oFormat),
 		stdout.NewSingleTableItem("Listener", fmt.Sprintf("%s://%s:%d", strings.ToLower(oLprotocol), oLhost, oLport)),
 		stdout.NewSingleTableItem("Type", oType),
-		stdout.NewSingleTableItem("Type Args", oTypeArgs),
 	}
-	stdout.PrintSingleTable("Shellcode Options", table)
+	stdout.PrintSingleTable("Module Options", table)
 
 	var proceed bool
 	for {
@@ -598,7 +585,7 @@ func WizardPayloadShellcode(
 		return nil, fmt.Errorf("canceled")
 	}
 
-	return payload.NewShellcode(
+	return payload.NewModule(
 		0,
 		"",
 		"",
@@ -609,6 +596,5 @@ func WizardPayloadShellcode(
 		oLhost,
 		oLport,
 		oType,
-		oTypeArgs,
 	), nil
 }

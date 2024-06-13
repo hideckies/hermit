@@ -347,24 +347,23 @@ func (s *HermitRPCServer) PayloadLoaderGenerate(
 	return &commonpb.Binary{Data: data}, nil
 }
 
-func (s *HermitRPCServer) PayloadShellcodeGenerate(
+func (s *HermitRPCServer) PayloadModuleGenerate(
 	ctx context.Context,
-	shc *rpcpb.PayloadShellcode,
+	mod *rpcpb.PayloadModule,
 ) (*commonpb.Binary, error) {
-	newShc := payload.NewShellcode(
-		uint(shc.Id),
-		shc.Uuid,
-		shc.Name,
-		shc.Os,
-		shc.Arch,
-		shc.Format,
-		shc.Lprotocol,
-		shc.Lhost,
-		uint16(shc.Lport),
-		shc.Type,
-		shc.TypeArgs,
+	newMod := payload.NewModule(
+		uint(mod.Id),
+		mod.Uuid,
+		mod.Name,
+		mod.Os,
+		mod.Arch,
+		mod.Format,
+		mod.Lprotocol,
+		mod.Lhost,
+		uint16(mod.Lport),
+		mod.Type,
 	)
-	data, _, err := newShc.Generate(s.serverState)
+	data, _, err := newMod.Generate(s.serverState)
 	if err != nil {
 		return nil, err
 	}

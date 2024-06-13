@@ -26,6 +26,7 @@ func HandlePayloadGen(
 			return err
 		}
 		stdout.PrintBannerPayload()
+
 		payloadType := wizard.WizardPayloadType()
 
 		if strings.HasPrefix(payloadType, "implant") {
@@ -39,7 +40,7 @@ func HandlePayloadGen(
 			}
 
 			fmt.Println()
-			spin := stdout.NewSpinner("Generating an implant...")
+			spin := stdout.NewSpinner("Generating an payload...")
 			spin.Start()
 
 			_, outFile, err := imp.Generate(serverState)
@@ -61,7 +62,7 @@ func HandlePayloadGen(
 			}
 
 			fmt.Println()
-			spin := stdout.NewSpinner("Generating a loader...")
+			spin := stdout.NewSpinner("Generating a payload...")
 			spin.Start()
 
 			_, outFile, err := ldr.Generate(serverState)
@@ -72,8 +73,8 @@ func HandlePayloadGen(
 
 			spin.Stop()
 			stdout.LogSuccess(fmt.Sprintf("Loader saved at %s", color.HiGreenString(outFile)))
-		} else if strings.HasPrefix(payloadType, "shellcode") {
-			shc, err := wizard.WizardPayloadShellcode(
+		} else if strings.HasPrefix(payloadType, "module") {
+			mod, err := wizard.WizardPayloadModule(
 				meta.GetSpecificHost(serverState.Conf.Host),
 				liss,
 				payloadType,
@@ -83,17 +84,17 @@ func HandlePayloadGen(
 			}
 
 			fmt.Println()
-			spin := stdout.NewSpinner("Generating a shellcode...")
+			spin := stdout.NewSpinner("Generating a payload...")
 			spin.Start()
 
-			_, outFile, err := shc.Generate(serverState)
+			_, outFile, err := mod.Generate(serverState)
 			if err != nil {
 				spin.Stop()
 				return err
 			}
 
 			spin.Stop()
-			stdout.LogSuccess(fmt.Sprintf("Shellcode saved at %s", color.HiGreenString(outFile)))
+			stdout.LogSuccess(fmt.Sprintf("Module saved at %s", color.HiGreenString(outFile)))
 		} else {
 			return fmt.Errorf("invalid payload type")
 		}
@@ -171,8 +172,8 @@ func HandlePayloadGen(
 			}
 
 			stdout.LogSuccess(fmt.Sprintf("Stager saved at %s", color.HiGreenString(outFile)))
-		} else if strings.HasPrefix(payloadType, "shellcode") {
-			shc, err := wizard.WizardPayloadShellcode(
+		} else if strings.HasPrefix(payloadType, "module") {
+			mod, err := wizard.WizardPayloadModule(
 				meta.GetSpecificHost(clientState.Conf.Server.Host),
 				liss,
 				payloadType,
@@ -181,28 +182,29 @@ func HandlePayloadGen(
 				return err
 			}
 
-			spin := stdout.NewSpinner("Generating a shellcode...")
+			spin := stdout.NewSpinner("Generating a payload...")
 			spin.Start()
-			data, err := rpc.RequestPayloadShellcodeGenerate(clientState, shc)
+			data, err := rpc.RequestPayloadModuleGenerate(clientState, mod)
 			if err != nil {
 				spin.Stop()
 				return err
 			}
 			spin.Stop()
 
-			// Save the shellcode
+			// Save the executable
 			appDir, err := metafs.GetAppDir()
 			if err != nil {
 				return err
 			}
 			payloadsDir := fmt.Sprintf("%s/client/payloads", appDir)
-			outFile := fmt.Sprintf("%s/%s.%s", payloadsDir, shc.Name, shc.Format)
+			outFile := fmt.Sprintf("%s/%s.%s", payloadsDir, mod.Name, mod.Format)
 
 			err = os.WriteFile(outFile, data, 0755)
 			if err != nil {
 				return err
 			}
-			stdout.LogSuccess(fmt.Sprintf("Shellcode saved at %s", color.HiGreenString(outFile)))
+
+			stdout.LogSuccess(fmt.Sprintf("Module saved at %s", color.HiGreenString(outFile)))
 		} else {
 			stdout.LogFailed("Invalid paylaod type.")
 		}
