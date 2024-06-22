@@ -117,6 +117,7 @@ FUNCS = [
     "LoadIconW",
     "LoadLibraryA",
     "LoadLibraryW",
+    "LocalAlloc",
     "LocalFree",
     "LookupPrivilegeNameW",
     "LookupPrivilegeValueW",

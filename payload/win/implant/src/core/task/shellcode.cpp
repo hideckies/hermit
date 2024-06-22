@@ -24,7 +24,7 @@ namespace Task
         );
         if (bytes.size() == 0)
         {
-            return L"Error: Failed to get DLL.";
+            return L"Error: Failed to download shellcode.";
         }
 
         // Inject shellcode

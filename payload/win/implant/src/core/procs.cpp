@@ -219,6 +219,8 @@ namespace Procs
         pProcs->lpLoadLibraryA                  = reinterpret_cast<LPPROC_LOADLIBRARYA>(pLoadLibraryA);
         PVOID pLoadLibraryW                     = GetProcAddressByHash(hKernel32, HASH_FUNC_LOADLIBRARYW);
         pProcs->lpLoadLibraryW                  = reinterpret_cast<LPPROC_LOADLIBRARYW>(pLoadLibraryW);
+        PVOID pLocalAlloc                       = GetProcAddressByHash(hKernel32, HASH_FUNC_LOCALALLOC);
+        pProcs->lpLocalAlloc                    = reinterpret_cast<LPPROC_LOCALALLOC>(pLocalAlloc);
         PVOID pLocalFree                        = GetProcAddressByHash(hKernel32, HASH_FUNC_LOCALFREE);
         pProcs->lpLocalFree                     = reinterpret_cast<LPPROC_LOCALFREE>(pLocalFree);
         PVOID pIsDebuggerPresent                = GetProcAddressByHash(hKernel32, HASH_FUNC_ISDEBUGGERPRESENT);

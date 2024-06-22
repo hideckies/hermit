@@ -61,6 +61,7 @@ type GrammarAgentMode struct {
 	Connect  amTaskConnectCmd  `cmd:"" help:"Change listener URL to connect." group:"TASK:"`
 	Cp       amTaskCpCmd       `cmd:"" help:"Copy a file." group:"TASK:"`
 	Creds    amTaskCredsCmd    `cmd:"" help:"Credentials." group:"TASK:"`
+	Disable  amTaskDisableCmd  `cmd:"" help:"Disable AV or EDR." group:"TASK:"`
 	Dll      amTaskDllCmd      `cmd:"" help:"Load DLL and inject modules into the specified process." group:"TASK:"`
 	Download amTaskDownloadCmd `cmd:"" help:"Download a file." group:"TASK:"`
 	Env      amTaskEnvCmd      `cmd:"" help:"Manage environment variables." group:"TASK:"`
@@ -72,7 +73,7 @@ type GrammarAgentMode struct {
 	History  amTaskHistoryCmd  `cmd:"" help:"Retrieve information from history files of applications" group:"TASK:"`
 	Ip       amTaskIpCmd       `cmd:"" help:"Print the network interface information on target computer" group:"TASK:"`
 	Jitter   amTaskJitterCmd   `cmd:"" help:"Set jitter time (seconds) between requests from beacon" group:"TASK:"`
-	Keylog   amTaskKeylogCmd   `cmd:"" help:"Keylogging N seconds." group:"TASK:"`
+	Keylog   amTaskKeylogCmd   `cmd:"" help:"Keylogging for N seconds." group:"TASK:"`
 	Kill     amTaskKillCmd     `cmd:"" help:"Terminate the current process." group:"TASK:"`
 	Killdate amTaskKilldateCmd `cmd:"" help:"Change killdate (UTC) for the implant beacon." group:"TASK:"`
 	Ls       amTaskLsCmd       `cmd:"" help:"List files in a directory." group:"TASK:"`
@@ -102,7 +103,6 @@ type GrammarAgentMode struct {
 	Upload amTaskUploadCmd `cmd:"" help:"Upload a file to the target computer." group:"TASK:"`
 	User   amTaskUserCmd   `cmd:"" help:"Manage users." group:"TASK:"`
 	Users  amTaskUserLsCmd `cmd:"" help:"Alias for 'user ls'." group:"TASK:"`
-	// WebCam amTaskWebCamCmd   `cmd:"" help:"WebCam" group:"TASK:"`
 	Whoami amTaskWhoamiCmd `cmd:"" help:"Print the current user information." group:"TASK:"`
 
 	Task  amTaskCmd     `cmd:"" help:"Manage tasks." group:"TASK MANAGE:"`

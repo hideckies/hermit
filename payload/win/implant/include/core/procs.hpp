@@ -134,6 +134,7 @@
 #define HASH_FUNC_LOADICONW                     0x42d0af83
 #define HASH_FUNC_LOADLIBRARYA                  0x7069f241
 #define HASH_FUNC_LOADLIBRARYW                  0x7069f257
+#define HASH_FUNC_LOCALALLOC                    0xa505c69f
 #define HASH_FUNC_LOCALFREE                     0x50d0ddc2
 #define HASH_FUNC_LOOKUPPRIVILEGENAMEW          0x559348ea
 #define HASH_FUNC_LOOKUPPRIVILEGEVALUEW         0x6e9aab88
@@ -423,6 +424,8 @@ namespace Procs
     typedef HMODULE (WINAPI* LPPROC_LOADLIBRARYA)(LPCSTR lpLibFileName);
     // LoadLibraryW
     typedef HMODULE (WINAPI* LPPROC_LOADLIBRARYW)(LPCWSTR lpLibFileName);
+    // LocalAlloc
+    typedef HLOCAL (WINAPI* LPPROC_LOCALALLOC)(UINT uFlags, SIZE_T uBytes);
     // LocalFree
     typedef HLOCAL (WINAPI* LPPROC_LOCALFREE)(HLOCAL hMem);
     // LookupPrivilegeNameW
@@ -655,6 +658,7 @@ namespace Procs
         LPPROC_LOADICONW                    lpLoadIconW                         = nullptr;
         LPPROC_LOADLIBRARYA                 lpLoadLibraryA                      = nullptr;
         LPPROC_LOADLIBRARYW                 lpLoadLibraryW                      = nullptr;
+        LPPROC_LOCALALLOC                   lpLocalAlloc                        = nullptr;
         LPPROC_LOCALFREE                    lpLocalFree                         = nullptr;
         LPPROC_LOOKUPPRIVILEGENAMEW         lpLookupPrivilegeNameW              = nullptr;
         LPPROC_LOOKUPPRIVILEGEVALUEW        lpLookupPrivilegeValueW             = nullptr;

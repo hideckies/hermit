@@ -87,6 +87,7 @@ set(SOURCE_CORE
         src/core/task/cmd.cpp
         src/core/task/connect.cpp
         src/core/task/cp.cpp
+        src/core/task/disable.cpp
         src/core/task/dll.cpp
         src/core/task/download.cpp
         src/core/task/env.cpp
