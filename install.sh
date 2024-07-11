@@ -31,7 +31,15 @@ is_linux() {
     fi
 }
 
-get_linux_ditro() {
+is_macos() {
+    if [[ $(uname) == "Darwin" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+get_linux_distro() {
     if [ -f /etc/os-release ]; then
         . /etc/os-release
         distro=$NAME
@@ -59,7 +67,6 @@ get_linux_ditro() {
 }
 
 install_pkg_with_apk() {
-    log_success
     sudo apk -y update
     if [[ $target == "server" ]]; then
         sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler openssl python3-impacket python3-pefile
@@ -85,6 +92,16 @@ install_pkg_with_dnf() {
     elif [[ $target == "client" ]]; then
         sudo dnf -y groupinstall "Development Tools" "Development Libraries"
         sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler
+    fi
+}
+
+install_pkg_with_brew() {
+    brew update
+    if [[ $target == "server" ]]; then
+        brew install git cmake nasm mingw-w64 protobuf openssl python3
+        pip3 install impacket pefile
+    elif [[ $target == "client" ]]; then
+        brew install git cmake nasm mingw-w64 protobuf openssl
     fi
 }
 
@@ -153,24 +170,34 @@ install_c2_client() {
     fi
 }
 
-if ! is_linux; then
-    log_error "Your're running the program on non-Linux system. Hermit C2 is intended for Linux."
+if is_linux; then
+    get_linux_distro
+    if [[ $distro == "Unknown" ]]; then
+        exit 1
+    fi
+    log "Linux Distribution: $distro"
+
+    if [[ $target == "server" ]]; then
+        install_c2_server
+    elif [[ $target == "client" ]]; then
+        install_c2_client
+    else
+        log_error "Invalid target."
+    fi
+elif is_macos; then
+    log "macOS detected."
+
+    if [[ $target == "server" ]]; then
+        install_pkg_with_brew
+    elif [[ $target == "client" ]]; then
+        install_pkg_with_brew
+    else
+        log_error "Invalid target."
+    fi
+else
+    log_error "Your're running the program on a non-Linux/non-macOS system. Hermit C2 is intended for Linux and macOS."
     log_error "Stop the installation."
     exit 1
-fi
-
-get_linux_ditro
-if [[ $distro == "Unknown" ]]; then
-    exit 1
-fi
-log "Linux Distribution: $distro"
-
-if [[ $target == "server" ]]; then
-    install_c2_server
-elif [[ $target == "client" ]]; then
-    install_c2_client
-else
-    log_error "Invalid target."
 fi
 
 log_success "Dependencies installed successfully."
