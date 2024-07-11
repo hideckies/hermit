@@ -26,7 +26,7 @@ server:
 	$(MAKE) _compile_protobufs
 	@ echo "[*] Compiling the Go project..."
 	@ go build -ldflags="-s -w" -trimpath -o ./hermit pkg/server/main.go
-	@ sudo setcap 'cap_net_bind_service=+ep' ./hermit
+	@ if [ `uname` != "Darwin" ]; then sudo setcap 'cap_net_bind_service=+ep' ./hermit; fi
 	@ echo "[+] Done."
 	@ echo ""
 	@ echo "Run './hermit --help'"
@@ -38,7 +38,7 @@ client:
 	$(MAKE) _compile_protobufs
 	@ echo "[*] Compiling the Go project..."
 	@ go build -ldflags="-s -w" -trimpath -o ./hermit-client pkg/client/main.go
-	@ sudo setcap 'cap_net_bind_service=+ep' ./hermit-client
+	@ if [ `uname` != "Darwin" ]; then sudo setcap 'cap_net_bind_service=+ep' ./hermit-client; fi
 	@ echo "[+] Done."
 	@ echo ""
 	@ echo "Run './hermit-client --help'"
