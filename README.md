@@ -21,6 +21,7 @@ I'm developing this for my learning purpose.
 - HTTPS listener.
 - Multi-Staged Payload
 - Data Encryption.
+- Common Injection Techniques
 - Common Evasion Techniques
 - Common Persistence Techniques
 - Anti-Debug
@@ -37,10 +38,23 @@ I'm developing this for my learning purpose.
 
 ## Requirements
 
-It's assumed that you operate both the C2 server and C2 client on **Linux**.
+It's assumed that you operate both the C2 server and C2 client on **Linux** or **macOS**.
 
-- Linux
+- Linux (especially **Kali Linux**, **Parrot OS**, **Debian** or **Ubuntu**) or macOS
 - Go 1.21+
+
+<br />
+
+## Installation
+
+```sh
+git clone https://github.com/hideckies/hermit.git
+cd hermit
+make server
+./hermit -h
+```
+
+Please see [the installation page](https://hermit.hdks.org/installation/) for more details.
 
 <br />
 

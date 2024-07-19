@@ -69,6 +69,7 @@ func handleImplantCheckIn(serverState *state.ServerState) gin.HandlerFunc {
 			ctx.String(http.StatusBadRequest, "")
 			return
 		}
+
 		var checkInData CheckInData
 		if err := json.Unmarshal(jsonBytes, &checkInData); err != nil {
 			ctx.String(http.StatusBadRequest, "")

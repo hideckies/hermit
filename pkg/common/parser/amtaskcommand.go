@@ -667,7 +667,6 @@ func (c *amTaskPersistCmd) Run(
 	items := []string{
 		"runkey",
 		"user-init-mpr-logon-script",
-		"screensaver",
 		"default-file-extension-hijacking",
 		"ifeo",
 		// "scheduled-task",
@@ -1146,6 +1145,7 @@ func (c *amTaskUacCmd) Run(
 		"computerdefaults",
 		"eventvwr",
 		"fodhelper",
+		"infinite-uac-prompts",
 		"(cancel)",
 	})
 	if err != nil {
