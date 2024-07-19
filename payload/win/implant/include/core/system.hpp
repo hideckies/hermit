@@ -293,6 +293,15 @@ namespace System::Registry
         DWORD               dwOptions,
         BOOL                bRecursive
     );
+    BOOL RegAdd(
+        Procs::PPROCS   pProcs,
+        HKEY            hKeyRoot,
+        LPCWSTR         lpSubKey,
+        LPCWSTR         lpValueName,
+        DWORD           dwType,
+        const BYTE      *lpData,
+        DWORD           dwDataLen
+    );
 }
 
 #endif // HERMIT_CORE_SYSTEM_HPP

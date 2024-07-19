@@ -1143,6 +1143,8 @@ func (c *amTaskUacCmd) Run(
 ) error {
 	// Select technique
 	technique, err := stdin.Select("Technique", []string{
+		"computerdefaults",
+		"eventvwr",
 		"fodhelper",
 		"(cancel)",
 	})

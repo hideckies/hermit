@@ -123,4 +123,51 @@ namespace System::Registry
 
         return vSubKeys;
     }
+
+    BOOL RegAdd(
+        Procs::PPROCS   pProcs,
+        HKEY            hKeyRoot,
+        LPCWSTR         lpSubKey,
+        LPCWSTR         lpValueName,
+        DWORD           dwType,
+        const BYTE      *lpData,
+        DWORD           dwDataLen
+    ) {
+        HKEY hKey;
+        DWORD d;
+       
+        if (pProcs->lpRegCreateKeyExW(
+            hKeyRoot,
+            lpSubKey,
+            0,
+            nullptr,
+            0,
+            KEY_WRITE,
+            nullptr,
+            &hKey,
+            &d
+        ) != ERROR_SUCCESS)
+        {
+            // return L"Error: Failed to create key.";
+            return FALSE;
+        }
+
+        if (pProcs->lpRegSetValueExW(
+            hKey,
+            lpValueName,
+            0,
+            dwType, // REG_SZ,
+            lpData, // (BYTE*)lpCmd,
+            dwDataLen // (wcslen(lpCmd) + 1) * sizeof(WCHAR)
+        ) != ERROR_SUCCESS)
+        {
+            pProcs->lpRegCloseKey(hKey);
+            // return L"Error: Failed to set default value for command of ms-settings.";
+            return FALSE;
+        }
+
+        pProcs->lpRegCloseKey(hKey);
+
+        return TRUE;
+    }
 }
