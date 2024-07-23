@@ -16,23 +16,23 @@ namespace Task
         // ULONG family = AF_INET6;
 
         LPVOID lpMsgBuf = NULL;
-        PIP_ADAPTER_ADDRESSES_LH pAddresses = NULL;
+        Win32::PIP_ADAPTER_ADDRESSES_LH pAddresses = NULL;
         ULONG outBufLen = 0;
         ULONG Iterations = 0;
 
-        PIP_ADAPTER_ADDRESSES_LH pCurrAddresses = NULL;
-        PIP_ADAPTER_UNICAST_ADDRESS pUnicast = NULL;
-        PIP_ADAPTER_ANYCAST_ADDRESS pAnycast = NULL;
-        PIP_ADAPTER_MULTICAST_ADDRESS pMulticast = NULL;
-        IP_ADAPTER_DNS_SERVER_ADDRESS* pDnsServer = NULL;
-        PIP_ADAPTER_GATEWAY_ADDRESS_LH pGateway = NULL;
-        IP_ADAPTER_PREFIX *pPrefix = NULL;
+        Win32::PIP_ADAPTER_ADDRESSES_LH pCurrAddresses = NULL;
+        Win32::PIP_ADAPTER_UNICAST_ADDRESS pUnicast = NULL;
+        Win32::PIP_ADAPTER_ANYCAST_ADDRESS pAnycast = NULL;
+        Win32::PIP_ADAPTER_MULTICAST_ADDRESS pMulticast = NULL;
+        Win32::IP_ADAPTER_DNS_SERVER_ADDRESS* pDnsServer = NULL;
+        Win32::PIP_ADAPTER_GATEWAY_ADDRESS_LH pGateway = NULL;
+        Win32::IP_ADAPTER_PREFIX *pPrefix = NULL;
 
         // Allocate a 15KB buffer to start with.
         outBufLen = WORKING_BUFFER_SIZE;
 
         do {
-            pAddresses = (IP_ADAPTER_ADDRESSES_LH*)MALLOC(outBufLen);
+            pAddresses = (Win32::IP_ADAPTER_ADDRESSES_LH*)MALLOC(outBufLen);
             if (pAddresses == NULL)
             {
                 return L"Error: Could not allocate memory for addresses";
@@ -42,7 +42,7 @@ namespace Task
                 family,
                 flags,
                 NULL,
-                (PIP_ADAPTER_ADDRESSES)pAddresses,
+                (Win32::PIP_ADAPTER_ADDRESSES)pAddresses,
                 &outBufLen
             );
             if (dwRetVal == ERROR_BUFFER_OVERFLOW)
@@ -72,7 +72,7 @@ namespace Task
                 // result += L"IfIndex (IPv4 Interface): " + ConvertDWORDToWstring(pCurrAddresses->IfIndex) + L"\n";
                 // result += L"Adapter Name: " + UTF8Decode(std::string(pCurrAddresses->AdapterName)) + L"\n";
 
-                pUnicast = (PIP_ADAPTER_UNICAST_ADDRESS)pCurrAddresses->FirstUnicastAddress;
+                pUnicast = (Win32::PIP_ADAPTER_UNICAST_ADDRESS)pCurrAddresses->FirstUnicastAddress;
                 if (pUnicast)
                 {
                     result += L"IPv4 Addresses:\n";

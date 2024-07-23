@@ -240,7 +240,7 @@ namespace Procs
     // AdjustTokenPrivileges
     typedef BOOL (WINAPI* LPPROC_ADJUSTTOKENPRIVILEGES)(HANDLE TokenHandle, BOOL DisableAllPrivileges, PTOKEN_PRIVILEGES NewState, DWORD BufferLength, PTOKEN_PRIVILEGES PreviousState, PDWORD ReturnLength);
     // AmsiScanBuffer
-    typedef HRESULT (WINAPI* LPPROC_AMSISCANBUFFER)(HAMSICONTEXT amsiContext, PVOID buffer, ULONG length, LPCWSTR contentName, HAMSISESSION amsiSession, AMSI_RESULT *result);
+    typedef HRESULT (WINAPI* LPPROC_AMSISCANBUFFER)(Win32::HAMSICONTEXT amsiContext, PVOID buffer, ULONG length, LPCWSTR contentName, Win32::HAMSISESSION amsiSession, Win32::AMSI_RESULT *result);
     // BCryptCloseAlgorithmProvider
     typedef NTSTATUS (WINAPI* LPPROC_BCRYPTCLOSEALGORITHMPROVIDER)(BCRYPT_ALG_HANDLE hAlgorithm, ULONG dwFlags);
     // BCryptDecrypt

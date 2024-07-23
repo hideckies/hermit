@@ -305,7 +305,7 @@ namespace Procs
     // AdjustTokenPrivileges
     typedef BOOL (WINAPI* LPPROC_ADJUSTTOKENPRIVILEGES)(HANDLE TokenHandle, BOOL DisableAllPrivileges, PTOKEN_PRIVILEGES NewState, DWORD BufferLength, PTOKEN_PRIVILEGES PreviousState, PDWORD ReturnLength);
     // AmsiScanBuffer
-    typedef HRESULT (WINAPI* LPPROC_AMSISCANBUFFER)(HAMSICONTEXT amsiContext, PVOID buffer, ULONG length, LPCWSTR contentName, HAMSISESSION amsiSession, AMSI_RESULT *result);
+    typedef HRESULT (WINAPI* LPPROC_AMSISCANBUFFER)(Win32::HAMSICONTEXT amsiContext, PVOID buffer, ULONG length, LPCWSTR contentName, Win32::HAMSISESSION amsiSession, Win32::AMSI_RESULT *result);
     // BCryptCloseAlgorithmProvider
     typedef NTSTATUS (WINAPI* LPPROC_BCRYPTCLOSEALGORITHMPROVIDER)(BCRYPT_ALG_HANDLE hAlgorithm, ULONG dwFlags);
     // BCryptDecrypt
@@ -367,7 +367,7 @@ namespace Procs
     // FreeLibrary
     typedef BOOL (WINAPI* LPPROC_FREELIBRARY)(HMODULE hLibModule);
     // GetAdaptersAddresses
-    typedef ULONG (WINAPI* LPPROC_GETADAPTERSADDRESSES)(ULONG Family, ULONG Flags, PVOID Reserved, PIP_ADAPTER_ADDRESSES AdapterAddresses, PULONG SizePointer);
+    typedef ULONG (WINAPI* LPPROC_GETADAPTERSADDRESSES)(ULONG Family, ULONG Flags, PVOID Reserved, Win32::PIP_ADAPTER_ADDRESSES AdapterAddresses, PULONG SizePointer);
     // GetComputerNameW
     typedef BOOL (WINAPI* LPPROC_GETCOMPUTERNAMEW)(LPWSTR lpBuffer, LPDWORD nSize);
     // GetEnvironmentStringsW
@@ -397,7 +397,7 @@ namespace Procs
     // GetSystemTime
     typedef VOID (WINAPI* LPPROC_GETSYSTEMTIME)(LPSYSTEMTIME lpSystemTime);
     // GetTcpTable
-    typedef ULONG (WINAPI* LPPROC_GETTCPTABLE)(PMIB_TCPTABLE TcpTable, PULONG SizePointer, BOOL Order);
+    typedef ULONG (WINAPI* LPPROC_GETTCPTABLE)(Win32::PMIB_TCPTABLE TcpTable, PULONG SizePointer, BOOL Order);
     // GetTokenInformation
     typedef BOOL (WINAPI* LPPROC_GETTOKENINFORMATION)(HANDLE TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, LPVOID TokenInformation, DWORD TokenInformationLength, PDWORD ReturnLength);
     // GetUserNameW
@@ -441,11 +441,11 @@ namespace Procs
     // MoveFileW
     typedef BOOL (WINAPI* LPPROC_MOVEFILEW)(LPCWSTR lpExistingFileName, LPCWSTR lpNewFileName);
     // NetApiBufferFree
-    typedef NET_API_STATUS (WINAPI* LPPROC_NETAPIBUFFERFREE)(LPVOID Buffer);
+    typedef Win32::NET_API_STATUS (WINAPI* LPPROC_NETAPIBUFFERFREE)(LPVOID Buffer);
     // NetLocalGroupEnum
-    typedef NET_API_STATUS (WINAPI* LPPROC_NETLOCALGROUPENUM)(LPCWSTR servername, DWORD level, LPBYTE *bufptr, DWORD prefmaxlen, LPDWORD entriesread, LPDWORD totalentries, PDWORD_PTR resumehandle);
+    typedef Win32::NET_API_STATUS (WINAPI* LPPROC_NETLOCALGROUPENUM)(LPCWSTR servername, DWORD level, LPBYTE *bufptr, DWORD prefmaxlen, LPDWORD entriesread, LPDWORD totalentries, PDWORD_PTR resumehandle);
     // NetUserEnum
-    typedef NET_API_STATUS (WINAPI* LPPROC_NETUSERENUM)(LPCWSTR servername, DWORD level, DWORD filter, LPBYTE *bufptr, DWORD prefmaxlen, LPDWORD entriesread, LPDWORD totalentries, PDWORD resume_handle);
+    typedef Win32::NET_API_STATUS (WINAPI* LPPROC_NETUSERENUM)(LPCWSTR servername, DWORD level, DWORD filter, LPBYTE *bufptr, DWORD prefmaxlen, LPDWORD entriesread, LPDWORD totalentries, PDWORD resume_handle);
     // OpenProcess
     typedef HANDLE (WINAPI* LPPROC_OPENPROCESS)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);
     // OpenProcessToken

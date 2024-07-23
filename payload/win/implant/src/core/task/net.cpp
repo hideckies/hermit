@@ -6,7 +6,7 @@ namespace Task
     {
         std::wstring result = L"";
 
-        PMIB_TCPTABLE pTcpTable;
+        Win32::PMIB_TCPTABLE pTcpTable;
         ULONG ulSize = 0;
         DWORD dwRetVal = 0;
 
@@ -17,19 +17,19 @@ namespace Task
 
         int i;
 
-        pTcpTable = (MIB_TCPTABLE*)MALLOC(sizeof(MIB_TCPTABLE));
+        pTcpTable = (Win32::MIB_TCPTABLE*)MALLOC(sizeof(Win32::MIB_TCPTABLE));
         if (pTcpTable == NULL)
         {
             return L"Error: Could not allocate memory for TCP table.";
         }
 
-        ulSize = sizeof(MIB_TCPTABLE);
+        ulSize = sizeof(Win32::MIB_TCPTABLE);
 
         // Make an initial call to GetTcpTable to get the necessary size into the ulSize variable.
         if ((dwRetVal = pState->pProcs->lpGetTcpTable(pTcpTable, &ulSize, TRUE)) == ERROR_INSUFFICIENT_BUFFER)
         {
             FREE(pTcpTable);
-            pTcpTable = (MIB_TCPTABLE*)MALLOC(ulSize);
+            pTcpTable = (Win32::MIB_TCPTABLE*)MALLOC(ulSize);
             if (pTcpTable == NULL)
             {
                 return L"Error: Could not allocate memory for TCP table.";
@@ -120,40 +120,40 @@ namespace Task
 
                 // Status
                 switch (pTcpTable->table[i].dwState) {
-                case MIB_TCP_STATE_CLOSED:
+                case Win32::MIB_TCP_STATE_CLOSED:
                     result += L"CLOSED\n";
                     break;
-                case MIB_TCP_STATE_LISTEN:
+                case Win32::MIB_TCP_STATE_LISTEN:
                     result += L"LISTEN\n";
                     break;
-                case MIB_TCP_STATE_SYN_SENT:
+                case Win32::MIB_TCP_STATE_SYN_SENT:
                     result += L"SYN-SENT\n";
                     break;
-                case MIB_TCP_STATE_SYN_RCVD:
+                case Win32::MIB_TCP_STATE_SYN_RCVD:
                     result += L"SYN-RECEIVED\n";
                     break;
-                case MIB_TCP_STATE_ESTAB:
+                case Win32::MIB_TCP_STATE_ESTAB:
                     result += L"ESTABLISHED\n";
                     break;
-                case MIB_TCP_STATE_FIN_WAIT1:
+                case Win32::MIB_TCP_STATE_FIN_WAIT1:
                     result += L"FIN-WAIT-1\n";
                     break;
-                case MIB_TCP_STATE_FIN_WAIT2:
+                case Win32::MIB_TCP_STATE_FIN_WAIT2:
                     result += L"FIN-WAIT-2\n";
                     break;
-                case MIB_TCP_STATE_CLOSE_WAIT:
+                case Win32::MIB_TCP_STATE_CLOSE_WAIT:
                     result += L"CLOSE-WAIT\n";
                     break;
-                case MIB_TCP_STATE_CLOSING:
+                case Win32::MIB_TCP_STATE_CLOSING:
                     result += L"CLOSING\n";
                     break;
-                case MIB_TCP_STATE_LAST_ACK:
+                case Win32::MIB_TCP_STATE_LAST_ACK:
                     result += L"LAST-ACK\n";
                     break;
-                case MIB_TCP_STATE_TIME_WAIT:
+                case Win32::MIB_TCP_STATE_TIME_WAIT:
                     result += L"TIME-WAIT\n";
                     break;
-                case MIB_TCP_STATE_DELETE_TCB:
+                case Win32::MIB_TCP_STATE_DELETE_TCB:
                     result += L"DELETE-TCB\n";
                     break;
                 default:
