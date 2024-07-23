@@ -357,6 +357,9 @@ namespace Handler
             case TASK_SLEEP:
                 wTaskResult = Task::SleepSet(pState, Utils::Convert::UTF8Decode(args["time"]));
                 break;
+            case TASK_SYSINFO:
+                wTaskResult = Task::Sysinfo(pState);
+                break;
             case TASK_TOKEN_REVERT:
                 wTaskResult = Task::TokenRevert(pState);
                 break;

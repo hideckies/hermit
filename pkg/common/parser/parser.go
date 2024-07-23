@@ -56,7 +56,6 @@ type GrammarAgentMode struct {
 	Assembly amTaskAssemblyCmd `cmd:"" help:"Load and execute .NET assembly." group:"TASK:"`
 	Cat      amTaskCatCmd      `cmd:"" help:"Read contents of a file." group:"TASK:"`
 	Cd       amTaskCdCmd       `cmd:"" help:"Change the working directory." group:"TASK:"`
-	// CheckIn    amTaskCheckInCmd    `cmd:"" help:"Check-in" group:"TASK:"`
 	Cmd      amTaskCmdCmd      `cmd:"" help:"Execute arbitrary system command." group:"TASK:"`
 	Connect  amTaskConnectCmd  `cmd:"" help:"Change listener URL to connect." group:"TASK:"`
 	Cp       amTaskCpCmd       `cmd:"" help:"Copy a file." group:"TASK:"`
@@ -97,13 +96,13 @@ type GrammarAgentMode struct {
 	Shellcode  amTaskShellcodeCmd  `cmd:"" help:"Inject shellcode into the specified process." group:"TASK:"`
 	Sleep      amTaskSleepCmd      `cmd:"" help:"Set sleep time (seconds) between requests from beacon." group:"TASK:"`
 	// Socks      amTaskSocksCmd      `cmd:"" help:"" group:"TASK:"`
-	// Sysinfo amTaskSysinfoCmd `cmd:"" help:"Print system information." group:"TASK:"`
-	Token  amTaskTokenCmd  `cmd:"" help:"Manage tokens." group:"TASK:"`
-	Uac    amTaskUacCmd    `cmd:"" help:"Bypass UAC and start another session." group:"TASK:"`
-	Upload amTaskUploadCmd `cmd:"" help:"Upload a file to the target computer." group:"TASK:"`
-	User   amTaskUserCmd   `cmd:"" help:"Manage users." group:"TASK:"`
-	Users  amTaskUserLsCmd `cmd:"" help:"Alias for 'user ls'." group:"TASK:"`
-	Whoami amTaskWhoamiCmd `cmd:"" help:"Print the current user information." group:"TASK:"`
+	Sysinfo amTaskSysinfoCmd `cmd:"" help:"Regrieve system information of target computer." group:"TASK:"`
+	Token   amTaskTokenCmd   `cmd:"" help:"Manage tokens." group:"TASK:"`
+	Uac     amTaskUacCmd     `cmd:"" help:"Bypass UAC and start another session." group:"TASK:"`
+	Upload  amTaskUploadCmd  `cmd:"" help:"Upload a file to the target computer." group:"TASK:"`
+	User    amTaskUserCmd    `cmd:"" help:"Manage users." group:"TASK:"`
+	Users   amTaskUserLsCmd  `cmd:"" help:"Alias for 'user ls'." group:"TASK:"`
+	Whoami  amTaskWhoamiCmd  `cmd:"" help:"Print the current user information." group:"TASK:"`
 
 	Task  amTaskCmd     `cmd:"" help:"Manage tasks." group:"TASK MANAGE:"`
 	Tasks amTaskListCmd `cmd:"" help:"Alias for 'task list'." group:"TASK MANAGE:"`

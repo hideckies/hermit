@@ -187,10 +187,14 @@ namespace Procs
         pProcs->lpFreeLibrary                   = reinterpret_cast<LPPROC_FREELIBRARY>(pFreeLibrary);
         PVOID pGetComputerNameW                 = GetProcAddressByHash(hKernel32, HASH_FUNC_GETCOMPUTERNAMEW);
         pProcs->lpGetComputerNameW              = reinterpret_cast<LPPROC_GETCOMPUTERNAMEW>(pGetComputerNameW);
+        PVOID pGetComputerNameExW               = GetProcAddressByHash(hKernel32, HASH_FUNC_GETCOMPUTERNAMEEXW);
+        pProcs->lpGetComputerNameExW            = reinterpret_cast<LPPROC_GETCOMPUTERNAMEEXW>(pGetComputerNameExW);
         PVOID pGetEnvironmentStringsW           = GetProcAddressByHash(hKernel32, HASH_FUNC_GETENVIRONMENTSTRINGSW);
         pProcs->lpGetEnvironmentStringsW        = reinterpret_cast<LPPROC_GETENVIRONMENTSTRINGSW>(pGetEnvironmentStringsW);
         PVOID pGetLastError                     = GetProcAddressByHash(hKernel32, HASH_FUNC_GETLASTERROR);
         pProcs->lpGetLastError                  = reinterpret_cast<LPPROC_GETLASTERROR>(pGetLastError);
+        PVOID pGetLocalTime                     = GetProcAddressByHash(hKernel32, HASH_FUNC_GETLOCALTIME);
+        pProcs->lpGetLocalTime                  = reinterpret_cast<LPPROC_GETLOCALTIME>(pGetLocalTime);
         PVOID pGetModuleFileNameW               = GetProcAddressByHash(hKernel32, HASH_FUNC_GETMODULEFILENAMEW);
         pProcs->lpGetModuleFileNameW            = reinterpret_cast<LPPROC_GETMODULEFILENAMEW>(pGetModuleFileNameW);
         PVOID pGetModuleHandleA                 = GetProcAddressByHash(hKernel32, HASH_FUNC_GETMODULEHANDLEA);
@@ -207,6 +211,10 @@ namespace Procs
         pProcs->lpGetSystemInfo                 = reinterpret_cast<LPPROC_GETSYSTEMINFO>(pGetSystemInfo);
         PVOID pGetSystemTime                    = GetProcAddressByHash(hKernel32, HASH_FUNC_GETSYSTEMTIME);
         pProcs->lpGetSystemTime                 = reinterpret_cast<LPPROC_GETSYSTEMTIME>(pGetSystemTime);
+        PVOID pGetTickCount                     = GetProcAddressByHash(hKernel32, HASH_FUNC_GETTICKCOUNT);
+        pProcs->lpGetTickCount                  = reinterpret_cast<LPPROC_GETTICKCOUNT>(pGetTickCount);
+        PVOID pGetVersionExW                    = GetProcAddressByHash(hKernel32, HASH_FUNC_GETVERSIONEXW);
+        pProcs->lpGetVersionExW                 = reinterpret_cast<LPPROC_GETVERSIONEXW>(pGetVersionExW);
         PVOID pGlobalAlloc                      = GetProcAddressByHash(hKernel32, HASH_FUNC_GLOBALALLOC);
         pProcs->lpGlobalAlloc                   = reinterpret_cast<LPPROC_GLOBALALLOC>(pGlobalAlloc);
         PVOID pGlobalFree                       = GetProcAddressByHash(hKernel32, HASH_FUNC_GLOBALFREE);

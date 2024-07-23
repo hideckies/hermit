@@ -1072,6 +1072,26 @@ func (c *amTaskSleepCmd) Run(
 	return nil
 }
 
+// SYSINFO
+type amTaskSysinfoCmd struct{}
+
+func (c *amTaskSysinfoCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // TOKEN
 type amTaskTokenRevertCmd struct{}
 

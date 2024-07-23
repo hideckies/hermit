@@ -13,6 +13,7 @@
 #include <dbghelp.h>
 #include <string>
 #include <strsafe.h>
+#include <sysinfoapi.h>
 
 // They're used for calculating module/func hashes.
 #define HASH_IV                                 0x35
@@ -107,9 +108,11 @@
 #define HASH_FUNC_FREELIBRARY                   0x26174ba
 #define HASH_FUNC_GETADAPTERSADDRESSES          0xc7179a9d
 #define HASH_FUNC_GETCOMPUTERNAMEW              0x75f9dd70
+#define HASH_FUNC_GETCOMPUTERNAMEEXW            0xc154e2bd
 #define HASH_FUNC_GETENVIRONMENTSTRINGSW        0x6f39aea7
 #define HASH_FUNC_GETFOREGROUNDWINDOW           0x41b94f14
 #define HASH_FUNC_GETLASTERROR                  0xf03e69b1
+#define HASH_FUNC_GETLOCALTIME                  0xdb736df7
 #define HASH_FUNC_GETMESSAGE                    0xb704bce6
 #define HASH_FUNC_GETMODULEFILENAMEW            0x9896e0e3
 #define HASH_FUNC_GETMODULEHANDLEA              0xbf3b40ac
@@ -121,8 +124,10 @@
 #define HASH_FUNC_GETSYSTEMMETRICS              0xc45b24b3
 #define HASH_FUNC_GETSYSTEMTIME                 0x3498cb5d
 #define HASH_FUNC_GETTCPTABLE                   0x7f7271ee
+#define HASH_FUNC_GETTICKCOUNT                  0x18335d91
 #define HASH_FUNC_GETTOKENINFORMATION           0x98171074
 #define HASH_FUNC_GETUSERNAMEW                  0x6f996540
+#define HASH_FUNC_GETVERSIONEXW                 0xd4a6794d
 #define HASH_FUNC_GLOBALALLOC                   0x25c2f9dd
 #define HASH_FUNC_GLOBALFREE                    0xcf0cfc4
 #define HASH_FUNC_HEAPALLOC                     0x4cb68674
@@ -370,12 +375,16 @@ namespace Procs
     typedef ULONG (WINAPI* LPPROC_GETADAPTERSADDRESSES)(ULONG Family, ULONG Flags, PVOID Reserved, Win32::PIP_ADAPTER_ADDRESSES AdapterAddresses, PULONG SizePointer);
     // GetComputerNameW
     typedef BOOL (WINAPI* LPPROC_GETCOMPUTERNAMEW)(LPWSTR lpBuffer, LPDWORD nSize);
+    // GetComputerNameExW
+    typedef BOOL (WINAPI* LPPROC_GETCOMPUTERNAMEEXW)(COMPUTER_NAME_FORMAT NameType, LPWSTR lpBuffer, LPDWORD nSize);
     // GetEnvironmentStringsW
     typedef LPWCH (WINAPI* LPPROC_GETENVIRONMENTSTRINGSW)();
     // GetForegroundWindow
     typedef HWND (WINAPI* LPPROC_GETFOREGROUNDWINDOW)();
     // GetLastError
     typedef DWORD (WINAPI* LPPROC_GETLASTERROR)();
+    // GetLocalTime
+    typedef VOID (WINAPI* LPPROC_GETLOCALTIME)(LPSYSTEMTIME lpSystemTime);
     // GetMessage
     typedef BOOL (WINAPI* LPPROC_GETMESSAGE)(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
     // GetModuleFileNameW
@@ -398,10 +407,14 @@ namespace Procs
     typedef VOID (WINAPI* LPPROC_GETSYSTEMTIME)(LPSYSTEMTIME lpSystemTime);
     // GetTcpTable
     typedef ULONG (WINAPI* LPPROC_GETTCPTABLE)(Win32::PMIB_TCPTABLE TcpTable, PULONG SizePointer, BOOL Order);
+    // GetTickCount
+    typedef DWORD (WINAPI* LPPROC_GETTICKCOUNT)();
     // GetTokenInformation
     typedef BOOL (WINAPI* LPPROC_GETTOKENINFORMATION)(HANDLE TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, LPVOID TokenInformation, DWORD TokenInformationLength, PDWORD ReturnLength);
     // GetUserNameW
     typedef BOOL (WINAPI* LPPROC_GETUSERNAMEW)(LPWSTR lpBuffer, LPDWORD pcbBuffer);
+    // GetVersionExW
+    typedef BOOL (WINAPI* LPPROC_GETVERSIONEXW)(LPOSVERSIONINFOEXW lpVersionInformation);
     // GlobalAlloc
     typedef HGLOBAL (WINAPI* LPPROC_GLOBALALLOC)(UINT uFlags, SIZE_T dwBytes);
     // GlobalFree
@@ -631,9 +644,11 @@ namespace Procs
         LPPROC_FREELIBRARY                  lpFreeLibrary                       = nullptr;
         LPPROC_GETADAPTERSADDRESSES         lpGetAdaptersAddresses              = nullptr;
         LPPROC_GETCOMPUTERNAMEW             lpGetComputerNameW                  = nullptr;
+        LPPROC_GETCOMPUTERNAMEEXW           lpGetComputerNameExW                = nullptr;
         LPPROC_GETENVIRONMENTSTRINGSW       lpGetEnvironmentStringsW            = nullptr;
         LPPROC_GETFOREGROUNDWINDOW          lpGetForegroundWindow               = nullptr;
         LPPROC_GETLASTERROR                 lpGetLastError                      = nullptr;
+        LPPROC_GETLOCALTIME                 lpGetLocalTime                      = nullptr;
         LPPROC_GETMESSAGE                   lpGetMessage                        = nullptr;
         LPPROC_GETMODULEFILENAMEW           lpGetModuleFileNameW                = nullptr;
         LPPROC_GETMODULEHANDLEA             lpGetModuleHandleA                  = nullptr;
@@ -645,8 +660,10 @@ namespace Procs
         LPPROC_GETSYSTEMMETRICS             lpGetSystemMetrics                  = nullptr;
         LPPROC_GETSYSTEMTIME                lpGetSystemTime                     = nullptr;
         LPPROC_GETTCPTABLE                  lpGetTcpTable                       = nullptr;
+        LPPROC_GETTICKCOUNT                 lpGetTickCount                      = nullptr;
         LPPROC_GETTOKENINFORMATION          lpGetTokenInformation               = nullptr;
         LPPROC_GETUSERNAMEW                 lpGetUserNameW                      = nullptr;
+        LPPROC_GETVERSIONEXW                lpGetVersionExW                     = nullptr;
         LPPROC_GLOBALALLOC                  lpGlobalAlloc                       = nullptr;
         LPPROC_GLOBALFREE                   lpGlobalFree                        = nullptr;
         LPPROC_HEAPALLOC                    lpHeapAlloc                         = nullptr;

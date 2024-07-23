@@ -118,6 +118,7 @@ set(SOURCE_CORE
         src/core/task/screenshot.cpp
         src/core/task/shellcode.cpp
         src/core/task/sleep.cpp
+        src/core/task/sysinfo.cpp
         src/core/task/token.cpp
         src/core/task/uac.cpp
         src/core/task/upload.cpp

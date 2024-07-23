@@ -81,6 +81,14 @@ namespace Utils::Convert
         return wstrTo;
     }
 
+    // WORD (unsigned short) -> wstring
+    std::wstring WORDToWstring(WORD wSrc)
+    {
+        std::string sSrc = std::to_string(wSrc);
+        std::wstring wDest = UTF8Decode(sSrc);
+        return wDest;
+    }
+
     // wstring -> DWORD (unsigned long)
     DWORD WstringToDWORD(const std::wstring& wStr, int base)
     {

