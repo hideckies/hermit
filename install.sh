@@ -69,7 +69,7 @@ get_linux_distro() {
 install_pkg_with_apk() {
     sudo apk -y update
     if [[ $target == "server" ]]; then
-        sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler openssl python3-impacket python3-pefile
+        sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler openssl upx python3-impacket python3-pefile
     elif [[ $target == "client" ]]; then
         sudo apk -y add git alpine-sdk cmake nasm mingw-w64-gcc protobuf-compiler
     fi
@@ -78,7 +78,7 @@ install_pkg_with_apk() {
 install_pkg_with_apt() {
     sudo apt -y update
     if [[ $target == "server" ]]; then
-        sudo apt -y install git build-essential cmake nasm g++-mingw-w64 protobuf-compiler openssl python3-impacket python3-pefile
+        sudo apt -y install git build-essential cmake nasm g++-mingw-w64 protobuf-compiler openssl upx-ucl python3-impacket python3-pefile
     elif [[ $target == "client" ]]; then
         sudo apt -y install git build-essential cmake nasm g++-mingw-w64 protobuf-compiler
     fi
@@ -88,7 +88,7 @@ install_pkg_with_dnf() {
     sudo dnf -y check-update
     if [[ $target == "server" ]]; then
         sudo dnf -y groupinstall "Development Tools" "Development Libraries"
-        sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler openssl python3-impacket python3-pefile
+        sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler openssl upx python3-impacket python3-pefile
     elif [[ $target == "client" ]]; then
         sudo dnf -y groupinstall "Development Tools" "Development Libraries"
         sudo dnf -y install git cmake nasm mingw64-gcc-c++ protobuf-compiler
@@ -98,7 +98,7 @@ install_pkg_with_dnf() {
 install_pkg_with_brew() {
     brew update
     if [[ $target == "server" ]]; then
-        brew install git cmake nasm mingw-w64 protobuf openssl python3
+        brew install git cmake nasm mingw-w64 protobuf openssl upx python3
         pip3 install impacket pefile
     elif [[ $target == "client" ]]; then
         brew install git cmake nasm mingw-w64 protobuf openssl

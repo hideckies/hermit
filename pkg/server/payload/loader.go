@@ -33,6 +33,7 @@ type Loader struct {
 	ProcessToInject  string
 	IndirectSyscalls bool
 	AntiDebug        bool
+	CompLevel        uint64
 }
 
 func NewLoader(
@@ -51,6 +52,7 @@ func NewLoader(
 	processToInject string,
 	indirectSyscalls bool,
 	antiDebug bool,
+	compLevel uint64,
 ) *Loader {
 	if _uuid == "" {
 		_uuid = uuid.NewString()
@@ -75,6 +77,7 @@ func NewLoader(
 		ProcessToInject:  processToInject,
 		IndirectSyscalls: indirectSyscalls,
 		AntiDebug:        antiDebug,
+		CompLevel:        compLevel,
 	}
 }
 
@@ -234,6 +237,21 @@ func (l *Loader) Generate(serverState *state.ServerState) (data []byte, outFile 
 		// ---------------------------------------------------------------------------------------
 	} else {
 		return nil, "", fmt.Errorf("target is not recognized")
+	}
+
+	// Compress the file with UPX
+	if l.CompLevel > 0 {
+		outText, err := meta.ExecCommand(
+			"upx",
+			fmt.Sprintf("-%d", l.CompLevel),
+			outFile,
+		)
+		if err != nil {
+			return nil, "", fmt.Errorf("upx error: %v", err)
+		}
+		if strings.Contains(strings.ToLower(outText), "error:") {
+			return nil, "", fmt.Errorf("upx error: %s", outText)
+		}
 	}
 
 	data, err = os.ReadFile(outFile)

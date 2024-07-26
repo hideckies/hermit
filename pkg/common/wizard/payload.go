@@ -318,6 +318,28 @@ func WizardPayloadImplant(
 		break
 	}
 
+	// Set compresssion (UPX) level
+	var oCompLevel uint64 = 0
+	if oFormat == "dll" || oFormat == "exe" {
+		for {
+			res, err := stdin.ReadInput("UPX Compression Level (select between 0 and 9)", strconv.FormatUint(oCompLevel, 10))
+			if err != nil {
+				stdout.LogFailed(fmt.Sprint(err))
+				continue
+			}
+			oCompLevel, err = strconv.ParseUint(res, 10, 64)
+			if err != nil {
+				stdout.LogFailed(fmt.Sprint(err))
+				continue
+			}
+			if 9 < oCompLevel {
+				stdout.LogFailed("Select the level between 0 and 9.")
+				continue
+			}
+			break
+		}
+	}
+
 	table := []stdout.SingleTableItem{
 		stdout.NewSingleTableItem("Type", oType),
 		stdout.NewSingleTableItem("Target OS", oOs),
@@ -329,6 +351,7 @@ func WizardPayloadImplant(
 		stdout.NewSingleTableItem("KillDate (UTC)", oKillDateStr),
 		stdout.NewSingleTableItem("Indirect Syscalls", fmt.Sprintf("%t", oIndirectSyscalls)),
 		stdout.NewSingleTableItem("Anti-Debug", fmt.Sprintf("%t", oAntiDebug)),
+		stdout.NewSingleTableItem("UPX Compression Level", fmt.Sprintf("%d", oCompLevel)),
 	}
 	stdout.PrintSingleTable("Implant Options", table)
 
@@ -359,6 +382,7 @@ func WizardPayloadImplant(
 		oKillDate,
 		oIndirectSyscalls,
 		oAntiDebug,
+		oCompLevel,
 	), nil
 }
 
@@ -505,6 +529,28 @@ func WizardPayloadLoader(
 		break
 	}
 
+	// Set compresssion (UPX) level
+	var oCompLevel uint64 = 0
+	if oFormat == "dll" || oFormat == "exe" {
+		for {
+			res, err := stdin.ReadInput("UPX Compression Level (select between 0 and 9)", strconv.FormatUint(oCompLevel, 10))
+			if err != nil {
+				stdout.LogFailed(fmt.Sprint(err))
+				continue
+			}
+			oCompLevel, err = strconv.ParseUint(res, 10, 64)
+			if err != nil {
+				stdout.LogFailed(fmt.Sprint(err))
+				continue
+			}
+			if 9 < oCompLevel {
+				stdout.LogFailed("Select the level between 0 and 9.")
+				continue
+			}
+			break
+		}
+	}
+
 	table := []stdout.SingleTableItem{
 		stdout.NewSingleTableItem("Target OS", oOs),
 		stdout.NewSingleTableItem("Target Arch", oArch),
@@ -516,6 +562,7 @@ func WizardPayloadLoader(
 		stdout.NewSingleTableItem("Target Process", oProcessToInject),
 		stdout.NewSingleTableItem("Indirect Syscalls", fmt.Sprintf("%t", oIndirectSyscalls)),
 		stdout.NewSingleTableItem("Anti-Debug", fmt.Sprintf("%t", oAntiDebug)),
+		stdout.NewSingleTableItem("UPX Compression Level", fmt.Sprintf("%d", oCompLevel)),
 	}
 	stdout.PrintSingleTable("Loader Options", table)
 
@@ -548,6 +595,7 @@ func WizardPayloadLoader(
 		oProcessToInject,
 		oIndirectSyscalls,
 		oAntiDebug,
+		oCompLevel,
 	), nil
 }
 

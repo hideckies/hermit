@@ -41,6 +41,7 @@ type Implant struct {
 	KillDate         uint
 	IndirectSyscalls bool
 	AntiDebug        bool
+	CompLevel        uint64
 }
 
 func NewImplant(
@@ -59,6 +60,7 @@ func NewImplant(
 	killDate uint,
 	indirectSyscalls bool,
 	antiDebug bool,
+	compLevel uint64,
 ) *Implant {
 	if _uuid == "" {
 		_uuid = uuid.NewString()
@@ -83,6 +85,7 @@ func NewImplant(
 		KillDate:         killDate,
 		IndirectSyscalls: indirectSyscalls,
 		AntiDebug:        antiDebug,
+		CompLevel:        compLevel,
 	}
 }
 
@@ -256,6 +259,21 @@ func (i *Implant) Generate(serverState *state.ServerState) (data []byte, outFile
 		// ---------------------------------------------------------------------------------------
 	} else {
 		return nil, "", fmt.Errorf("target is not recognized")
+	}
+
+	// Compress the file with UPX
+	if i.CompLevel > 0 {
+		outText, err := meta.ExecCommand(
+			"upx",
+			fmt.Sprintf("-%d", i.CompLevel),
+			outFile,
+		)
+		if err != nil {
+			return nil, "", fmt.Errorf("upx error: %v", err)
+		}
+		if strings.Contains(strings.ToLower(outText), "error:") {
+			return nil, "", fmt.Errorf("upx error: %s", outText)
+		}
 	}
 
 	data, err = os.ReadFile(outFile)

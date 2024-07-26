@@ -25,6 +25,7 @@ I'm developing this for my learning purpose.
 - Common Evasion Techniques
 - Common Persistence Techniques
 - Anti-Debug
+- UPX Packer Integration
 - SQLite for saving data
 
 <br />

@@ -91,6 +91,7 @@ message PayloadImplant {
   int64 killDate = 13;
   bool indirectSyscalls = 14;
   bool antiDebug = 15;
+  int64 compLevel = 16;
 }
 
 message PayloadLoader {
@@ -109,6 +110,7 @@ message PayloadLoader {
   string processToInject = 13;
   bool indirectSyscalls = 14;
   bool antiDebug = 15;
+  int64 compLevel = 16;
 }
 
 message PayloadModule {
