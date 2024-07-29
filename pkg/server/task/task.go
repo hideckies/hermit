@@ -8,54 +8,60 @@ import (
 // TASK CODE
 // *sync this with the code in 'payload/win/implant/include/core/task.hpp'
 const (
-	TASK_ASSEMBLY     = 0x01
-	TASK_CAT          = 0x02
-	TASK_CD           = 0x03
-	TASK_CMD          = 0x04
-	TASK_CONNECT      = 0x05
-	TASK_CP           = 0x06
-	TASK_DISABLE_AV   = 0x07
-	TASK_DLL          = 0x08
-	TASK_DOWNLOAD     = 0x09
-	TASK_ENV_LS       = 0x10
-	TASK_FIND         = 0x11
-	TASK_GROUP_LS     = 0x12
-	TASK_HASHDUMP     = 0x13
-	TASK_HISTORY      = 0x14
-	TASK_IP           = 0x15
-	TASK_JITTER       = 0x16
-	TASK_KEYLOG       = 0x17
-	TASK_KILL         = 0x18
-	TASK_KILLDATE     = 0x19
-	TASK_LS           = 0x20
-	TASK_MIGRATE      = 0x21
-	TASK_MKDIR        = 0x22
-	TASK_MV           = 0x23
-	TASK_NET          = 0x24
-	TASK_PE           = 0x25
-	TASK_PERSIST      = 0x26
-	TASK_PROCDUMP     = 0x27
-	TASK_PS_KILL      = 0x28
-	TASK_PS_LS        = 0x29
-	TASK_PWD          = 0x30
-	TASK_REG_QUERY    = 0x31
-	TASK_RM           = 0x32
-	TASK_RMDIR        = 0x33
-	TASK_RPORTFWD_ADD = 0x34
-	TASK_RPORTFWD_LS  = 0x35
-	TASK_RPORTFWD_RM  = 0x36
-	TASK_RUNAS        = 0x37
-	TASK_SCREENSHOT   = 0x38
-	TASK_SHELLCODE    = 0x39
-	TASK_SLEEP        = 0x40
-	TASK_SYSINFO      = 0x41
-	TASK_TOKEN_REVERT = 0x42
-	TASK_TOKEN_STEAL  = 0x43
-	TASK_UAC          = 0x44
-	TASK_UPLOAD       = 0x45
-	TASK_USER_LS      = 0x46
-	TASK_WHOAMI       = 0x47
-	TASK_WHOAMI_PRIV  = 0x48
+	TASK_ASSEMBLY      = 0x01
+	TASK_CAT           = 0x02
+	TASK_CD            = 0x03
+	TASK_CMD           = 0x04
+	TASK_CONNECT       = 0x05
+	TASK_CP            = 0x06
+	TASK_DISABLE_AV    = 0x07
+	TASK_DLL           = 0x08
+	TASK_DOWNLOAD      = 0x09
+	TASK_ENV_LS        = 0x10
+	TASK_FIND          = 0x11
+	TASK_GROUP_ADD     = 0x12
+	TASK_GROUP_ADDUSER = 0x13
+	TASK_GROUP_LS      = 0x14
+	TASK_GROUP_RM      = 0x15
+	TASK_GROUP_RMUSER  = 0x16
+	TASK_GROUP_USERS   = 0x17
+	TASK_HASHDUMP      = 0x18
+	TASK_HISTORY       = 0x19
+	TASK_IP            = 0x20
+	TASK_JITTER        = 0x21
+	TASK_KEYLOG        = 0x22
+	TASK_KILL          = 0x23
+	TASK_KILLDATE      = 0x24
+	TASK_LS            = 0x25
+	TASK_MIGRATE       = 0x26
+	TASK_MKDIR         = 0x27
+	TASK_MV            = 0x28
+	TASK_NET           = 0x29
+	TASK_PE            = 0x30
+	TASK_PERSIST       = 0x31
+	TASK_PROCDUMP      = 0x32
+	TASK_PS_KILL       = 0x33
+	TASK_PS_LS         = 0x34
+	TASK_PWD           = 0x35
+	TASK_REG_QUERY     = 0x36
+	TASK_RM            = 0x37
+	TASK_RPORTFWD_ADD  = 0x38
+	TASK_RPORTFWD_LS   = 0x39
+	TASK_RPORTFWD_RM   = 0x40
+	TASK_RUNAS         = 0x41
+	TASK_SCREENSHOT    = 0x42
+	TASK_SHELLCODE     = 0x43
+	TASK_SLEEP         = 0x44
+	TASK_SYSINFO       = 0x45
+	TASK_TOKEN_REVERT  = 0x46
+	TASK_TOKEN_STEAL   = 0x47
+	TASK_UAC           = 0x48
+	TASK_UPLOAD        = 0x49
+	TASK_USER_ADD      = 0x50
+	TASK_USER_LS       = 0x51
+	TASK_USER_RM       = 0x52
+	TASK_WHOAMI        = 0x53
+	TASK_WHOAMI_PRIV   = 0x54
 )
 
 func GetTaskCode(task string) (int, error) {
@@ -82,8 +88,18 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_ENV_LS, nil
 	case "find":
 		return TASK_FIND, nil
+	case "group add":
+		return TASK_GROUP_ADD, nil
+	case "group add-user":
+		return TASK_GROUP_ADDUSER, nil
 	case "group ls", "groups":
 		return TASK_GROUP_LS, nil
+	case "group rm":
+		return TASK_GROUP_RM, nil
+	case "group rm-user":
+		return TASK_GROUP_RMUSER, nil
+	case "group users":
+		return TASK_GROUP_USERS, nil
 	case "hashdump":
 		return TASK_HASHDUMP, nil
 	case "history":
@@ -124,8 +140,6 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_REG_QUERY, nil
 	case "rm":
 		return TASK_RM, nil
-	case "rmdir":
-		return TASK_RMDIR, nil
 	case "rportfwd add":
 		return TASK_RPORTFWD_ADD, nil
 	case "rportfwd ls":
@@ -150,8 +164,12 @@ func GetTaskCode(task string) (int, error) {
 		return TASK_UAC, nil
 	case "upload":
 		return TASK_UPLOAD, nil
+	case "user add":
+		return TASK_USER_ADD, nil
 	case "user ls", "users":
 		return TASK_USER_LS, nil
+	case "user rm":
+		return TASK_USER_RM, nil
 	case "whoami":
 		return TASK_WHOAMI, nil
 	case "whoami priv":

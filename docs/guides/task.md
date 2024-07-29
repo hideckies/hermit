@@ -39,8 +39,7 @@ TASK:
   ps ls           List processes.
   pwd             Print the current working directory.
   reg query       Enumerate subkeys for the specified path.
-  rm              Remove a file.
-  rmdir           Remove a directory.
+  rm              Remove file or directory.
   rportfwd add    Add settings to reverse port forwarding.
   rportfwd ls     List settings for reverse port forwarding.
   rportfwd rm     Stop and remove listener for reverse port forwarding.
@@ -48,11 +47,14 @@ TASK:
   screenshot      Take a screenshot on target computer.
   shellcode       Inject shellcode into the specified process.
   sleep           Set sleep time (seconds) between requests from beacon.
+  sysinfo         Regrieve system information of target computer.
   token revert    Revert back to the original process token.
   token steal     Steal token from the specified process and impersonate process.
   uac             Bypass UAC and start another session.
   upload          Upload a file to the target computer.
+  user add        Add new user.
   user ls         List users.
+  user rm         Delete user account.
   users           Alias for 'user ls'.
   whoami          Print the current user information.
 ```
@@ -354,18 +356,16 @@ Hermit [agent-abcd] > reg query "HKLM\\SOFTWARE\\Microsoft" -r
 
 ## `rm`
 
-Removes a file.
+Removes file or directory.
 
 ```sh
 Hermit [agent-abcd] > rm example.txt
 ```
 
-## `rmdir`
-
-Removes a directory.
+To remove a directory recursively, add `-r` flag.
 
 ```sh
-Hermit [agent-abcd] > rmdir example_dir
+Hermit [agent-abcd] > rm -r example_dir
 ```
 
 ## `rportfwd`
@@ -410,6 +410,14 @@ Changes the Sleep time (N seconds).
 Hermit [agent-abcd] > sleep 10
 ```
 
+## `sysinfo`
+
+Retrieves the system information on a target machine.
+
+```sh
+Hermit [agent-abcd] > sysinfo
+```
+
 ## `token`
 
 Manages token.
@@ -443,9 +451,31 @@ Hermit [agent-abcd] > upload /tmp/example.txt C:/Users/John/Desktop/example.txt
 
 Manages users.
 
+### `user add`
+
+Add new user account.
+
+```sh
+Hermit [agent-abcd] > user add -u "John" -p "Password@123"
+```
+
+To hide a new user from `net user` command, add prefix `$` to the username as below:
+
+```sh
+Hermit [agent-abcd] > user add -u "John$" -p "Password@123"
+```
+
 ### `user ls`, `users`
 
 Lists local users.
+
+### `user rm`
+
+Delete a specified user.
+
+```sh
+Hermit [agent-abcd] > user rm -u "John"
+```
 
 ## `whoami`
 

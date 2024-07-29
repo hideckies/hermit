@@ -3,8 +3,8 @@ theme:
   name: material
   palette:
     scheme: slate
-    primary: yellow
-    accent: lime
+    primary: black
+    accent: yellow
   logo: assets/logo.png
   favicon: assets/favicon.ico
   features:

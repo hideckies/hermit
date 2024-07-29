@@ -325,6 +325,54 @@ func (c *amTaskFindCmd) Run(
 }
 
 // GROUP
+type amTaskGroupAddCmd struct {
+	Name string `short:"n" required:"" help:"A name of the new group to create."`
+}
+
+func (c *amTaskGroupAddCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask("group add", map[string]string{
+		"name": c.Name,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type amTaskGroupAddUserCmd struct {
+	Name     string `short:"n" required:"" help:"A name of the group to add user."`
+	Username string `short:"u" required:"" help:"Username to add to the group."`
+}
+
+func (c *amTaskGroupAddUserCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask("group add-user", map[string]string{
+		"name":     c.Name,
+		"username": c.Username,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type amTaskGroupLsCmd struct{}
 
 func (c *amTaskGroupLsCmd) Run(
@@ -344,8 +392,84 @@ func (c *amTaskGroupLsCmd) Run(
 	return nil
 }
 
+type amTaskGroupRmCmd struct {
+	Name string `short:"n" required:"" help:"A name of the group to delete."`
+}
+
+func (c *amTaskGroupRmCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask("group rm", map[string]string{
+		"name": c.Name,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type amTaskGroupRmUserCmd struct {
+	Name     string `short:"n" required:"" help:"A name of the group to delete user."`
+	Username string `short:"u" required:"" help:"Username to delete from the group."`
+}
+
+func (c *amTaskGroupRmUserCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask("group rm-user", map[string]string{
+		"name":     c.Name,
+		"username": c.Username,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type amTaskGroupUsersCmd struct {
+	Name string `short:"n" required:"" help:"A name of the group to list users."`
+}
+
+func (c *amTaskGroupUsersCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask("group users", map[string]string{
+		"name": c.Name,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type amTaskGroupCmd struct {
-	Ls amTaskGroupLsCmd `cmd:"" help:"List local groups."`
+	Add     amTaskGroupAddCmd     `cmd:"" help:"Add new group."`
+	AddUser amTaskGroupAddUserCmd `cmd:"" help:"Add user to group."`
+	Ls      amTaskGroupLsCmd      `cmd:"" help:"List local groups."`
+	Rm      amTaskGroupRmCmd      `cmd:"" help:"Delete group."`
+	RmUser  amTaskGroupRmUserCmd  `cmd:"" help:"Delete user from group."`
+	Users   amTaskGroupUsersCmd   `cmd:"" help:"List users in group."`
 }
 
 // HASHDUMP
@@ -840,7 +964,8 @@ type amTaskRegCmd struct {
 
 // RM
 type amTaskRmCmd struct {
-	Path string `arg:"" required:"" help:"Specify the path to remove."`
+	Path      string `arg:"" required:"" help:"Specify the path to remove."`
+	Recursive bool   `short:"r" optional:"" help:"Remove a directory recursively."`
 }
 
 func (c *amTaskRmCmd) Run(
@@ -848,29 +973,10 @@ func (c *amTaskRmCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
-	task, err := _task.NewTask(ctx.Args[0], map[string]string{"path": c.Path})
-	if err != nil {
-		return err
-	}
-
-	err = handler.HandleAmTaskSet(task, serverState, clientState)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// RMDIR
-type amTaskRmdirCmd struct {
-	Path string `arg:"" required:"" help:"Specify the path to remove."`
-}
-
-func (c *amTaskRmdirCmd) Run(
-	ctx *kong.Context,
-	serverState *servState.ServerState,
-	clientState *cliState.ClientState,
-) error {
-	task, err := _task.NewTask(ctx.Args[0], map[string]string{"path": c.Path})
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{
+		"path":      c.Path,
+		"recursive": fmt.Sprintf("%t", c.Recursive),
+	})
 	if err != nil {
 		return err
 	}
@@ -1218,8 +1324,8 @@ func (c *amTaskUploadCmd) Run(
 
 // USER
 type amTaskUserAddCmd struct {
-	Username string `short:"u" required:"" help:"Specify the username."`
-	Password string `short:"p" required:"" help:"Specify the password."`
+	Username string `short:"u" required:"" help:"Set new username."`
+	Password string `short:"p" required:"" help:"Set new password."`
 }
 
 func (c *amTaskUserAddCmd) Run(
@@ -1227,6 +1333,18 @@ func (c *amTaskUserAddCmd) Run(
 	serverState *servState.ServerState,
 	clientState *cliState.ClientState,
 ) error {
+	task, err := _task.NewTask("user add", map[string]string{
+		"username": c.Username,
+		"password": c.Password,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1250,13 +1368,32 @@ func (c *amTaskUserLsCmd) Run(
 }
 
 type amTaskUserRmCmd struct {
-	Username string `short:"u" required:"" help:"Specify the username to remove."`
+	Username string `short:"u" required:"" help:"Username of the account to delete."`
+}
+
+func (c *amTaskUserRmCmd) Run(
+	ctx *kong.Context,
+	serverState *servState.ServerState,
+	clientState *cliState.ClientState,
+) error {
+	task, err := _task.NewTask("user rm", map[string]string{
+		"username": c.Username,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = handler.HandleAmTaskSet(task, serverState, clientState)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type amTaskUserCmd struct {
-	// Add  amTaskUserAddCmd `cmd:"" help:"Add new user."`
-	Ls amTaskUserLsCmd `cmd:"" help:"List users."`
-	// Rm   amTaskUserRmCmd `cmd:"" help:"Remove user."`
+	Add amTaskUserAddCmd `cmd:"" help:"Add new user."`
+	Ls  amTaskUserLsCmd  `cmd:"" help:"List users."`
+	Rm  amTaskUserRmCmd  `cmd:"" help:"Delete user account."`
 }
 
 // WHOAMI

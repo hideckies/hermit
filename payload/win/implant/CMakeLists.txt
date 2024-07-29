@@ -112,7 +112,6 @@ set(SOURCE_CORE
         src/core/task/pwd.cpp
         src/core/task/reg.cpp
         src/core/task/rm.cpp
-        src/core/task/rmdir.cpp
         src/core/task/rportfwd.cpp
         src/core/task/runas.cpp
         src/core/task/screenshot.cpp

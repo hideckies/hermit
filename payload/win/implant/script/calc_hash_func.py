@@ -131,6 +131,8 @@ FUNCS = [
     "MoveFileW",
     "NetApiBufferFree",
     "NetLocalGroupEnum",
+    "NetUserAdd",
+    "NetUserDel",
     "NetUserEnum",
     "OpenProcess",
     "OpenProcessToken",

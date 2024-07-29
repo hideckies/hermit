@@ -88,8 +88,7 @@ type GrammarAgentMode struct {
 	// PsExec     amTaskPsExecCmd     `cmd:"Manage processes with psexec." help:"" group:"TASK:"`
 	Pwd        amTaskPwdCmd        `cmd:"" help:"Print the current working directory." group:"TASK:"`
 	Reg        amTaskRegCmd        `cmd:"" help:"Manage registry." group:"TASK:"`
-	Rm         amTaskRmCmd         `cmd:"" help:"Remove a file." group:"TASK:"`
-	Rmdir      amTaskRmdirCmd      `cmd:"" help:"Remove a directory." group:"TASK:"`
+	Rm         amTaskRmCmd         `cmd:"" help:"Remove file or directory." group:"TASK:"`
 	Rportfwd   amTaskRportfwdCmd   `cmd:"" help:"Manage reverse port forwarding." group:"TASK:"`
 	Runas      amTaskRunasCmd      `cmd:"" help:"Execute a program as another user." group:"TASK:"`
 	Screenshot amTaskScreenshotCmd `cmd:"" help:"Take a screenshot on target computer." group:"TASK:"`
