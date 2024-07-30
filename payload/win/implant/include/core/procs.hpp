@@ -110,6 +110,7 @@
 #define HASH_FUNC_GETCOMPUTERNAMEW              0x75f9dd70
 #define HASH_FUNC_GETCOMPUTERNAMEEXW            0xc154e2bd
 #define HASH_FUNC_GETENVIRONMENTSTRINGSW        0x6f39aea7
+#define HASH_FUNC_GETEXITCODEPROCESS            0xd3934823
 #define HASH_FUNC_GETFOREGROUNDWINDOW           0x41b94f14
 #define HASH_FUNC_GETLASTERROR                  0xf03e69b1
 #define HASH_FUNC_GETLOCALTIME                  0xdb736df7
@@ -381,6 +382,8 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_GETCOMPUTERNAMEEXW)(COMPUTER_NAME_FORMAT NameType, LPWSTR lpBuffer, LPDWORD nSize);
     // GetEnvironmentStringsW
     typedef LPWCH (WINAPI* LPPROC_GETENVIRONMENTSTRINGSW)();
+    // GetExitCodeProcess
+    typedef BOOL (WINAPI* LPPROC_GETEXITCODEPROCESS)(HANDLE hProcess, LPDWORD lpExitCode);
     // GetForegroundWindow
     typedef HWND (WINAPI* LPPROC_GETFOREGROUNDWINDOW)();
     // GetLastError
@@ -652,6 +655,7 @@ namespace Procs
         LPPROC_GETCOMPUTERNAMEW             lpGetComputerNameW                  = nullptr;
         LPPROC_GETCOMPUTERNAMEEXW           lpGetComputerNameExW                = nullptr;
         LPPROC_GETENVIRONMENTSTRINGSW       lpGetEnvironmentStringsW            = nullptr;
+        LPPROC_GETEXITCODEPROCESS           lpGetExitCodeProcess                = nullptr;
         LPPROC_GETFOREGROUNDWINDOW          lpGetForegroundWindow               = nullptr;
         LPPROC_GETLASTERROR                 lpGetLastError                      = nullptr;
         LPPROC_GETLOCALTIME                 lpGetLocalTime                      = nullptr;

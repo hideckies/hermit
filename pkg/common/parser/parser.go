@@ -83,9 +83,8 @@ type GrammarAgentMode struct {
 	Pe       amTaskPeCmd       `cmd:"" help:"Load and execute PE (Portable Executable) file." group:"TASK:"`
 	Persist  amTaskPersistCmd  `cmd:"" help:"Establish persistence for implant." group:"TASK:"`
 	// Pivot amTaskPivotCmd `cmd:"" help:"Manage pivoting" group:"TASK:"`
-	Procdump amTaskProcdumpCmd `cmd:"" help:"Dump process memory to a specified output file." group:"TASK:"`
-	Ps       amTaskPsCmd       `cmd:"" help:"Manage processes." group:"TASK:"`
-	// PsExec     amTaskPsExecCmd     `cmd:"Manage processes with psexec." help:"" group:"TASK:"`
+	Procdump   amTaskProcdumpCmd   `cmd:"" help:"Dump process memory to a specified output file." group:"TASK:"`
+	Ps         amTaskPsCmd         `cmd:"" help:"Manage processes." group:"TASK:"`
 	Pwd        amTaskPwdCmd        `cmd:"" help:"Print the current working directory." group:"TASK:"`
 	Reg        amTaskRegCmd        `cmd:"" help:"Manage registry." group:"TASK:"`
 	Rm         amTaskRmCmd         `cmd:"" help:"Remove file or directory." group:"TASK:"`

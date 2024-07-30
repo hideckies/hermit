@@ -191,6 +191,8 @@ namespace Procs
         pProcs->lpGetComputerNameExW            = reinterpret_cast<LPPROC_GETCOMPUTERNAMEEXW>(pGetComputerNameExW);
         PVOID pGetEnvironmentStringsW           = GetProcAddressByHash(hKernel32, HASH_FUNC_GETENVIRONMENTSTRINGSW);
         pProcs->lpGetEnvironmentStringsW        = reinterpret_cast<LPPROC_GETENVIRONMENTSTRINGSW>(pGetEnvironmentStringsW);
+        PVOID pGetExitCodeProcess               = GetProcAddressByHash(hKernel32, HASH_FUNC_GETEXITCODEPROCESS);
+        pProcs->lpGetExitCodeProcess            = reinterpret_cast<LPPROC_GETEXITCODEPROCESS>(pGetExitCodeProcess);
         PVOID pGetLastError                     = GetProcAddressByHash(hKernel32, HASH_FUNC_GETLASTERROR);
         pProcs->lpGetLastError                  = reinterpret_cast<LPPROC_GETLASTERROR>(pGetLastError);
         PVOID pGetLocalTime                     = GetProcAddressByHash(hKernel32, HASH_FUNC_GETLOCALTIME);

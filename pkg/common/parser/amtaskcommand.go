@@ -793,10 +793,9 @@ func (c *amTaskPersistCmd) Run(
 		"user-init-mpr-logon-script",
 		"default-file-extension-hijacking",
 		"ifeo",
-		// "scheduled-task",
+		"scheduled-task",
+		"startup-folder",
 		"winlogon",
-		// "netsh",
-		// "service",
 		"(cancel)",
 	}
 	res, err := stdin.Select("Technique", items)
