@@ -8,6 +8,7 @@
 
 namespace Stdout
 {
+    std::wstring GetErrorMessage(DWORD dwErrorCode);
     INT DisplayMessageBoxA(LPCSTR text, LPCSTR caption);
     INT DisplayMessageBoxW(LPCWSTR text, LPCWSTR caption);
     INT DisplayErrorMessageBoxW(LPCWSTR caption);

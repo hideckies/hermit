@@ -755,9 +755,9 @@ func (c *amTaskPeCmd) Run(
 	}
 	// Choose target process to be injected
 	// *This is used for 'process-hollowing'
-	var target_process = "notepad.exe"
+	var targetProcess = "notepad.exe"
 	if technique == "process-hollowing" {
-		target_process, err = stdin.ReadInput("Process to be Injected", target_process)
+		targetProcess, err = stdin.ReadInput("Process to be Injected", targetProcess)
 		if err != nil {
 			return err
 		}
@@ -765,7 +765,7 @@ func (c *amTaskPeCmd) Run(
 
 	task, err := _task.NewTask(ctx.Args[0], map[string]string{
 		"pe":             c.Pe,
-		"target_process": target_process,
+		"target_process": targetProcess,
 		"technique":      technique,
 	})
 	if err != nil {
@@ -794,6 +794,7 @@ func (c *amTaskPersistCmd) Run(
 		"default-file-extension-hijacking",
 		"ifeo",
 		"scheduled-task",
+		"ghosttask",
 		"startup-folder",
 		"winlogon",
 		"(cancel)",
@@ -807,7 +808,23 @@ func (c *amTaskPersistCmd) Run(
 		return nil
 	}
 
-	task, err := _task.NewTask(ctx.Args[0], map[string]string{"technique": res})
+	// Additional options
+	var schTaskName = "EvilTask"
+	if res == "scheduled-task" || res == "ghosttask" {
+		for {
+			schTaskName, err = stdin.ReadInput("Task Name: ", "EvilTask")
+			if err != nil {
+				stdout.LogFailed(fmt.Sprint(err))
+				continue
+			}
+			break
+		}
+	}
+
+	task, err := _task.NewTask(ctx.Args[0], map[string]string{
+		"technique":    res,
+		"schtask_name": schTaskName,
+	})
 	if err != nil {
 		return err
 	}

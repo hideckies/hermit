@@ -118,6 +118,14 @@ namespace Hermit
 		}
 		pModules->hNetapi32 = hNetapi32;
 
+		WCHAR wRpcrt4[] = L"rpcrt4.dll";
+		HMODULE hRpcrt4 = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wRpcrt4);
+		if (!hRpcrt4)
+		{
+			return;
+		}
+		pModules->hRpcrt4 = hRpcrt4;
+
 		WCHAR wShell32[] = L"shell32.dll";
 		HMODULE hShell32 = (HMODULE)Modules::LoadModule(pProcs, (LPWSTR)wShell32);
 		if (!hShell32)
@@ -160,6 +168,7 @@ namespace Hermit
 			hDbghelp,
 			hIphlpapi,
 			hNetapi32,
+			hRpcrt4,
 			hShell32,
 			hUser32,
 			hWinHttp,

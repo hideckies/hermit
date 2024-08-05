@@ -31,6 +31,7 @@ namespace Modules
         HMODULE hKernel32;
         HMODULE hNetapi32;
         HMODULE hNtdll;
+        HMODULE hRpcrt4;
         HMODULE hShell32;
         HMODULE hUser32;
         HMODULE hWinHttp;

@@ -85,6 +85,7 @@
 #define HASH_FUNC_BCRYPTSETPROPERTY             0xadd558d6
 #define HASH_FUNC_CHECKREMOTEDEBUGGERPRESENT    0x478dd921
 #define HASH_FUNC_CLOSEHANDLE                   0x47bdd9cb
+#define HASH_FUNC_CONVERTSTRINGSECURITYDESCRIPTORTOSECURITYDESCRIPTORW 0x26bcd76f
 #define HASH_FUNC_CREATEFILEW                   0x9dca9eca
 #define HASH_FUNC_CREATEPIPE                    0xfee438df
 #define HASH_FUNC_CREATEPROCESSW                0x78f4d6f9
@@ -103,7 +104,7 @@
 #define HASH_FUNC_FINDCLOSE                     0xbfb52d8a
 #define HASH_FUNC_FINDFIRSTFILEW                0x8b7ad5b9
 #define HASH_FUNC_FINDNEXTFILEW                 0x9a714aba
-#define HASH_FUNC_FORMATMESSAGE                 0x73e1db
+#define HASH_FUNC_FORMATMESSAGEW                0x3a2a4d5c
 #define HASH_FUNC_FREEENVIRONMENTSTRINGSW       0xebf072c7
 #define HASH_FUNC_FREELIBRARY                   0x26174ba
 #define HASH_FUNC_GETADAPTERSADDRESSES          0xc7179a9d
@@ -142,6 +143,7 @@
 #define HASH_FUNC_LOADLIBRARYW                  0x7069f257
 #define HASH_FUNC_LOCALALLOC                    0xa505c69f
 #define HASH_FUNC_LOCALFREE                     0x50d0ddc2
+#define HASH_FUNC_LOOKUPACCOUNTNAMEW            0x4368982e
 #define HASH_FUNC_LOOKUPPRIVILEGENAMEW          0x559348ea
 #define HASH_FUNC_LOOKUPPRIVILEGEVALUEW         0x6e9aab88
 #define HASH_FUNC_MESSAGEBOXA                   0xcc4a1d08
@@ -161,6 +163,8 @@
 #define HASH_FUNC_READPROCESSMEMORY             0xb29e4a5
 #define HASH_FUNC_REGCLOSEKEY                   0x2fd69f86
 #define HASH_FUNC_REGCREATEKEYEXW               0x8d1b9d00
+#define HASH_FUNC_REGDELETEKEYEXW               0xd26a706f
+#define HASH_FUNC_REGDELETEVALUEW               0xf2d26ad0
 #define HASH_FUNC_REGENUMKEYEXW                 0x1118d05
 #define HASH_FUNC_REGENUMVALUEW                 0x21798766
 #define HASH_FUNC_REGISTERCLASSEXW              0xab97084
@@ -170,6 +174,7 @@
 #define HASH_FUNC_REGSETVALUEEXW                0x9dbfac36
 #define HASH_FUNC_REMOVEDIRECTORYW              0x41880283
 #define HASH_FUNC_REVERTTOSELF                  0x6c5291c0
+#define HASH_FUNC_RPCSTRINGFREEW                0x32500f4a
 #define HASH_FUNC_RTLADDFUNCTIONTABLE           0xbe7f92ca
 #define HASH_FUNC_RTLCOPYMEMORY                 0xfd82b9ab
 #define HASH_FUNC_SETFILEINFORMATIONBYHANDLE    0xbfea4fe2
@@ -183,6 +188,8 @@
 #define HASH_FUNC_TRANSLATEACCELERATORW         0xecb91305
 #define HASH_FUNC_TRANSLATEMESSAGE              0xf1acceae
 #define HASH_FUNC_UPDATEWINDOW                  0x401c176e
+#define HASH_FUNC_UUIDCREATE                    0x7aa0c3ac
+#define HASH_FUNC_UUIDTOSTRINGW                 0xde9753b
 #define HASH_FUNC_VIRTUALALLOC                  0x5ae0dabf
 #define HASH_FUNC_VIRTUALALLOCEX                0x104fd152
 #define HASH_FUNC_VIRTUALFREE                   0x640675a2
@@ -334,6 +341,8 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_CHECKREMOTEDEBUGGERPRESENT)(HANDLE hProcess, PBOOL pbDebuggerPresent);
     // CloseHandle
     typedef BOOL (WINAPI* LPPROC_CLOSEHANDLE)(HANDLE hObject);
+    // ConvertStringSecurityDescriptorToSecurityDescriptorW
+    typedef BOOL (WINAPI* LPPROC_CONVERTSTRINGSECURITYDESCRIPTORTOSECURITYDESCRIPTORW)(LPCWSTR StringSecurityDescriptor, DWORD StringSDRevision, PSECURITY_DESCRIPTOR *SecurityDescriptor, PULONG SecurityDescriptorSize);
     // CreateFileW
     typedef HANDLE (WINAPI* LPPROC_CREATEFILEW)(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
     // CreatePipe
@@ -368,8 +377,8 @@ namespace Procs
     typedef HANDLE (WINAPI* LPPROC_FINDFIRSTFILEW)(LPCWSTR lpFileName, LPWIN32_FIND_DATAW lpFindFileData);
     // FindNextFileW
     typedef BOOL (WINAPI* LPPROC_FINDNEXTFILEW)(HANDLE hFindFile, LPWIN32_FIND_DATAW lpFindFileData);
-    // FormatMessage
-    typedef DWORD (WINAPI* LPPROC_FORMATMESSAGE)(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPTSTR lpBuffer, DWORD nSize, va_list *Arguments);
+    // FormatMessageW
+    typedef DWORD (WINAPI* LPPROC_FORMATMESSAGEW)(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPWSTR lpBuffer, DWORD nSize, va_list *Arguments);
     // FreeEnvironmentStringsW
     typedef BOOL (WINAPI* LPPROC_FREEENVIRONMENTSTRINGSW)(LPWCH penv);
     // FreeLibrary
@@ -446,6 +455,8 @@ namespace Procs
     typedef HLOCAL (WINAPI* LPPROC_LOCALALLOC)(UINT uFlags, SIZE_T uBytes);
     // LocalFree
     typedef HLOCAL (WINAPI* LPPROC_LOCALFREE)(HLOCAL hMem);
+    // LookupAccountNameW
+    typedef BOOL (WINAPI* LPPROC_LOOKUPACCOUTNAMEW)(LPCWSTR lpSystemName, LPCWSTR lpAccountName, PSID Sid, LPDWORD cbSid, LPWSTR ReferencedDomainName, LPDWORD cchReferencedDomainName, PSID_NAME_USE peUse);
     // LookupPrivilegeNameW
     typedef BOOL (WINAPI* LPPROC_LOOKUPPRIVILEGENAMEW)(LPCWSTR lpSystemName, PLUID lpLuid, LPWSTR lpName, LPDWORD cchName);
     // LookupPrivilegeValueW
@@ -484,6 +495,10 @@ namespace Procs
     typedef LSTATUS (WINAPI* LPPROC_REGCLOSEKEY)(HKEY hKey);
     // RegCreateKeyExW
     typedef LSTATUS (WINAPI* LPPROC_REGCREATEKEYEXW)(HKEY hKey, LPCWSTR lpSubKey, DWORD Reserved, LPWSTR lpClass, DWORD dwOptions, REGSAM samDesired, const LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition);
+    // RegDeleteKeyExW
+    typedef LSTATUS (WINAPI* LPPROC_REGDELETEKEYEXW)(HKEY hKey, LPCWSTR lpSubKey, REGSAM samDesired, DWORD Reserved);
+    // RegDeleteValueW
+    typedef LSTATUS (WINAPI* LPPROC_REGDELETEVALUEW)(HKEY hKey, LPCWSTR lpValueName);
     // RegEnumKeyExW
     typedef LSTATUS (WINAPI* LPPROC_REGENUMKEYEXW)(HKEY hKey, DWORD dwIndex, LPWSTR lpName, LPDWORD lpcchName, LPDWORD lpReserved, LPWSTR lpClass, LPDWORD lpcchClass, PFILETIME lpftLastWriteTime);
     // RegEnumValueW
@@ -502,6 +517,8 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_REMOVEDIRECTORYW)(LPCWSTR lpPathName);
     // RevertToSelf
     typedef BOOL (WINAPI* LPPROC_REVERTTOSELF)();
+    // RpcStringFreeW
+    typedef RPC_STATUS(WINAPI* LPPROC_RPCSTRINGFREEW)(RPC_WSTR *String);
     // RtlAddFunctionTable
     typedef BOOL (WINAPI* LPPROC_RTLADDFUNCTIONTABLE)(PRUNTIME_FUNCTION FunctionTable, DWORD EntryCount, DWORD64 BaseAddress);
     // RtlCopyMemory
@@ -526,6 +543,10 @@ namespace Procs
     typedef BOOL (WINAPI* LPPROC_TRANSLATEMESSAGE)(const MSG *lpMsg);
     // UpdateWindow
     typedef BOOL (WINAPI* LPPROC_UPDATEWINDOW)(HWND hWnd);
+    // UuidCreate
+    typedef RPC_STATUS (WINAPI* LPPROC_UUIDCREATE)(UUID *Uuid);
+    // UuidToStringW
+    typedef RPC_STATUS (WINAPI* LPPROC_UUIDTOSTRINGW)(const UUID *Uuid, RPC_WSTR *StringUuid);
     // VirtualAlloc
     typedef LPVOID (WINAPI* LPPROC_VIRTUALALLOC)(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);
     // VirtualAllocEx
@@ -632,6 +653,7 @@ namespace Procs
         LPPROC_BCRYPTSETPROPERTY            lpBCryptSetProperty                 = nullptr;
         LPPROC_CHECKREMOTEDEBUGGERPRESENT   lpCheckRemoteDebuggerPresent        = nullptr;
         LPPROC_CLOSEHANDLE                  lpCloseHandle                       = nullptr;
+        LPPROC_CONVERTSTRINGSECURITYDESCRIPTORTOSECURITYDESCRIPTORW lpConvertStringSecurityDescriptorToSecurityDescriptorW = nullptr;
         LPPROC_CREATEFILEW                  lpCreateFileW                       = nullptr;
         LPPROC_CREATEPIPE                   lpCreatePipe                        = nullptr;
         LPPROC_CREATEPROCESSW               lpCreateProcessW                    = nullptr;
@@ -648,7 +670,7 @@ namespace Procs
         LPPROC_FINDCLOSE                    lpFindClose                         = nullptr;
         LPPROC_FINDFIRSTFILEW               lpFindFirstFileW                    = nullptr;
         LPPROC_FINDNEXTFILEW                lpFindNextFileW                     = nullptr;
-        LPPROC_FORMATMESSAGE                lpFormatMessage                     = nullptr;
+        LPPROC_FORMATMESSAGEW               lpFormatMessageW                    = nullptr;
         LPPROC_FREEENVIRONMENTSTRINGSW      lpFreeEnvironmentStringsW           = nullptr;
         LPPROC_FREELIBRARY                  lpFreeLibrary                       = nullptr;
         LPPROC_GETADAPTERSADDRESSES         lpGetAdaptersAddresses              = nullptr;
@@ -687,6 +709,7 @@ namespace Procs
         LPPROC_LOADLIBRARYW                 lpLoadLibraryW                      = nullptr;
         LPPROC_LOCALALLOC                   lpLocalAlloc                        = nullptr;
         LPPROC_LOCALFREE                    lpLocalFree                         = nullptr;
+        LPPROC_LOOKUPACCOUTNAMEW            lpLookupAccountNameW                = nullptr;
         LPPROC_LOOKUPPRIVILEGENAMEW         lpLookupPrivilegeNameW              = nullptr;
         LPPROC_LOOKUPPRIVILEGEVALUEW        lpLookupPrivilegeValueW             = nullptr;
         LPPROC_MINIDUMPWRITEDUMP            lpMiniDumpWriteDump                 = nullptr;
@@ -704,6 +727,8 @@ namespace Procs
         LPPROC_READPROCESSMEMORY            lpReadProcessMemory                 = nullptr;
         LPPROC_REGCLOSEKEY                  lpRegCloseKey                       = nullptr;
         LPPROC_REGCREATEKEYEXW              lpRegCreateKeyExW                   = nullptr;
+        LPPROC_REGDELETEKEYEXW              lpRegDeleteKeyExW                   = nullptr;
+        LPPROC_REGDELETEVALUEW              lpRegDeleteValueW                   = nullptr;
         LPPROC_REGENUMKEYEXW                lpRegEnumKeyExW                     = nullptr;
         LPPROC_REGENUMVALUEW                lpRegEnumValueW                     = nullptr;
         LPPROC_REGISTERCLASSEXW             lpRegisterClassExW                  = nullptr;
@@ -713,6 +738,7 @@ namespace Procs
         LPPROC_REGSETVALUEEXW               lpRegSetValueExW                    = nullptr;
         LPPROC_REMOVEDIRECTORYW             lpRemoveDirectoryW                  = nullptr;
         LPPROC_REVERTTOSELF                 lpRevertToSelf                      = nullptr;
+        LPPROC_RPCSTRINGFREEW               lpRpcStringFreeW                    = nullptr;
         LPPROC_RTLCOPYMEMORY                lpRtlCopyMemory                     = nullptr;
         LPPROC_SETFILEINFORMATIONBYHANDLE   lpSetFileInformationByHandle        = nullptr;
         LPPROC_SETHANDLEINFORMATION         lpSetHandleInformation              = nullptr;
@@ -724,6 +750,8 @@ namespace Procs
         LPPROC_TRANSLATEACCELERATORW        lpTranslateAcceleratorW             = nullptr;
         LPPROC_TRANSLATEMESSAGE             lpTranslateMessage                  = nullptr;
         LPPROC_UPDATEWINDOW                 lpUpdateWindow                      = nullptr;
+        LPPROC_UUIDCREATE                   lpUuidCreate                        = nullptr;
+        LPPROC_UUIDTOSTRINGW                lpUuidToStringW                     = nullptr;
         LPPROC_VIRTUALALLOCEX               lpVirtualAllocEx                    = nullptr;
         LPPROC_VIRTUALFREE                  lpVirtualFree                       = nullptr;
         LPPROC_VIRTUALPROTECT               lpVirtualProtect                    = nullptr;
@@ -813,6 +841,7 @@ namespace Procs
         HMODULE hDbghelp,
         HMODULE hIphlpapi,
         HMODULE hNetapi32,
+        HMODULE hRpcrt4,
         HMODULE hShell32,
         HMODULE hUser32,
         HMODULE hWinHttp,

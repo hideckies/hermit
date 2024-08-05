@@ -262,7 +262,18 @@ Cleanup:
 Remove-ItemProperty -Path "HKCU:\Environment" -Name "UserInitMprLogonScript"
 ```
 
-### Technique 3: `screensaver`
+### Technique 3: `default-file-extension-hijacking`
+
+Update an entry for `HKEY_CLASSES_ROOT\txtfile\shell\open\command`.  
+Overwrite the default application when clicking a `.txt` file. It's required to **Administrator** privilege.  
+
+Cleanup:
+
+```powershell title="Windows Victim Machine"
+reg add "HKEY_CLASSES_ROOT\txtfile\shell\open\command" /ve /t REG_EXPAND_SZ /d "%SystemRoot%\system32\NOTEPAD.EXE %1"
+```
+
+### Technique 4: `screensaver`
 
 Add an entry (the implant path) to `HKCU\Control Panel\Desktop`.  
 The implant will run after a period of user inactivity.  
@@ -274,22 +285,10 @@ Remove-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name 'ScreenSaveTimeOut
 Remove-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name 'SCRNSAVE.EXE'
 ```
 
-### Technique 4: `default-file-extension-hijacking`
-
-Update an entry for `HKEY_CLASSES_ROOT\txtfile\shell\open\command`.  
-Overwrite the default application when clicking a `.txt` file. It's required to **Administrator** privilege.  
-
-Cleanup:
-
-```powershell title="Windows Victim Machine"
-reg add "HKEY_CLASSES_ROOT\txtfile\shell\open\command" /ve /t REG_EXPAND_SZ /d "%SystemRoot%\system32\NOTEPAD.EXE %1"
-```
-
-### Technique 5: `ifeo`
+### Technique 5: `ifeo` (Required: Administrator privilege)
 
 Uses **Image File Execution Options**.  
 Write entries for `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe` and `HKLM\Software\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\notepad.exe`.  
-It's required to **Administrator** privilege.
 
 Cleanup:
 
@@ -299,10 +298,31 @@ Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Si
 Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\notepad.exe" -Name 'MonitorProcess'
 ```
 
-### Technique 6: `winlogon`
+### Technique 6: `scheduled-task` (Required: Administrator privilege)
+
+Adds the implant path to the Scheduled Task.
+
+Cleanup:
+
+```powershell title="Windows Victim Machine"
+schtasks /delete /tn "TaskName" /f
+# or
+reg delete "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\<TASK-GUID>" /f
+reg delete "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree\<TaskName>" /f
+```
+
+### Technique 7: `ghosttask` (Required: SYSTEM privilege)
+
+Work in progress.
+
+### Technique 8: `startup-folder`
+
+Copies the implant to the **Startup** folder (`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`).
+
+### Technique 9: `winlogon` (Required: Administrator privilege)
 
 Add an entry (the implant path) to `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon`.  
-The implant will run every time a user logs on. It's required to **Administrator** privilege.  
+The implant will run every time a user logs on.  
 
 Cleanup:
 

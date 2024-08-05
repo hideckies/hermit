@@ -2,6 +2,24 @@
 
 namespace Stdout
 {
+	std::wstring GetErrorMessage(DWORD dwErrorCode)
+	{
+		WCHAR* wMsgBuf = nullptr;
+		size_t size = FormatMessageW(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			nullptr,
+			dwErrorCode,
+			0,
+			(WCHAR*)&wMsgBuf,
+			0,
+			nullptr
+		);
+
+		std::wstring wMsg(wMsgBuf, size);
+		LocalFree(wMsgBuf);
+		return wMsg;
+	}
+
 	INT DisplayMessageBoxA(LPCSTR text, LPCSTR caption)
 	{
 		INT msgBoxId = MessageBoxA(

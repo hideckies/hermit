@@ -103,6 +103,7 @@ namespace Modules
         pProcs->lpFreeLibrary(pModules->hIphlpapi);
         pProcs->lpFreeLibrary(pModules->hNetapi32);
         pProcs->lpFreeLibrary(pModules->hNtdll);
+        pProcs->lpFreeLibrary(pModules->hRpcrt4);
         pProcs->lpFreeLibrary(pModules->hShell32);
         pProcs->lpFreeLibrary(pModules->hUser32);
         pProcs->lpFreeLibrary(pModules->hWinHttp);

