@@ -55,11 +55,8 @@ make server
 ./hermit -h
 ```
 
-Please see [the installation page](https://hermit.hdks.org/installation/) for more details.
-
 <br />
 
 ## Getting Started
 
-Please see [the docs](https://hermit.hdks.org/getting-started/).  
-[Tutorials](https://hermit.hdks.org/tutorials/simple-implant-beacon/) are also available.  
+See the [docs](docs).
